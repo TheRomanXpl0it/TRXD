@@ -34,20 +34,18 @@ import {
   Textarea
 } from "@/components/ui/textarea"
 import {
-  MultiSelector,
-  MultiSelectorContent,
-  MultiSelectorInput,
-  MultiSelectorItem,
-  MultiSelectorList,
-  MultiSelectorTrigger
-} from "@/components/ui/multi-select"
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select"
+import {
+  TagsInput
+} from "@/components/ui/tags-input"
+import {
+  Switch
+} from "@/components/ui/switch"
 import {
   CloudUpload,
   Paperclip
@@ -59,21 +57,64 @@ import {
   FileUploaderItem
 } from "@/components/ui/file-upload"
 import {
-  Switch
-} from "@/components/ui/switch"
+  MultiSelector,
+  MultiSelectorContent,
+  MultiSelectorInput,
+  MultiSelectorItem,
+  MultiSelectorList,
+  MultiSelectorTrigger
+} from "@/components/ui/multi-select"
+import { ChallengeProps } from "./challenge"
 
 const formSchema = z.object({
-  name_2334038443: z.string().min(1),
-  name_6792697419: z.string(),
-  name_2623395407: z.string().min(1),
-  name_5602933801: z.array(z.string()).nonempty("Please at least one item"),
-  name_9939076718: z.string(),
-  name_9280919993: z.array(z.string()).nonempty("Please at least one item"),
-  name_9651582664: z.string(),
-  name_0340600713: z.boolean()
+  title: z.string().min(1),
+  flag: z.string().min(1),
+  description: z.string(),
+  difficulty: z.string(),
+  tags: z.array(z.string()).nonempty("Please at least one item"),
+  hidden: z.boolean(),
+  files: z.string(),
+  authors: z.array(z.string())
 });
 
-export default function MyForm() {
+function displayAuthors(authors: string[]){
+  return (
+    authors.map((author, index) => (
+      <MultiSelectorItem key={index} value={author}>{author}</MultiSelectorItem>
+    ))
+  )
+}
+
+export function ChallengeForm( { challengeProp, auth } : { 
+  challengeProp?: ChallengeProps,
+  auth: {
+    username: string;
+    password: string;
+    accessToken: string;
+    roles: string[];
+}}) {
+
+  let defaultAuthors: string[] | undefined = [auth.username];
+  let defaultTitle: string | undefined = "";
+  let defaultDescription: string | undefined = "";
+  let defaultDifficulty: string | undefined = "Easy";
+  let defaultTags: string[] | undefined = ["Easy"];
+  let defaultHidden: boolean | undefined = true;
+  let defaultFlag : string | undefined = "";
+  let authors: string[] = [];
+
+
+  if ( challengeProp ){
+    console.log(challengeProp);
+    challengeProp.challenge.authors ? defaultAuthors = challengeProp.challenge.authors : [];
+    challengeProp.challenge.description ? defaultDescription = challengeProp.challenge.description : "";
+    challengeProp.challenge.difficulty ? defaultDifficulty = challengeProp.challenge.difficulty : "Easy";
+    challengeProp.challenge.tags ? defaultTags = challengeProp.challenge.tags : ["Easy"];
+    challengeProp.challenge.hidden!==undefined ? defaultHidden = challengeProp.challenge.hidden : true;
+    defaultTitle = challengeProp.challenge.title;
+    defaultFlag = challengeProp.challenge.flag;
+  }
+
 
   const [files, setFiles] = useState < File[] | null > (null);
 
@@ -85,8 +126,13 @@ export default function MyForm() {
   const form = useForm < z.infer < typeof formSchema >> ({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      "name_5602933801": ["React"],
-      "name_9280919993": ["React"]
+      "title" : defaultTitle,
+      "flag": defaultFlag,
+      "description" : defaultDescription,
+      "difficulty" : defaultDifficulty,
+      "tags": defaultTags,
+      "authors": defaultAuthors,
+      "hidden": defaultHidden,
     },
   })
 
@@ -110,18 +156,18 @@ export default function MyForm() {
         
         <FormField
           control={form.control}
-          name="name_2334038443"
+          name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel>Title</FormLabel>
               <FormControl>
                 <Input 
-                placeholder="shadcn"
+                placeholder=""
                 
-                type=""
+                type="text"
                 {...field} />
               </FormControl>
-              <FormDescription>This is your public display name.</FormDescription>
+              <FormDescription>The title of the challenge</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -129,18 +175,37 @@ export default function MyForm() {
         
         <FormField
           control={form.control}
-          name="name_6792697419"
+          name="flag"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Bio</FormLabel>
+              <FormLabel>Flag</FormLabel>
+              <FormControl>
+                <Input 
+                placeholder="TRX{...}"
+                
+                type="text"
+                {...field} />
+              </FormControl>
+              <FormDescription>Correct Flag</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Placeholder"
+                  placeholder=""
                   className="resize-none"
                   {...field}
                 />
               </FormControl>
-              <FormDescription>You can @mention other users and organizations.</FormDescription>
+              <FormDescription>The description of the challenge</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -148,115 +213,73 @@ export default function MyForm() {
         
         <FormField
           control={form.control}
-          name="name_2623395407"
+          name="difficulty"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
-              <FormControl>
-                <Input 
-                placeholder="shadcn"
-                
-                type=""
-                {...field} />
-              </FormControl>
-              <FormDescription>This is your public display name.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-           <FormField
-              control={form.control}
-              name="name_5602933801"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Select your framework</FormLabel>
-                  <FormControl>
-                    <MultiSelector
-                      values={field.value}
-                      onValuesChange={field.onChange}
-                      loop
-                      className="max-w-xs"
-                    >
-                      <MultiSelectorTrigger>
-                        <MultiSelectorInput placeholder="Select languages" />
-                      </MultiSelectorTrigger>
-                      <MultiSelectorContent>
-                      <MultiSelectorList>
-                        <MultiSelectorItem value={"React"}>React</MultiSelectorItem>
-                        <MultiSelectorItem value={"Vue"}>Vue</MultiSelectorItem>
-                        <MultiSelectorItem value={"Svelte"}>Svelte</MultiSelectorItem>
-                      </MultiSelectorList>
-                      </MultiSelectorContent>
-                    </MultiSelector>
-                  </FormControl>
-                  <FormDescription>Select multiple options.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-        
-        <FormField
-          control={form.control}
-          name="name_9939076718"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Difficulty</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a verified email to display" />
+                    <SelectValue placeholder="" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="m@example.com">m@example.com</SelectItem>
-                  <SelectItem value="m@google.com">m@google.com</SelectItem>
-                  <SelectItem value="m@support.com">m@support.com</SelectItem>
+                  <SelectItem value="Easy">Easy</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Hard">Hard</SelectItem>
+                  <SelectItem value="Insane">Insane</SelectItem>
                 </SelectContent>
               </Select>
-                <FormDescription>You can manage email addresses in your email settings.</FormDescription>
+                <FormDescription>Difficulty of the challenge</FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
         
-           <FormField
+        <FormField
+          control={form.control}
+          name="tags"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Tags</FormLabel>
+              <FormControl>
+                <TagsInput
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  placeholder="Enter your tags"
+                />
+              </FormControl>
+              <FormDescription>Add tags to the challenge.</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+          <FormField
               control={form.control}
-              name="name_9280919993"
+              name="hidden"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Select your framework</FormLabel>
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel>Hidden</FormLabel>
+                    <FormDescription>Challenge is hidden, you can edit it later on inside the challenge card.</FormDescription>
+                  </div>
                   <FormControl>
-                    <MultiSelector
-                      values={field.value}
-                      onValuesChange={field.onChange}
-                      loop
-                      className="max-w-xs"
-                    >
-                      <MultiSelectorTrigger>
-                        <MultiSelectorInput placeholder="Select languages" />
-                      </MultiSelectorTrigger>
-                      <MultiSelectorContent>
-                      <MultiSelectorList>
-                        <MultiSelectorItem value={"React"}>React</MultiSelectorItem>
-                        <MultiSelectorItem value={"Vue"}>Vue</MultiSelectorItem>
-                        <MultiSelectorItem value={"Svelte"}>Svelte</MultiSelectorItem>
-                      </MultiSelectorList>
-                      </MultiSelectorContent>
-                    </MultiSelector>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
                   </FormControl>
-                  <FormDescription>Select multiple options.</FormDescription>
-                  <FormMessage />
                 </FormItem>
               )}
             />
         
             <FormField
               control={form.control}
-              name="name_9651582664"
+              name="files"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Select File</FormLabel>
+                  <FormLabel>Challenge files</FormLabel>
                   <FormControl>
                     <FileUploader
                       value={files}
@@ -275,7 +298,7 @@ export default function MyForm() {
                             &nbsp; or drag and drop
                           </p>
                           <p className="text-xs text-gray-500 dark:text-gray-400">
-                            SVG, PNG, JPG or GIF
+                            (.zip)
                           </p>
                         </div>
                       </FileInput>
@@ -297,23 +320,31 @@ export default function MyForm() {
               )}
             />
         
-          <FormField
+           <FormField
               control={form.control}
-              name="name_0340600713"
+              name="authors"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
-                    <FormLabel>Marketing emails</FormLabel>
-                    <FormDescription>Receive emails about new products, features, and more.</FormDescription>
-                  </div>
+                <FormItem>
+                  <FormLabel>Authors</FormLabel>
                   <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      disabled
-                      aria-readonly
-                    />
+                    <MultiSelector
+                      values={field.value}
+                      onValuesChange={field.onChange}
+                      loop
+                      className="max-w-xs"
+                    >
+                      <MultiSelectorTrigger>
+                        <MultiSelectorInput placeholder="Select Authors" />
+                      </MultiSelectorTrigger>
+                      <MultiSelectorContent>
+                      <MultiSelectorList>
+                        { displayAuthors(authors) }
+                      </MultiSelectorList>
+                      </MultiSelectorContent>
+                    </MultiSelector>
                   </FormControl>
+                  <FormDescription>Select multiple options.</FormDescription>
+                  <FormMessage />
                 </FormItem>
               )}
             />

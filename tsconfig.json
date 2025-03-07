@@ -5,6 +5,7 @@
     { "path": "./tsconfig.node.json" }
   ],
   "compilerOptions": {
+    "lib": ["es2021", "dom"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]

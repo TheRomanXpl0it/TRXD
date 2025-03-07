@@ -41,9 +41,11 @@ const generateSchema = (settings: any) => {
 
 export function Settings (){
     
-    const { settings, setSettings } = useContext(SettingsContext);
+    const { settings, setSettings } = useContext( SettingsContext );
     const FormSchema = generateSchema(settings);
     type SettingsKeys = keyof typeof settings;
+
+    const showQuotes = settings.General?.find((setting) => setting.title === 'Show Quotes')?.value;
 
     const defaultValues = Object.keys(settings).reduce((acc: Record<string, any>, key) => {
         settings[key as SettingsKeys].forEach((item: any) => {
@@ -130,9 +132,11 @@ export function Settings (){
         <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
             Settings
         </h2>
-        <blockquote className="mt-6 border-l-2 pl-6 italic">
+        { showQuotes && (
+            <blockquote className="mt-6 border-l-2 pl-6 italic">
             "He who controls others may be powerful, but he who has mastered himself is mightier still."
-        </blockquote>
+            </blockquote>
+        )}
 
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">

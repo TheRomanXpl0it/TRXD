@@ -1,27 +1,40 @@
 import { createContext, useState } from "react";
 import { ReactNode } from "react";
 
-const AuthContext = createContext({
-    auth: {
-        username: "admin",
-        password: "admin",
-        accessToken: "helo",
-        roles:[] as string[]
-    },
-    setAuth: (_auth: any) => {}
-});
 
+export interface AuthProps{
+    username: string;
+    password: string;
+    accessToken: string;
+    roles: string[];
+    team: string;
+}
+
+const AuthContext = createContext<{
+    auth: AuthProps;
+    setAuth: React.Dispatch<React.SetStateAction<AuthProps>>;
+    }>({
+        auth: {
+            username: "admin",
+            password: "admin",
+            accessToken: "helo",
+            roles: [],
+            team: ""
+        },
+    setAuth: () => {}
+});
 
 interface AuthProviderProps {
     children: ReactNode;
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-    const [auth,setAuth] = useState({
+    const [auth, setAuth] = useState<AuthProps>({
         username: "admin",
         password: "admin",
         accessToken: "helo",
-        roles: ["admin"]
+        roles: ["admin"],
+        team: ""
     });
 
     return (

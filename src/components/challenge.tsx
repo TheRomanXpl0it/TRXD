@@ -18,8 +18,10 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { FlagSubmit } from "./flag-submit";
 import { CategoryIcon } from "./category-icon";
-import { Flag,UserPen, EyeClosed, Pencil, Trash, CircleCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Flag,UserPen, EyeClosed, CircleCheck } from "lucide-react";
+import { UpdateChallenge } from "@/components/updateChallenge";
+import { DeleteChallenge } from "@/components/deleteChallenge";
+import { AuthProps } from "@/context/AuthProvider";
 
 
 export interface ChallengeProps {
@@ -36,7 +38,10 @@ export interface ChallengeProps {
         difficulty?: string;
         attatchments?: File[];
         authors?: string[];
-        hidden: Boolean;
+        hidden: boolean;
+        flag?: string;
+        instanced?: boolean;
+        timeout?: Date;
     };
 }
 
@@ -49,12 +54,7 @@ export function displayChallenges(
         description: string;
         type: BooleanConstructor;
     }[],
-    auth: {
-        username: string;
-        password: string;
-        accessToken: string;
-        roles: string[];
-    }
+    auth: AuthProps
     ) {
 
     const challengeSettings = {
@@ -92,7 +92,7 @@ function getRemote(remote?: string) {
 function showTags(tags?: string[]) {
     if (!tags) return null;
     return tags.map((tag) => (
-        <Badge key={tag}>{tag}</Badge>
+        <Badge key={tag} className="mx-0.5">{tag}</Badge>
     ));
 }
 
@@ -108,13 +108,15 @@ function getAttatchments(attatchments: File[]) {
 
 function showAuthors(authors: string[]) {
     return ( 
-        <span className="flex items-center space-x-2 justify-center">
+        <span className="flex flex-row items-center space-x-2 justify-center">
             <UserPen size={24}/>
-            { authors.map(( author,index ) =>
-            <div key={index}>
-                <span>{author}</span>
-            </div>
+            <div className="flex flex-col items-center">
+                { authors.map(( author,index ) =>
+                <div key={index} >
+                    {author}
+                </div>
             )}
+            </div>
         </span>
     )
 }
@@ -162,11 +164,14 @@ function showCategory(category: string){
     )
 }
 
-function showControls(){
+function showControls(
+    auth: AuthProps,
+    challengeProp:ChallengeProps
+){
     return(
         <div className="flex items-right justify-end space-x-2 mr-5 w-33">
-            <Button><Pencil size={24}/></Button>
-            <Button variant="destructive"><Trash size={24}/></Button>
+            <UpdateChallenge challengeProp={challengeProp} auth={auth}/>
+            <DeleteChallenge challengeProp={challengeProp} auth={auth}/>
         </div>
     )
 }
@@ -185,12 +190,7 @@ function Challenge({
         showTags: boolean;
         showDifficulty: boolean;
     },
-    auth: {
-        username: string;
-        password: string;
-        accessToken: string;
-        roles: string[];
-    }
+    auth: AuthProps
 }) {
     const challenge = challengeProp.challenge;
     const canEdit = auth.roles.includes('admin') || (auth.roles.includes('author') && challenge.authors?.includes(auth.username));
@@ -198,9 +198,9 @@ function Challenge({
     return (
         <Dialog key={challenge.id}>
             <DialogTrigger asChild>
-                <Card className = {challenge.hidden ? "m-4 w-[250px] h-[130px] cursor-pointer  bg-gray-300" : "m-4 w-[250px] h-[130px] cursor-pointer"}>
+                <Card className = {  challenge.hidden ? "m-4 w-[250px] h-[130px] cursor-pointer  bg-gray-300" : "m-4 w-[250px] h-[130px] cursor-pointer"}>
                     <CardHeader>
-                    <CardTitle>{challenge.title}</CardTitle>
+                    <CardTitle>{ challenge.title }</CardTitle>
                     <CardDescription>
                         { challengeSettings.showTags && showTags(challenge.tags) }
                     </CardDescription>
@@ -220,26 +220,26 @@ function Challenge({
                                 { showTitle(challenge.title) }
                                 { showCategory(challenge.category) }
                             </>
-                            { canEdit && showControls()}
+                            { canEdit && showControls(auth, challengeProp)}
                         </div>
                         { challenge.tags && showTags(challenge.tags) }
                         { challenge.hidden && showHidden() }
                     </DialogTitle>
-                    <div className="flex justify-end space-x-2">
+                    <div className="flex justify-between space-x-2">
                         { showSolves(challenge.solves) }
                         { challenge.authors && showAuthors(challenge.authors) }
                     </div>
                     <DialogDescription>{ challenge.description }</DialogDescription>
                     <DialogClose />
                 </DialogHeader>
-                { challenge.remote &&  getRemote(challenge.remote) }
+                { !challenge.instanced ? challenge.remote &&  getRemote(challenge.remote) : null }
                 { challenge.attatchments && getAttatchments(challenge.attatchments) }
                 <DialogFooter>
                     { challenge.solved ? 
                         <span className="flex text-green-500 font-semibold align-middle justify-center w-full">
                             Challenge Solved
                         </span>
-                    : FlagSubmit() }
+                    : FlagSubmit(challengeProp) }
                 </DialogFooter>
             </DialogContent>
         </Dialog>

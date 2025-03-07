@@ -1,5 +1,5 @@
 import { Categories } from "@/components/categories"
-import { UpdateChallenge } from "@/components/updateChallenge";
+import { CreateChallenge } from "@/components/createChallenge";
 import { useState, useEffect, useContext } from "react";
 import { getChallenges, getCategories } from "@/lib/backend-interaction";
 import SettingContext from "@/context/SettingsProvider";
@@ -40,7 +40,7 @@ export function Challenges() {
         )}
         { canPost && (
             <div className="flex justify-end">
-                <UpdateChallenge/>
+                <CreateChallenge/>
             </div>
         )}
         <Categories challenges={challenges} categories={categories} />

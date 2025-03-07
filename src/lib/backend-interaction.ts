@@ -1,3 +1,5 @@
+import { time } from "console";
+
 export async function getChallenges(){
     const mockChallenges = [
         {
@@ -15,6 +17,8 @@ export async function getChallenges(){
                 attachments: [],
                 authors: ["author1"],
                 hidden: true,
+                instanced: false,
+                timeout: undefined,
             },
         },
         {
@@ -32,6 +36,8 @@ export async function getChallenges(){
                 attachments: [],
                 authors: ["author2"],
                 hidden: false,
+                instanced: false,
+                timeout: undefined,
             }
         },
         {
@@ -50,6 +56,8 @@ export async function getChallenges(){
                 attachments: [],
                 authors: ["author1"],
                 hidden: false,
+                instanced: true,
+                timeout: undefined,
             }
         },
         {   
@@ -67,6 +75,8 @@ export async function getChallenges(){
             attachments: [],
             authors: ["admin","author2"],
             hidden: false,
+            instanced: true,
+            timeout: new Date(Date.now() + 5 * 60 * 1000),
             }
         },
         {challenge:{
@@ -83,11 +93,11 @@ export async function getChallenges(){
             attachments: [],
             authors: ["author2"],
             hidden: false,
+            instanced: true,
+            timeout: undefined,
         }},
         {challenge:{
             id : 6,
-            title: 'Challenge 6',
-            description: 'This is the sixth challenge',
             points: 100,
             solves: 0,
             category: 'Misc',
@@ -97,7 +107,8 @@ export async function getChallenges(){
             solved: false,
             attachments: [],
             authors: ["author1,author2"],
-            hidden: false
+            hidden: false,
+            instanced: true,
         }},
         {challenge:{
             id : 7,
@@ -112,7 +123,9 @@ export async function getChallenges(){
             solved: false,
             attachments: [],
             authors: ["author1,author2"],
-            hidden: false
+            hidden: false,
+            instanced: true,
+            timeout: undefined,
         }},
         {challenge:{
             id : 8,
@@ -127,7 +140,9 @@ export async function getChallenges(){
             solved: false,
             attachments: [],
             authors: ["author1, author2"],
-            hidden: false
+            hidden: false,
+            instanced: true,
+            timeout: undefined,
         }},
         {challenge:{
             id : 9,
@@ -142,7 +157,9 @@ export async function getChallenges(){
             solved: false,
             attachments: [],
             authors: ["author1"],
-            hidden: false
+            hidden: false,
+            instanced: true,
+            timeout: undefined,
         }},
         {challenge:{
             id : 10,
@@ -157,7 +174,9 @@ export async function getChallenges(){
             solved: false,
             attachments: [],
             authors: ["admin"],
-            hidden: false
+            hidden: false,
+            instanced: true,
+            timeout: undefined,
         }}
     
     ];

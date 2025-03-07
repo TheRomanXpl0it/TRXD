@@ -2,6 +2,7 @@ import { displayChallenges, ChallengeProps } from './challenge'
 import React, { useContext } from 'react';
 import SettingContext from '@/context/SettingsProvider';
 import AuthContext from '@/context/AuthProvider';
+import { AuthProps } from '@/context/AuthProvider';
 
 interface CategoriesProps {
     challenges: ChallengeProps[];
@@ -20,12 +21,7 @@ function displayCategory(
         description: string;
         type: BooleanConstructor;
     }[],
-    auth: {
-        username: string;
-        password: string;
-        accessToken: string;
-        roles: string[];
-    }
+    auth: AuthProps
     ) {
     challenges = challengeByCategory(challenges, category);
 
