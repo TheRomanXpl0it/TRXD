@@ -1,22 +1,27 @@
 
 insert into configs (key, type, value) values ('chall-min-points', 'int', '100');
-insert into configs (key, type, value) values ('chall-points-decay', 'int', '10');
+insert into configs (key, type, value) values ('chall-points-decay', 'int', '5');
 insert into categories (name, icon) values ('test', 'test');
-insert into challenges (name, category, description, type, max_points, score_type, points) values ('chall', 'test', 'TEST', 'N', 500, 'D', 500);
-insert into challenges (name, category, description, type, max_points, score_type, points) values ('chall2', 'test', 'TEST', 'N', 500, 'D', 500);
-insert into challenges (name, category, description, type, max_points, score_type, points) values ('chall3', 'test', 'TEST', 'N', 500, 'D', 500);
+insert into challenges (name, category, description, type, max_points, score_type, points, hidden) values ('chall', 'test', 'TEST', 'N', 500, 'D', 500, false);
+insert into challenges (name, category, description, type, max_points, score_type, points, hidden) values ('chall2', 'test', 'TEST', 'N', 500, 'D', 500, false);
+insert into challenges (name, category, description, type, max_points, score_type, points, hidden) values ('chall3', 'test', 'TEST', 'N', 500, 'D', 500, false);
 insert into teams (name, password_hash) values ('A', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
 insert into teams (name, password_hash) values ('B', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
 insert into teams (name, password_hash) values ('C', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
 insert into users (name, email, password_hash, role, team_id) values ('a', 'a@a', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'P', 1);
 insert into users (name, email, password_hash, role, team_id) values ('b', 'b@b', 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'P', 1);
 insert into users (name, email, password_hash, role, team_id) values ('c', 'c@c', 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc', 'P', 2);
-insert into users (name, email, password_hash, role) values ('d', 'd@d', 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', 'M');
-insert into users (name, email, password_hash, role) values ('e', 'e@e', 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc', 'P');
+insert into users (name, email, password_hash, role) values ('d', 'd@d', 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc', 'P');
+insert into users (name, email, password_hash, role, team_id) values ('h', 'h@h', 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', 'M', 1);
+insert into users (name, email, password_hash, role, team_id) values ('f', 'f@f', 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', 'A', 3);
 
 insert into submissions (user_id, chall_id, status, flag) values (1, (select id from challenges where name='chall'), 'C', 'flag');
 insert into submissions (user_id, chall_id, status, flag) values (2, (select id from challenges where name='chall2'), 'C', 'flag');
+insert into submissions (user_id, chall_id, status, flag) values (2, (select id from challenges where name='chall3'), 'C', 'flag');
 insert into submissions (user_id, chall_id, status, flag) values (3, (select id from challenges where name='chall2'), 'C', 'flag');
+insert into submissions (user_id, chall_id, status, flag) values (4, (select id from challenges where name='chall'), 'C', 'flag');
+insert into submissions (user_id, chall_id, status, flag) values (5, (select id from challenges where name='chall'), 'C', 'flag');
+insert into submissions (user_id, chall_id, status, flag) values (6, (select id from challenges where name='chall'), 'C', 'flag');
 
 delete from categories;
 delete from challenges;
@@ -27,7 +32,7 @@ delete from challenges where name = 'chall3';
 
 select id, name, score, team_id from users;
 select id, name, score from teams;
-select id, name, max_points, points, solves from challenges;
+select id, name, max_points, points, solves, hidden from challenges;
 select * from badges;
 select * from submissions;
 select * from categories;
@@ -38,6 +43,7 @@ update team_category_solves set solves=0;
 update challenges set max_points=500;
 update challenges set solves=0;
 update users set score=0;
+update challenges set hidden=true where name='chall3';
 update configs set value='100' where key='chall-min-points';
 update configs set value='5' where key='chall-points-decay';
 

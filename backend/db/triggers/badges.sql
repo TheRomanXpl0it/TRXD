@@ -3,19 +3,21 @@
 CREATE OR REPLACE FUNCTION fn_badges_handler(category VARCHAR, team INTEGER, category_solves INTEGER)
 RETURNS VOID AS $$
 DECLARE
-	challs INTEGER;
+  challs INTEGER;
 BEGIN
-	SELECT categories.visible_challs INTO challs
-		FROM categories
-		WHERE categories.name = category;
-	IF category_solves >= challs THEN
-		INSERT INTO badges (name, description, team_id)
-			VALUES (category, 'Completed all challenges', team);
-	ELSE
-		DELETE FROM badges
-			WHERE name = category
-				AND team_id = team;
-	END IF;
+  SELECT categories.visible_challs INTO challs
+    FROM categories
+    WHERE categories.name = category;
+  IF category_solves >= challs THEN
+    IF NOT EXISTS(SELECT 1 FROM badges WHERE name = category AND team_id = team) THEN
+      INSERT INTO badges (name, description, team_id)
+        VALUES (category, 'Completed all challenges', team);
+    END IF;
+  ELSE
+    DELETE FROM badges
+      WHERE name = category
+        AND team_id = team;
+  END IF;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -25,19 +27,22 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION fn_badges_solve_insert()
 RETURNS TRIGGER AS $$
 DECLARE
-	team INTEGER;
-	category_name TEXT;
+  team INTEGER;
+  category_name VARCHAR;
 BEGIN
-	SELECT users.team_id, challenges.category
-		INTO team, category_name
-		FROM users
-		JOIN challenges ON challenges.id = NEW.chall_id
-		WHERE users.id = NEW.user_id;
-	UPDATE team_category_solves
-		SET solves = solves + 1
-		WHERE team_id = team
-			AND category = category_name;
-	RETURN NEW;
+  IF (SELECT role FROM users WHERE users.id = NEW.user_id) != 'P' THEN
+    RETURN NEW;
+  END IF;
+  SELECT users.team_id, challenges.category
+    INTO team, category_name
+    FROM users
+    JOIN challenges ON challenges.id = NEW.chall_id
+    WHERE users.id = NEW.user_id;
+  UPDATE team_category_solves
+    SET solves = solves + 1
+    WHERE team_id = team
+      AND category = category_name;
+  RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -53,19 +58,22 @@ EXECUTE FUNCTION fn_badges_solve_insert();
 CREATE OR REPLACE FUNCTION fn_badges_solve_del()
 RETURNS TRIGGER AS $$
 DECLARE
-	team INTEGER;
-	category_name TEXT;
+  team INTEGER;
+  category_name VARCHAR;
 BEGIN
-	SELECT users.team_id, challenges.category
-		INTO team, category_name
-		FROM users
-		JOIN challenges ON challenges.id = OLD.chall_id
-		WHERE users.id = OLD.user_id;
-	UPDATE team_category_solves
-		SET solves = solves - 1
-		WHERE team_id = team
-			AND category = category_name;
-	RETURN OLD;
+  IF (SELECT role FROM users WHERE users.id = OLD.user_id) != 'P' THEN
+    RETURN OLD;
+  END IF;
+  SELECT users.team_id, challenges.category
+    INTO team, category_name
+    FROM users
+    JOIN challenges ON challenges.id = OLD.chall_id
+    WHERE users.id = OLD.user_id;
+  UPDATE team_category_solves
+    SET solves = solves - 1
+    WHERE team_id = team
+      AND category = category_name;
+  RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -76,14 +84,40 @@ WHEN (OLD.status = 'C')
 EXECUTE FUNCTION fn_badges_solve_del();
 
 
+-- tr_badges_chall_del
+
+CREATE OR REPLACE FUNCTION fn_badges_chall_del()
+RETURNS TRIGGER AS $$
+DECLARE
+  team INTEGER;
+BEGIN
+  UPDATE team_category_solves
+    SET solves = solves - 1
+    FROM users, submissions
+    WHERE team_category_solves.category = OLD.category
+      AND team_category_solves.team_id = users.team_id
+      AND users.role = 'P'
+      AND submissions.user_id = users.id
+      AND submissions.chall_id = OLD.id
+      AND submissions.status = 'C';
+  RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tr_badges_chall_del
+BEFORE DELETE ON challenges
+FOR EACH ROW
+EXECUTE FUNCTION fn_badges_chall_del();
+
+
 -- tr_badges_add_and_del
 
 CREATE OR REPLACE FUNCTION fn_badges_add_and_del()
 RETURNS TRIGGER AS $$
 DECLARE
 BEGIN
-	PERFORM fn_badges_handler(NEW.category, NEW.team_id, NEW.solves);
-	RETURN NEW;
+  PERFORM fn_badges_handler(NEW.category, NEW.team_id, NEW.solves);
+  RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -99,14 +133,14 @@ EXECUTE FUNCTION fn_badges_add_and_del();
 CREATE OR REPLACE FUNCTION fn_badges_recompute()
 RETURNS TRIGGER AS $$
 DECLARE
-	team INTEGER;
-	category_solves INTEGER;
+  team INTEGER;
+  category_solves INTEGER;
 BEGIN
-	FOR team, category_solves IN (SELECT team_id, solves FROM team_category_solves WHERE category = NEW.name)
-	LOOP
-		PERFORM fn_badges_handler(NEW.name, team, category_solves);
-	END LOOP;
-	RETURN NEW;
+  FOR team, category_solves IN (SELECT team_id, solves FROM team_category_solves WHERE category = NEW.name)
+  LOOP
+    PERFORM fn_badges_handler(NEW.name, team, category_solves);
+  END LOOP;
+  RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 

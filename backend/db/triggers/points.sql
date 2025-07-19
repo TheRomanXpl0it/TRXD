@@ -1,30 +1,30 @@
 -- utils
 
 CREATE OR REPLACE FUNCTION fn_compute_chall_points(
-	min_points INTEGER, decay REAL, chall_max_points INTEGER, chall_solves INTEGER)
+  min_points INTEGER, decay REAL, chall_max_points INTEGER, chall_solves INTEGER)
 RETURNS INTEGER AS $$
 BEGIN
-	IF chall_max_points <= min_points THEN
-		RETURN chall_max_points;
-	END IF;
-	RETURN GREATEST(
-		min_points,
-		CAST((chall_max_points + (min_points - chall_max_points) / (decay ^ 2) *
-		(CASE WHEN chall_solves > 0 THEN (chall_solves - 1) ^ 2 ELSE 0 END)) AS INT)
-  	);
+  IF chall_max_points <= min_points THEN
+    RETURN chall_max_points;
+  END IF;
+  RETURN GREATEST(
+    min_points,
+    CAST((chall_max_points + (min_points - chall_max_points) / (decay ^ 2) *
+    (CASE WHEN chall_solves > 0 THEN (chall_solves - 1) ^ 2 ELSE 0 END)) AS INT)
+    );
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION fn_points_propagate_points(diff INTEGER, chall_id INTEGER)
 RETURNS VOID AS $$
 BEGIN
-	UPDATE users
-		SET score = score - diff
-		FROM submissions
-		WHERE submissions.chall_id = fn_points_propagate_points.chall_id
-			AND submissions.status = 'C'
-			AND users.id = submissions.user_id
-			AND users.role = 'P';
+  UPDATE users
+    SET score = score - diff
+    FROM submissions
+    WHERE submissions.chall_id = fn_points_propagate_points.chall_id
+      AND submissions.status = 'C'
+      AND users.id = submissions.user_id
+      AND users.role = 'P';
 END;
 $$ LANGUAGE plpgsql;
 
@@ -34,17 +34,18 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION fn_points_add_solve()
 RETURNS TRIGGER AS $$
 BEGIN
-	IF (SELECT role FROM users WHERE users.id = NEW.user_id) = 'P' THEN
-		UPDATE users
-			SET score = score + challenges.points
-			FROM challenges
-			WHERE challenges.id = NEW.chall_id
-				AND users.id = NEW.user_id;
-		UPDATE challenges
-			SET solves = solves + 1
-			WHERE id = NEW.chall_id;
-	END IF;
-	RETURN NEW;
+  IF (SELECT role FROM users WHERE users.id = NEW.user_id) != 'P' THEN
+    RETURN NEW;
+  END IF;
+  UPDATE users
+    SET score = score + challenges.points
+    FROM challenges
+    WHERE challenges.id = NEW.chall_id
+      AND users.id = NEW.user_id;
+  UPDATE challenges
+    SET solves = solves + 1
+    WHERE id = NEW.chall_id;
+  RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -60,17 +61,18 @@ EXECUTE FUNCTION fn_points_add_solve();
 CREATE OR REPLACE FUNCTION fn_points_del_solve()
 RETURNS TRIGGER AS $$
 BEGIN
-	IF (SELECT role FROM users WHERE users.id = OLD.user_id) = 'P' THEN
-		UPDATE challenges
-			SET solves = solves - 1
-			WHERE id = OLD.chall_id;
-		UPDATE users
-			SET score = score - challenges.points
-			FROM challenges
-			WHERE challenges.id = OLD.chall_id
-				AND users.id = OLD.user_id;
-	END IF;
-	RETURN OLD;
+  IF (SELECT role FROM users WHERE users.id = OLD.user_id) != 'P' THEN
+    RETURN OLD;
+  END IF;
+  UPDATE challenges
+    SET solves = solves - 1
+    WHERE id = OLD.chall_id;
+  UPDATE users
+    SET score = score - challenges.points
+    FROM challenges
+    WHERE challenges.id = OLD.chall_id
+      AND users.id = OLD.user_id;
+  RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -86,13 +88,13 @@ EXECUTE FUNCTION fn_points_del_solve();
 CREATE OR REPLACE FUNCTION fn_points_chall_update()
 RETURNS TRIGGER AS $$
 DECLARE
-	min_points INTEGER;
-	decay REAL;
+  min_points INTEGER;
+  decay REAL;
 BEGIN
-	min_points = CAST((SELECT value FROM configs WHERE key = 'chall-min-points') AS INT);
-	decay = CAST((SELECT value FROM configs WHERE key = 'chall-points-decay') AS REAL);
-	NEW.points = fn_compute_chall_points(min_points, decay, NEW.max_points, NEW.solves);
-	RETURN NEW;
+  min_points = CAST((SELECT value FROM configs WHERE key = 'chall-min-points') AS INT);
+  decay = CAST((SELECT value FROM configs WHERE key = 'chall-points-decay') AS REAL);
+  NEW.points = fn_compute_chall_points(min_points, decay, NEW.max_points, NEW.solves);
+  RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -108,14 +110,14 @@ EXECUTE FUNCTION fn_points_chall_update();
 CREATE OR REPLACE FUNCTION fn_points_propagate_config()
 RETURNS TRIGGER AS $$
 DECLARE
-	min_points INTEGER;
-	decay REAL;
+  min_points INTEGER;
+  decay REAL;
 BEGIN
-	min_points = CAST((SELECT value FROM configs WHERE key = 'chall-min-points') AS INT);
-	decay = CAST((SELECT value FROM configs WHERE key = 'chall-points-decay') AS REAL);
-	UPDATE challenges
-		SET points = fn_compute_chall_points(min_points, decay, max_points, solves);
-	RETURN NEW;
+  min_points = CAST((SELECT value FROM configs WHERE key = 'chall-min-points') AS INT);
+  decay = CAST((SELECT value FROM configs WHERE key = 'chall-points-decay') AS REAL);
+  UPDATE challenges
+    SET points = fn_compute_chall_points(min_points, decay, max_points, solves);
+  RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -129,8 +131,8 @@ EXECUTE FUNCTION fn_points_propagate_config();
 CREATE OR REPLACE FUNCTION fn_points_chall_del()
 RETURNS TRIGGER AS $$
 BEGIN
-	PERFORM fn_points_propagate_points(OLD.points, OLD.id);
-	RETURN OLD;
+  PERFORM fn_points_propagate_points(OLD.points, OLD.id);
+  RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -145,8 +147,8 @@ EXECUTE FUNCTION fn_points_chall_del();
 CREATE OR REPLACE FUNCTION fn_points_propagate_chall()
 RETURNS TRIGGER AS $$
 BEGIN
-	PERFORM fn_points_propagate_points(OLD.points - NEW.points, OLD.id);
-	RETURN NEW;
+  PERFORM fn_points_propagate_points(OLD.points - NEW.points, OLD.id);
+  RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -162,13 +164,13 @@ EXECUTE FUNCTION fn_points_propagate_chall();
 CREATE OR REPLACE FUNCTION fn_points_propagate_user()
 RETURNS TRIGGER AS $$
 DECLARE
-	diff INTEGER;
+  diff INTEGER;
 BEGIN
-	diff = NEW.score - OLD.score;
-	UPDATE teams
-		SET score = score + diff
-		WHERE teams.id = NEW.team_id;
-	RETURN NEW;
+  diff = NEW.score - OLD.score;
+  UPDATE teams
+    SET score = score + diff
+    WHERE teams.id = NEW.team_id;
+  RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
