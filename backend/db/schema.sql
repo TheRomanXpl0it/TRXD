@@ -78,9 +78,18 @@ CREATE TABLE IF NOT EXISTS badges (
 
 CREATE TABLE IF NOT EXISTS categories (
 	name short_name NOT NULL,
-	chall_count INTEGER NOT NULL DEFAULT 0,
+	chall_count INTEGER NOT NULL DEFAULT 0, -- TODO: rename field (counter only for visible challenges)
 	icon short_name NOT NULL,
 	PRIMARY KEY(name)
+);
+
+CREATE TABLE IF NOT EXISTS team_category_solves (
+	team_id INTEGER NOT NULL,
+	category short_name NOT NULL,
+	solves INTEGER NOT NULL DEFAULT 0,
+	PRIMARY KEY (team_id, category),
+	FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE,
+	FOREIGN KEY (category) REFERENCES categories(name) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS challenges (
