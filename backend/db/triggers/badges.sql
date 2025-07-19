@@ -1,3 +1,25 @@
+-- utils
+
+CREATE OR REPLACE FUNCTION fn_badges_handler(category VARCHAR, team INTEGER, category_solves INTEGER)
+RETURNS VOID AS $$
+DECLARE
+	challs INTEGER;
+BEGIN
+	SELECT categories.visible_challs INTO challs
+		FROM categories
+		WHERE categories.name = category;
+	IF category_solves >= challs THEN
+		INSERT INTO badges (name, description, team_id)
+			VALUES (category, 'Completed all challenges', team);
+	ELSE
+		DELETE FROM badges
+			WHERE name = category
+				AND team_id = team;
+	END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+
 -- tr_badges_solve_insert
 
 CREATE OR REPLACE FUNCTION fn_badges_solve_insert()
@@ -59,19 +81,8 @@ EXECUTE FUNCTION fn_badges_solve_del();
 CREATE OR REPLACE FUNCTION fn_badges_add_and_del()
 RETURNS TRIGGER AS $$
 DECLARE
-	challs INTEGER;
 BEGIN
-	SELECT categories.chall_count INTO challs
-		FROM categories
-		WHERE categories.name = NEW.category;
-	IF NEW.solves >= challs THEN
-		INSERT INTO badges (name, description, team_id)
-			VALUES (NEW.category, 'Completed all challenges', NEW.team_id);
-	ELSE
-		DELETE FROM badges
-			WHERE name = NEW.category
-				AND team_id = NEW.team_id;
-	END IF;
+	PERFORM fn_badges_handler(NEW.category, NEW.team_id, NEW.solves);
 	RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -89,22 +100,11 @@ CREATE OR REPLACE FUNCTION fn_badges_recompute()
 RETURNS TRIGGER AS $$
 DECLARE
 	team INTEGER;
-	challs INTEGER;
 	category_solves INTEGER;
 BEGIN
 	FOR team, category_solves IN (SELECT team_id, solves FROM team_category_solves WHERE category = NEW.name)
 	LOOP
-		SELECT chall_count INTO challs
-			FROM categories
-			WHERE categories.name = NEW.name;
-		IF category_solves >= challs THEN
-			INSERT INTO badges (name, description, team_id)
-				VALUES (NEW.name, 'Completed all challenges', team);
-		ELSE
-			DELETE FROM badges
-				WHERE name = NEW.name
-					AND team_id = team;
-		END IF;
+		PERFORM fn_badges_handler(NEW.name, team, category_solves);
 	END LOOP;
 	RETURN NEW;
 END;
@@ -113,5 +113,5 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER tr_badges_recompute
 AFTER UPDATE ON categories
 FOR EACH ROW
-WHEN (NEW.chall_count != OLD.chall_count)
+WHEN (NEW.visible_challs != OLD.visible_challs)
 EXECUTE FUNCTION fn_badges_recompute();

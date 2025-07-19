@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS badges (
 
 CREATE TABLE IF NOT EXISTS categories (
 	name short_name NOT NULL,
-	chall_count INTEGER NOT NULL DEFAULT 0, -- TODO: rename field (counter only for visible challenges)
+	visible_challs INTEGER NOT NULL DEFAULT 0,
 	icon short_name NOT NULL,
 	PRIMARY KEY(name)
 );

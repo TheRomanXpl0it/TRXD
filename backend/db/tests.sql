@@ -25,14 +25,14 @@ delete from badges;
 
 delete from challenges where name = 'chall3';
 
-SELECT id, name, score, team_id FROM users;
-SELECT id, name, score FROM teams;
-SELECT id, name, max_points, points, solves FROM challenges;
+select id, name, score, team_id from users;
+select id, name, score from teams;
+select id, name, max_points, points, solves from challenges;
 select * from badges;
-SELECT * FROM submissions;
+select * from submissions;
 select * from categories;
 select * from team_category_solves;
-SELECT * FROM configs;
+select * from configs;
 
 update team_category_solves set solves=0;
 update challenges set max_points=500;
@@ -43,7 +43,7 @@ update configs set value='5' where key='chall-points-decay';
 
 drop trigger tr_recompute_chall_points on challenges;
 
-SELECT teams.id, teams.name, categories.name, COUNT(DISTINCT submissions.chall_id) >= categories.chall_count
+SELECT teams.id, teams.name, categories.name, COUNT(DISTINCT submissions.chall_id) >= categories.visible_challs
 	FROM submissions
 	JOIN users ON users.id = submissions.user_id
 	JOIN teams ON teams.id = users.team_id

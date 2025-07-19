@@ -31,7 +31,7 @@ $$ LANGUAGE plpgsql;
 
 -- tr_points_add_solve
 
-CREATE OR REPLACE FUNCTION fn_points_add_solve() -- TODO: split this into two triggers
+CREATE OR REPLACE FUNCTION fn_points_add_solve()
 RETURNS TRIGGER AS $$
 BEGIN
 	IF (SELECT role FROM users WHERE users.id = NEW.user_id) = 'P' THEN
@@ -57,7 +57,7 @@ EXECUTE FUNCTION fn_points_add_solve();
 
 -- tr_points_del_solve
 
-CREATE OR REPLACE FUNCTION fn_points_del_solve() -- TODO: split this into two triggers
+CREATE OR REPLACE FUNCTION fn_points_del_solve()
 RETURNS TRIGGER AS $$
 BEGIN
 	IF (SELECT role FROM users WHERE users.id = OLD.user_id) = 'P' THEN

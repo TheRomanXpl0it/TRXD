@@ -4,7 +4,7 @@ CREATE OR REPLACE FUNCTION fn_categories_add_chall()
 RETURNS TRIGGER AS $$
 BEGIN
 	UPDATE categories
-		SET chall_count = chall_count + 1
+		SET visible_challs = visible_challs + 1
 		WHERE name = NEW.category;
 	RETURN NEW;
 END;
@@ -23,7 +23,7 @@ CREATE OR REPLACE FUNCTION fn_categories_del_chall()
 RETURNS TRIGGER AS $$
 BEGIN
 	UPDATE categories
-		SET chall_count = chall_count - 1
+		SET visible_challs = visible_challs - 1
 		WHERE name = OLD.category;
 	RETURN NEW;
 END;
@@ -43,12 +43,12 @@ RETURNS TRIGGER AS $$
 BEGIN
 	IF NEW.hidden = FALSE THEN
 		UPDATE categories
-			SET chall_count = chall_count + 1
+			SET visible_challs = visible_challs + 1
 			WHERE name = NEW.category;
 	END IF;
 	IF OLD.hidden = FALSE THEN
 		UPDATE categories
-			SET chall_count = chall_count - 1
+			SET visible_challs = visible_challs - 1
 			WHERE name = OLD.category;
 	END IF;
 	RETURN NEW;
