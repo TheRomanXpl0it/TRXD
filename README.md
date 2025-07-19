@@ -1,2 +1,2 @@
 # TRXD
-A cutting edge, react-based CTF hosting platform.
+A cutting edge CTF hosting platform.
