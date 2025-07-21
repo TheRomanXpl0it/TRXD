@@ -32,3 +32,19 @@ BEFORE INSERT ON submissions
 FOR EACH ROW
 WHEN (NEW.status = 'C')
 EXECUTE FUNCTION fn_integrity_repeat_solve();
+
+
+-- tr_integrity_chall_default_points
+
+CREATE OR REPLACE FUNCTION fn_integrity_chall_default_points()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.points = NEW.max_points;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tr_integrity_chall_default_points
+BEFORE INSERT ON challenges
+FOR EACH ROW
+EXECUTE FUNCTION fn_integrity_chall_default_points();

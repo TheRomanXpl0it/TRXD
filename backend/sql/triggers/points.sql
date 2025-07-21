@@ -11,7 +11,7 @@ BEGIN
     min_points,
     CAST((chall_max_points + (min_points - chall_max_points) / (decay ^ 2) *
     (CASE WHEN chall_solves > 0 THEN (chall_solves - 1) ^ 2 ELSE 0 END)) AS INT)
-    );
+  );
 END;
 $$ LANGUAGE plpgsql;
 

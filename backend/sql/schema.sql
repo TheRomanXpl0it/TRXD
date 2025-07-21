@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS configs (
 
 CREATE TABLE IF NOT EXISTS teams (
   id SERIAL NOT NULL,
-  name name NOT NULL,
+  name name UNIQUE NOT NULL,
   password_hash bcrypt_hash NOT NULL,
   score INTEGER NOT NULL DEFAULT 0,
   nationality VARCHAR(3),
