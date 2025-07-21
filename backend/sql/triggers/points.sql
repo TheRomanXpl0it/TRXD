@@ -105,6 +105,26 @@ WHEN ((NEW.score_type = 'D' AND NEW.solves != OLD.solves) OR (NEW.max_points != 
 EXECUTE FUNCTION fn_points_chall_update();
 
 
+-- tr_points_chall_update_static
+
+CREATE OR REPLACE FUNCTION fn_points_chall_update_static()
+RETURNS TRIGGER AS $$
+DECLARE
+  min_points INTEGER;
+  decay REAL;
+BEGIN
+  NEW.points = NEW.max_points;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tr_points_chall_update_static
+BEFORE UPDATE ON challenges
+FOR EACH ROW
+WHEN ((OLD.score_type = 'D') AND (NEW.score_type = 'S'))
+EXECUTE FUNCTION fn_points_chall_update_static();
+
+
 -- tr_points_propagate_config
 
 CREATE OR REPLACE FUNCTION fn_points_propagate_config()
