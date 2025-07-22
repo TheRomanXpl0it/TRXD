@@ -39,10 +39,9 @@ SELECT * FROM teams WHERE name = $1;
 -- Retrieve a challenge by its ID
 SELECT * FROM challenges WHERE id = $1;
 
--- name: GetChallengesByCategory :many
--- Retrieve all challenges in a specific category
-SELECT * FROM challenges WHERE category = $1;
-
 -- name: Submit :exec
 -- Insert a new submission
 INSERT INTO submissions (user_id, chall_id, status, flag) VALUES ($1, $2, $3, $4);
+
+-- name: CheckFlags :one
+SELECT BOOL_OR(($1 = flag) OR (regex AND $1 ~ flag)) FROM flags WHERE chall_id = $2;

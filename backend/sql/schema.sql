@@ -1,26 +1,26 @@
 CREATE TYPE user_role AS ENUM (
-  'S', -- Spectator
-  'P', -- Player
-  'A', -- Author
-  'M' -- Master (Admin)
+  'Spectator',
+  'Player',
+  'Author',
+  'Admin'
 );
 
 CREATE TYPE deploy_type AS ENUM (
-  'N', -- Normal
-  'D', -- Docker Instance
-  'C' -- Compose Instance
+  'Normal',
+  'Container',
+  'Compose'
 );
 
 CREATE TYPE score_type AS ENUM (
-  'S', -- Static
-  'D' -- Dynamic (Logarithmic)
+  'Static',
+  'Dynamic'
 );
 
 CREATE TYPE submission_status AS ENUM (
-  'W', -- Wrong
-  'C', -- Correct
-  'R', -- Repeated
-  'I' -- Invalid
+  'Wrong',
+  'Correct',
+  'Repeated',
+  'Invalid'
 );
 
 CREATE DOMAIN name AS VARCHAR(64);
@@ -112,16 +112,21 @@ CREATE TABLE IF NOT EXISTS challenges (
   port port,
   attachments TEXT, -- List of attachments separated by nullbytes
 
+  FOREIGN KEY(category) REFERENCES categories(name),
+  PRIMARY KEY(id)
+);
+
+CREATE TABLE IF NOT EXISTS docker_configs (
+  chall_id INTEGER NOT NULL,
   image TEXT, -- Docker image
   compose TEXT, -- Docker Compose file
-  hash_domain BOOLEAN DEFAULT FALSE, -- Use a hash to generate the domain (e.g., 00112233AABB.example.com)
+  hash_domain BOOLEAN NOT NULL DEFAULT FALSE, -- Use a hash to generate the domain (e.g., 00112233AABB.example.com)
   lifetime INTEGER, -- Lifetime in seconds
   envs TEXT, -- Environment variables in JSON format
   max_memory INTEGER, -- Memory in MB (e.g., '512' for 512 MB)
   max_cpu VARCHAR(16), -- CPUs as float (e.g., '1.5' for 1.5 CPUs)
-
-  FOREIGN KEY(category) REFERENCES categories(name),
-  PRIMARY KEY(id)
+  FOREIGN KEY(chall_id) REFERENCES challenges(id) ON DELETE CASCADE,
+  PRIMARY KEY(chall_id)
 );
 
 CREATE TABLE IF NOT EXISTS flags (

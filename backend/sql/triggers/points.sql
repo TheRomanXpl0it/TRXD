@@ -23,9 +23,9 @@ BEGIN
     SET score = score - diff
     FROM submissions
     WHERE submissions.chall_id = fn_points_propagate_points.chall_id
-      AND submissions.status = 'C'
+      AND submissions.status = 'Correct'
       AND users.id = submissions.user_id
-      AND users.role = 'P';
+      AND users.role = 'Player';
 END;
 $$ LANGUAGE plpgsql;
 
@@ -35,7 +35,7 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION fn_points_add_solve()
 RETURNS TRIGGER AS $$
 BEGIN
-  IF (SELECT role FROM users WHERE id = NEW.user_id) != 'P' THEN
+  IF (SELECT role FROM users WHERE id = NEW.user_id) != 'Player' THEN
     RETURN NEW;
   END IF;
 
@@ -56,7 +56,7 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER tr_points_add_solve
 AFTER INSERT ON submissions
 FOR EACH ROW
-WHEN (NEW.status = 'C')
+WHEN (NEW.status = 'Correct')
 EXECUTE FUNCTION fn_points_add_solve();
 
 
@@ -65,7 +65,7 @@ EXECUTE FUNCTION fn_points_add_solve();
 CREATE OR REPLACE FUNCTION fn_points_del_solve()
 RETURNS TRIGGER AS $$
 BEGIN
-  IF (SELECT role FROM users WHERE id = OLD.user_id) != 'P' THEN
+  IF (SELECT role FROM users WHERE id = OLD.user_id) != 'Player' THEN
     RETURN OLD;
   END IF;
 
@@ -86,7 +86,7 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER tr_points_del_solve
 BEFORE DELETE ON submissions
 FOR EACH ROW
-WHEN (OLD.status = 'C')
+WHEN (OLD.status = 'Correct')
 EXECUTE FUNCTION fn_points_del_solve();
 
 
@@ -108,7 +108,8 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER tr_points_chall_update
 BEFORE UPDATE ON challenges
 FOR EACH ROW
-WHEN ((NEW.score_type = 'D' AND NEW.solves != OLD.solves) OR (NEW.max_points != OLD.max_points))
+WHEN ((NEW.score_type = 'Dynamic') AND 
+  ((NEW.solves != OLD.solves) OR (NEW.max_points != OLD.max_points)))
 EXECUTE FUNCTION fn_points_chall_update();
 
 
@@ -116,9 +117,6 @@ EXECUTE FUNCTION fn_points_chall_update();
 
 CREATE OR REPLACE FUNCTION fn_points_chall_update_static()
 RETURNS TRIGGER AS $$
-DECLARE
-  min_points INTEGER;
-  decay REAL;
 BEGIN
   NEW.points = NEW.max_points;
   RETURN NEW;
@@ -128,7 +126,8 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER tr_points_chall_update_static
 BEFORE UPDATE ON challenges
 FOR EACH ROW
-WHEN ((OLD.score_type = 'D') AND (NEW.score_type = 'S'))
+WHEN (((OLD.score_type = 'Dynamic') AND (NEW.score_type = 'Static'))
+  OR (NEW.score_type = 'Static' AND NEW.max_points != OLD.max_points))
 EXECUTE FUNCTION fn_points_chall_update_static();
 
 
@@ -143,7 +142,8 @@ BEGIN
   min_points = CAST((SELECT value FROM configs WHERE key = 'chall-min-points') AS INT);
   decay = CAST((SELECT value FROM configs WHERE key = 'chall-points-decay') AS REAL);
   UPDATE challenges
-    SET points = fn_compute_chall_points(min_points, decay, max_points, solves);
+    SET points = fn_compute_chall_points(min_points, decay, max_points, solves)
+    WHERE score_type = 'Dynamic';
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -154,6 +154,8 @@ FOR EACH ROW
 WHEN (NEW.key = 'chall-min-points' OR NEW.key = 'chall-points-decay')
 EXECUTE FUNCTION fn_points_propagate_config();
 
+
+-- tr_points_chall_del
 
 CREATE OR REPLACE FUNCTION fn_points_chall_del()
 RETURNS TRIGGER AS $$

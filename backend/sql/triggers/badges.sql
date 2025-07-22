@@ -12,7 +12,7 @@ BEGIN
   IF category_solves >= challs THEN
     IF NOT EXISTS(SELECT 1 FROM badges WHERE name = category AND team_id = team) THEN
       INSERT INTO badges (name, description, team_id)
-        VALUES (category, 'Completed all challenges', team);
+        VALUES (category, 'Completed all ' || category || ' challenges', team);
     END IF;
   ELSE
     DELETE FROM badges
@@ -31,7 +31,7 @@ DECLARE
   team INTEGER;
   category_name VARCHAR;
 BEGIN
-  IF (SELECT role FROM users WHERE id = NEW.user_id) != 'P' THEN
+  IF (SELECT role FROM users WHERE id = NEW.user_id) != 'Player' THEN
     RETURN NEW;
   END IF;
   
@@ -53,7 +53,7 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER tr_badges_solve_insert
 AFTER INSERT ON submissions
 FOR EACH ROW
-WHEN (NEW.status = 'C')
+WHEN (NEW.status = 'Correct')
 EXECUTE FUNCTION fn_badges_solve_insert();
 
 
@@ -65,7 +65,7 @@ DECLARE
   team INTEGER;
   category_name VARCHAR;
 BEGIN
-  IF (SELECT role FROM users WHERE id = OLD.user_id) != 'P' THEN
+  IF (SELECT role FROM users WHERE id = OLD.user_id) != 'Player' THEN
     RETURN OLD;
   END IF;
 
@@ -87,7 +87,7 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER tr_badges_solve_del
 AFTER DELETE ON submissions
 FOR EACH ROW
-WHEN (OLD.status = 'C')
+WHEN (OLD.status = 'Correct')
 EXECUTE FUNCTION fn_badges_solve_del();
 
 
@@ -95,8 +95,6 @@ EXECUTE FUNCTION fn_badges_solve_del();
 
 CREATE OR REPLACE FUNCTION fn_badges_chall_del()
 RETURNS TRIGGER AS $$
-DECLARE
-  team INTEGER;
 BEGIN
   UPDATE team_category_solves
     SET solves = team_category_solves.solves - 1
@@ -105,8 +103,8 @@ BEGIN
       AND submissions.chall_id = OLD.id
     WHERE team_category_solves.category = OLD.category
       AND team_category_solves.team_id = users.team_id
-      AND users.role = 'P'
-      AND submissions.status = 'C';
+      AND users.role = 'Player'
+      AND submissions.status = 'Correct';
   RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;
@@ -121,10 +119,8 @@ EXECUTE FUNCTION fn_badges_chall_del();
 
 CREATE OR REPLACE FUNCTION fn_badges_user_del()
 RETURNS TRIGGER AS $$
-DECLARE
-  team INTEGER;
 BEGIN
-  IF OLD.role != 'P' THEN
+  IF OLD.role != 'Player' THEN
     RETURN OLD;
   END IF;
 
@@ -135,7 +131,7 @@ BEGIN
       AND submissions.user_id = OLD.id
     WHERE team_category_solves.category = challenges.category
       AND team_category_solves.team_id = OLD.team_id
-      AND submissions.status = 'C';
+      AND submissions.status = 'Correct';
 
   RETURN OLD;
 END;
@@ -151,7 +147,6 @@ EXECUTE FUNCTION fn_badges_user_del();
 
 CREATE OR REPLACE FUNCTION fn_badges_add_and_del()
 RETURNS TRIGGER AS $$
-DECLARE
 BEGIN
   PERFORM fn_badges_handler(NEW.category, NEW.team_id, NEW.solves);
   RETURN NEW;
