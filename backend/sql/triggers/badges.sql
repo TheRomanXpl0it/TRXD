@@ -8,6 +8,7 @@ BEGIN
   SELECT categories.visible_challs INTO challs
     FROM categories
     WHERE categories.name = category;
+  
   IF category_solves >= challs THEN
     IF NOT EXISTS(SELECT 1 FROM badges WHERE name = category AND team_id = team) THEN
       INSERT INTO badges (name, description, team_id)
@@ -30,18 +31,21 @@ DECLARE
   team INTEGER;
   category_name VARCHAR;
 BEGIN
-  IF (SELECT role FROM users WHERE users.id = NEW.user_id) != 'P' THEN
+  IF (SELECT role FROM users WHERE id = NEW.user_id) != 'P' THEN
     RETURN NEW;
   END IF;
+  
   SELECT users.team_id, challenges.category
     INTO team, category_name
     FROM users
     JOIN challenges ON challenges.id = NEW.chall_id
     WHERE users.id = NEW.user_id;
+  
   UPDATE team_category_solves
     SET solves = solves + 1
     WHERE team_id = team
       AND category = category_name;
+  
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -61,18 +65,21 @@ DECLARE
   team INTEGER;
   category_name VARCHAR;
 BEGIN
-  IF (SELECT role FROM users WHERE users.id = OLD.user_id) != 'P' THEN
+  IF (SELECT role FROM users WHERE id = OLD.user_id) != 'P' THEN
     RETURN OLD;
   END IF;
+  
   SELECT users.team_id, challenges.category
     INTO team, category_name
     FROM users
     JOIN challenges ON challenges.id = OLD.chall_id
     WHERE users.id = OLD.user_id;
+  
   UPDATE team_category_solves
     SET solves = solves - 1
     WHERE team_id = team
       AND category = category_name;
+  
   RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;
@@ -93,12 +100,12 @@ DECLARE
 BEGIN
   UPDATE team_category_solves
     SET solves = solves - 1
-    FROM users, submissions
+    FROM users
+    JOIN submissions ON submissions.user_id = users.id
+      AND submissions.chall_id = OLD.id
     WHERE team_category_solves.category = OLD.category
       AND team_category_solves.team_id = users.team_id
       AND users.role = 'P'
-      AND submissions.user_id = users.id
-      AND submissions.chall_id = OLD.id
       AND submissions.status = 'C';
   RETURN OLD;
 END;

@@ -7,10 +7,11 @@ BEGIN
   IF chall_max_points <= min_points THEN
     RETURN chall_max_points;
   END IF;
+  
   RETURN GREATEST(
     min_points,
     CAST((chall_max_points + (min_points - chall_max_points) / (decay ^ 2) *
-    (CASE WHEN chall_solves > 0 THEN (chall_solves - 1) ^ 2 ELSE 0 END)) AS INT)
+      (CASE WHEN chall_solves > 0 THEN (chall_solves - 1) ^ 2 ELSE 0 END)) AS INT)
   );
 END;
 $$ LANGUAGE plpgsql;
@@ -34,17 +35,20 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION fn_points_add_solve()
 RETURNS TRIGGER AS $$
 BEGIN
-  IF (SELECT role FROM users WHERE users.id = NEW.user_id) != 'P' THEN
+  IF (SELECT role FROM users WHERE id = NEW.user_id) != 'P' THEN
     RETURN NEW;
   END IF;
+  
   UPDATE users
     SET score = score + challenges.points
     FROM challenges
     WHERE challenges.id = NEW.chall_id
       AND users.id = NEW.user_id;
+  
   UPDATE challenges
     SET solves = solves + 1
     WHERE id = NEW.chall_id;
+  
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -61,17 +65,20 @@ EXECUTE FUNCTION fn_points_add_solve();
 CREATE OR REPLACE FUNCTION fn_points_del_solve()
 RETURNS TRIGGER AS $$
 BEGIN
-  IF (SELECT role FROM users WHERE users.id = OLD.user_id) != 'P' THEN
+  IF (SELECT role FROM users WHERE id = OLD.user_id) != 'P' THEN
     RETURN OLD;
   END IF;
+  
   UPDATE challenges
     SET solves = solves - 1
     WHERE id = OLD.chall_id;
+  
   UPDATE users
     SET score = score - challenges.points
     FROM challenges
     WHERE challenges.id = OLD.chall_id
       AND users.id = OLD.user_id;
+  
   RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;
@@ -189,7 +196,7 @@ BEGIN
   diff = NEW.score - OLD.score;
   UPDATE teams
     SET score = score + diff
-    WHERE teams.id = NEW.team_id;
+    WHERE id = NEW.team_id;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;

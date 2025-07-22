@@ -157,7 +157,7 @@ CREATE TABLE IF NOT EXISTS submissions (
   status submission_status NOT NULL,
   flag TEXT NOT NULL,
   timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY(user_id) REFERENCES users(id),
+  FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY(chall_id) REFERENCES challenges(id) ON DELETE CASCADE,
   PRIMARY KEY(id)
 );
