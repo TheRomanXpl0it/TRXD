@@ -68,18 +68,18 @@ BEGIN
   IF (SELECT role FROM users WHERE id = OLD.user_id) != 'P' THEN
     RETURN OLD;
   END IF;
-  
+
   SELECT users.team_id, challenges.category
     INTO team, category_name
     FROM users
     JOIN challenges ON challenges.id = OLD.chall_id
     WHERE users.id = OLD.user_id;
-  
+
   UPDATE team_category_solves
     SET solves = solves - 1
     WHERE team_id = team
       AND category = category_name;
-  
+
   RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;
@@ -99,7 +99,7 @@ DECLARE
   team INTEGER;
 BEGIN
   UPDATE team_category_solves
-    SET solves = solves - 1
+    SET solves = team_category_solves.solves - 1
     FROM users
     JOIN submissions ON submissions.user_id = users.id
       AND submissions.chall_id = OLD.id
@@ -115,6 +115,36 @@ CREATE TRIGGER tr_badges_chall_del
 BEFORE DELETE ON challenges
 FOR EACH ROW
 EXECUTE FUNCTION fn_badges_chall_del();
+
+
+-- tr_badges_user_del
+
+CREATE OR REPLACE FUNCTION fn_badges_user_del()
+RETURNS TRIGGER AS $$
+DECLARE
+  team INTEGER;
+BEGIN
+  IF OLD.role != 'P' THEN
+    RETURN OLD;
+  END IF;
+
+  UPDATE team_category_solves
+    SET solves = team_category_solves.solves - 1
+    FROM challenges
+    JOIN submissions ON submissions.chall_id = challenges.id
+      AND submissions.user_id = OLD.id
+    WHERE team_category_solves.category = challenges.category
+      AND team_category_solves.team_id = OLD.team_id
+      AND submissions.status = 'C';
+
+  RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tr_badges_user_del
+BEFORE DELETE ON users
+FOR EACH ROW
+EXECUTE FUNCTION fn_badges_user_del();
 
 
 -- tr_badges_add_and_del

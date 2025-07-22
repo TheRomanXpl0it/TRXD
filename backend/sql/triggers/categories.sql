@@ -46,13 +46,13 @@ BEGIN
       SET visible_challs = visible_challs + 1
       WHERE name = NEW.category;
   END IF;
-  
+
   IF OLD.hidden = FALSE THEN
     UPDATE categories
       SET visible_challs = visible_challs - 1
       WHERE name = OLD.category;
   END IF;
-  
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;

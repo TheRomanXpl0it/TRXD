@@ -11,17 +11,17 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION delete_all()
 RETURNS VOID AS $$
 BEGIN
-  delete from submissions;
-  delete from tags;
-  delete from instances;
-  delete from flags;
-  delete from challenges;
-  delete from team_category_solves;
-  delete from categories;
-  delete from badges;
-  delete from users;
-  delete from teams;
-  delete from configs;
+  DELETE FROM submissions;
+  DELETE FROM tags;
+  DELETE FROM instances;
+  DELETE FROM flags;
+  DELETE FROM challenges;
+  DELETE FROM team_category_solves;
+  DELETE FROM categories;
+  DELETE FROM badges;
+  DELETE FROM users;
+  DELETE FROM teams;
+  DELETE FROM configs;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -39,184 +39,238 @@ BEGIN
     C: f (author)
     no-team: d (player)
   */
-  insert into configs (key, type, value) values ('chall-min-points', 'int', '100');
-  insert into configs (key, type, value) values ('chall-points-decay', 'int', '5');
-  insert into categories (name, icon) values ('cat-1', 'cat-1');
-  insert into categories (name, icon) values ('cat-2', 'cat-2');
-  insert into challenges (name, category, description, type, max_points, score_type, hidden) values ('chall-1', 'cat-1', 'TEST', 'N', 500, 'D', false);
-  insert into challenges (name, category, description, type, max_points, score_type, hidden) values ('chall-2', 'cat-2', 'TEST', 'N', 500, 'D', false);
-  insert into challenges (name, category, description, type, max_points, score_type, hidden) values ('chall-3', 'cat-1', 'TEST', 'N', 500, 'D', false);
-  insert into challenges (name, category, description, type, max_points, score_type, hidden) values ('chall-4', 'cat-1', 'TEST', 'N', 500, 'D', false);
-  insert into teams (name, password_hash) values ('A', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
-  insert into teams (name, password_hash) values ('B', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
-  insert into teams (name, password_hash) values ('C', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
-  insert into users (name, email, password_hash, role, team_id) values ('a', 'a@a', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'P', (select id from teams where name='A'));
-  insert into users (name, email, password_hash, role, team_id) values ('b', 'b@b', 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'P', (select id from teams where name='A'));
-  insert into users (name, email, password_hash, role, team_id) values ('c', 'c@c', 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc', 'P', (select id from teams where name='B'));
-  insert into users (name, email, password_hash, role) values ('d', 'd@d', 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', 'P');
-  insert into users (name, email, password_hash, role, team_id) values ('e', 'e@e', 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', 'M', (select id from teams where name='A'));
-  insert into users (name, email, password_hash, role, team_id) values ('f', 'f@f', 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 'A', (select id from teams where name='C'));
+  INSERT INTO configs (key, type, value) VALUES ('chall-min-points', 'int', '100');
+  INSERT INTO configs (key, type, value) VALUES ('chall-points-decay', 'int', '5');
+  INSERT INTO categories (name, icon) VALUES ('cat-1', 'cat-1');
+  INSERT INTO categories (name, icon) VALUES ('cat-2', 'cat-2');
+  INSERT INTO challenges (name, category, description, type, max_points, score_type, hidden) VALUES ('chall-1', 'cat-1', 'TEST', 'N', 500, 'D', false);
+  INSERT INTO challenges (name, category, description, type, max_points, score_type, hidden) VALUES ('chall-2', 'cat-2', 'TEST', 'N', 500, 'D', false);
+  INSERT INTO challenges (name, category, description, type, max_points, score_type, hidden) VALUES ('chall-3', 'cat-1', 'TEST', 'N', 500, 'D', false);
+  INSERT INTO challenges (name, category, description, type, max_points, score_type, hidden) VALUES ('chall-4', 'cat-1', 'TEST', 'N', 500, 'D', false);
+  INSERT INTO teams (name, password_hash) VALUES ('A', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+  INSERT INTO teams (name, password_hash) VALUES ('B', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+  INSERT INTO teams (name, password_hash) VALUES ('C', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+  INSERT INTO users (name, email, password_hash, role, team_id) VALUES ('a', 'a@a', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'P', (SELECT id FROM teams WHERE name='A'));
+  INSERT INTO users (name, email, password_hash, role, team_id) VALUES ('b', 'b@b', 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'P', (SELECT id FROM teams WHERE name='A'));
+  INSERT INTO users (name, email, password_hash, role, team_id) VALUES ('c', 'c@c', 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc', 'P', (SELECT id FROM teams WHERE name='B'));
+  INSERT INTO users (name, email, password_hash, role) VALUES ('d', 'd@d', 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', 'P');
+  INSERT INTO users (name, email, password_hash, role, team_id) VALUES ('e', 'e@e', 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', 'M', (SELECT id FROM teams WHERE name='A'));
+  INSERT INTO users (name, email, password_hash, role, team_id) VALUES ('f', 'f@f', 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 'A', (SELECT id FROM teams WHERE name='C'));
 END;
 $$ LANGUAGE plpgsql;
 
 
-CREATE OR REPLACE FUNCTION test()
+CREATE OR REPLACE FUNCTION tests()
 RETURNS VOID AS $$
 DECLARE
   tmp INTEGER;
 BEGIN
-  perform delete_all();
-  perform insert_base_data();
+  PERFORM delete_all();
+  PERFORM insert_base_data();
 
   -- insert a wrong submission from 'a' to 'chal-1'
-  insert into submissions (user_id, chall_id, status, flag) values ((select id from users where name='a'), (select id from challenges where name='chall-1'), 'W', 'flag');
-  perform assert(count(b)=0) from badges b;
-  perform assert(count(s)=1) from submissions s where s.status='W';
-  perform assert(c.solves=0) from challenges c where c.name='chall-1';
-  perform assert(c.points=c.max_points) from challenges c where c.name='chall-1';
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='a'),
+    (SELECT id FROM challenges WHERE name='chall-1'),
+    'W', 'flag');
+  PERFORM assert(COUNT(b)=0) FROM badges b;
+  PERFORM assert(COUNT(s)=1) FROM submissions s WHERE s.status='W';
+  PERFORM assert(c.solves=0) FROM challenges c WHERE c.name='chall-1';
+  PERFORM assert(c.points=c.max_points) FROM challenges c WHERE c.name='chall-1';
 
   -- insert a repeated submission from 'a' to 'chal-1'
-  insert into submissions (user_id, chall_id, status, flag) values ((select id from users where name='a'), (select id from challenges where name='chall-1'), 'R', 'flag');
-  perform assert(count(b)=0) from badges b;
-  perform assert(count(s)=1) from submissions s where s.status='R';
-  perform assert(c.solves=0) from challenges c where c.name='chall-1';
-  perform assert(c.points=c.max_points) from challenges c where c.name='chall-1';
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='a'),
+    (SELECT id FROM challenges WHERE name='chall-1'),
+    'R', 'flag');
+  PERFORM assert(COUNT(b)=0) FROM badges b;
+  PERFORM assert(COUNT(s)=1) FROM submissions s WHERE s.status='R';
+  PERFORM assert(c.solves=0) FROM challenges c WHERE c.name='chall-1';
+  PERFORM assert(c.points=c.max_points) FROM challenges c WHERE c.name='chall-1';
 
   -- insert a valid submission from 'a' to 'chal-1'
-  insert into submissions (user_id, chall_id, status, flag) values ((select id from users where name='a'), (select id from challenges where name='chall-1'), 'C', 'flag');
-  perform assert(count(b)=0) from badges b;
-  perform assert(count(s)=1) from submissions s where s.status='C';
-  perform assert(c.solves=1) from challenges c where c.name='chall-1';
-  perform assert(c.points=c.max_points) from challenges c where c.name='chall-1';
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='a'),
+    (SELECT id FROM challenges WHERE name='chall-1'),
+    'C', 'flag');
+  PERFORM assert(COUNT(b)=0) FROM badges b;
+  PERFORM assert(COUNT(s)=1) FROM submissions s WHERE s.status='C';
+  PERFORM assert(c.solves=1) FROM challenges c WHERE c.name='chall-1';
+  PERFORM assert(c.points=c.max_points) FROM challenges c WHERE c.name='chall-1';
   
   -- insert a valid submission from 'a' to 'chal-3'
-  insert into submissions (user_id, chall_id, status, flag) values ((select id from users where name='a'), (select id from challenges where name='chall-3'), 'C', 'flag');
-  perform assert(count(b)=0) from badges b;
-  perform assert(count(s)=2) from submissions s where s.status='C';
-  perform assert(c.solves=1) from challenges c where c.name='chall-3';
-  perform assert(c.points=c.max_points) from challenges c where c.name='chall-3';
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='a'),
+    (SELECT id FROM challenges WHERE name='chall-3'),
+    'C', 'flag');
+  PERFORM assert(COUNT(b)=0) FROM badges b;
+  PERFORM assert(COUNT(s)=2) FROM submissions s WHERE s.status='C';
+  PERFORM assert(c.solves=1) FROM challenges c WHERE c.name='chall-3';
+  PERFORM assert(c.points=c.max_points) FROM challenges c WHERE c.name='chall-3';
 
   -- insert a valid submission from 'a' to 'chal-4' (should give also a badge)
-  insert into submissions (user_id, chall_id, status, flag) values ((select id from users where name='a'), (select id from challenges where name='chall-4'), 'C', 'flag');
-  perform assert(count(b)=1) from badges b;
-  perform assert(count(s)=3) from submissions s where s.status='C';
-  perform assert(c.solves=1) from challenges c where c.name='chall-4';
-  perform assert(c.points=c.max_points) from challenges c where c.name='chall-4';
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='a'),
+    (SELECT id FROM challenges WHERE name='chall-4'),
+    'C', 'flag');
+  PERFORM assert(COUNT(b)=1) FROM badges b;
+  PERFORM assert(COUNT(s)=3) FROM submissions s WHERE s.status='C';
+  PERFORM assert(c.solves=1) FROM challenges c WHERE c.name='chall-4';
+  PERFORM assert(c.points=c.max_points) FROM challenges c WHERE c.name='chall-4';
   
   -- insert a valid submission from 'a' to 'chal-1' but it's repeated
-  insert into submissions (user_id, chall_id, status, flag) values ((select id from users where name='a'), (select id from challenges where name='chall-1'), 'C', 'flag');
-  perform assert(count(b)=1) from badges b;
-  perform assert(count(s)=2) from submissions s where s.status='R';
-  perform assert(c.solves=1) from challenges c where c.name='chall-1';
-  perform assert(c.points=c.max_points) from challenges c where c.name='chall-1';
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='a'),
+    (SELECT id FROM challenges WHERE name='chall-1'),
+    'C', 'flag');
+  PERFORM assert(COUNT(b)=1) FROM badges b;
+  PERFORM assert(COUNT(s)=2) FROM submissions s WHERE s.status='R';
+  PERFORM assert(c.solves=1) FROM challenges c WHERE c.name='chall-1';
+  PERFORM assert(c.points=c.max_points) FROM challenges c WHERE c.name='chall-1';
 
   -- insert a valid submission from 'b' to 'chal-3' but it's already solved by 'a' (its teammate)
-  insert into submissions (user_id, chall_id, status, flag) values ((select id from users where name='b'), (select id from challenges where name='chall-3'), 'C', 'flag');
-  perform assert(count(b)=1) from badges b;
-  perform assert(count(s)=3) from submissions s where s.status='R';
-  perform assert(c.solves=1) from challenges c where c.name='chall-3';
-  perform assert(c.points=c.max_points) from challenges c where c.name='chall-3';
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='b'),
+    (SELECT id FROM challenges WHERE name='chall-3'),
+    'C', 'flag');
+  PERFORM assert(COUNT(b)=1) FROM badges b;
+  PERFORM assert(COUNT(s)=3) FROM submissions s WHERE s.status='R';
+  PERFORM assert(c.solves=1) FROM challenges c WHERE c.name='chall-3';
+  PERFORM assert(c.points=c.max_points) FROM challenges c WHERE c.name='chall-3';
 
   -- insert a valid submission from 'c' to 'chal-4'
-  insert into submissions (user_id, chall_id, status, flag) values ((select id from users where name='c'), (select id from challenges where name='chall-4'), 'C', 'flag');
-  perform assert(count(b)=1) from badges b;
-  perform assert(count(s)=4) from submissions s where s.status='C';
-  perform assert(c.solves=2) from challenges c where c.name='chall-4';
-  perform assert(c.points<c.max_points) from challenges c where c.name='chall-4';
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='c'),
+    (SELECT id FROM challenges WHERE name='chall-4'),
+    'C', 'flag');
+  PERFORM assert(COUNT(b)=1) FROM badges b;
+  PERFORM assert(COUNT(s)=4) FROM submissions s WHERE s.status='C';
+  PERFORM assert(c.solves=2) FROM challenges c WHERE c.name='chall-4';
+  PERFORM assert(c.points<c.max_points) FROM challenges c WHERE c.name='chall-4';
 
   -- insert a valid submission from 'c' to 'chal-2' (should give another badge)
-  insert into submissions (user_id, chall_id, status, flag) values ((select id from users where name='c'), (select id from challenges where name='chall-2'), 'C', 'flag');
-  perform assert(count(b)=2) from badges b;
-  perform assert(count(s)=5) from submissions s where s.status='C';
-  perform assert(c.solves=1) from challenges c where c.name='chall-2';
-  perform assert(c.points=c.max_points) from challenges c where c.name='chall-2';
-  
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='c'),
+    (SELECT id FROM challenges WHERE name='chall-2'),
+    'C', 'flag');
+  PERFORM assert(COUNT(b)=2) FROM badges b;
+  PERFORM assert(COUNT(s)=5) FROM submissions s WHERE s.status='C';
+  PERFORM assert(c.solves=1) FROM challenges c WHERE c.name='chall-2';
+  PERFORM assert(c.points=c.max_points) FROM challenges c WHERE c.name='chall-2';
+
   -- insert a valid submission from 'f' to 'chal-3' but it's not a player so it doesn't add up
-  insert into submissions (user_id, chall_id, status, flag) values ((select id from users where name='f'), (select id from challenges where name='chall-3'), 'C', 'flag');
-  perform assert(count(b)=2) from badges b;
-  perform assert(count(s)=6) from submissions s where s.status='C';
-  perform assert(c.solves=1) from challenges c where c.name='chall-3';
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='f'),
+    (SELECT id FROM challenges WHERE name='chall-3'),
+    'C', 'flag');
+  PERFORM assert(COUNT(b)=2) FROM badges b;
+  PERFORM assert(COUNT(s)=6) FROM submissions s WHERE s.status='C';
+  PERFORM assert(c.solves=1) FROM challenges c WHERE c.name='chall-3';
 
   -- deletes all correct submissions from 'a' to 'chall-1' (should also remove the badge)
-  delete from submissions where user_id=(select id from users where name='a') and chall_id=(select id from challenges where name='chall-1') and status='C';
-  perform assert(count(b)=1) from badges b;
-  perform assert(count(s)=5) from submissions s where s.status='C';
+  DELETE FROM submissions WHERE user_id=(SELECT id FROM users WHERE name='a')
+    AND chall_id=(SELECT id FROM challenges WHERE name='chall-1')
+    AND status='C';
+  PERFORM assert(COUNT(b)=1) FROM badges b;
+  PERFORM assert(COUNT(s)=5) FROM submissions s WHERE s.status='C';
 
   -- insert a valid submission from 'a' to 'chal-1' (should give back the badge)
-  insert into submissions (user_id, chall_id, status, flag) values ((select id from users where name='a'), (select id from challenges where name='chall-1'), 'C', 'flag');
-  perform assert(count(b)=2) from badges b;
-  perform assert(count(s)=6) from submissions s where s.status='C';
-  perform assert(c.solves=1) from challenges c where c.name='chall-1';
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='a'),
+    (SELECT id FROM challenges WHERE name='chall-1'),
+    'C', 'flag');
+  PERFORM assert(COUNT(b)=2) FROM badges b;
+  PERFORM assert(COUNT(s)=6) FROM submissions s WHERE s.status='C';
+  PERFORM assert(c.solves=1) FROM challenges c WHERE c.name='chall-1';
 
   -- insert a valid submission from 'c' to 'chal-1' (should not give a badge with 2 solves of 3)
-  insert into submissions (user_id, chall_id, status, flag) values ((select id from users where name='c'), (select id from challenges where name='chall-1'), 'C', 'flag');
-  perform assert(count(b)=2) from badges b;
-  perform assert(count(s)=7) from submissions s where s.status='C';
-  perform assert(c.solves=2) from challenges c where c.name='chall-1';
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='c'),
+    (SELECT id FROM challenges WHERE name='chall-1'),
+    'C', 'flag');
+  PERFORM assert(COUNT(b)=2) FROM badges b;
+  PERFORM assert(COUNT(s)=7) FROM submissions s WHERE s.status='C';
+  PERFORM assert(c.solves=2) FROM challenges c WHERE c.name='chall-1';
 
   -- check that the scores are the same
-  select score into tmp from teams where name='A';
-  perform assert(score=tmp) from teams where name='B';
+  SELECT score INTO tmp FROM teams WHERE name='A';
+  PERFORM assert(score=tmp) FROM teams WHERE name='B';
 
   -- after recomputing the scores, they should be lower
-  update configs set value='3' where key='chall-points-decay';
-  perform assert(score<tmp) from teams where name='B';
+  UPDATE configs SET value='3' WHERE key='chall-points-decay';
+  PERFORM assert(score<tmp) FROM teams WHERE name='B';
 
   -- after recomputing the scores, they should be greater
-  update configs set value='7' where key='chall-points-decay';
-  perform assert(score>tmp) from teams where name='B';
+  UPDATE configs SET value='7' WHERE key='chall-points-decay';
+  PERFORM assert(score>tmp) FROM teams WHERE name='B';
 
   -- after recomputing the scores, they should be all the same as 500
-  update configs set value='500' where key='chall-min-points';
-  perform assert(count(c)=4) from challenges c where points=500;
+  UPDATE configs SET value='500' WHERE key='chall-min-points';
+  PERFORM assert(COUNT(c)=4) FROM challenges c WHERE points=500;
 
-  update challenges set max_points=1000;
-  perform assert(count(c)=0) from challenges c where points=500;
+  UPDATE challenges SET max_points=1000;
+  PERFORM assert(COUNT(c)=0) FROM challenges c WHERE points=500;
 
   -- deletes 'chall-3' (should now give the badge to team 'B' that hadn't solved only that)
-  delete from challenges c where c.name='chall-3';
-  perform assert(count(b)=3) from badges b;
-  perform assert(count(s)=5) from submissions s where s.status='C';
+  DELETE FROM challenges c WHERE c.name='chall-3';
+  PERFORM assert(COUNT(b)=3) FROM badges b;
+  PERFORM assert(COUNT(s)=5) FROM submissions s WHERE s.status='C';
 
   -- inserts back 'chall-3' as hidden (nothing should change)
-  insert into challenges (name, category, description, type, max_points, score_type) values ('chall-3', 'cat-1', 'TEST', 'N', 1000, 'D');
-  perform assert(count(b)=3) from badges b;
+  INSERT INTO challenges (name, category, description, type, max_points, score_type)
+    VALUES ('chall-3', 'cat-1', 'TEST', 'N', 1000, 'D');
+  PERFORM assert(COUNT(b)=3) FROM badges b;
 
-  -- makes 'chall-3' visible again, now shoud remove the badges (previous solves were deleted on the delete as cascade)
-  update challenges set hidden=false where name='chall-3';
-  perform assert(count(b)=1) from badges b;
+  -- makes 'chall-3' visible again, now should remove the badges (previous solves were deleted on the DELETE as cascade)
+  UPDATE challenges SET hidden=false WHERE name='chall-3';
+  PERFORM assert(COUNT(b)=1) FROM badges b;
 
-  -- inserts again new valid submissions, should give aìbadges and lower the challenge points
-  insert into submissions (user_id, chall_id, status, flag) values ((select id from users where name='a'), (select id from challenges where name='chall-3'), 'C', 'flag');
-  insert into submissions (user_id, chall_id, status, flag) values ((select id from users where name='c'), (select id from challenges where name='chall-3'), 'C', 'flag');
-  perform assert(count(b)=3) from badges b;
-  perform assert(count(s)=7) from submissions s where s.status='C';
-  perform assert(points!=max_points) from challenges where name='chall-3';
+  -- inserts again new valid submissions, should give badges and lower the challenge points
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='a'),
+    (SELECT id FROM challenges WHERE name='chall-3'),
+    'C', 'flag');
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='c'),
+    (SELECT id FROM challenges WHERE name='chall-3'),
+    'C', 'flag');
+  PERFORM assert(COUNT(b)=3) FROM badges b;
+  PERFORM assert(COUNT(s)=7) FROM submissions s WHERE s.status='C';
+  PERFORM assert(points!=max_points) FROM challenges WHERE name='chall-3';
 
   -- changes 'chall-3' scoring type as static, so the points should reset
-  update challenges set score_type='S' where name='chall-3';
-  perform assert(points=max_points) from challenges where name='chall-3';
+  UPDATE challenges SET score_type='S' WHERE name='chall-3';
+  PERFORM assert(points=max_points) FROM challenges WHERE name='chall-3';
 
   -- inserts a correct submission from 'd' on 'chall-1', but it doesn't have a team so it's an invalid submission
-  insert into submissions (user_id, chall_id, status, flag) values ((select id from users where name='d'), (select id from challenges where name='chall-1'), 'C', 'flag');
-  perform assert(count(s)=7) from submissions s where s.status='C';
-  perform assert(count(s)=1) from submissions s where s.status='I';
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='d'),
+    (SELECT id FROM challenges WHERE name='chall-1'),
+    'C', 'flag');
+  PERFORM assert(COUNT(s)=7) FROM submissions s WHERE s.status='C';
+  PERFORM assert(COUNT(s)=1) FROM submissions s WHERE s.status='I';
+
+  -- removes the user 'c', so all his submissions should be deleted and also badges and team points removed
+  DELETE FROM users WHERE name='c';
+  PERFORM assert(COUNT(b)=1) FROM badges b;
+  PERFORM assert(COUNT(s)=3) FROM submissions s WHERE s.status='C';
+  PERFORM assert(score=0) FROM teams WHERE name='B';
 
 END;
 $$ LANGUAGE plpgsql;
 
 /*
-select test();
+SELECT tests();
 
-select * from submissions;
-select * from tags;
-select * from instances;
-select * from flags;
-select * from challenges;
-select * from team_category_solves;
-select * from categories;
-select * from badges;
-select * from users;
-select * from teams;
-select * from configs;
-*/
+SELECT * FROM submissions;
+SELECT * FROM tags;
+SELECT * FROM instances;
+SELECT * FROM flags;
+SELECT * FROM challenges;
+SELECT * FROM team_category_solves;
+SELECT * FROM categories;
+SELECT * FROM badges;
+SELECT * FROM users;
+SELECT * FROM teams;
+SELECT * FROM configs;
+--*/

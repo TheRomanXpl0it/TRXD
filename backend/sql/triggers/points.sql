@@ -7,7 +7,7 @@ BEGIN
   IF chall_max_points <= min_points THEN
     RETURN chall_max_points;
   END IF;
-  
+
   RETURN GREATEST(
     min_points,
     CAST((chall_max_points + (min_points - chall_max_points) / (decay ^ 2) *
@@ -38,17 +38,17 @@ BEGIN
   IF (SELECT role FROM users WHERE id = NEW.user_id) != 'P' THEN
     RETURN NEW;
   END IF;
-  
+
   UPDATE users
     SET score = score + challenges.points
     FROM challenges
     WHERE challenges.id = NEW.chall_id
       AND users.id = NEW.user_id;
-  
+
   UPDATE challenges
     SET solves = solves + 1
     WHERE id = NEW.chall_id;
-  
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -68,17 +68,17 @@ BEGIN
   IF (SELECT role FROM users WHERE id = OLD.user_id) != 'P' THEN
     RETURN OLD;
   END IF;
-  
+
   UPDATE challenges
     SET solves = solves - 1
     WHERE id = OLD.chall_id;
-  
+
   UPDATE users
     SET score = score - challenges.points
     FROM challenges
     WHERE challenges.id = OLD.chall_id
       AND users.id = OLD.user_id;
-  
+
   RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;
@@ -206,3 +206,21 @@ AFTER UPDATE ON users
 FOR EACH ROW
 WHEN (NEW.score != OLD.score)
 EXECUTE FUNCTION fn_points_propagate_user();
+
+
+-- tr_points_user_del
+
+CREATE OR REPLACE FUNCTION fn_points_user_del()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE teams
+    SET score = score - OLD.score
+    WHERE id = OLD.team_id;
+  RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tr_points_user_del
+BEFORE DELETE ON users
+FOR EACH ROW
+EXECUTE FUNCTION fn_points_user_del();
