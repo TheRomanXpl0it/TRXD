@@ -16,9 +16,9 @@ import (
 type DeployType string
 
 const (
-	DeployTypeN DeployType = "N"
-	DeployTypeD DeployType = "D"
-	DeployTypeC DeployType = "C"
+	DeployTypeNormal    DeployType = "Normal"
+	DeployTypeContainer DeployType = "Container"
+	DeployTypeCompose   DeployType = "Compose"
 )
 
 func (e *DeployType) Scan(src interface{}) error {
@@ -59,8 +59,8 @@ func (ns NullDeployType) Value() (driver.Value, error) {
 type ScoreType string
 
 const (
-	ScoreTypeS ScoreType = "S"
-	ScoreTypeD ScoreType = "D"
+	ScoreTypeStatic  ScoreType = "Static"
+	ScoreTypeDynamic ScoreType = "Dynamic"
 )
 
 func (e *ScoreType) Scan(src interface{}) error {
@@ -101,10 +101,10 @@ func (ns NullScoreType) Value() (driver.Value, error) {
 type SubmissionStatus string
 
 const (
-	SubmissionStatusW SubmissionStatus = "W"
-	SubmissionStatusC SubmissionStatus = "C"
-	SubmissionStatusR SubmissionStatus = "R"
-	SubmissionStatusI SubmissionStatus = "I"
+	SubmissionStatusWrong    SubmissionStatus = "Wrong"
+	SubmissionStatusCorrect  SubmissionStatus = "Correct"
+	SubmissionStatusRepeated SubmissionStatus = "Repeated"
+	SubmissionStatusInvalid  SubmissionStatus = "Invalid"
 )
 
 func (e *SubmissionStatus) Scan(src interface{}) error {
@@ -145,10 +145,10 @@ func (ns NullSubmissionStatus) Value() (driver.Value, error) {
 type UserRole string
 
 const (
-	UserRoleS UserRole = "S"
-	UserRoleP UserRole = "P"
-	UserRoleA UserRole = "A"
-	UserRoleM UserRole = "M"
+	UserRoleSpectator UserRole = "Spectator"
+	UserRolePlayer    UserRole = "Player"
+	UserRoleAuthor    UserRole = "Author"
+	UserRoleAdmin     UserRole = "Admin"
 )
 
 func (e *UserRole) Scan(src interface{}) error {
@@ -214,13 +214,6 @@ type Challenge struct {
 	Host        sql.NullString `json:"host"`
 	Port        interface{}    `json:"port"`
 	Attachments sql.NullString `json:"attachments"`
-	Image       sql.NullString `json:"image"`
-	Compose     sql.NullString `json:"compose"`
-	HashDomain  sql.NullBool   `json:"hash_domain"`
-	Lifetime    sql.NullInt32  `json:"lifetime"`
-	Envs        sql.NullString `json:"envs"`
-	MaxMemory   sql.NullInt32  `json:"max_memory"`
-	MaxCpu      sql.NullString `json:"max_cpu"`
 }
 
 type Config struct {
@@ -228,6 +221,17 @@ type Config struct {
 	Type        string         `json:"type"`
 	Value       string         `json:"value"`
 	Description sql.NullString `json:"description"`
+}
+
+type DockerConfig struct {
+	ChallID    int32          `json:"chall_id"`
+	Image      sql.NullString `json:"image"`
+	Compose    sql.NullString `json:"compose"`
+	HashDomain bool           `json:"hash_domain"`
+	Lifetime   sql.NullInt32  `json:"lifetime"`
+	Envs       sql.NullString `json:"envs"`
+	MaxMemory  sql.NullInt32  `json:"max_memory"`
+	MaxCpu     sql.NullString `json:"max_cpu"`
 }
 
 type Flag struct {

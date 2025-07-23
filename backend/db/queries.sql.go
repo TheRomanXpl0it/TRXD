@@ -41,6 +41,22 @@ func (q *Queries) AddTeamMember(ctx context.Context, arg AddTeamMemberParams) er
 	return err
 }
 
+const checkFlags = `-- name: CheckFlags :one
+SELECT BOOL_OR(($1 = flag) OR (regex AND $1 ~ flag)) FROM flags WHERE chall_id = $2
+`
+
+type CheckFlagsParams struct {
+	Flag    string `json:"flag"`
+	ChallID int32  `json:"chall_id"`
+}
+
+func (q *Queries) CheckFlags(ctx context.Context, arg CheckFlagsParams) (bool, error) {
+	row := q.queryRow(ctx, q.checkFlagsStmt, checkFlags, arg.Flag, arg.ChallID)
+	var bool_or bool
+	err := row.Scan(&bool_or)
+	return bool_or, err
+}
+
 const createCategory = `-- name: CreateCategory :exec
 INSERT INTO categories (name, icon) VALUES ($1, $2)
 `
@@ -84,7 +100,7 @@ func (q *Queries) CreateChallenge(ctx context.Context, arg CreateChallengeParams
 }
 
 const getChallengeByID = `-- name: GetChallengeByID :one
-SELECT id, name, category, description, difficulty, authors, type, hidden, max_points, score_type, points, solves, host, port, attachments, image, compose, hash_domain, lifetime, envs, max_memory, max_cpu FROM challenges WHERE id = $1
+SELECT id, name, category, description, difficulty, authors, type, hidden, max_points, score_type, points, solves, host, port, attachments FROM challenges WHERE id = $1
 `
 
 // Retrieve a challenge by its ID
@@ -107,66 +123,8 @@ func (q *Queries) GetChallengeByID(ctx context.Context, id int32) (Challenge, er
 		&i.Host,
 		&i.Port,
 		&i.Attachments,
-		&i.Image,
-		&i.Compose,
-		&i.HashDomain,
-		&i.Lifetime,
-		&i.Envs,
-		&i.MaxMemory,
-		&i.MaxCpu,
 	)
 	return i, err
-}
-
-const getChallengesByCategory = `-- name: GetChallengesByCategory :many
-SELECT id, name, category, description, difficulty, authors, type, hidden, max_points, score_type, points, solves, host, port, attachments, image, compose, hash_domain, lifetime, envs, max_memory, max_cpu FROM challenges WHERE category = $1
-`
-
-// Retrieve all challenges in a specific category
-func (q *Queries) GetChallengesByCategory(ctx context.Context, category interface{}) ([]Challenge, error) {
-	rows, err := q.query(ctx, q.getChallengesByCategoryStmt, getChallengesByCategory, category)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Challenge
-	for rows.Next() {
-		var i Challenge
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Category,
-			&i.Description,
-			&i.Difficulty,
-			&i.Authors,
-			&i.Type,
-			&i.Hidden,
-			&i.MaxPoints,
-			&i.ScoreType,
-			&i.Points,
-			&i.Solves,
-			&i.Host,
-			&i.Port,
-			&i.Attachments,
-			&i.Image,
-			&i.Compose,
-			&i.HashDomain,
-			&i.Lifetime,
-			&i.Envs,
-			&i.MaxMemory,
-			&i.MaxCpu,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }
 
 const getTeamByName = `-- name: GetTeamByName :one
@@ -298,8 +256,8 @@ func (q *Queries) RegisterUser(ctx context.Context, arg RegisterUserParams) (Use
 	return i, err
 }
 
-const submit = `-- name: Submit :exec
-INSERT INTO submissions (user_id, chall_id, status, flag) VALUES ($1, $2, $3, $4)
+const submit = `-- name: Submit :one
+INSERT INTO submissions (user_id, chall_id, status, flag) VALUES ($1, $2, $3, $4) RETURNING status
 `
 
 type SubmitParams struct {
@@ -310,12 +268,14 @@ type SubmitParams struct {
 }
 
 // Insert a new submission
-func (q *Queries) Submit(ctx context.Context, arg SubmitParams) error {
-	_, err := q.exec(ctx, q.submitStmt, submit,
+func (q *Queries) Submit(ctx context.Context, arg SubmitParams) (SubmissionStatus, error) {
+	row := q.queryRow(ctx, q.submitStmt, submit,
 		arg.UserID,
 		arg.ChallID,
 		arg.Status,
 		arg.Flag,
 	)
-	return err
+	var status SubmissionStatus
+	err := row.Scan(&status)
+	return status, err
 }
