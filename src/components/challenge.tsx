@@ -233,6 +233,7 @@ function Challenge({
                     <DialogClose />
                 </DialogHeader>
                 { !challenge.instanced ? challenge.remote &&  getRemote(challenge.remote) : null }
+                { challenge.timeout!==undefined ? challenge.remote &&  getRemote(challenge.remote) : null }
                 { challenge.attatchments && getAttatchments(challenge.attatchments) }
                 <DialogFooter>
                     { challenge.solved ? 
