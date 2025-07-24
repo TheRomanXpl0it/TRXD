@@ -1,0 +1,5 @@
+pgdata/
+tmp/
+
+.env
+trxd
