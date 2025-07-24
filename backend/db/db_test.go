@@ -1,12 +1,14 @@
 package db
 
 import (
+	"fmt"
 	"os"
 	"testing"
 )
 
 func TestMain(m *testing.M) {
-	if err := OpenTestDB(); err != nil {
+	if err := OpenTestDB("test_db"); err != nil {
+		fmt.Printf("Failed to open test database: %v\n", err)
 		os.Exit(1)
 	}
 	defer CloseTestDB()

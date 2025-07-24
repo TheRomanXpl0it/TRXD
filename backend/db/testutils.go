@@ -11,7 +11,7 @@ import (
 
 var test_db *sql.DB
 
-func OpenTestDB() error {
+func OpenTestDB(testDBName string) error {
 	err := os.Chdir("..")
 	if err != nil {
 		return err
@@ -31,17 +31,17 @@ func OpenTestDB() error {
 		return err
 	}
 
-	_, err = test_db.Exec(`DROP DATABASE IF EXISTS test_db;`)
+	_, err = test_db.Exec(fmt.Sprintf(`DROP DATABASE IF EXISTS %s;`, testDBName))
 	if err != nil {
 		return err
 	}
-	_, err = test_db.Exec(`CREATE DATABASE test_db;`)
+	_, err = test_db.Exec(fmt.Sprintf(`CREATE DATABASE %s;`, testDBName))
 	if err != nil {
 		return err
 	}
-	defer test_db.Exec(`DROP DATABASE IF EXISTS test_db;`)
+	defer test_db.Exec(fmt.Sprintf(`DROP DATABASE IF EXISTS %s;`, testDBName))
 
-	err = setupTestDB()
+	err = setupTestDB(testDBName)
 	if err != nil {
 		return err
 	}
@@ -49,11 +49,11 @@ func OpenTestDB() error {
 	return nil
 }
 
-func setupTestDB() error {
+func setupTestDB(testDBName string) error {
 	err := ConnectDB(
 		os.Getenv("POSTGRES_USER"),
 		os.Getenv("POSTGRES_PASSWORD"),
-		"test_db",
+		testDBName,
 	)
 	if err != nil {
 		return err
@@ -89,4 +89,9 @@ func CloseTestDB() {
 	if test_db != nil {
 		test_db.Close()
 	}
+}
+
+func DeleteAll() error {
+	_, err := db.Exec(`SELECT delete_all();`)
+	return err
 }

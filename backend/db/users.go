@@ -8,7 +8,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func RegisterUser(name, email, password string) (*User, error) {
+func RegisterUser(ctx context.Context, name, email, password string) (*User, error) {
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -20,7 +20,7 @@ func RegisterUser(name, email, password string) (*User, error) {
 		PasswordHash: passwordHash,
 		Role:         UserRolePlayer,
 	}
-	user, err := queries.RegisterUser(context.Background(), params)
+	user, err := queries.RegisterUser(ctx, params)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
 			if pqErr.Code == "23505" { // Unique violation error code
