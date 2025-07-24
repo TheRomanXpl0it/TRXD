@@ -8,20 +8,24 @@ import (
 )
 
 const (
-	minPasswordLength     = 8
-	maxPasswordLength     = 64
-	maxUsernameLength     = 64
-	maxEmailLength        = 256
-	invalidJSON           = "Invalid JSON format"
-	missingRequiredFields = "Missing required fields"
-	shortPassword         = "Password must be at least 8 characters long"
-	longPassword          = "Password must not exceed 64 characters"
-	longUsername          = "Username must not exceed 64 characters"
-	longEmail             = "Email must not exceed 256 characters"
-	invalidEmail          = "Invalid email format"
-	userAlreadyExists     = "User already exists"
-	errorRegisteringUser  = "Error registering user"
-	errorCreatingSession  = "Error creating session"
+	minPasswordLength      = 8
+	maxPasswordLength      = 64
+	maxUsernameLength      = 64
+	maxEmailLength         = 256
+	invalidJSON            = "Invalid JSON format"
+	missingRequiredFields  = "Missing required fields"
+	shortPassword          = "Password must be at least 8 characters long"
+	longPassword           = "Password must not exceed 64 characters"
+	longUsername           = "Username must not exceed 64 characters"
+	longEmail              = "Email must not exceed 256 characters"
+	invalidEmail           = "Invalid email format"
+	userAlreadyExists      = "User already exists"
+	errorRegisteringUser   = "Error registering user"
+	errorCreatingSession   = "Error creating session"
+	errorRetrievingSession = "Error retrieving session"
+	errorDestroyingSession = "Error destroying session"
+	errorLoggingIn         = "Error logging in"
+	invalidCredentials     = "Invalid email or password"
 )
 
 var UserRegex = regexp.MustCompile(`(^[^@\s]+@[^@\s]+\.[^@\s]+$)`)
@@ -38,9 +42,9 @@ func SetupApp() *fiber.App {
 		AppName: "TRXd",
 	})
 
-	app.Post("/register", registerPost)
-	app.Post("/login", loginPost)
-	app.Post("/logout", logoutPost)
+	app.Post("/register", register)
+	app.Post("/login", login)
+	app.Post("/logout", logout)
 
 	return app
 }

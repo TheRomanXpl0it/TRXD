@@ -6,7 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func registerPost(c *fiber.Ctx) error {
+func register(c *fiber.Ctx) error {
 	var data struct {
 		Username string `json:"username"`
 		Email    string `json:"email"`

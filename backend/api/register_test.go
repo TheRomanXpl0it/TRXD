@@ -1,9 +1,6 @@
 package api
 
 import (
-	"bytes"
-	"encoding/json"
-	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -97,48 +94,16 @@ func TestRegister(t *testing.T) {
 
 	for _, test := range testRegister {
 		body := test.testBody
-		var reqBody []byte
-		if body != nil {
-			var err error
-			reqBody, err = json.Marshal(body)
-			if err != nil {
-				t.Fatalf("Failed to marshal request body: %v", err)
-			}
-		}
 
-		r, err := http.NewRequest(http.MethodPost, "/register", bytes.NewReader(reqBody))
-		if err != nil {
-			t.Fatalf("Failed to create request: %v", err)
-		}
-		r.Header.Set("Content-Type", "application/json")
-
-		resp, err := app.Test(r)
+		resp, err := apiRequest(app, http.MethodPost, "/register", body, nil)
 		if err != nil {
 			t.Fatalf("Failed to send request: %v", err)
 		}
 		defer resp.Body.Close()
 
-		if resp.StatusCode != test.expectedStatus {
-			t.Errorf("Expected status %d, got %d", test.expectedStatus, resp.StatusCode)
-		}
-
-		bodyBytes, err := io.ReadAll(resp.Body)
+		err = checkApiResponse(resp, test.expectedStatus, test.expectedError)
 		if err != nil {
-			t.Fatalf("Failed to read response body: %v", err)
-		}
-		var jsonDecoded map[string]string
-		if test.expectedError != "" {
-			err = json.Unmarshal(bodyBytes, &jsonDecoded)
-			if err != nil {
-				t.Fatalf("Failed to decode response body: %v", err)
-			}
-			jsonError, ok := jsonDecoded["error"]
-			if !ok {
-				t.Fatalf("Expected error field in response, got: %s", bodyBytes)
-			}
-			if jsonError != test.expectedError {
-				t.Errorf("Expected error '%s', got '%s'", test.expectedError, jsonError)
-			}
+			t.Errorf("Test failed for response: %v", err)
 		}
 	}
 }

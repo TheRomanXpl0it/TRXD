@@ -2,8 +2,8 @@ package db
 
 import "context"
 
-func SubmitFlag(userID int32, challengeID int32, flag string) (SubmissionStatus, error) {
-	valid, err := queries.CheckFlags(context.Background(), CheckFlagsParams{
+func SubmitFlag(ctx context.Context, userID int32, challengeID int32, flag string) (SubmissionStatus, error) {
+	valid, err := queries.CheckFlags(ctx, CheckFlagsParams{
 		Flag:    flag,
 		ChallID: challengeID,
 	})
@@ -16,7 +16,7 @@ func SubmitFlag(userID int32, challengeID int32, flag string) (SubmissionStatus,
 		status = SubmissionStatusCorrect
 	}
 
-	status, err = queries.Submit(context.Background(), SubmitParams{
+	status, err = queries.Submit(ctx, SubmitParams{
 		UserID:  userID,
 		ChallID: challengeID,
 		Status:  status,

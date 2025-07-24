@@ -33,8 +33,8 @@ func RegisterUser(ctx context.Context, name, email, password string) (*User, err
 	return &user, nil
 }
 
-func LoginUser(email, password string) (*User, error) {
-	user, err := queries.GetUserByEmail(context.Background(), email)
+func LoginUser(ctx context.Context, email, password string) (*User, error) {
+	user, err := queries.GetUserByEmail(ctx, email)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil

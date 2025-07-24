@@ -8,15 +8,15 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func teamMemberAdd(teamID int32, userID int32) error {
+func teamMemberAdd(ctx context.Context, teamID int32, userID int32) error {
 	params := AddTeamMemberParams{
 		TeamID: sql.NullInt32{Int32: teamID, Valid: true},
 		ID:     userID,
 	}
-	return queries.AddTeamMember(context.Background(), params)
+	return queries.AddTeamMember(ctx, params)
 }
 
-func RegisterTeam(name, password string, userID int32) (*Team, error) {
+func RegisterTeam(ctx context.Context, name, password string, userID int32) (*Team, error) {
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -26,7 +26,7 @@ func RegisterTeam(name, password string, userID int32) (*Team, error) {
 		Name:         name,
 		PasswordHash: passwordHash,
 	}
-	team, err := queries.RegisterTeam(context.Background(), teamParams)
+	team, err := queries.RegisterTeam(ctx, teamParams)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
 			if pqErr.Code == "23505" { // Unique violation error code
@@ -36,7 +36,7 @@ func RegisterTeam(name, password string, userID int32) (*Team, error) {
 		return nil, err
 	}
 
-	err = teamMemberAdd(team.ID, userID)
+	err = teamMemberAdd(ctx, team.ID, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -44,8 +44,8 @@ func RegisterTeam(name, password string, userID int32) (*Team, error) {
 	return &team, nil
 }
 
-func loginTeam(name, password string) (*Team, error) {
-	team, err := queries.GetTeamByName(context.Background(), name)
+func loginTeam(ctx context.Context, name, password string) (*Team, error) {
+	team, err := queries.GetTeamByName(ctx, name)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -64,8 +64,8 @@ func loginTeam(name, password string) (*Team, error) {
 	return &team, nil
 }
 
-func JoinTeam(name, password string, userID int32) (*Team, error) {
-	team, err := loginTeam(name, password)
+func JoinTeam(ctx context.Context, name, password string, userID int32) (*Team, error) {
+	team, err := loginTeam(ctx, name, password)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func JoinTeam(name, password string, userID int32) (*Team, error) {
 		return nil, nil
 	}
 
-	err = teamMemberAdd(team.ID, userID)
+	err = teamMemberAdd(ctx, team.ID, userID)
 	if err != nil {
 		return nil, err
 	}

@@ -2,8 +2,8 @@ package db
 
 import "context"
 
-func GetChallengeByID(challengeID int32) (*Challenge, error) {
-	challenge, err := queries.GetChallengeByID(context.Background(), challengeID)
+func GetChallengeByID(ctx context.Context, challengeID int32) (*Challenge, error) {
+	challenge, err := queries.GetChallengeByID(ctx, challengeID)
 	if err != nil {
 		return nil, err
 	}
