@@ -1,4 +1,5 @@
 pgdata/
+.pgdata/
 tmp/
 
 .env
