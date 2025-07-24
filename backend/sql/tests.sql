@@ -1,8 +1,10 @@
-CREATE OR REPLACE FUNCTION assert(result BOOLEAN)
+CREATE OR REPLACE FUNCTION assert(result BOOLEAN, msg TEXT DEFAULT NULL)
 RETURNS VOID AS $$
 BEGIN
   IF result != TRUE THEN
-    RAISE EXCEPTION 'Assertion failed: Got: %', result;
+    RAISE EXCEPTION 'Assertion failed%Got: %',
+      CASE WHEN msg IS NOT NULL THEN E' at ' || msg || E':\n' ELSE E'\n' END,
+      result;
   END IF;
 END;
 $$ LANGUAGE plpgsql;

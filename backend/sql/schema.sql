@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS teams (
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL NOT NULL,
   name name NOT NULL,
-  email TEXT UNIQUE NOT NULL,
+  email name UNIQUE NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   password_hash bcrypt_hash NOT NULL,
