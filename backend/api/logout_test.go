@@ -34,44 +34,21 @@ func TestLogout(t *testing.T) {
 	defer app.Shutdown()
 
 	for _, test := range testLogout {
-		body := test.testBody
+		session := newApiTestSession(t, app)
 
-		var cookies []*http.Cookie
 		if test.register {
-			resp, err := apiRequest(app, http.MethodPost, "/register", body, nil)
-			if err != nil {
-				t.Fatalf("Failed to send request: %v", err)
-			}
-			if resp.StatusCode != http.StatusOK {
-				t.Errorf("Expected status %d after registration, got %d", http.StatusOK, resp.StatusCode)
-			}
-			cookies = resp.Cookies()
+			session.Request(http.MethodPost, "/register", test.testBody, http.StatusOK)
 		} else if test.login {
-			resp, err := apiRequest(app, http.MethodPost, "/login", body, nil)
-			if err != nil {
-				t.Fatalf("Failed to send request: %v", err)
-			}
-			if resp.StatusCode != http.StatusOK {
-				t.Errorf("Expected status %d after login, got %d", http.StatusOK, resp.StatusCode)
-			}
-			cookies = resp.Cookies()
+			session.Request(http.MethodPost, "/login", test.testBody, http.StatusOK)
 		}
+		session.Request(http.MethodPost, "/logout", test.testBody, test.expectedStatus)
 
-		resp, err := apiRequest(app, http.MethodPost, "/logout", body, cookies)
-		if err != nil {
-			t.Fatalf("Failed to send request: %v", err)
-		}
-		defer resp.Body.Close()
-
-		for _, cookie := range resp.Cookies() {
+		for _, cookie := range session.Cookies {
 			if cookie.Name == "session_id" && cookie.Value != "" {
 				t.Errorf("Expected session_id cookie to be cleared, got %s", cookie.Value)
 			}
 		}
 
-		err = checkApiResponse(resp, test.expectedStatus, test.expectedError)
-		if err != nil {
-			t.Errorf("Test failed for response: %v", err)
-		}
+		session.CheckResponse(test.expectedError)
 	}
 }

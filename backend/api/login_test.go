@@ -1,14 +1,10 @@
 package api
 
 import (
-	"bytes"
-	"encoding/json"
 	"net/http"
 	"strings"
 	"testing"
 	"trxd/db"
-
-	"github.com/gofiber/fiber/v2"
 )
 
 var testLogin = []struct {
@@ -54,52 +50,20 @@ var testLogin = []struct {
 	},
 }
 
-func loginRequest(app *fiber.App, body interface{}) (*http.Response, error) {
-	var reqBody []byte
-	if body != nil {
-		var err error
-		reqBody, err = json.Marshal(body)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	r, err := http.NewRequest(http.MethodPost, "/login", bytes.NewReader(reqBody))
-	if err != nil {
-		return nil, err
-	}
-	r.Header.Set("Content-Type", "application/json")
-
-	return app.Test(r)
-}
-
 func TestLogin(t *testing.T) {
 	db.DeleteAll()
 	app := SetupApp()
 	defer app.Shutdown()
 
 	for _, test := range testLogin {
-		body := test.testBody
 
 		if test.register {
-			resp, err := apiRequest(app, http.MethodPost, "/register", body, nil)
-			if err != nil {
-				t.Fatalf("Failed to send request: %v", err)
-			}
-			if resp.StatusCode != http.StatusOK {
-				t.Errorf("Expected status %d after registration, got %d", http.StatusOK, resp.StatusCode)
-			}
+			session := newApiTestSession(t, app)
+			session.Request(http.MethodPost, "/register", test.testBody, http.StatusOK)
 		}
 
-		resp, err := loginRequest(app, body)
-		if err != nil {
-			t.Fatalf("Failed to send request: %v", err)
-		}
-		defer resp.Body.Close()
-
-		err = checkApiResponse(resp, test.expectedStatus, test.expectedError)
-		if err != nil {
-			t.Errorf("Test failed for response: %v", err)
-		}
+		session := newApiTestSession(t, app)
+		session.Request(http.MethodPost, "/login", test.testBody, test.expectedStatus)
+		session.CheckResponse(test.expectedError)
 	}
 }

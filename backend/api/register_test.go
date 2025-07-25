@@ -93,17 +93,8 @@ func TestRegister(t *testing.T) {
 	defer app.Shutdown()
 
 	for _, test := range testRegister {
-		body := test.testBody
-
-		resp, err := apiRequest(app, http.MethodPost, "/register", body, nil)
-		if err != nil {
-			t.Fatalf("Failed to send request: %v", err)
-		}
-		defer resp.Body.Close()
-
-		err = checkApiResponse(resp, test.expectedStatus, test.expectedError)
-		if err != nil {
-			t.Errorf("Test failed for response: %v", err)
-		}
+		session := newApiTestSession(t, app)
+		session.Request(http.MethodPost, "/register", test.testBody, test.expectedStatus)
+		session.CheckResponse(test.expectedError)
 	}
 }
