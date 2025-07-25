@@ -1,12 +1,20 @@
-import { time } from "console";
+import { api } from "@/api/axios";
+
 
 export async function getChallenges(){
+    // Simulate file attachments as objects with name and url
+    type Attachment = {
+        name: string;
+        url: string;
+    };
+
     const mockChallenges = [
         {
             challenge : {
                 id : 1,
                 title: 'Challenge 1',
                 description: 'This is the first challenge',
+                flag: 'flag{first_challenge}',
                 points: 100,
                 solves: 0,
                 category: 'Web',
@@ -14,7 +22,10 @@ export async function getChallenges(){
                 difficulty: 'Easy',
                 remote: 'https://example.com',
                 solved: false,
-                attachments: [],
+                attachments: [
+                    { name: "executable", url: "/files/challenge1/executable" },
+                    { name: "libc", url: "/files/challenge1/libc" }
+                ] as Attachment[],
                 authors: ["author1"],
                 hidden: true,
                 instanced: false,
@@ -26,6 +37,7 @@ export async function getChallenges(){
                 id : 2,
                 title: 'Challenge 2',
                 description: 'This is the second challenge',
+                flag: 'flag{second_challenge}',
                 points: 100,
                 solves: 1,
                 category: 'Web',
@@ -33,7 +45,9 @@ export async function getChallenges(){
                 difficulty: 'Easy',
                 remote: 'https://example.com',
                 solved: true,
-                attachments: [],
+                attachments: [
+                    { name: "dockerfile", url: "/files/challenge2/dockerfile" }
+                ] as Attachment[],
                 authors: ["author2"],
                 hidden: false,
                 instanced: false,
@@ -46,6 +60,7 @@ export async function getChallenges(){
                 id : 3,
                 title: 'Challenge 3',
                 description: 'This is the third challenge',
+                flag: 'flag{third_challenge}',
                 points: 100,
                 solves: 0,
                 category: 'Pwn',
@@ -53,7 +68,9 @@ export async function getChallenges(){
                 difficulty: 'Easy',
                 remote: 'https://example.com',
                 solved: false,
-                attachments: [],
+                attachments: [
+                    { name: "executable", url: "/files/challenge3/executable" }
+                ] as Attachment[],
                 authors: ["author1"],
                 hidden: false,
                 instanced: true,
@@ -65,6 +82,7 @@ export async function getChallenges(){
             id : 4,
             title: 'Challenge 4',
             description: 'This is the fourth challenge',
+            flag: 'flag{fourth_challenge}',
             points: 100,
             solves: 5,
             category: 'Rev',
@@ -72,7 +90,9 @@ export async function getChallenges(){
             difficulty: 'Easy',
             remote: 'https://example.com',
             solved: false,
-            attachments: [],
+            attachments: [
+                { name: "Dockerfile", url: "/files/challenge4/Dockerfile" }
+            ] as Attachment[],
             authors: ["admin","author2"],
             hidden: false,
             instanced: true,
@@ -83,6 +103,7 @@ export async function getChallenges(){
             id : 5,
             title: 'Challenge 5',
             description: 'This is the fifth challenge',
+            flag: 'flag{fifth_challenge}',
             points: 100,
             solves: 10,
             category: 'Crypto',
@@ -98,6 +119,9 @@ export async function getChallenges(){
         }},
         {challenge:{
             id : 6,
+            title: 'Challenge 6',
+            description: 'This is the sixth challenge',
+            flag: 'flag{sixth_challenge}',
             points: 100,
             solves: 0,
             category: 'Misc',
@@ -105,7 +129,9 @@ export async function getChallenges(){
             difficulty: 'Easy',
             remote: 'https://example.com',
             solved: false,
-            attachments: [],
+            attachments: [
+                { name: "packets", url: "/files/challenge6/packets" }
+            ] as Attachment[],
             authors: ["author1,author2"],
             hidden: false,
             instanced: true,
@@ -114,6 +140,7 @@ export async function getChallenges(){
             id : 7,
             title: 'Challenge 7',
             description: 'This is the seventh challenge',
+            flag: 'flag{seventh_challenge}',
             points: 100,
             solves: 0,
             category: 'Forensics',
@@ -121,7 +148,9 @@ export async function getChallenges(){
             difficulty: 'Easy',
             remote: 'https://example.com',
             solved: false,
-            attachments: [],
+            attachments: [
+                { name: "packets", url: "/files/challenge7/packets" }
+            ] as Attachment[],
             authors: ["author1,author2"],
             hidden: false,
             instanced: true,
@@ -131,6 +160,7 @@ export async function getChallenges(){
             id : 8,
             title: 'Challenge 8',
             description: 'This is the eighth challenge',
+            flag: 'flag{eighth_challenge}',
             points: 100,
             solves: 0,
             category: 'Crypto',
@@ -138,7 +168,9 @@ export async function getChallenges(){
             difficulty: 'Easy',
             remote: 'https://example.com',
             solved: false,
-            attachments: [],
+            attachments: [
+                { name: "hashes", url: "/files/challenge8/hashes" }
+            ] as Attachment[],
             authors: ["author1, author2"],
             hidden: false,
             instanced: true,
@@ -148,6 +180,7 @@ export async function getChallenges(){
             id : 9,
             title: 'Challenge 9',
             description: 'This is the ninth challenge',
+            flag: 'flag{ninth_challenge}',
             points: 100,
             solves: 0,
             category: 'Pwn',
@@ -155,7 +188,9 @@ export async function getChallenges(){
             difficulty: 'Easy',
             remote: 'https://example.com',
             solved: false,
-            attachments: [],
+            attachments: [
+                { name: "executable", url: "/files/challenge9/executable" }
+            ] as Attachment[],
             authors: ["author1"],
             hidden: false,
             instanced: true,
@@ -165,6 +200,7 @@ export async function getChallenges(){
             id : 10,
             title: 'Challenge 10',
             description: 'This is the tenth challenge',
+            flag: 'flag{tenth_challenge}',
             points: 100,
             solves: 0,
             category: 'Web',
@@ -172,13 +208,14 @@ export async function getChallenges(){
             difficulty: 'Easy',
             remote: 'https://example.com',
             solved: false,
-            attachments: [],
+            attachments: [
+                { name: "ciao", url: "/files/challenge10/ciao" }
+            ] as Attachment[],
             authors: ["admin"],
             hidden: false,
             instanced: true,
             timeout: undefined,
         }}
-    
     ];
     return JSON.stringify(mockChallenges);
 } 
@@ -196,9 +233,39 @@ export async function getCategories(){
     return JSON.stringify(categories);
 }
 
-export function login(username:string,password:string){
-    if(username === 'admin' && password === 'admin'){
-        return true;
-    }
-    return false;
+export async function login({ email, password }: { email: string; password: string }) {
+    const response = await api.post(
+        "/login",
+        { "email": email, "password": password },
+        { withCredentials: true } // important for cookies
+    );
+    console.log("Login response:", response.data);
+    return response.data; // usually contains token or user info
+}
+
+export async function register({ username, email, password }: { username: string; email: string; password: string }) {
+    const response = await api.post(
+        "/register",
+        { "username": username, "email": email, "password": password },
+        { withCredentials: true } // important for cookies
+    );
+    console.log("Register response:", response.data);
+    return response.data; // usually contains token or user info
+}
+
+export async function fetchTeamData(): Promise<{ name: string; members: string[]; score: number; teamlogo:string, rank: number }> {
+    // Simulate fetching team data
+    return {
+        name: "Un team popo demmerda",
+        members: ["Alice", "Bob"],
+        teamlogo: "/teamLogo.png",
+        score: 1500,
+        rank: 1,
+    };
+}
+
+export async function leaveTeam() {
+    // Simulate leaving a team
+    console.log("Leaving team...");
+    return { success: true, message: "You have left the team." };
 }

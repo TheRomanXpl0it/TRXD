@@ -16,9 +16,10 @@ import {
     DialogTrigger,
   } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { FlagSubmit } from "./flag-submit";
 import { CategoryIcon } from "./category-icon";
-import { Flag,UserPen, EyeClosed, CircleCheck } from "lucide-react";
+import { Flag,UserPen, EyeClosed, CircleCheck, Download, Droplet } from "lucide-react";
 import { UpdateChallenge } from "@/components/updateChallenge";
 import { DeleteChallenge } from "@/components/deleteChallenge";
 import { AuthProps } from "@/context/AuthProvider";
@@ -36,7 +37,7 @@ export interface ChallengeProps {
         solved: boolean;
         tags?: string[];
         difficulty?: string;
-        attatchments?: File[];
+        attachments?: File[];
         authors?: string[];
         hidden: boolean;
         flag?: string;
@@ -96,13 +97,15 @@ function showTags(tags?: string[]) {
     ));
 }
 
-function getAttatchments(attatchments: File[]) {
-    return( attatchments.map((attatchment) => (
-        <div key={attatchment.name}>
-            <span>Attatchment:</span>
-            <span>{attatchment.name}</span>
+function getAttachments(attachments: File[]) {
+    return(
+        <div className="flex flex-row items-center space-x-2">
+            {attachments.map((attachment) => (
+            <Button key={attachment.name}>
+                <Download size={24}/> {attachment.name}
+            </Button>
+            ))}
         </div>
-        ))
     )
 }
 
@@ -135,8 +138,22 @@ function showSolves(solves?: number){
     return(
         <div className="flex justify-center">
             <span className="flex items-center space-x-2">
-                <Flag size={24} />
-                {solves} solves
+                {solves === 0 ? (
+                    <>
+                        <Droplet size={20} className="text-red-500" />
+                        <span>No solves yet</span>
+                    </>
+                ) : solves === 1 ? (
+                    <>
+                        <Flag size={20} className="text-blue-500" />
+                        <span>{solves} solve</span>
+                    </>
+                ) : (
+                    <>
+                        <Flag size={20} className="text-blue-500" />
+                        <span>{solves} solves</span>
+                    </>
+                )}
             </span>
         </div>
     )
@@ -234,7 +251,7 @@ function Challenge({
                 </DialogHeader>
                 { !challenge.instanced ? challenge.remote &&  getRemote(challenge.remote) : null }
                 { challenge.timeout!==undefined ? challenge.remote &&  getRemote(challenge.remote) : null }
-                { challenge.attatchments && getAttatchments(challenge.attatchments) }
+                { challenge.attachments && getAttachments(challenge.attachments) }
                 <DialogFooter>
                     { challenge.solved ? 
                         <span className="flex text-green-500 font-semibold align-middle justify-center w-full">

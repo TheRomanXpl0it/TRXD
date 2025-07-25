@@ -47,7 +47,7 @@ export function AppSidebar() {
     const { auth } = useContext(AuthContext);
     const { settings } = useContext(SettingContext);
     
-    const isLoggedIn = auth.accessToken !== undefined;
+    const isLoggedIn = auth.username !== null && auth.username !== "";
     const isAdmin = auth.roles.includes('admin');
 
     const allowWriteups = settings.General.find((setting) => setting.title === 'Allow Writeups')?.value;

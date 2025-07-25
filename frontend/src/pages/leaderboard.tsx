@@ -63,7 +63,12 @@ export function Leaderboard() {
             "You gain strength, courage and confidence by every experience in which you really stop to look fear in the face. You must do the thing you think you cannot do."
         </blockquote>
         )}
-        <Chart/>
+        <div className="flex items-center justify-center w-full h-100">
+                <Chart/>
+        </div>
+        <div className="p-4">
+            <p className="text-lg font-semibold">Top Players</p>
+        </div>
         <Scoreboard columns={columns} data={data} />
     </>
     )

@@ -65,6 +65,7 @@ import {
   MultiSelectorTrigger
 } from "@/components/ui/multi-select"
 import { ChallengeProps } from "./challenge"
+import { AuthProps } from "@/context/AuthProvider"
 
 const formSchema = z.object({
   title: z.string().min(1),
@@ -87,12 +88,8 @@ function displayAuthors(authors: string[]){
 
 export function ChallengeForm( { challengeProp, auth } : { 
   challengeProp?: ChallengeProps,
-  auth: {
-    username: string;
-    password: string;
-    accessToken: string;
-    roles: string[];
-}}) {
+  auth: AuthProps
+}) {
 
   let defaultAuthors: string[] | undefined = [auth.username];
   let defaultTitle: string | undefined = "";

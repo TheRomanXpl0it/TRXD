@@ -14,12 +14,16 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { register } from "@/lib/backend-interaction"
 
 
 const formSchema = z.object({
     username: z.string().min(2, {
       message: "Username must be at least 2 characters.",
     }),
+    email: z.string().min(2, {
+      message: "Email must be at least 2 characters.",
+    }).email("Invalid email format"),
     password: z.string().min(2, {
         message: "Password must be at 2 characters.",
     }),
@@ -38,16 +42,28 @@ export function RegisterForm() {
         confirmPassword: "",
       },
     })
-      // 2. Define a submit handler.
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        // Do something with the form values.
-        // ✅ This will be type-safe and validated.
-        console.log(values)
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        const response = await register(values);
+        console.log("Registration response:", response);
     }
 
     return (
       <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="user@example.it" {...field} />
+                  </FormControl>
+                  <FormDescription>The email address user for registration and logging in</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
         <FormField
           control={form.control}
           name="username"

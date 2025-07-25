@@ -9,7 +9,10 @@ import { Settings } from './pages/settings'
 import { Account } from './pages/account'
 import { Logout } from './pages/logout'
 import { Team } from './pages/team'
+import { CreateTeam } from './pages/createteam'
+import { JoinTeam } from './pages/jointeam'
 import './App.css'
+
 
 function App() {
   return (
@@ -25,6 +28,8 @@ function App() {
           <Route path="/account" element={<Account />} />
           <Route path="/team" element={<Team />} />
           <Route path="/logout" element={<Logout />} />
+          <Route path="/createteam" element={<CreateTeam />} />
+          <Route path="/jointeam" element={<JoinTeam />} />
         </Route>
       </Routes>
     </Router>

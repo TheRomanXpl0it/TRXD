@@ -4,10 +4,7 @@ import { ReactNode } from "react";
 
 export interface AuthProps{
     username: string;
-    password: string;
-    accessToken: string;
     roles: string[];
-    team: string;
 }
 
 const AuthContext = createContext<{
@@ -15,11 +12,8 @@ const AuthContext = createContext<{
     setAuth: React.Dispatch<React.SetStateAction<AuthProps>>;
     }>({
         auth: {
-            username: "admin",
-            password: "admin",
-            accessToken: "helo",
+            username: "",
             roles: [],
-            team: ""
         },
     setAuth: () => {}
 });
@@ -30,11 +24,8 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
     const [auth, setAuth] = useState<AuthProps>({
-        username: "admin",
-        password: "admin",
-        accessToken: "helo",
-        roles: ["admin"],
-        team: ""
+        username: "",
+        roles: [],
     });
 
     return (

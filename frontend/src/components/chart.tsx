@@ -55,7 +55,7 @@ export const options = {
   plugins: {
     title: {
       display: true,
-      text: 'Chart.js Line Chart - Multi Axis',
+      text: 'Scoreboard Chart',
     },
   },
   scales: {
@@ -80,7 +80,7 @@ export const options = {
 
 export function Chart() {
     return (
-        <>
+    <>
         <Line options={options} data={data} />
     </>
     )

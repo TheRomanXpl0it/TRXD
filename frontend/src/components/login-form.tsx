@@ -15,16 +15,21 @@ import {
 import { Input } from "@/components/ui/input"
 import { useContext } from "react"
 import AuthContext from "@/context/AuthProvider"
+import { login } from "@/lib/backend-interaction"
+
+
 
 
 const formSchema = z.object({
-    username: z.string().min(2, {
-      message: "Username must be at least 2 characters.",
-    }),
+    email: z.string().min(2, {
+      message: "Email must be at least 2 characters.",
+    }).email("Invalid email format"),
     password: z.string().min(2, {
         message: "Password should be strong",
     }),
 })
+
+
 
 export function LoginForm() {
     const { auth,setAuth } = useContext(AuthContext);
@@ -33,37 +38,27 @@ export function LoginForm() {
     const form = useForm<z.infer<typeof formSchema>>({
       resolver: zodResolver(formSchema),
       defaultValues: {
-        username: "",
+        email: "",
         password: "",
       },
     })
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        // Do something with the form values.
-        // ✅ This will be type-safe and validated.
-        try {
-          /* 
-          const response = await api.post(LOGIN_URL,
-            JSON.stringify(values),
-            {
-              headers: {
-                "Content-Type": "application/json",
-                withCredentials: true,
-              },
-            }
-          );
-           */
-          const accessToken = "yes";
-          const roles = ["admin"];
-          const username = "admin";
-          const password = "admin";
-          if (values.username === "admin" && values.password === "admin") {
-              setAuth({username,password,accessToken,roles});
-          }
-        }
-        catch (error) {
-          console.error(error);
-        }
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+      try {
+          const data = await login(values); // contains accessToken, roles, etc.
+          const { username, roles } = data;
+
+          setAuth({
+              username,
+              roles,
+          });
+
+
+      } catch (error: any) {
+          console.error("Login failed:", error.response?.data || error.message);
+          form.setError("email", { message: "Invalid credentials" });
+          form.setError("password", { message: "Invalid credentials" });
+      }
     }
 
     return (
@@ -73,12 +68,12 @@ export function LoginForm() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
               control={form.control}
-              name="username"
+              name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Username</FormLabel>
+                  <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="Username" {...field} />
+                    <Input placeholder="user@example.it" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
