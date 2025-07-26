@@ -9,8 +9,6 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type DeployType string
@@ -282,9 +280,8 @@ type User struct {
 	ID           int32          `json:"id"`
 	Name         string         `json:"name"`
 	Email        string         `json:"email"`
-	CreatedAt    time.Time      `json:"created_at"`
 	PasswordHash interface{}    `json:"password_hash"`
-	Apikey       uuid.UUID      `json:"apikey"`
+	CreatedAt    time.Time      `json:"created_at"`
 	Score        int32          `json:"score"`
 	Role         UserRole       `json:"role"`
 	TeamID       sql.NullInt32  `json:"team_id"`

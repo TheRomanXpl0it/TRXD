@@ -26,14 +26,14 @@ func main() {
 	defer db.CloseDB()
 	log.Info("Database connection established")
 
-	err = db.ExecSQLFile("sql/schema.sql")
-	if err != nil {
-		log.Fatal("Error executing schema SQL", "err", err)
-	}
-	err = db.ExecSQLFile("sql/triggers.sql")
-	if err != nil {
-		log.Fatal("Error executing triggers SQL", "err", err)
-	}
+	// err = db.ExecSQLFile("sql/schema.sql")
+	// if err != nil {
+	// 	log.Fatal("Error executing schema SQL", "err", err)
+	// }
+	// err = db.ExecSQLFile("sql/triggers.sql")
+	// if err != nil {
+	// 	log.Fatal("Error executing triggers SQL", "err", err)
+	// }
 
 	app := api.SetupApp()
 	err = app.Listen(":1337")

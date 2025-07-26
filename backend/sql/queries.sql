@@ -15,13 +15,33 @@ INSERT INTO challenges (name, category, description, type, max_points, score_typ
 -- Insert a new user and return the created user
 INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING *;
 
--- name: RegisterTeam :one
--- Insert a new team and return the created team
-INSERT INTO teams (name, password_hash) VALUES ($1, $2) RETURNING *;
+-- name: RegisterTeam :exec
+-- Insert a new team and add the founder user to the team
+WITH locked_user AS (
+    SELECT id FROM users
+    WHERE id = $1 AND team_id IS NULL
+    FOR UPDATE
+  ),
+  new_team AS (
+    INSERT INTO teams (name, password_hash)
+    SELECT $2, $3
+    FROM locked_user
+    RETURNING *
+  )
+UPDATE users
+  SET team_id = new_team.id
+  FROM new_team
+  WHERE users.id = $1;
+
+-- name: GetTeamFromUser :one
+-- Retrieve the team associated with a user
+SELECT t.* FROM teams t
+  JOIN users u ON u.team_id = t.id
+  WHERE u.id = $1;
 
 -- name: AddTeamMember :exec
 -- Assign a user to a team
-UPDATE users SET team_id = $1 WHERE id = $2;
+UPDATE users SET team_id = $1 WHERE id = $2 AND team_id IS NULL;
 
 -- name: GetUserByName :one
 -- Retrieve a user by their name

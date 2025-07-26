@@ -53,10 +53,8 @@ CREATE TABLE IF NOT EXISTS users (
   id SERIAL NOT NULL,
   name name NOT NULL,
   email VARCHAR(256) UNIQUE NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
   password_hash bcrypt_hash NOT NULL,
-  apikey UUID UNIQUE NOT NULL DEFAULT gen_random_uuid(),
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   score INTEGER NOT NULL DEFAULT 0,
   role user_role NOT NULL,
@@ -168,7 +166,7 @@ CREATE TABLE IF NOT EXISTS submissions (
 );
 
 
-CREATE INDEX IF NOT EXISTS idx_users_apikey ON users(apikey);
+CREATE INDEX IF NOT EXISTS idx_teams_name ON teams(name);
 CREATE INDEX IF NOT EXISTS idx_users_team_id ON users(team_id);
 CREATE INDEX IF NOT EXISTS idx_challenges_category ON challenges(category);
 CREATE INDEX IF NOT EXISTS idx_tags_chall_id ON tags(chall_id);

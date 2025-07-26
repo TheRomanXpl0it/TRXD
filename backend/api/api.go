@@ -31,6 +31,7 @@ const (
 	alreadyInTeam          = "Already in a team"
 	errorRegisteringTeam   = "Error registering team"
 	teamAlreadyExists      = "Team already exists"
+	errorFetchingTeam      = "Error fetching team"
 )
 
 var UserRegex = regexp.MustCompile(`(^[^@\s]+@[^@\s]+\.[^@\s]+$)`)
@@ -79,8 +80,9 @@ func SetupApp() *fiber.App {
 	app.Post("/register", register)
 	app.Post("/login", login)
 	app.Post("/logout", logout)
-	//app.Post("/register-team", AuthRequired, registerTeam)
+	app.Post("/register-team", AuthRequired, registerTeam)
 
+	// TODO: remove this endpoint
 	app.Get("/test", AuthRequired, func(c *fiber.Ctx) error {
 		uid := c.Locals("uid")
 		return c.JSON(fiber.Map{

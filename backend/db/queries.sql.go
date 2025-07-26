@@ -27,7 +27,7 @@ func (q *Queries) AddConfig(ctx context.Context, arg AddConfigParams) error {
 }
 
 const addTeamMember = `-- name: AddTeamMember :exec
-UPDATE users SET team_id = $1 WHERE id = $2
+UPDATE users SET team_id = $1 WHERE id = $2 AND team_id IS NULL
 `
 
 type AddTeamMemberParams struct {
@@ -147,66 +147,15 @@ func (q *Queries) GetTeamByName(ctx context.Context, name string) (Team, error) 
 	return i, err
 }
 
-const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, name, email, created_at, password_hash, apikey, score, role, team_id, nationality, image FROM users WHERE email = $1
+const getTeamFromUser = `-- name: GetTeamFromUser :one
+SELECT t.id, t.name, t.password_hash, t.score, t.nationality, t.image, t.bio FROM teams t
+  JOIN users u ON u.team_id = t.id
+  WHERE u.id = $1
 `
 
-// Retrieve a user by their email address
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
-	row := q.queryRow(ctx, q.getUserByEmailStmt, getUserByEmail, email)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Email,
-		&i.CreatedAt,
-		&i.PasswordHash,
-		&i.Apikey,
-		&i.Score,
-		&i.Role,
-		&i.TeamID,
-		&i.Nationality,
-		&i.Image,
-	)
-	return i, err
-}
-
-const getUserByName = `-- name: GetUserByName :one
-SELECT id, name, email, created_at, password_hash, apikey, score, role, team_id, nationality, image FROM users WHERE name = $1
-`
-
-// Retrieve a user by their name
-func (q *Queries) GetUserByName(ctx context.Context, name string) (User, error) {
-	row := q.queryRow(ctx, q.getUserByNameStmt, getUserByName, name)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Email,
-		&i.CreatedAt,
-		&i.PasswordHash,
-		&i.Apikey,
-		&i.Score,
-		&i.Role,
-		&i.TeamID,
-		&i.Nationality,
-		&i.Image,
-	)
-	return i, err
-}
-
-const registerTeam = `-- name: RegisterTeam :one
-INSERT INTO teams (name, password_hash) VALUES ($1, $2) RETURNING id, name, password_hash, score, nationality, image, bio
-`
-
-type RegisterTeamParams struct {
-	Name         string      `json:"name"`
-	PasswordHash interface{} `json:"password_hash"`
-}
-
-// Insert a new team and return the created team
-func (q *Queries) RegisterTeam(ctx context.Context, arg RegisterTeamParams) (Team, error) {
-	row := q.queryRow(ctx, q.registerTeamStmt, registerTeam, arg.Name, arg.PasswordHash)
+// Retrieve the team associated with a user
+func (q *Queries) GetTeamFromUser(ctx context.Context, id int32) (Team, error) {
+	row := q.queryRow(ctx, q.getTeamFromUserStmt, getTeamFromUser, id)
 	var i Team
 	err := row.Scan(
 		&i.ID,
@@ -220,8 +169,84 @@ func (q *Queries) RegisterTeam(ctx context.Context, arg RegisterTeamParams) (Tea
 	return i, err
 }
 
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT id, name, email, password_hash, created_at, score, role, team_id, nationality, image FROM users WHERE email = $1
+`
+
+// Retrieve a user by their email address
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.queryRow(ctx, q.getUserByEmailStmt, getUserByEmail, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.PasswordHash,
+		&i.CreatedAt,
+		&i.Score,
+		&i.Role,
+		&i.TeamID,
+		&i.Nationality,
+		&i.Image,
+	)
+	return i, err
+}
+
+const getUserByName = `-- name: GetUserByName :one
+SELECT id, name, email, password_hash, created_at, score, role, team_id, nationality, image FROM users WHERE name = $1
+`
+
+// Retrieve a user by their name
+func (q *Queries) GetUserByName(ctx context.Context, name string) (User, error) {
+	row := q.queryRow(ctx, q.getUserByNameStmt, getUserByName, name)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.PasswordHash,
+		&i.CreatedAt,
+		&i.Score,
+		&i.Role,
+		&i.TeamID,
+		&i.Nationality,
+		&i.Image,
+	)
+	return i, err
+}
+
+const registerTeam = `-- name: RegisterTeam :exec
+WITH locked_user AS (
+    SELECT id FROM users
+    WHERE id = $1 AND team_id IS NULL
+    FOR UPDATE
+  ),
+  new_team AS (
+    INSERT INTO teams (name, password_hash)
+    SELECT $2, $3
+    FROM locked_user
+    RETURNING id, name, password_hash, score, nationality, image, bio
+  )
+UPDATE users
+  SET team_id = new_team.id
+  FROM new_team
+  WHERE users.id = $1
+`
+
+type RegisterTeamParams struct {
+	ID           int32       `json:"id"`
+	Name         string      `json:"name"`
+	PasswordHash interface{} `json:"password_hash"`
+}
+
+// Insert a new team and add the founder user to the team
+func (q *Queries) RegisterTeam(ctx context.Context, arg RegisterTeamParams) error {
+	_, err := q.exec(ctx, q.registerTeamStmt, registerTeam, arg.ID, arg.Name, arg.PasswordHash)
+	return err
+}
+
 const registerUser = `-- name: RegisterUser :one
-INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, created_at, password_hash, apikey, score, role, team_id, nationality, image
+INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, password_hash, created_at, score, role, team_id, nationality, image
 `
 
 type RegisterUserParams struct {
@@ -244,9 +269,8 @@ func (q *Queries) RegisterUser(ctx context.Context, arg RegisterUserParams) (Use
 		&i.ID,
 		&i.Name,
 		&i.Email,
-		&i.CreatedAt,
 		&i.PasswordHash,
-		&i.Apikey,
+		&i.CreatedAt,
 		&i.Score,
 		&i.Role,
 		&i.TeamID,
