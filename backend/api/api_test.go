@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"reflect"
 	"testing"
 	"trxd/db"
 
@@ -90,27 +91,26 @@ func (s *apiTestSession) updateCookies(newCookies []*http.Cookie) {
 	}
 }
 
-func (s *apiTestSession) CheckResponse(expectedError string) {
+func (s *apiTestSession) CheckResponse(expectedResponse map[string]interface{}) {
 	defer s.lastResp.Body.Close()
 	bodyBytes, err := io.ReadAll(s.lastResp.Body)
 	if err != nil {
 		s.t.Fatalf("Failed to read response body: %v", err)
 	}
 
-	var jsonDecoded map[string]string
-	if expectedError != "" {
-		err = json.Unmarshal(bodyBytes, &jsonDecoded)
-		if err != nil {
-			s.t.Fatalf("Failed to unmarshal response body: %v", err)
-		}
+	if expectedResponse == nil {
+		return
+	}
 
-		jsonError, ok := jsonDecoded["error"]
-		if !ok {
-			s.t.Fatalf("Expected error field in response, got: %s", bodyBytes)
-		}
+	var jsonDecoded map[string]interface{}
+	err = json.Unmarshal(bodyBytes, &jsonDecoded)
+	if err != nil {
+		s.t.Fatalf("Failed to unmarshal response body: %v", err)
+	}
 
-		if jsonError != expectedError {
-			s.t.Fatalf("Expected error '%s', got '%s'", expectedError, jsonError)
-		}
+	if !reflect.DeepEqual(expectedResponse, jsonDecoded) {
+		expectedBytes, _ := json.MarshalIndent(expectedResponse, "", "  ")
+		actualBytes, _ := json.MarshalIndent(jsonDecoded, "", "  ")
+		s.t.Fatalf("Response body does not match.\nExpected:\n%s\nGot:\n%s", expectedBytes, actualBytes)
 	}
 }

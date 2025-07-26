@@ -25,8 +25,8 @@ func register(c *fiber.Ctx) error {
 	if len(data.Password) > maxPasswordLength {
 		return apiError(c, fiber.StatusBadRequest, longPassword)
 	}
-	if len(data.Username) > maxUsernameLength {
-		return apiError(c, fiber.StatusBadRequest, longUsername)
+	if len(data.Username) > maxNameLength {
+		return apiError(c, fiber.StatusBadRequest, longName)
 	}
 	if len(data.Email) > maxEmailLength {
 		return apiError(c, fiber.StatusBadRequest, longEmail)
@@ -38,7 +38,7 @@ func register(c *fiber.Ctx) error {
 
 	user, err := db.RegisterUser(c.Context(), data.Username, data.Email, data.Password)
 	if err != nil {
-		return apiError(c, fiber.StatusInternalServerError, errorRegisteringUser)
+		return apiError(c, fiber.StatusInternalServerError, errorRegisteringUser, err)
 	}
 	if user == nil {
 		return apiError(c, fiber.StatusConflict, userAlreadyExists)
@@ -46,12 +46,17 @@ func register(c *fiber.Ctx) error {
 
 	sess, err := store.Get(c)
 	if err != nil {
-		return apiError(c, fiber.StatusInternalServerError, errorCreatingSession)
+		return apiError(c, fiber.StatusInternalServerError, errorFetchingSession, err)
 	}
 
-	sess.Set("username", user.Name)
-	sess.Set("api-key", user.Apikey)
-	sess.Save()
+	sess.Set("uid", user.ID)
+	err = sess.Save()
+	if err != nil {
+		return apiError(c, fiber.StatusInternalServerError, errorSavingSession)
+	}
 
-	return c.Status(fiber.StatusOK).SendString("")
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"username": user.Name,
+		"role":     user.Role,
+	})
 }

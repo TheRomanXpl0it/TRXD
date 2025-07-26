@@ -27,7 +27,7 @@ func login(c *fiber.Ctx) error {
 
 	user, err := db.LoginUser(c.Context(), data.Email, data.Password)
 	if err != nil {
-		return apiError(c, fiber.StatusInternalServerError, errorLoggingIn)
+		return apiError(c, fiber.StatusInternalServerError, errorLoggingIn, err)
 	}
 	if user == nil {
 		return apiError(c, fiber.StatusUnauthorized, invalidCredentials)
@@ -35,12 +35,17 @@ func login(c *fiber.Ctx) error {
 
 	sess, err := store.Get(c)
 	if err != nil {
-		return apiError(c, fiber.StatusInternalServerError, errorCreatingSession)
+		return apiError(c, fiber.StatusInternalServerError, errorFetchingSession, err)
 	}
 
-	sess.Set("username", user.Name)
-	sess.Set("api-key", user.Apikey)
-	sess.Save()
+	sess.Set("uid", user.ID)
+	err = sess.Save()
+	if err != nil {
+		return apiError(c, fiber.StatusInternalServerError, errorSavingSession, err)
+	}
 
-	return c.Status(fiber.StatusOK).SendString("")
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"username": user.Name,
+		"role":     user.Role,
+	})
 }

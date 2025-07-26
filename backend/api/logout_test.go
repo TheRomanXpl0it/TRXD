@@ -11,7 +11,6 @@ var testLogout = []struct {
 	register       bool
 	login          bool
 	expectedStatus int
-	expectedError  string
 }{
 	{
 		expectedStatus: http.StatusOK,
@@ -48,7 +47,5 @@ func TestLogout(t *testing.T) {
 				t.Errorf("Expected session_id cookie to be cleared, got %s", cookie.Value)
 			}
 		}
-
-		session.CheckResponse(test.expectedError)
 	}
 }

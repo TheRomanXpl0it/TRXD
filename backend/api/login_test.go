@@ -8,45 +8,46 @@ import (
 )
 
 var testLogin = []struct {
-	testBody       interface{}
-	register       bool
-	expectedStatus int
-	expectedError  string
+	testBody         interface{}
+	register         bool
+	expectedStatus   int
+	expectedResponse map[string]interface{}
 }{
 	{
-		testBody:       nil,
-		expectedStatus: http.StatusBadRequest,
-		expectedError:  invalidJSON,
+		testBody:         nil,
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: map[string]interface{}{"error": invalidJSON},
 	},
 	{
-		testBody:       map[string]string{"email": "test@test.test"},
-		expectedStatus: http.StatusBadRequest,
-		expectedError:  missingRequiredFields,
+		testBody:         map[string]string{"email": "test@test.test"},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: map[string]interface{}{"error": missingRequiredFields},
 	},
 	{
-		testBody:       map[string]string{"password": "testpass"},
-		expectedStatus: http.StatusBadRequest,
-		expectedError:  missingRequiredFields,
+		testBody:         map[string]string{"password": "testpass"},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: map[string]interface{}{"error": missingRequiredFields},
 	},
 	{
-		testBody:       map[string]string{"email": "test@test.test", "password": strings.Repeat("a", maxPasswordLength+1)},
-		expectedStatus: http.StatusBadRequest,
-		expectedError:  longPassword,
+		testBody:         map[string]string{"email": "test@test.test", "password": strings.Repeat("a", maxPasswordLength+1)},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: map[string]interface{}{"error": longPassword},
 	},
 	{
-		testBody:       map[string]string{"email": strings.Repeat("a", maxEmailLength+1), "password": "testpass"},
-		expectedStatus: http.StatusBadRequest,
-		expectedError:  longEmail,
+		testBody:         map[string]string{"email": strings.Repeat("a", maxEmailLength+1), "password": "testpass"},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: map[string]interface{}{"error": longEmail},
 	},
 	{
-		testBody:       map[string]string{"email": "test@test.test", "password": "testpass"},
-		expectedStatus: http.StatusUnauthorized,
-		expectedError:  invalidCredentials,
+		testBody:         map[string]string{"email": "test@test.test", "password": "testpass"},
+		expectedStatus:   http.StatusUnauthorized,
+		expectedResponse: map[string]interface{}{"error": invalidCredentials},
 	},
 	{
-		testBody:       map[string]string{"username": "test", "email": "test@test.test", "password": "testpass"},
-		register:       true,
-		expectedStatus: http.StatusOK,
+		testBody:         map[string]string{"username": "test", "email": "test@test.test", "password": "testpass"},
+		register:         true,
+		expectedStatus:   http.StatusOK,
+		expectedResponse: map[string]interface{}{"username": "test", "role": "Player"},
 	},
 }
 
@@ -64,6 +65,6 @@ func TestLogin(t *testing.T) {
 
 		session := newApiTestSession(t, app)
 		session.Request(http.MethodPost, "/login", test.testBody, test.expectedStatus)
-		session.CheckResponse(test.expectedError)
+		session.CheckResponse(test.expectedResponse)
 	}
 }
