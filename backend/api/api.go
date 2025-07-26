@@ -2,6 +2,7 @@ package api
 
 import (
 	"regexp"
+	"trxd/db"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
@@ -32,9 +33,13 @@ const (
 	errorRegisteringTeam   = "Error registering team"
 	teamAlreadyExists      = "Team already exists"
 	errorFetchingTeam      = "Error fetching team"
+	invalidTeamCredentials = "Invalid name or password"
 )
 
 var UserRegex = regexp.MustCompile(`(^[^@\s]+@[^@\s]+\.[^@\s]+$)`)
+
+// TODO: set store as redis + set configs (expire time, etc.)
+var store = session.New(session.Config{})
 
 func apiError(c *fiber.Ctx, status int, message string, err ...error) error {
 	if err != nil {
@@ -42,9 +47,6 @@ func apiError(c *fiber.Ctx, status int, message string, err ...error) error {
 	}
 	return c.Status(status).JSON(fiber.Map{"error": message})
 }
-
-// TODO: set store as redis + set configs (expire time, etc.)
-var store = session.New(session.Config{})
 
 func AuthRequired(c *fiber.Ctx) error {
 	sess, err := store.Get(c)
@@ -75,20 +77,27 @@ func SetupApp() *fiber.App {
 	// 	// ExposeHeaders:    "Content-Length,Content-Type",
 	// }))
 
-	// gob.Register(&uuid.UUID{})
-
 	app.Post("/register", register)
 	app.Post("/login", login)
 	app.Post("/logout", logout)
 	app.Post("/register-team", AuthRequired, registerTeam)
+	app.Post("/join-team", AuthRequired, joinTeam)
 
 	// TODO: remove this endpoint
+	//! ############################## TEST ENDPOINT ##############################
 	app.Get("/test", AuthRequired, func(c *fiber.Ctx) error {
 		uid := c.Locals("uid")
+		team, err := db.GetTeamFromUser(c.Context(), uid.(int32))
+		if err != nil {
+			return apiError(c, fiber.StatusInternalServerError, errorFetchingTeam, err)
+		}
+
 		return c.JSON(fiber.Map{
-			"uid": uid,
+			"uid":  uid,
+			"team": team,
 		})
 	})
+	//! ############################## TEST ENDPOINT ##############################
 
 	app.Use(func(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusNotFound)
