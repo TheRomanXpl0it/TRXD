@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -23,6 +24,10 @@ func ConnectDB(user string, password string, dbName string) error {
 	if err != nil {
 		return err
 	}
+
+	db.SetMaxOpenConns(50)
+	db.SetMaxIdleConns(50)
+	db.SetConnMaxIdleTime(time.Hour)
 
 	queries = New(db)
 	return nil

@@ -17,14 +17,16 @@ func OpenTestDB(testDBName string) error {
 		return err
 	}
 
-	err = godotenv.Load(".env")
-	if err != nil {
-		return err
-	}
+	godotenv.Load(".env")
 
 	user := os.Getenv("POSTGRES_USER")
 	password := os.Getenv("POSTGRES_PASSWORD")
 	dbName := os.Getenv("POSTGRES_DB")
+
+	if user == "" || password == "" || dbName == "" {
+		return fmt.Errorf("POSTGRES_USER, POSTGRES_PASSWORD, and POSTGRES_DB must be set")
+	}
+
 	connStr := fmt.Sprintf(connStrTemplate, user, password, dbName)
 	test_db, err = sql.Open("postgres", connStr)
 	if err != nil {

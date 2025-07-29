@@ -1,0 +1,98 @@
+name: TRXd Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+defaults:
+  run:
+    working-directory: ./backend
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        options: >-
+          --health-cmd="pg_isready -U testuser -d testdb"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24'
+  
+    - name: Install netcat
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y netcat-openbsd
+
+    - name: Install Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python3 -m pip install --upgrade pip
+        python3 -m pip install -r ./test_scripts/requirements.txt
+    
+    - name: Install PostgreSQL client
+      run: sudo apt-get install -y postgresql-client
+
+    - name: Wait for Postgres
+      run: |
+        until pg_isready -h localhost -p 5432 -U testuser -d testdb; do
+          echo "Waiting for Postgres..."
+          sleep 2
+        done
+
+    - name: Set environment variables
+      run: |
+        echo "POSTGRES_DB=testdb" >> $GITHUB_ENV
+        echo "POSTGRES_USER=testuser" >> $GITHUB_ENV
+        echo "POSTGRES_PASSWORD=testpass" >> $GITHUB_ENV
+
+    - name: Run Go tests
+      run: |
+        go test -v ./...
+
+    - name: Build main binary
+      run: |
+        go build .
+
+    - name: Run Python test scripts
+      run: |
+        ./trxd &
+        echo $! > server.pid
+        for i in {1..20}; do
+          if nc -z localhost 1337; then
+            echo "Go server is up!"
+            break
+          fi
+          echo "Waiting for Go server..."
+          sleep 1
+        done
+        if ! nc -z localhost 1337; then
+          echo "Server did not start in time" >&2
+          cat server.pid | xargs kill
+          exit 1
+        fi
+        cd ./test_scripts
+        python3 register_team_race.py 500
+        kill $(cat ../server.pid)
