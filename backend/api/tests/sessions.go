@@ -1,29 +1,15 @@
-package api
+package tests
 
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"reflect"
 	"testing"
-	"trxd/db"
 
 	"github.com/gofiber/fiber/v2"
 )
-
-func TestMain(m *testing.M) {
-	if err := db.OpenTestDB("test_api"); err != nil {
-		fmt.Printf("Failed to open test database: %v\n", err)
-		os.Exit(1)
-	}
-	defer db.CloseTestDB()
-
-	exitCode := m.Run()
-	os.Exit(exitCode)
-}
 
 type apiTestSession struct {
 	t        *testing.T

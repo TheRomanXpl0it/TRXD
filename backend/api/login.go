@@ -12,36 +12,36 @@ func login(c *fiber.Ctx) error {
 		Password string `json:"password"`
 	}
 	if err := c.BodyParser(&data); err != nil {
-		return apiError(c, fiber.StatusBadRequest, invalidJSON)
+		return apiError(c, fiber.StatusBadRequest, InvalidJSON)
 	}
 
 	if data.Email == "" || data.Password == "" {
-		return apiError(c, fiber.StatusBadRequest, missingRequiredFields)
+		return apiError(c, fiber.StatusBadRequest, MissingRequiredFields)
 	}
-	if len(data.Password) > maxPasswordLength {
-		return apiError(c, fiber.StatusBadRequest, longPassword)
+	if len(data.Password) > MaxPasswordLength {
+		return apiError(c, fiber.StatusBadRequest, LongPassword)
 	}
-	if len(data.Email) > maxEmailLength {
-		return apiError(c, fiber.StatusBadRequest, longEmail)
+	if len(data.Email) > MaxEmailLength {
+		return apiError(c, fiber.StatusBadRequest, LongEmail)
 	}
 
 	user, err := db.LoginUser(c.Context(), data.Email, data.Password)
 	if err != nil {
-		return apiError(c, fiber.StatusInternalServerError, errorLoggingIn, err)
+		return apiError(c, fiber.StatusInternalServerError, ErrorLoggingIn, err)
 	}
 	if user == nil {
-		return apiError(c, fiber.StatusUnauthorized, invalidCredentials)
+		return apiError(c, fiber.StatusUnauthorized, InvalidCredentials)
 	}
 
 	sess, err := store.Get(c)
 	if err != nil {
-		return apiError(c, fiber.StatusInternalServerError, errorFetchingSession, err)
+		return apiError(c, fiber.StatusInternalServerError, ErrorFetchingSession, err)
 	}
 
 	sess.Set("uid", user.ID)
 	err = sess.Save()
 	if err != nil {
-		return apiError(c, fiber.StatusInternalServerError, errorSavingSession, err)
+		return apiError(c, fiber.StatusInternalServerError, ErrorSavingSession, err)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{

@@ -12,38 +12,38 @@ func joinTeam(c *fiber.Ctx) error {
 		Password string `json:"password"`
 	}
 	if err := c.BodyParser(&data); err != nil {
-		return apiError(c, fiber.StatusBadRequest, invalidJSON)
+		return apiError(c, fiber.StatusBadRequest, InvalidJSON)
 	}
 
 	if data.Name == "" || data.Password == "" {
-		return apiError(c, fiber.StatusBadRequest, missingRequiredFields)
+		return apiError(c, fiber.StatusBadRequest, MissingRequiredFields)
 	}
-	if len(data.Password) < minPasswordLength {
-		return apiError(c, fiber.StatusBadRequest, shortPassword)
+	if len(data.Password) < MinPasswordLength {
+		return apiError(c, fiber.StatusBadRequest, ShortPassword)
 	}
-	if len(data.Password) > maxPasswordLength {
-		return apiError(c, fiber.StatusBadRequest, longPassword)
+	if len(data.Password) > MaxPasswordLength {
+		return apiError(c, fiber.StatusBadRequest, LongPassword)
 	}
-	if len(data.Name) > maxNameLength {
-		return apiError(c, fiber.StatusBadRequest, longName)
+	if len(data.Name) > MaxNameLength {
+		return apiError(c, fiber.StatusBadRequest, LongName)
 	}
 
 	uid := c.Locals("uid")
 
 	team, err := db.GetTeamFromUser(c.Context(), uid.(int32))
 	if err != nil {
-		return apiError(c, fiber.StatusInternalServerError, errorFetchingTeam, err)
+		return apiError(c, fiber.StatusInternalServerError, ErrorFetchingTeam, err)
 	}
 	if team != nil {
-		return apiError(c, fiber.StatusConflict, alreadyInTeam)
+		return apiError(c, fiber.StatusConflict, AlreadyInTeam)
 	}
 
 	team, err = db.JoinTeam(c.Context(), data.Name, data.Password, uid.(int32))
 	if err != nil {
-		return apiError(c, fiber.StatusInternalServerError, errorRegisteringTeam, err)
+		return apiError(c, fiber.StatusInternalServerError, ErrorRegisteringTeam, err)
 	}
 	if team == nil {
-		return apiError(c, fiber.StatusConflict, invalidTeamCredentials)
+		return apiError(c, fiber.StatusConflict, InvalidTeamCredentials)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{

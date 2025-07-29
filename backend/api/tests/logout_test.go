@@ -1,8 +1,9 @@
-package api
+package tests
 
 import (
 	"net/http"
 	"testing"
+	"trxd/api"
 	"trxd/db"
 )
 
@@ -16,20 +17,22 @@ var testLogout = []struct {
 		expectedStatus: http.StatusOK,
 	},
 	{
-		testBody:       map[string]string{"username": "test", "email": "test@test.test", "password": "testpass"},
+		testBody:       JSON{"username": "test", "email": "test@test.test", "password": "testpass"},
 		register:       true,
 		expectedStatus: http.StatusOK,
 	},
 	{
-		testBody:       map[string]string{"email": "test@test.test", "password": "testpass"},
+		testBody:       JSON{"email": "test@test.test", "password": "testpass"},
 		login:          true,
 		expectedStatus: http.StatusOK,
 	},
 }
 
+//TODO: test auth required endpoints
+
 func TestLogout(t *testing.T) {
 	db.DeleteAll()
-	app := SetupApp()
+	app := api.SetupApp()
 	defer app.Shutdown()
 
 	for _, test := range testLogout {
@@ -37,6 +40,7 @@ func TestLogout(t *testing.T) {
 
 		if test.register {
 			session.Request(http.MethodPost, "/register", test.testBody, http.StatusOK)
+			session.Request(http.MethodPost, "/register-team", JSON{"name": "test-team", "password": "testpass"}, http.StatusOK)
 		} else if test.login {
 			session.Request(http.MethodPost, "/login", test.testBody, http.StatusOK)
 		}
@@ -47,5 +51,7 @@ func TestLogout(t *testing.T) {
 				t.Errorf("Expected session_id cookie to be cleared, got %s", cookie.Value)
 			}
 		}
+
+		session.Request(http.MethodPost, "/register-team", JSON{"name": "test-team2", "password": "testpass"}, http.StatusUnauthorized)
 	}
 }

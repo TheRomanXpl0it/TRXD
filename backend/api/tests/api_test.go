@@ -1,31 +1,31 @@
-package db
+package tests
 
 import (
 	"fmt"
 	"os"
 	"testing"
+	"trxd/db"
 )
 
 func TestMain(m *testing.M) {
-	err := os.Chdir("../")
+	err := os.Chdir("../../")
 	if err != nil {
 		fmt.Printf("Failed to change directory: %v\n", err)
 		os.Exit(1)
 	}
 
-	if err := OpenTestDB("test_db"); err != nil {
+	if err := db.OpenTestDB("test_api"); err != nil {
 		fmt.Printf("Failed to open test database: %v\n", err)
 		os.Exit(1)
 	}
-	defer CloseTestDB()
+	defer db.CloseTestDB()
 
 	exitCode := m.Run()
 	os.Exit(exitCode)
 }
 
-func TestTriggers(t *testing.T) {
-	_, err := db.Exec(`SELECT tests();`)
-	if err != nil {
-		t.Fatalf("Failed to run tests: %v", err)
-	}
+type JSON map[string]interface{}
+
+func errorf(val interface{}) JSON {
+	return JSON{"error": val}
 }

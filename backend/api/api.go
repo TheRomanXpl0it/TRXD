@@ -10,30 +10,30 @@ import (
 )
 
 const (
-	minPasswordLength      = 8
-	maxPasswordLength      = 64
-	maxNameLength          = 64
-	maxEmailLength         = 256
-	invalidJSON            = "Invalid JSON format"
-	missingRequiredFields  = "Missing required fields"
-	shortPassword          = "Password must be at least 8 characters long"
-	longPassword           = "Password must not exceed 64 characters"
-	longName               = "Username must not exceed 64 characters"
-	longEmail              = "Email must not exceed 256 characters"
-	invalidEmail           = "Invalid email format"
-	userAlreadyExists      = "User already exists"
-	errorRegisteringUser   = "Error registering user"
-	errorFetchingSession   = "Error fetching session"
-	errorSavingSession     = "Error saving session"
-	errorDestroyingSession = "Error destroying session"
-	errorLoggingIn         = "Error logging in"
-	invalidCredentials     = "Invalid email or password"
-	unauthorized           = "Unauthorized"
-	alreadyInTeam          = "Already in a team"
-	errorRegisteringTeam   = "Error registering team"
-	teamAlreadyExists      = "Team already exists"
-	errorFetchingTeam      = "Error fetching team"
-	invalidTeamCredentials = "Invalid name or password"
+	MinPasswordLength      = 8
+	MaxPasswordLength      = 64
+	MaxNameLength          = 64
+	MaxEmailLength         = 256
+	InvalidJSON            = "Invalid JSON format"
+	MissingRequiredFields  = "Missing required fields"
+	ShortPassword          = "Password must be at least 8 characters long"
+	LongPassword           = "Password must not exceed 64 characters"
+	LongName               = "Username must not exceed 64 characters"
+	LongEmail              = "Email must not exceed 256 characters"
+	InvalidEmail           = "Invalid email format"
+	UserAlreadyExists      = "User already exists"
+	ErrorRegisteringUser   = "Error registering user"
+	ErrorFetchingSession   = "Error fetching session"
+	ErrorSavingSession     = "Error saving session"
+	ErrorDestroyingSession = "Error destroying session"
+	ErrorLoggingIn         = "Error logging in"
+	InvalidCredentials     = "Invalid email or password"
+	Unauthorized           = "Unauthorized"
+	AlreadyInTeam          = "Already in a team"
+	ErrorRegisteringTeam   = "Error registering team"
+	TeamAlreadyExists      = "Team already exists"
+	ErrorFetchingTeam      = "Error fetching team"
+	InvalidTeamCredentials = "Invalid name or password"
 )
 
 var UserRegex = regexp.MustCompile(`(^[^@\s]+@[^@\s]+\.[^@\s]+$)`)
@@ -51,12 +51,12 @@ func apiError(c *fiber.Ctx, status int, message string, err ...error) error {
 func AuthRequired(c *fiber.Ctx) error {
 	sess, err := store.Get(c)
 	if err != nil {
-		return apiError(c, fiber.StatusInternalServerError, errorFetchingSession, err)
+		return apiError(c, fiber.StatusInternalServerError, ErrorFetchingSession, err)
 	}
 
 	uid := sess.Get("uid")
 	if uid == nil {
-		return apiError(c, fiber.StatusUnauthorized, unauthorized)
+		return apiError(c, fiber.StatusUnauthorized, Unauthorized)
 	}
 	c.Locals("uid", uid)
 
@@ -89,7 +89,7 @@ func SetupApp() *fiber.App {
 		uid := c.Locals("uid")
 		team, err := db.GetTeamFromUser(c.Context(), uid.(int32))
 		if err != nil {
-			return apiError(c, fiber.StatusInternalServerError, errorFetchingTeam, err)
+			return apiError(c, fiber.StatusInternalServerError, ErrorFetchingTeam, err)
 		}
 
 		return c.JSON(fiber.Map{

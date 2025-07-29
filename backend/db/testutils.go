@@ -12,11 +12,6 @@ import (
 var test_db *sql.DB
 
 func OpenTestDB(testDBName string) error {
-	err := os.Chdir("..")
-	if err != nil {
-		return err
-	}
-
 	godotenv.Load(".env")
 
 	user := os.Getenv("POSTGRES_USER")
@@ -27,6 +22,7 @@ func OpenTestDB(testDBName string) error {
 		return fmt.Errorf("POSTGRES_USER, POSTGRES_PASSWORD, and POSTGRES_DB must be set")
 	}
 
+	var err error
 	connStr := fmt.Sprintf(connStrTemplate, user, password, dbName)
 	test_db, err = sql.Open("postgres", connStr)
 	if err != nil {
