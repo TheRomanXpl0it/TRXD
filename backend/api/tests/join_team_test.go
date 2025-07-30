@@ -6,6 +6,7 @@ import (
 	"testing"
 	"trxd/api"
 	"trxd/db"
+	"trxd/utils/consts"
 )
 
 var testJoinTeam = []struct {
@@ -17,42 +18,42 @@ var testJoinTeam = []struct {
 	{
 		testBody:         nil,
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(api.InvalidJSON),
+		expectedResponse: errorf(consts.InvalidJSON),
 	},
 	{
 		testBody:         JSON{"name": "test"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(api.MissingRequiredFields),
+		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
 	{
 		testBody:         JSON{"password": "testpass"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(api.MissingRequiredFields),
+		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
 	{
-		testBody:         JSON{"name": "test", "password": strings.Repeat("a", api.MinPasswordLength-1)},
+		testBody:         JSON{"name": "test", "password": strings.Repeat("a", consts.MinPasswordLength-1)},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(api.ShortPassword),
+		expectedResponse: errorf(consts.ShortPassword),
 	},
 	{
-		testBody:         JSON{"name": "test", "password": strings.Repeat("a", api.MaxPasswordLength+1)},
+		testBody:         JSON{"name": "test", "password": strings.Repeat("a", consts.MaxPasswordLength+1)},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(api.LongPassword),
+		expectedResponse: errorf(consts.LongPassword),
 	},
 	{
-		testBody:         JSON{"name": strings.Repeat("a", api.MaxNameLength+1), "password": "testpass"},
+		testBody:         JSON{"name": strings.Repeat("a", consts.MaxNameLength+1), "password": "testpass"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(api.LongName),
+		expectedResponse: errorf(consts.LongName),
 	},
 	{
 		testBody:         JSON{"name": "test1", "password": "testpass"},
 		expectedStatus:   http.StatusConflict,
-		expectedResponse: errorf(api.InvalidTeamCredentials),
+		expectedResponse: errorf(consts.InvalidTeamCredentials),
 	},
 	{
 		testBody:         JSON{"name": "test", "password": "testpassa"},
 		expectedStatus:   http.StatusConflict,
-		expectedResponse: errorf(api.InvalidTeamCredentials),
+		expectedResponse: errorf(consts.InvalidTeamCredentials),
 	},
 	{
 		testBody:         JSON{"name": "test", "password": "testpass"},
@@ -63,7 +64,7 @@ var testJoinTeam = []struct {
 		testBody:         JSON{"name": "test", "password": "testpass"},
 		expectedStatus:   http.StatusConflict,
 		secondUser:       true,
-		expectedResponse: errorf(api.AlreadyInTeam),
+		expectedResponse: errorf(consts.AlreadyInTeam),
 	},
 }
 

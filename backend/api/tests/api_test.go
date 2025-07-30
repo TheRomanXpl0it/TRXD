@@ -7,6 +7,7 @@ import (
 	"testing"
 	"trxd/api"
 	"trxd/db"
+	"trxd/utils/consts"
 )
 
 type JSON map[string]interface{}
@@ -38,5 +39,5 @@ func Test404(t *testing.T) {
 	defer app.Shutdown()
 
 	session := newApiTestSession(t, app)
-	session.Get("/nonexistent-endpoint", errorf(api.EndpointNotFound), http.StatusNotFound)
+	session.Get("/nonexistent-endpoint", errorf(consts.EndpointNotFound), http.StatusNotFound)
 }

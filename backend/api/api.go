@@ -1,152 +1,14 @@
 package api
 
 import (
-	"regexp"
+	"trxd/api/auth"
+	"trxd/api/routes"
 	"trxd/db"
+	"trxd/utils"
+	"trxd/utils/consts"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/session"
-	"github.com/tde-nico/log"
 )
-
-const (
-	MinPasswordLength      = 8
-	MaxPasswordLength      = 64
-	MaxNameLength          = 64
-	MaxEmailLength         = 256
-	MaxFlagLength          = 128
-	MaxCategoryLength      = 32
-	MaxIconLength          = 32
-	EndpointNotFound       = "Endpoint not found"
-	InvalidJSON            = "Invalid JSON format"
-	MissingRequiredFields  = "Missing required fields"
-	ShortPassword          = "Password must be at least 8 characters long"
-	LongPassword           = "Password must not exceed 64 characters"
-	LongName               = "Name must not exceed 64 characters"
-	LongEmail              = "Email must not exceed 256 characters"
-	InvalidEmail           = "Invalid email format"
-	UserAlreadyExists      = "User already exists"
-	ErrorRegisteringUser   = "Error registering user"
-	ErrorFetchingSession   = "Error fetching session"
-	ErrorSavingSession     = "Error saving session"
-	ErrorDestroyingSession = "Error destroying session"
-	ErrorLoggingIn         = "Error logging in"
-	InvalidCredentials     = "Invalid email or password"
-	Unauthorized           = "Unauthorized"
-	AlreadyInTeam          = "Already in a team"
-	ErrorRegisteringTeam   = "Error registering team"
-	TeamAlreadyExists      = "Team already exists"
-	ErrorFetchingTeam      = "Error fetching team"
-	InvalidTeamCredentials = "Invalid name or password"
-	LongFlag               = "Flag must not exceed 128 characters"
-	ErrorFetchingChallenge = "Error fetching challenge"
-	ChallengeNotFound      = "Challenge not found"
-	ErrorSubmittingFlag    = "Error submitting flag"
-	LongCategory           = "Category must not exceed 32 characters"
-	LongIcon               = "Icon must not exceed 32 characters"
-	ErrorCreatingCategory  = "Error creating category"
-	CategoryAlreadyExists  = "Category already exists"
-	ErrorFetchingUser      = "Error fetching user"
-	ErrorCreatingChallenge = "Error creating challenge"
-	ChallengeAlreadyExists = "Challenge already exists"
-)
-
-var UserRegex = regexp.MustCompile(`(^[^@\s]+@[^@\s]+\.[^@\s]+$)`)
-
-// TODO: set store as redis + set configs (expire time, etc.)
-var store = session.New(session.Config{})
-
-func apiError(c *fiber.Ctx, status int, message string, err ...error) error {
-	if err != nil {
-		log.Error("API Error:", "desc", message, "err", err)
-	}
-	return c.Status(status).JSON(fiber.Map{"error": message})
-}
-
-func AuthRequired(c *fiber.Ctx) error {
-	sess, err := store.Get(c)
-	if err != nil {
-		return apiError(c, fiber.StatusInternalServerError, ErrorFetchingSession, err)
-	}
-
-	uid := sess.Get("uid")
-	if uid == nil {
-		return apiError(c, fiber.StatusUnauthorized, Unauthorized)
-	}
-
-	c.Locals("uid", uid)
-	return c.Next()
-}
-
-func PlayerRequired(c *fiber.Ctx) error {
-	sess, err := store.Get(c)
-	if err != nil {
-		return apiError(c, fiber.StatusInternalServerError, ErrorFetchingSession, err)
-	}
-
-	uid := sess.Get("uid")
-	if uid == nil {
-		return apiError(c, fiber.StatusUnauthorized, Unauthorized)
-	}
-
-	user, err := db.GetUserByID(c.Context(), uid.(int32))
-	if err != nil {
-		return apiError(c, fiber.StatusInternalServerError, ErrorFetchingUser, err)
-	}
-	if user == nil || (user.Role != db.UserRolePlayer &&
-		user.Role != db.UserRoleAuthor && user.Role != db.UserRoleAdmin) {
-		return apiError(c, fiber.StatusForbidden, Unauthorized)
-	}
-
-	c.Locals("uid", uid)
-	return c.Next()
-}
-
-func AuthorRequired(c *fiber.Ctx) error {
-	sess, err := store.Get(c)
-	if err != nil {
-		return apiError(c, fiber.StatusInternalServerError, ErrorFetchingSession, err)
-	}
-
-	uid := sess.Get("uid")
-	if uid == nil {
-		return apiError(c, fiber.StatusUnauthorized, Unauthorized)
-	}
-
-	user, err := db.GetUserByID(c.Context(), uid.(int32))
-	if err != nil {
-		return apiError(c, fiber.StatusInternalServerError, ErrorFetchingUser, err)
-	}
-	if user == nil || (user.Role != db.UserRoleAuthor && user.Role != db.UserRoleAdmin) {
-		return apiError(c, fiber.StatusForbidden, Unauthorized)
-	}
-
-	c.Locals("uid", uid)
-	return c.Next()
-}
-
-func AdminRequired(c *fiber.Ctx) error {
-	sess, err := store.Get(c)
-	if err != nil {
-		return apiError(c, fiber.StatusInternalServerError, ErrorFetchingSession, err)
-	}
-
-	uid := sess.Get("uid")
-	if uid == nil {
-		return apiError(c, fiber.StatusUnauthorized, Unauthorized)
-	}
-
-	user, err := db.GetUserByID(c.Context(), uid.(int32))
-	if err != nil {
-		return apiError(c, fiber.StatusInternalServerError, ErrorFetchingUser, err)
-	}
-	if user == nil || user.Role != db.UserRoleAdmin {
-		return apiError(c, fiber.StatusForbidden, Unauthorized)
-	}
-
-	c.Locals("uid", uid)
-	return c.Next()
-}
 
 func SetupApp() *fiber.App {
 	app := fiber.New(fiber.Config{
@@ -162,24 +24,24 @@ func SetupApp() *fiber.App {
 	// 	// ExposeHeaders:    "Content-Length,Content-Type",
 	// }))
 
-	app.Post("/register", register)
-	app.Post("/login", login)
-	app.Post("/logout", logout)
+	app.Post("/register", routes.Register)
+	app.Post("/login", routes.Login)
+	app.Post("/logout", routes.Logout)
 
-	app.Post("/register-team", PlayerRequired, registerTeam)
-	app.Post("/join-team", PlayerRequired, joinTeam)
-	app.Post("/submit", PlayerRequired, submit)
+	app.Post("/register-team", auth.PlayerRequired, routes.RegisterTeam)
+	app.Post("/join-team", auth.PlayerRequired, routes.JoinTeam)
+	app.Post("/submit", auth.PlayerRequired, routes.Submit)
 
-	app.Post("/create-category", AuthorRequired, createCategory)
-	app.Post("/create-challenge", AuthorRequired, createChallenge)
+	app.Post("/create-category", auth.AuthorRequired, routes.CreateCategory)
+	app.Post("/create-challenge", auth.AuthorRequired, routes.CreateChallenge)
 
 	// TODO: remove this endpoint
 	//! ############################## TEST ENDPOINT ##############################
-	app.Get("/test", AuthRequired, func(c *fiber.Ctx) error {
+	app.Get("/test", auth.AuthRequired, func(c *fiber.Ctx) error {
 		uid := c.Locals("uid")
 		team, err := db.GetTeamFromUser(c.Context(), uid.(int32))
 		if err != nil {
-			return apiError(c, fiber.StatusInternalServerError, ErrorFetchingTeam, err)
+			return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingTeam, err)
 		}
 
 		return c.JSON(fiber.Map{
@@ -190,7 +52,7 @@ func SetupApp() *fiber.App {
 	//! ############################## TEST ENDPOINT ##############################
 
 	app.Use(func(c *fiber.Ctx) error {
-		return apiError(c, fiber.StatusNotFound, EndpointNotFound)
+		return utils.Error(c, fiber.StatusNotFound, consts.EndpointNotFound)
 	})
 
 	return app

@@ -6,6 +6,7 @@ import (
 	"testing"
 	"trxd/api"
 	"trxd/db"
+	"trxd/utils/consts"
 )
 
 var testLogin = []struct {
@@ -17,32 +18,32 @@ var testLogin = []struct {
 	{
 		testBody:         nil,
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(api.InvalidJSON),
+		expectedResponse: errorf(consts.InvalidJSON),
 	},
 	{
 		testBody:         JSON{"email": "test@test.test"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(api.MissingRequiredFields),
+		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
 	{
 		testBody:         JSON{"password": "testpass"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(api.MissingRequiredFields),
+		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
 	{
-		testBody:         JSON{"email": "test@test.test", "password": strings.Repeat("a", api.MaxPasswordLength+1)},
+		testBody:         JSON{"email": "test@test.test", "password": strings.Repeat("a", consts.MaxPasswordLength+1)},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(api.LongPassword),
+		expectedResponse: errorf(consts.LongPassword),
 	},
 	{
-		testBody:         JSON{"email": strings.Repeat("a", api.MaxEmailLength+1), "password": "testpass"},
+		testBody:         JSON{"email": strings.Repeat("a", consts.MaxEmailLength+1), "password": "testpass"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(api.LongEmail),
+		expectedResponse: errorf(consts.LongEmail),
 	},
 	{
 		testBody:         JSON{"email": "test@test.test", "password": "testpass"},
 		expectedStatus:   http.StatusUnauthorized,
-		expectedResponse: errorf(api.InvalidCredentials),
+		expectedResponse: errorf(consts.InvalidCredentials),
 	},
 	{
 		testBody:         JSON{"username": "test", "email": "test@test.test", "password": "testpass"},

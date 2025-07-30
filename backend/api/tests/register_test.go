@@ -6,6 +6,7 @@ import (
 	"testing"
 	"trxd/api"
 	"trxd/db"
+	"trxd/utils/consts"
 )
 
 var testRegister = []struct {
@@ -16,62 +17,62 @@ var testRegister = []struct {
 	{
 		testBody:         nil,
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(api.InvalidJSON),
+		expectedResponse: errorf(consts.InvalidJSON),
 	},
 	{
 		testBody:         JSON{"username": "test"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(api.MissingRequiredFields),
+		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
 	{
 		testBody:         JSON{"email": "test@test.test"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(api.MissingRequiredFields),
+		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
 	{
 		testBody:         JSON{"password": "testpass"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(api.MissingRequiredFields),
+		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
 	{
 		testBody:         JSON{"username": "test", "email": "test@test.test"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(api.MissingRequiredFields),
+		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
 	{
 		testBody:         JSON{"username": "test", "password": "testpass"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(api.MissingRequiredFields),
+		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
 	{
 		testBody:         JSON{"email": "test@test.test", "password": "testpass"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(api.MissingRequiredFields),
+		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
 	{
-		testBody:         JSON{"username": "test", "email": "test@test.test", "password": strings.Repeat("a", api.MinPasswordLength-1)},
+		testBody:         JSON{"username": "test", "email": "test@test.test", "password": strings.Repeat("a", consts.MinPasswordLength-1)},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(api.ShortPassword),
+		expectedResponse: errorf(consts.ShortPassword),
 	},
 	{
-		testBody:         JSON{"username": "test", "email": "test@test.test", "password": strings.Repeat("a", api.MaxPasswordLength+1)},
+		testBody:         JSON{"username": "test", "email": "test@test.test", "password": strings.Repeat("a", consts.MaxPasswordLength+1)},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(api.LongPassword),
+		expectedResponse: errorf(consts.LongPassword),
 	},
 	{
-		testBody:         JSON{"username": strings.Repeat("a", api.MaxNameLength+1), "email": "test@test.test", "password": "testpass"},
+		testBody:         JSON{"username": strings.Repeat("a", consts.MaxNameLength+1), "email": "test@test.test", "password": "testpass"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(api.LongName),
+		expectedResponse: errorf(consts.LongName),
 	},
 	{
-		testBody:         JSON{"username": "test", "email": strings.Repeat("a", api.MaxEmailLength+1), "password": "testpass"},
+		testBody:         JSON{"username": "test", "email": strings.Repeat("a", consts.MaxEmailLength+1), "password": "testpass"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(api.LongEmail),
+		expectedResponse: errorf(consts.LongEmail),
 	},
 	{
 		testBody:         JSON{"username": "test", "email": "invalid-email", "password": "testpass"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(api.InvalidEmail),
+		expectedResponse: errorf(consts.InvalidEmail),
 	},
 	{
 		testBody:         JSON{"username": "test", "email": "test@test.test", "password": "testpass"},
@@ -81,7 +82,7 @@ var testRegister = []struct {
 	{
 		testBody:         JSON{"username": "test", "email": "test@test.test", "password": "testpass"},
 		expectedStatus:   http.StatusConflict,
-		expectedResponse: errorf(api.UserAlreadyExists),
+		expectedResponse: errorf(consts.UserAlreadyExists),
 	},
 	{
 		testBody:         JSON{"username": "test", "email": "test1@test.test", "password": "testpass"},
