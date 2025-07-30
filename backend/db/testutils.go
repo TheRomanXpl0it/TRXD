@@ -57,9 +57,12 @@ func setupTestDB(testDBName string) error {
 		return err
 	}
 
-	err = ExecSQLFile("sql/schema.sql")
+	success, err := ExecSQLFile("sql/schema.sql")
 	if err != nil {
 		return err
+	}
+	if !success {
+		return fmt.Errorf("schema.sql already executed")
 	}
 	files, err := os.ReadDir("sql/triggers")
 	if err != nil {
@@ -69,14 +72,20 @@ func setupTestDB(testDBName string) error {
 		if file.IsDir() || !strings.HasSuffix(file.Name(), ".sql") {
 			continue
 		}
-		err = ExecSQLFile("sql/triggers/" + file.Name())
+		success, err = ExecSQLFile("sql/triggers/" + file.Name())
 		if err != nil {
 			return err
 		}
+		if !success {
+			return fmt.Errorf("trigger %s already executed", file.Name())
+		}
 	}
-	err = ExecSQLFile("sql/tests.sql")
+	success, err = ExecSQLFile("sql/tests.sql")
 	if err != nil {
 		return err
+	}
+	if !success {
+		return fmt.Errorf("tests.sql already executed")
 	}
 
 	return nil

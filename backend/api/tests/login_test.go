@@ -61,11 +61,11 @@ func TestLogin(t *testing.T) {
 
 		if test.register {
 			session := newApiTestSession(t, app)
-			session.Request(http.MethodPost, "/register", test.testBody, http.StatusOK)
+			session.Post("/register", test.testBody, http.StatusOK)
 		}
 
 		session := newApiTestSession(t, app)
-		session.Request(http.MethodPost, "/login", test.testBody, test.expectedStatus)
+		session.Post("/login", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }

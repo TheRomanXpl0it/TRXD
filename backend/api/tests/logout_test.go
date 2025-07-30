@@ -39,12 +39,12 @@ func TestLogout(t *testing.T) {
 		session := newApiTestSession(t, app)
 
 		if test.register {
-			session.Request(http.MethodPost, "/register", test.testBody, http.StatusOK)
-			session.Request(http.MethodPost, "/register-team", JSON{"name": "test-team", "password": "testpass"}, http.StatusOK)
+			session.Post("/register", test.testBody, http.StatusOK)
+			session.Post("/register-team", JSON{"name": "test-team", "password": "testpass"}, http.StatusOK)
 		} else if test.login {
-			session.Request(http.MethodPost, "/login", test.testBody, http.StatusOK)
+			session.Post("/login", test.testBody, http.StatusOK)
 		}
-		session.Request(http.MethodPost, "/logout", test.testBody, test.expectedStatus)
+		session.Post("/logout", test.testBody, test.expectedStatus)
 
 		for _, cookie := range session.Cookies {
 			if cookie.Name == "session_id" && cookie.Value != "" {
@@ -52,6 +52,6 @@ func TestLogout(t *testing.T) {
 			}
 		}
 
-		session.Request(http.MethodPost, "/register-team", JSON{"name": "test-team2", "password": "testpass"}, http.StatusUnauthorized)
+		session.Post("/register-team", JSON{"name": "test-team2", "password": "testpass"}, http.StatusUnauthorized)
 	}
 }

@@ -26,6 +26,21 @@ func newApiTestSession(t *testing.T, app *fiber.App) *apiTestSession {
 	}
 }
 
+func (s *apiTestSession) updateCookies(newCookies []*http.Cookie) {
+	cookieMap := map[string]*http.Cookie{}
+	for _, c := range s.Cookies {
+		cookieMap[c.Name] = c
+	}
+	for _, c := range newCookies {
+		cookieMap[c.Name] = c
+	}
+
+	s.Cookies = make([]*http.Cookie, 0, len(cookieMap))
+	for _, c := range cookieMap {
+		s.Cookies = append(s.Cookies, c)
+	}
+}
+
 func (s *apiTestSession) Request(method string, url string, body interface{}, expectedStatus int) *http.Response {
 	var reqBody []byte
 	var err error
@@ -62,19 +77,12 @@ func (s *apiTestSession) Request(method string, url string, body interface{}, ex
 	return resp
 }
 
-func (s *apiTestSession) updateCookies(newCookies []*http.Cookie) {
-	cookieMap := map[string]*http.Cookie{}
-	for _, c := range s.Cookies {
-		cookieMap[c.Name] = c
-	}
-	for _, c := range newCookies {
-		cookieMap[c.Name] = c
-	}
+func (s *apiTestSession) Get(url string, body interface{}, expectedStatus int) *http.Response {
+	return s.Request(http.MethodGet, url, body, expectedStatus)
+}
 
-	s.Cookies = make([]*http.Cookie, 0, len(cookieMap))
-	for _, c := range cookieMap {
-		s.Cookies = append(s.Cookies, c)
-	}
+func (s *apiTestSession) Post(url string, body interface{}, expectedStatus int) *http.Response {
+	return s.Request(http.MethodPost, url, body, expectedStatus)
 }
 
 func (s *apiTestSession) CheckResponse(expectedResponse map[string]interface{}) {

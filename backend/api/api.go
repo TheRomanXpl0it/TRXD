@@ -14,11 +14,15 @@ const (
 	MaxPasswordLength      = 64
 	MaxNameLength          = 64
 	MaxEmailLength         = 256
+	MaxFlagLength          = 128
+	MaxCategoryLength      = 32
+	MaxIconLength          = 32
+	EndpointNotFound       = "Endpoint not found"
 	InvalidJSON            = "Invalid JSON format"
 	MissingRequiredFields  = "Missing required fields"
 	ShortPassword          = "Password must be at least 8 characters long"
 	LongPassword           = "Password must not exceed 64 characters"
-	LongName               = "Username must not exceed 64 characters"
+	LongName               = "Name must not exceed 64 characters"
 	LongEmail              = "Email must not exceed 256 characters"
 	InvalidEmail           = "Invalid email format"
 	UserAlreadyExists      = "User already exists"
@@ -34,6 +38,17 @@ const (
 	TeamAlreadyExists      = "Team already exists"
 	ErrorFetchingTeam      = "Error fetching team"
 	InvalidTeamCredentials = "Invalid name or password"
+	LongFlag               = "Flag must not exceed 128 characters"
+	ErrorFetchingChallenge = "Error fetching challenge"
+	ChallengeNotFound      = "Challenge not found"
+	ErrorSubmittingFlag    = "Error submitting flag"
+	LongCategory           = "Category must not exceed 32 characters"
+	LongIcon               = "Icon must not exceed 32 characters"
+	ErrorCreatingCategory  = "Error creating category"
+	CategoryAlreadyExists  = "Category already exists"
+	ErrorFetchingUser      = "Error fetching user"
+	ErrorCreatingChallenge = "Error creating challenge"
+	ChallengeAlreadyExists = "Challenge already exists"
 )
 
 var UserRegex = regexp.MustCompile(`(^[^@\s]+@[^@\s]+\.[^@\s]+$)`)
@@ -58,8 +73,78 @@ func AuthRequired(c *fiber.Ctx) error {
 	if uid == nil {
 		return apiError(c, fiber.StatusUnauthorized, Unauthorized)
 	}
-	c.Locals("uid", uid)
 
+	c.Locals("uid", uid)
+	return c.Next()
+}
+
+func PlayerRequired(c *fiber.Ctx) error {
+	sess, err := store.Get(c)
+	if err != nil {
+		return apiError(c, fiber.StatusInternalServerError, ErrorFetchingSession, err)
+	}
+
+	uid := sess.Get("uid")
+	if uid == nil {
+		return apiError(c, fiber.StatusUnauthorized, Unauthorized)
+	}
+
+	user, err := db.GetUserByID(c.Context(), uid.(int32))
+	if err != nil {
+		return apiError(c, fiber.StatusInternalServerError, ErrorFetchingUser, err)
+	}
+	if user == nil || (user.Role != db.UserRolePlayer &&
+		user.Role != db.UserRoleAuthor && user.Role != db.UserRoleAdmin) {
+		return apiError(c, fiber.StatusForbidden, Unauthorized)
+	}
+
+	c.Locals("uid", uid)
+	return c.Next()
+}
+
+func AuthorRequired(c *fiber.Ctx) error {
+	sess, err := store.Get(c)
+	if err != nil {
+		return apiError(c, fiber.StatusInternalServerError, ErrorFetchingSession, err)
+	}
+
+	uid := sess.Get("uid")
+	if uid == nil {
+		return apiError(c, fiber.StatusUnauthorized, Unauthorized)
+	}
+
+	user, err := db.GetUserByID(c.Context(), uid.(int32))
+	if err != nil {
+		return apiError(c, fiber.StatusInternalServerError, ErrorFetchingUser, err)
+	}
+	if user == nil || (user.Role != db.UserRoleAuthor && user.Role != db.UserRoleAdmin) {
+		return apiError(c, fiber.StatusForbidden, Unauthorized)
+	}
+
+	c.Locals("uid", uid)
+	return c.Next()
+}
+
+func AdminRequired(c *fiber.Ctx) error {
+	sess, err := store.Get(c)
+	if err != nil {
+		return apiError(c, fiber.StatusInternalServerError, ErrorFetchingSession, err)
+	}
+
+	uid := sess.Get("uid")
+	if uid == nil {
+		return apiError(c, fiber.StatusUnauthorized, Unauthorized)
+	}
+
+	user, err := db.GetUserByID(c.Context(), uid.(int32))
+	if err != nil {
+		return apiError(c, fiber.StatusInternalServerError, ErrorFetchingUser, err)
+	}
+	if user == nil || user.Role != db.UserRoleAdmin {
+		return apiError(c, fiber.StatusForbidden, Unauthorized)
+	}
+
+	c.Locals("uid", uid)
 	return c.Next()
 }
 
@@ -80,8 +165,13 @@ func SetupApp() *fiber.App {
 	app.Post("/register", register)
 	app.Post("/login", login)
 	app.Post("/logout", logout)
-	app.Post("/register-team", AuthRequired, registerTeam)
-	app.Post("/join-team", AuthRequired, joinTeam)
+
+	app.Post("/register-team", PlayerRequired, registerTeam)
+	app.Post("/join-team", PlayerRequired, joinTeam)
+	app.Post("/submit", PlayerRequired, submit)
+
+	app.Post("/create-category", AuthorRequired, createCategory)
+	app.Post("/create-challenge", AuthorRequired, createChallenge)
 
 	// TODO: remove this endpoint
 	//! ############################## TEST ENDPOINT ##############################
@@ -100,7 +190,7 @@ func SetupApp() *fiber.App {
 	//! ############################## TEST ENDPOINT ##############################
 
 	app.Use(func(c *fiber.Ctx) error {
-		return c.SendStatus(fiber.StatusNotFound)
+		return apiError(c, fiber.StatusNotFound, EndpointNotFound)
 	})
 
 	return app

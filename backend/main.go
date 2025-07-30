@@ -23,7 +23,7 @@ func main() {
 	}
 	defer db.CloseDB()
 
-	err = db.ExecSQLFile("sql/schema.sql")
+	_, err = db.ExecSQLFile("sql/schema.sql")
 	if err != nil {
 		log.Fatal("Error executing schema SQL", "err", err)
 	}
@@ -35,7 +35,7 @@ func main() {
 		if file.IsDir() || !strings.HasSuffix(file.Name(), ".sql") {
 			continue
 		}
-		err = db.ExecSQLFile("sql/triggers/" + file.Name())
+		_, err = db.ExecSQLFile("sql/triggers/" + file.Name())
 		if err != nil {
 			log.Fatal("Error executing trigger SQL", "file", file.Name(), "err", err)
 		}

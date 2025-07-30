@@ -7,7 +7,8 @@ import (
 	"os"
 	"time"
 
-	_ "github.com/lib/pq"
+	"github.com/lib/pq"
+	// _ "github.com/lib/pq"
 )
 
 // TODO: change the address
@@ -42,30 +43,35 @@ func CloseDB() {
 	}
 }
 
-func ExecSQLFile(path string) error {
+func ExecSQLFile(path string) (bool, error) {
 	if db == nil {
-		return fmt.Errorf("database connection is not established")
+		return false, fmt.Errorf("database connection is not established")
 	}
 
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return err
+		return false, err
 	}
 
 	file, err := os.Open(path)
 	if err != nil {
-		return err
+		return false, err
 	}
 	defer file.Close()
 
 	data, err := io.ReadAll(file)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	_, err = db.Exec(string(data))
 	if err != nil {
-		return err
+		if pqErr, ok := err.(*pq.Error); ok {
+			if pqErr.Code == "42710" { // Object already exists error code
+				return false, nil
+			}
+		}
+		return false, err
 	}
 
-	return nil
+	return true, nil
 }

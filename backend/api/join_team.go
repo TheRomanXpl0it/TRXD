@@ -28,9 +28,9 @@ func joinTeam(c *fiber.Ctx) error {
 		return apiError(c, fiber.StatusBadRequest, LongName)
 	}
 
-	uid := c.Locals("uid")
+	uid := c.Locals("uid").(int32)
 
-	team, err := db.GetTeamFromUser(c.Context(), uid.(int32))
+	team, err := db.GetTeamFromUser(c.Context(), uid)
 	if err != nil {
 		return apiError(c, fiber.StatusInternalServerError, ErrorFetchingTeam, err)
 	}
@@ -38,7 +38,7 @@ func joinTeam(c *fiber.Ctx) error {
 		return apiError(c, fiber.StatusConflict, AlreadyInTeam)
 	}
 
-	team, err = db.JoinTeam(c.Context(), data.Name, data.Password, uid.(int32))
+	team, err = db.JoinTeam(c.Context(), data.Name, data.Password, uid)
 	if err != nil {
 		return apiError(c, fiber.StatusInternalServerError, ErrorRegisteringTeam, err)
 	}

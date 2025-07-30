@@ -51,6 +51,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getUserByEmailStmt, err = db.PrepareContext(ctx, getUserByEmail); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserByEmail: %w", err)
 	}
+	if q.getUserByIDStmt, err = db.PrepareContext(ctx, getUserByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUserByID: %w", err)
+	}
 	if q.getUserByNameStmt, err = db.PrepareContext(ctx, getUserByName); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserByName: %w", err)
 	}
@@ -111,6 +114,11 @@ func (q *Queries) Close() error {
 	if q.getUserByEmailStmt != nil {
 		if cerr := q.getUserByEmailStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getUserByEmailStmt: %w", cerr)
+		}
+	}
+	if q.getUserByIDStmt != nil {
+		if cerr := q.getUserByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUserByIDStmt: %w", cerr)
 		}
 	}
 	if q.getUserByNameStmt != nil {
@@ -181,6 +189,7 @@ type Queries struct {
 	getTeamByNameStmt    *sql.Stmt
 	getTeamFromUserStmt  *sql.Stmt
 	getUserByEmailStmt   *sql.Stmt
+	getUserByIDStmt      *sql.Stmt
 	getUserByNameStmt    *sql.Stmt
 	registerTeamStmt     *sql.Stmt
 	registerUserStmt     *sql.Stmt
@@ -200,6 +209,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getTeamByNameStmt:    q.getTeamByNameStmt,
 		getTeamFromUserStmt:  q.getTeamFromUserStmt,
 		getUserByEmailStmt:   q.getUserByEmailStmt,
+		getUserByIDStmt:      q.getUserByIDStmt,
 		getUserByNameStmt:    q.getUserByNameStmt,
 		registerTeamStmt:     q.registerTeamStmt,
 		registerUserStmt:     q.registerUserStmt,

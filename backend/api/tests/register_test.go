@@ -97,7 +97,7 @@ func TestRegister(t *testing.T) {
 
 	for _, test := range testRegister {
 		session := newApiTestSession(t, app)
-		session.Request(http.MethodPost, "/register", test.testBody, test.expectedStatus)
+		session.Post("/register", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }

@@ -2,10 +2,18 @@ package tests
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"testing"
+	"trxd/api"
 	"trxd/db"
 )
+
+type JSON map[string]interface{}
+
+func errorf(val interface{}) JSON {
+	return JSON{"error": val}
+}
 
 func TestMain(m *testing.M) {
 	err := os.Chdir("../../")
@@ -24,8 +32,11 @@ func TestMain(m *testing.M) {
 	os.Exit(exitCode)
 }
 
-type JSON map[string]interface{}
+func Test404(t *testing.T) {
+	db.DeleteAll()
+	app := api.SetupApp()
+	defer app.Shutdown()
 
-func errorf(val interface{}) JSON {
-	return JSON{"error": val}
+	session := newApiTestSession(t, app)
+	session.Get("/nonexistent-endpoint", errorf(api.EndpointNotFound), http.StatusNotFound)
 }

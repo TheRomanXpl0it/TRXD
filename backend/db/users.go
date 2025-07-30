@@ -52,3 +52,15 @@ func LoginUser(ctx context.Context, email, password string) (*User, error) {
 
 	return &user, nil
 }
+
+func GetUserByID(ctx context.Context, userID int32) (*User, error) {
+	user, err := queries.GetUserByID(ctx, userID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &user, nil
+}

@@ -74,12 +74,12 @@ func TestRegisterTeam(t *testing.T) {
 	defer app.Shutdown()
 
 	session := newApiTestSession(t, app)
-	session.Request(http.MethodPost, "/register", JSON{
+	session.Post("/register", JSON{
 		"email":    "test@test.test",
 		"username": "test",
 		"password": "testpass",
 	}, http.StatusOK)
-	session.Request(http.MethodPost, "/register", JSON{
+	session.Post("/register", JSON{
 		"email":    "test2@test.test",
 		"username": "test2",
 		"password": "testpass",
@@ -88,11 +88,11 @@ func TestRegisterTeam(t *testing.T) {
 	for _, test := range testRegisterTeam {
 		session := newApiTestSession(t, app)
 		if test.secondUser {
-			session.Request(http.MethodPost, "/login", JSON{"email": "test2@test.test", "password": "testpass"}, http.StatusOK)
+			session.Post("/login", JSON{"email": "test2@test.test", "password": "testpass"}, http.StatusOK)
 		} else {
-			session.Request(http.MethodPost, "/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+			session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
 		}
-		session.Request(http.MethodPost, "/register-team", test.testBody, test.expectedStatus)
+		session.Post("/register-team", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }

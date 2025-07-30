@@ -43,6 +43,10 @@ SELECT t.* FROM teams t
 -- Assign a user to a team
 UPDATE users SET team_id = $1 WHERE id = $2 AND team_id IS NULL;
 
+-- name: GetUserByID :one
+-- Retrieve a user by their ID
+SELECT * FROM users WHERE id = $1;
+
 -- name: GetUserByName :one
 -- Retrieve a user by their name
 SELECT * FROM users WHERE name = $1;
