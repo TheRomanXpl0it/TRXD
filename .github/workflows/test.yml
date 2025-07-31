@@ -11,7 +11,7 @@ defaults:
     working-directory: ./backend
 
 jobs:
-  test:
+  tests:
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -37,23 +37,21 @@ jobs:
       with:
         go-version: '1.24'
   
-    - name: Install netcat
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y netcat-openbsd
-
     - name: Install Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
-    
+
     - name: Install dependencies
       run: |
+        sudo apt update
+        sudo apt install -y netcat-openbsd
+        sudo apt install -y postgresql-client
+
+    - name: Install Python dependencies
+      run: |
         python3 -m pip install --upgrade pip
-        python3 -m pip install -r ./test_scripts/requirements.txt
-    
-    - name: Install PostgreSQL client
-      run: sudo apt-get install -y postgresql-client
+        python3 -m pip install -r ../tests/requirements.txt
 
     - name: Wait for Postgres
       run: |
@@ -68,15 +66,15 @@ jobs:
         echo "POSTGRES_USER=testuser" >> $GITHUB_ENV
         echo "POSTGRES_PASSWORD=testpass" >> $GITHUB_ENV
 
-    - name: Run Go tests
-      run: |
-        go test -v ./...
-
     - name: Build main binary
       run: |
         go build .
 
-    - name: Run Python test scripts
+    - name: Run Go Unit tests
+      run: |
+        go test -v ./...
+
+    - name: Run Python Integration tests
       run: |
         ./trxd &
         echo $! > server.pid
@@ -93,6 +91,9 @@ jobs:
           cat server.pid | xargs kill
           exit 1
         fi
-        cd ./test_scripts
+
+        cd ../tests/
         python3 register_team_race.py 500
-        kill $(cat ../server.pid)
+
+        cd -
+        kill $(cat ./server.pid)
