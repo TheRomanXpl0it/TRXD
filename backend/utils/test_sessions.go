@@ -1,4 +1,4 @@
-package tests
+package utils
 
 import (
 	"bytes"
@@ -18,7 +18,7 @@ type apiTestSession struct {
 	lastResp *http.Response
 }
 
-func newApiTestSession(t *testing.T, app *fiber.App) *apiTestSession {
+func NewApiTestSession(t *testing.T, app *fiber.App) *apiTestSession {
 	return &apiTestSession{
 		t:       t,
 		app:     app,

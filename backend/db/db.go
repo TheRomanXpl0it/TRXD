@@ -24,9 +24,6 @@ func New(db DBTX) *Queries {
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
-	if q.addConfigStmt, err = db.PrepareContext(ctx, addConfig); err != nil {
-		return nil, fmt.Errorf("error preparing query AddConfig: %w", err)
-	}
 	if q.addTeamMemberStmt, err = db.PrepareContext(ctx, addTeamMember); err != nil {
 		return nil, fmt.Errorf("error preparing query AddTeamMember: %w", err)
 	}
@@ -39,11 +36,17 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createChallengeStmt, err = db.PrepareContext(ctx, createChallenge); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateChallenge: %w", err)
 	}
+	if q.createConfigStmt, err = db.PrepareContext(ctx, createConfig); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateConfig: %w", err)
+	}
 	if q.createFlagStmt, err = db.PrepareContext(ctx, createFlag); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateFlag: %w", err)
 	}
 	if q.getChallengeByIDStmt, err = db.PrepareContext(ctx, getChallengeByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetChallengeByID: %w", err)
+	}
+	if q.getConfigStmt, err = db.PrepareContext(ctx, getConfig); err != nil {
+		return nil, fmt.Errorf("error preparing query GetConfig: %w", err)
 	}
 	if q.getTeamByNameStmt, err = db.PrepareContext(ctx, getTeamByName); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTeamByName: %w", err)
@@ -69,16 +72,14 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.submitStmt, err = db.PrepareContext(ctx, submit); err != nil {
 		return nil, fmt.Errorf("error preparing query Submit: %w", err)
 	}
+	if q.updateConfigStmt, err = db.PrepareContext(ctx, updateConfig); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateConfig: %w", err)
+	}
 	return &q, nil
 }
 
 func (q *Queries) Close() error {
 	var err error
-	if q.addConfigStmt != nil {
-		if cerr := q.addConfigStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing addConfigStmt: %w", cerr)
-		}
-	}
 	if q.addTeamMemberStmt != nil {
 		if cerr := q.addTeamMemberStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing addTeamMemberStmt: %w", cerr)
@@ -99,6 +100,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing createChallengeStmt: %w", cerr)
 		}
 	}
+	if q.createConfigStmt != nil {
+		if cerr := q.createConfigStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createConfigStmt: %w", cerr)
+		}
+	}
 	if q.createFlagStmt != nil {
 		if cerr := q.createFlagStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createFlagStmt: %w", cerr)
@@ -107,6 +113,11 @@ func (q *Queries) Close() error {
 	if q.getChallengeByIDStmt != nil {
 		if cerr := q.getChallengeByIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getChallengeByIDStmt: %w", cerr)
+		}
+	}
+	if q.getConfigStmt != nil {
+		if cerr := q.getConfigStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getConfigStmt: %w", cerr)
 		}
 	}
 	if q.getTeamByNameStmt != nil {
@@ -149,6 +160,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing submitStmt: %w", cerr)
 		}
 	}
+	if q.updateConfigStmt != nil {
+		if cerr := q.updateConfigStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateConfigStmt: %w", cerr)
+		}
+	}
 	return err
 }
 
@@ -188,13 +204,14 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 type Queries struct {
 	db                   DBTX
 	tx                   *sql.Tx
-	addConfigStmt        *sql.Stmt
 	addTeamMemberStmt    *sql.Stmt
 	checkFlagsStmt       *sql.Stmt
 	createCategoryStmt   *sql.Stmt
 	createChallengeStmt  *sql.Stmt
+	createConfigStmt     *sql.Stmt
 	createFlagStmt       *sql.Stmt
 	getChallengeByIDStmt *sql.Stmt
+	getConfigStmt        *sql.Stmt
 	getTeamByNameStmt    *sql.Stmt
 	getTeamFromUserStmt  *sql.Stmt
 	getUserByEmailStmt   *sql.Stmt
@@ -203,19 +220,21 @@ type Queries struct {
 	registerTeamStmt     *sql.Stmt
 	registerUserStmt     *sql.Stmt
 	submitStmt           *sql.Stmt
+	updateConfigStmt     *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
 		db:                   tx,
 		tx:                   tx,
-		addConfigStmt:        q.addConfigStmt,
 		addTeamMemberStmt:    q.addTeamMemberStmt,
 		checkFlagsStmt:       q.checkFlagsStmt,
 		createCategoryStmt:   q.createCategoryStmt,
 		createChallengeStmt:  q.createChallengeStmt,
+		createConfigStmt:     q.createConfigStmt,
 		createFlagStmt:       q.createFlagStmt,
 		getChallengeByIDStmt: q.getChallengeByIDStmt,
+		getConfigStmt:        q.getConfigStmt,
 		getTeamByNameStmt:    q.getTeamByNameStmt,
 		getTeamFromUserStmt:  q.getTeamFromUserStmt,
 		getUserByEmailStmt:   q.getUserByEmailStmt,
@@ -224,5 +243,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		registerTeamStmt:     q.registerTeamStmt,
 		registerUserStmt:     q.registerUserStmt,
 		submitStmt:           q.submitStmt,
+		updateConfigStmt:     q.updateConfigStmt,
 	}
 }

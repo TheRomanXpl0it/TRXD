@@ -34,6 +34,9 @@ func SetupApp() *fiber.App {
 
 	app.Post("/create-category", auth.AuthorRequired, routes.CreateCategory)
 	app.Post("/create-challenge", auth.AuthorRequired, routes.CreateChallenge)
+	app.Post("/create-flag", auth.AuthorRequired, routes.CreateFlag)
+
+	app.Post("/update-config", auth.AdminRequired, routes.UpdateConfig)
 
 	// TODO: remove this endpoint
 	//! ############################## TEST ENDPOINT ##############################

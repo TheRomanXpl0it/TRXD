@@ -7,6 +7,7 @@ import (
 	"testing"
 	"trxd/api"
 	"trxd/db"
+	"trxd/utils"
 	"trxd/utils/consts"
 )
 
@@ -117,7 +118,7 @@ func TestCreateChallenge(t *testing.T) {
 	}
 
 	for _, test := range testCreateChallenge {
-		session := newApiTestSession(t, app)
+		session := utils.NewApiTestSession(t, app)
 		session.Post("/login", JSON{"email": "admin@test.test", "password": "adminpass"}, http.StatusOK)
 		session.Post("/create-challenge", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)

@@ -10,22 +10,6 @@ import (
 	"database/sql"
 )
 
-const addConfig = `-- name: AddConfig :exec
-INSERT INTO configs (key, type, value) VALUES ($1, $2, $3)
-`
-
-type AddConfigParams struct {
-	Key   string `json:"key"`
-	Type  string `json:"type"`
-	Value string `json:"value"`
-}
-
-// Insert a new configuration setting
-func (q *Queries) AddConfig(ctx context.Context, arg AddConfigParams) error {
-	_, err := q.exec(ctx, q.addConfigStmt, addConfig, arg.Key, arg.Type, arg.Value)
-	return err
-}
-
 const addTeamMember = `-- name: AddTeamMember :exec
 UPDATE users SET team_id = $1 WHERE id = $2 AND team_id IS NULL
 `
@@ -101,6 +85,22 @@ func (q *Queries) CreateChallenge(ctx context.Context, arg CreateChallengeParams
 	return id, err
 }
 
+const createConfig = `-- name: CreateConfig :exec
+INSERT INTO configs (key, type, value) VALUES ($1, $2, $3)
+`
+
+type CreateConfigParams struct {
+	Key   string `json:"key"`
+	Type  string `json:"type"`
+	Value string `json:"value"`
+}
+
+// Insert a new configuration setting
+func (q *Queries) CreateConfig(ctx context.Context, arg CreateConfigParams) error {
+	_, err := q.exec(ctx, q.createConfigStmt, createConfig, arg.Key, arg.Type, arg.Value)
+	return err
+}
+
 const createFlag = `-- name: CreateFlag :exec
 INSERT INTO flags (flag, chall_id, regex) VALUES ($1, $2, $3)
 `
@@ -141,6 +141,23 @@ func (q *Queries) GetChallengeByID(ctx context.Context, id int32) (Challenge, er
 		&i.Host,
 		&i.Port,
 		&i.Attachments,
+	)
+	return i, err
+}
+
+const getConfig = `-- name: GetConfig :one
+SELECT key, type, value, description FROM configs WHERE key = $1
+`
+
+// Retrieve a configuration setting by key
+func (q *Queries) GetConfig(ctx context.Context, key string) (Config, error) {
+	row := q.queryRow(ctx, q.getConfigStmt, getConfig, key)
+	var i Config
+	err := row.Scan(
+		&i.Key,
+		&i.Type,
+		&i.Value,
+		&i.Description,
 	)
 	return i, err
 }
@@ -343,4 +360,19 @@ func (q *Queries) Submit(ctx context.Context, arg SubmitParams) (SubmissionStatu
 	var status SubmissionStatus
 	err := row.Scan(&status)
 	return status, err
+}
+
+const updateConfig = `-- name: UpdateConfig :exec
+UPDATE configs SET value = $2 WHERE key = $1
+`
+
+type UpdateConfigParams struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+// Update an existing configuration setting
+func (q *Queries) UpdateConfig(ctx context.Context, arg UpdateConfigParams) error {
+	_, err := q.exec(ctx, q.updateConfigStmt, updateConfig, arg.Key, arg.Value)
+	return err
 }

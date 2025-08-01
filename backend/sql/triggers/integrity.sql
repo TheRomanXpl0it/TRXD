@@ -69,3 +69,22 @@ AFTER INSERT ON challenges
 FOR EACH ROW
 WHEN (NEW.type != 'Normal')
 EXECUTE FUNCTION fn_integrity_chall_docker_configs_add();
+
+
+-- tr_integrity_chall_docker_configs_add_on_update
+
+CREATE OR REPLACE FUNCTION fn_integrity_chall_docker_configs_add_on_update()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NOT EXISTS(SELECT * FROM docker_configs WHERE chall_id = NEW.id) THEN
+    INSERT INTO docker_configs (chall_id) VALUES (NEW.id);
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tr_integrity_chall_docker_configs_add_on_update
+AFTER UPDATE ON challenges
+FOR EACH ROW
+WHEN ((OLD.type = 'Normal') AND (NEW.type != 'Normal'))
+EXECUTE FUNCTION fn_integrity_chall_docker_configs_add_on_update();

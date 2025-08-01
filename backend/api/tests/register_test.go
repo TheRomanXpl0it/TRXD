@@ -6,6 +6,7 @@ import (
 	"testing"
 	"trxd/api"
 	"trxd/db"
+	"trxd/utils"
 	"trxd/utils/consts"
 )
 
@@ -97,7 +98,7 @@ func TestRegister(t *testing.T) {
 	defer app.Shutdown()
 
 	for _, test := range testRegister {
-		session := newApiTestSession(t, app)
+		session := utils.NewApiTestSession(t, app)
 		session.Post("/register", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}

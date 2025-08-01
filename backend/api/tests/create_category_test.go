@@ -7,6 +7,7 @@ import (
 	"testing"
 	"trxd/api"
 	"trxd/db"
+	"trxd/utils"
 	"trxd/utils/consts"
 )
 
@@ -68,7 +69,7 @@ func TestCreateCategory(t *testing.T) {
 	}
 
 	for _, test := range testCreateCategory {
-		session := newApiTestSession(t, app)
+		session := utils.NewApiTestSession(t, app)
 		session.Post("/login", JSON{"email": "admin@test.test", "password": "adminpass"}, http.StatusOK)
 		session.Post("/create-category", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)

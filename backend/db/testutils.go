@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -52,40 +51,10 @@ func setupTestDB(testDBName string) error {
 		os.Getenv("POSTGRES_USER"),
 		os.Getenv("POSTGRES_PASSWORD"),
 		testDBName,
+		true,
 	)
 	if err != nil {
 		return err
-	}
-
-	success, err := ExecSQLFile("sql/schema.sql")
-	if err != nil {
-		return err
-	}
-	if !success {
-		return fmt.Errorf("schema.sql already executed")
-	}
-	files, err := os.ReadDir("sql/triggers")
-	if err != nil {
-		return err
-	}
-	for _, file := range files {
-		if file.IsDir() || !strings.HasSuffix(file.Name(), ".sql") {
-			continue
-		}
-		success, err = ExecSQLFile("sql/triggers/" + file.Name())
-		if err != nil {
-			return err
-		}
-		if !success {
-			return fmt.Errorf("trigger %s already executed", file.Name())
-		}
-	}
-	success, err = ExecSQLFile("sql/tests.sql")
-	if err != nil {
-		return err
-	}
-	if !success {
-		return fmt.Errorf("tests.sql already executed")
 	}
 
 	return nil

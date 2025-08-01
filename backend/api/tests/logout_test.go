@@ -5,6 +5,7 @@ import (
 	"testing"
 	"trxd/api"
 	"trxd/db"
+	"trxd/utils"
 )
 
 var testLogout = []struct {
@@ -36,7 +37,7 @@ func TestLogout(t *testing.T) {
 	defer app.Shutdown()
 
 	for _, test := range testLogout {
-		session := newApiTestSession(t, app)
+		session := utils.NewApiTestSession(t, app)
 
 		if test.register {
 			session.Post("/register", test.testBody, http.StatusOK)

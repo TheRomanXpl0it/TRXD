@@ -7,6 +7,7 @@ import (
 	"testing"
 	"trxd/api"
 	"trxd/db"
+	"trxd/utils"
 	"trxd/utils/consts"
 )
 
@@ -38,6 +39,6 @@ func Test404(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	session := newApiTestSession(t, app)
+	session := utils.NewApiTestSession(t, app)
 	session.Get("/nonexistent-endpoint", errorf(consts.EndpointNotFound), http.StatusNotFound)
 }

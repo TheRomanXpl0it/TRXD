@@ -53,6 +53,10 @@ const (
 	InvalidChallMaxPoints  = "Max points must be greater than 0"
 	InvalidChallScoreType  = "Invalid challenge score type, must be one of: Static, Dynamic"
 	CategoryNotFound       = "Category not found"
+	ErrorCreatingFlag      = "Error creating flag"
+	FlagAlreadyExists      = "Flag already exists"
+	ErrorUpdatingConfig    = "Error updating configuration"
+	ConfigNotFound         = "Configuration not found"
 )
 
 var UserRegex = regexp.MustCompile(`(^[^@\s]+@[^@\s]+\.[^@\s]+$)`)

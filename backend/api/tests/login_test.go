@@ -6,6 +6,7 @@ import (
 	"testing"
 	"trxd/api"
 	"trxd/db"
+	"trxd/utils"
 	"trxd/utils/consts"
 )
 
@@ -61,11 +62,11 @@ func TestLogin(t *testing.T) {
 	for _, test := range testLogin {
 
 		if test.register {
-			session := newApiTestSession(t, app)
+			session := utils.NewApiTestSession(t, app)
 			session.Post("/register", test.testBody, http.StatusOK)
 		}
 
-		session := newApiTestSession(t, app)
+		session := utils.NewApiTestSession(t, app)
 		session.Post("/login", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}

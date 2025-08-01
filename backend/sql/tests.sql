@@ -265,8 +265,18 @@ BEGIN
   PERFORM assert(score=0) FROM teams WHERE name='B';
 
   -- checks that 'chall-3' and 'chall-4' have their configs created
-  PERFORM assert(count(d)=1) FROM docker_configs d WHERE  d.chall_id=(SELECT id FROM challenges WHERE name='chall-3');
-  PERFORM assert(count(d)=1) FROM docker_configs d WHERE  d.chall_id=(SELECT id FROM challenges WHERE name='chall-4');
+  PERFORM assert(count(d)=1) FROM docker_configs d WHERE d.chall_id=(SELECT id FROM challenges WHERE name='chall-3');
+  PERFORM assert(count(d)=1) FROM docker_configs d WHERE d.chall_id=(SELECT id FROM challenges WHERE name='chall-4');
+
+  -- chacks that docker configs are created on type update and not duplicated
+  INSERT INTO challenges (name, category, description, type, max_points, score_type) VALUES ('chall-test', 'cat-1', 'TEST', 'Normal', 500, 'Dynamic');
+  PERFORM assert(count(d)=0) FROM docker_configs d WHERE d.chall_id=(SELECT id FROM challenges WHERE name='chall-test');
+  UPDATE challenges SET type='Container' WHERE id=(SELECT id FROM challenges WHERE name='chall-test');
+  PERFORM assert(count(d)=1) FROM docker_configs d WHERE d.chall_id=(SELECT id FROM challenges WHERE name='chall-test');
+  UPDATE challenges SET type='Normal' WHERE id=(SELECT id FROM challenges WHERE name='chall-test');
+  PERFORM assert(count(d)=1) FROM docker_configs d WHERE d.chall_id=(SELECT id FROM challenges WHERE name='chall-test');
+  UPDATE challenges SET type='Compose' WHERE id=(SELECT id FROM challenges WHERE name='chall-test');
+  PERFORM assert(count(d)=1) FROM docker_configs d WHERE d.chall_id=(SELECT id FROM challenges WHERE name='chall-test');
 
 END;
 $$ LANGUAGE plpgsql;

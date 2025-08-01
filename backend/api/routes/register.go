@@ -10,6 +10,8 @@ import (
 )
 
 func Register(c *fiber.Ctx) error {
+	//TODO: check if configs["allow-register"] is true + make tests
+
 	var data struct {
 		Username string `json:"username"`
 		Email    string `json:"email"`

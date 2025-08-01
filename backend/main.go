@@ -1,14 +1,68 @@
 package main
 
 import (
+	"context"
+	"flag"
 	"os"
 	"strings"
 	"trxd/api"
 	"trxd/db"
+	"trxd/utils/consts"
 
 	"github.com/joho/godotenv"
 	"github.com/tde-nico/log"
 )
+
+func Flags() {
+	var (
+		help     bool
+		h        bool
+		register string
+	)
+	flag.BoolVar(&help, "help", false, "Show help")
+	flag.BoolVar(&h, "h", false, "Show help")
+	flag.StringVar(&register, "r", "", "Register a new admin user with 'username:email:password'")
+	flag.Parse()
+
+	if help || h {
+		flag.Usage()
+		os.Exit(0)
+	}
+
+	if register != "" {
+		parts := strings.SplitN(register, ":", 3)
+		if len(parts) != 3 {
+			log.Fatal("Invalid format for registration. Use 'username:email:password'")
+		}
+		name, email, password := parts[0], parts[1], parts[2]
+
+		if name == "" || email == "" || password == "" {
+			log.Fatal("Username, email, and password must not be empty")
+		}
+		if len(password) < consts.MinPasswordLength {
+			log.Fatal(consts.ShortPassword)
+		}
+		if len(name) > consts.MaxNameLength {
+			log.Fatal(consts.LongName)
+		}
+		if len(email) > consts.MaxEmailLength {
+			log.Fatal(consts.LongEmail)
+		}
+		if len(password) > consts.MaxPasswordLength {
+			log.Fatal(consts.LongPassword)
+		}
+
+		user, err := db.RegisterUser(context.Background(), name, email, password, db.UserRoleAdmin)
+		if err != nil {
+			log.Fatal("Error registering admin user", "err", err)
+		}
+		if user == nil {
+			log.Fatal("Failed to register admin user: user already exists")
+		}
+		log.Info("Admin user registered successfully")
+		os.Exit(0)
+	}
+}
 
 func main() {
 	godotenv.Load()
@@ -23,23 +77,7 @@ func main() {
 	}
 	defer db.CloseDB()
 
-	_, err = db.ExecSQLFile("sql/schema.sql")
-	if err != nil {
-		log.Fatal("Error executing schema SQL", "err", err)
-	}
-	files, err := os.ReadDir("sql/triggers")
-	if err != nil {
-		log.Fatal("Error reading triggers directory", "err", err)
-	}
-	for _, file := range files {
-		if file.IsDir() || !strings.HasSuffix(file.Name(), ".sql") {
-			continue
-		}
-		_, err = db.ExecSQLFile("sql/triggers/" + file.Name())
-		if err != nil {
-			log.Fatal("Error executing trigger SQL", "file", file.Name(), "err", err)
-		}
-	}
+	Flags()
 
 	log.Info("Starting TRXd server")
 	defer log.Info("Stopping TRXd server")

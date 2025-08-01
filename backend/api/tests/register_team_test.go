@@ -6,6 +6,7 @@ import (
 	"testing"
 	"trxd/api"
 	"trxd/db"
+	"trxd/utils"
 	"trxd/utils/consts"
 )
 
@@ -74,7 +75,7 @@ func TestRegisterTeam(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	session := newApiTestSession(t, app)
+	session := utils.NewApiTestSession(t, app)
 	session.Post("/register", JSON{
 		"username": "test",
 		"email":    "test@test.test",
@@ -87,7 +88,7 @@ func TestRegisterTeam(t *testing.T) {
 	}, http.StatusOK)
 
 	for _, test := range testRegisterTeam {
-		session := newApiTestSession(t, app)
+		session := utils.NewApiTestSession(t, app)
 		if test.secondUser {
 			session.Post("/login", JSON{"email": "test2@test.test", "password": "testpass"}, http.StatusOK)
 		} else {
