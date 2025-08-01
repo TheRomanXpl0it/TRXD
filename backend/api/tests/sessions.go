@@ -105,6 +105,6 @@ func (s *apiTestSession) CheckResponse(expectedResponse map[string]interface{}) 
 	if !reflect.DeepEqual(expectedResponse, jsonDecoded) {
 		expectedBytes, _ := json.MarshalIndent(expectedResponse, "", "  ")
 		actualBytes, _ := json.MarshalIndent(jsonDecoded, "", "  ")
-		s.t.Fatalf("Response body does not match.\nExpected:\n%s\nGot:\n%s", expectedBytes, actualBytes)
+		s.t.Fatalf("Response body does not match. (if same, try changing types)\nExpected:\n%s\nGot:\n%s", expectedBytes, actualBytes)
 	}
 }

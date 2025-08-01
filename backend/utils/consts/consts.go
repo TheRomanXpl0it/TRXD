@@ -49,9 +49,10 @@ const (
 	ChallengeAlreadyExists = "Challenge already exists"
 	LongChallName          = "Challenge name must not exceed 128 characters"
 	LongChallDesc          = "Challenge description must not exceed 1024 characters"
-	InvalidChallType       = "Invalid challenge type, must be one of: normal, container, compose"
+	InvalidChallType       = "Invalid challenge type, must be one of: Normal, Container, Compose"
 	InvalidChallMaxPoints  = "Max points must be greater than 0"
-	InvalidChallScoreType  = "Invalid challenge score type, must be one of: static, dynamic"
+	InvalidChallScoreType  = "Invalid challenge score type, must be one of: Static, Dynamic"
+	CategoryNotFound       = "Category not found"
 )
 
 var UserRegex = regexp.MustCompile(`(^[^@\s]+@[^@\s]+\.[^@\s]+$)`)

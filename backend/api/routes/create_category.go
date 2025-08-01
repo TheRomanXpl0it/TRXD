@@ -8,8 +8,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// TODO: tests
-
 func CreateCategory(c *fiber.Ctx) error {
 	var data struct {
 		Name string `json:"name"`

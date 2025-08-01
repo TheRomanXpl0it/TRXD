@@ -6,9 +6,8 @@ import (
 	"trxd/utils/consts"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/lib/pq"
 )
-
-// TODO: tests
 
 func CreateChallenge(c *fiber.Ctx) error {
 	var data struct {
@@ -41,12 +40,17 @@ func CreateChallenge(c *fiber.Ctx) error {
 	if data.MaxPoints <= 0 {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidChallMaxPoints)
 	}
-	if utils.In(data.ScoreType, []db.ScoreType{db.ScoreTypeStatic, db.ScoreTypeDynamic}) {
+	if !utils.In(data.ScoreType, []db.ScoreType{db.ScoreTypeStatic, db.ScoreTypeDynamic}) {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidChallScoreType)
 	}
 
 	challenge, err := db.CreateChallenge(c.Context(), data.Name, data.Category, data.Description, data.Type, data.MaxPoints, data.ScoreType)
 	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			if pqErr.Code == "23503" { // Foreign key violation error code
+				return utils.Error(c, fiber.StatusNotFound, consts.CategoryNotFound)
+			}
+		}
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorCreatingChallenge, err)
 	}
 	if challenge == nil {

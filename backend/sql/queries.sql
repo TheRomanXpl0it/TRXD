@@ -6,10 +6,14 @@ INSERT INTO configs (key, type, value) VALUES ($1, $2, $3);
 -- Insert a new category
 INSERT INTO categories (name, icon) VALUES ($1, $2);
 
--- name: CreateChallenge :exec
+-- name: CreateChallenge :one
 -- Insert a new challenge
 INSERT INTO challenges (name, category, description, type, max_points, score_type)
-	VALUES ($1, $2, $3, $4, $5, $6);
+	VALUES ($1, $2, $3, $4, $5, $6) RETURNING id;
+
+-- name: CreateFlag :exec
+-- Insert a new flag for a challenge
+INSERT INTO flags (flag, chall_id, regex) VALUES ($1, $2, $3);
 
 -- name: RegisterUser :one
 -- Insert a new user and return the created user

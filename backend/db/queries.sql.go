@@ -72,9 +72,9 @@ func (q *Queries) CreateCategory(ctx context.Context, arg CreateCategoryParams) 
 	return err
 }
 
-const createChallenge = `-- name: CreateChallenge :exec
+const createChallenge = `-- name: CreateChallenge :one
 INSERT INTO challenges (name, category, description, type, max_points, score_type)
-	VALUES ($1, $2, $3, $4, $5, $6)
+	VALUES ($1, $2, $3, $4, $5, $6) RETURNING id
 `
 
 type CreateChallengeParams struct {
@@ -87,8 +87,8 @@ type CreateChallengeParams struct {
 }
 
 // Insert a new challenge
-func (q *Queries) CreateChallenge(ctx context.Context, arg CreateChallengeParams) error {
-	_, err := q.exec(ctx, q.createChallengeStmt, createChallenge,
+func (q *Queries) CreateChallenge(ctx context.Context, arg CreateChallengeParams) (int32, error) {
+	row := q.queryRow(ctx, q.createChallengeStmt, createChallenge,
 		arg.Name,
 		arg.Category,
 		arg.Description,
@@ -96,6 +96,24 @@ func (q *Queries) CreateChallenge(ctx context.Context, arg CreateChallengeParams
 		arg.MaxPoints,
 		arg.ScoreType,
 	)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
+}
+
+const createFlag = `-- name: CreateFlag :exec
+INSERT INTO flags (flag, chall_id, regex) VALUES ($1, $2, $3)
+`
+
+type CreateFlagParams struct {
+	Flag    string `json:"flag"`
+	ChallID int32  `json:"chall_id"`
+	Regex   bool   `json:"regex"`
+}
+
+// Insert a new flag for a challenge
+func (q *Queries) CreateFlag(ctx context.Context, arg CreateFlagParams) error {
+	_, err := q.exec(ctx, q.createFlagStmt, createFlag, arg.Flag, arg.ChallID, arg.Regex)
 	return err
 }
 

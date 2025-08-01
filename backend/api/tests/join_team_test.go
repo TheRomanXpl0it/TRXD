@@ -75,8 +75,8 @@ func TestJoinTeam(t *testing.T) {
 
 	session := newApiTestSession(t, app)
 	session.Post("/register", JSON{
-		"email":    "test@test.test",
 		"username": "test",
+		"email":    "test@test.test",
 		"password": "testpass",
 	}, http.StatusOK)
 	session.Post("/register-team", JSON{
@@ -84,8 +84,8 @@ func TestJoinTeam(t *testing.T) {
 		"password": "testpass",
 	}, http.StatusOK)
 	session.Post("/register", JSON{
-		"email":    "test2@test.test",
 		"username": "test2",
+		"email":    "test2@test.test",
 		"password": "testpass",
 	}, http.StatusOK)
 

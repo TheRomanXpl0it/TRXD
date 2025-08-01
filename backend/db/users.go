@@ -8,17 +8,21 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func RegisterUser(ctx context.Context, name, email, password string) (*User, error) {
+func RegisterUser(ctx context.Context, name, email, password string, role ...UserRole) (*User, error) {
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
+	}
+
+	if len(role) == 0 {
+		role = append(role, UserRolePlayer)
 	}
 
 	params := RegisterUserParams{
 		Name:         name,
 		Email:        email,
 		PasswordHash: passwordHash,
-		Role:         UserRolePlayer,
+		Role:         role[0],
 	}
 	user, err := queries.RegisterUser(ctx, params)
 	if err != nil {

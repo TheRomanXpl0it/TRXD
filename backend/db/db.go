@@ -39,6 +39,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createChallengeStmt, err = db.PrepareContext(ctx, createChallenge); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateChallenge: %w", err)
 	}
+	if q.createFlagStmt, err = db.PrepareContext(ctx, createFlag); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateFlag: %w", err)
+	}
 	if q.getChallengeByIDStmt, err = db.PrepareContext(ctx, getChallengeByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetChallengeByID: %w", err)
 	}
@@ -94,6 +97,11 @@ func (q *Queries) Close() error {
 	if q.createChallengeStmt != nil {
 		if cerr := q.createChallengeStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createChallengeStmt: %w", cerr)
+		}
+	}
+	if q.createFlagStmt != nil {
+		if cerr := q.createFlagStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createFlagStmt: %w", cerr)
 		}
 	}
 	if q.getChallengeByIDStmt != nil {
@@ -185,6 +193,7 @@ type Queries struct {
 	checkFlagsStmt       *sql.Stmt
 	createCategoryStmt   *sql.Stmt
 	createChallengeStmt  *sql.Stmt
+	createFlagStmt       *sql.Stmt
 	getChallengeByIDStmt *sql.Stmt
 	getTeamByNameStmt    *sql.Stmt
 	getTeamFromUserStmt  *sql.Stmt
@@ -205,6 +214,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		checkFlagsStmt:       q.checkFlagsStmt,
 		createCategoryStmt:   q.createCategoryStmt,
 		createChallengeStmt:  q.createChallengeStmt,
+		createFlagStmt:       q.createFlagStmt,
 		getChallengeByIDStmt: q.getChallengeByIDStmt,
 		getTeamByNameStmt:    q.getTeamByNameStmt,
 		getTeamFromUserStmt:  q.getTeamFromUserStmt,
