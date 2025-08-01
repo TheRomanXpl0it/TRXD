@@ -104,3 +104,34 @@ func GetTeamFromUser(ctx context.Context, userID int32) (*Team, error) {
 
 	return &team, nil
 }
+
+func UpdateTeam(ctx context.Context, teamID int32, nationality, image, bio string) error {
+	err := queries.UpdateTeam(ctx, UpdateTeamParams{
+		ID:          teamID,
+		Nationality: sql.NullString{String: nationality, Valid: nationality != ""},
+		Image:       sql.NullString{String: image, Valid: image != ""},
+		Bio:         sql.NullString{String: bio, Valid: bio != ""},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ResetTeamPassword(ctx context.Context, teamID int32, newPassword string) error {
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	err = queries.ResetTeamPassword(ctx, ResetTeamPasswordParams{
+		ID:           teamID,
+		PasswordHash: passwordHash,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

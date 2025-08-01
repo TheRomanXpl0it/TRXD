@@ -70,3 +70,24 @@ func CreateFlag(ctx context.Context, challengeID int32, flag string, regex bool)
 		Regex:   regex,
 	}, nil
 }
+
+func DeleteChallenge(ctx context.Context, challengeID int32) error {
+	err := queries.DeleteChallenge(ctx, challengeID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func DeleteFlag(ctx context.Context, challengeID int32, flag string) error {
+	err := queries.DeleteFlag(ctx, DeleteFlagParams{
+		ChallID: challengeID,
+		Flag:    flag,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

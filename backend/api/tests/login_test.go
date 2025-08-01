@@ -50,7 +50,7 @@ var testLogin = []struct {
 		testBody:         JSON{"username": "test", "email": "test@test.test", "password": "testpass"},
 		register:         true,
 		expectedStatus:   http.StatusOK,
-		expectedResponse: JSON{"username": "test", "role": "Player"},
+		expectedResponse: JSON{"username": "test", "role": string(db.UserRolePlayer)},
 	},
 }
 

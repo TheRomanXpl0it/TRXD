@@ -21,3 +21,12 @@ func CreateCategory(ctx context.Context, name string, icon string) (*Category, e
 	}
 	return &Category{Name: name, Icon: icon}, nil
 }
+
+func DeleteCategory(ctx context.Context, categoryName string) error {
+	err := queries.DeleteCategory(ctx, categoryName)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

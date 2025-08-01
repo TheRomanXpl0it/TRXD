@@ -64,6 +64,23 @@ func TestSubmit(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
+	session := utils.NewApiTestSession(t, app)
+	session.Post("/register", JSON{"username": "test2", "email": "test2@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/submit", JSON{"chall_id": 0, "flag": "flag{test}"}, http.StatusForbidden)
+	session.CheckResponse(errorf(consts.Unauthorized))
+
+	user3, err := db.RegisterUser(context.Background(), "test3", "test3@test.test", "testpass", db.UserRoleAdmin)
+	if err != nil {
+		t.Fatalf("Failed to register test user: %v", err)
+	}
+	if user3 == nil {
+		t.Fatal("User registration returned nil")
+	}
+	session = utils.NewApiTestSession(t, app)
+	session.Post("/login", JSON{"email": "test3@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/submit", JSON{"chall_id": 0, "flag": "flag{test}"}, http.StatusNotFound)
+	session.CheckResponse(errorf(consts.ChallengeNotFound))
+
 	user, err := db.RegisterUser(context.Background(), "test", "test@test.test", "testpass")
 	if err != nil {
 		t.Fatalf("Failed to register test user: %v", err)

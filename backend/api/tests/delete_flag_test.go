@@ -11,7 +11,7 @@ import (
 	"trxd/utils/consts"
 )
 
-var testCreateFlag = []struct {
+var testDeleteFlag = []struct {
 	testBody         interface{}
 	expectedStatus   int
 	expectedResponse JSON
@@ -46,17 +46,12 @@ var testCreateFlag = []struct {
 		expectedStatus: http.StatusOK,
 	},
 	{
-		testBody:       JSON{"chall_id": "", "flag": `flag\{test\}`, "regex": true},
+		testBody:       JSON{"chall_id": "", "flag": "test"},
 		expectedStatus: http.StatusOK,
-	},
-	{
-		testBody:         JSON{"chall_id": "", "flag": "test"},
-		expectedStatus:   http.StatusConflict,
-		expectedResponse: errorf(consts.FlagAlreadyExists),
 	},
 }
 
-func TestCreateFlag(t *testing.T) {
+func TestDeleteFlag(t *testing.T) {
 	db.DeleteAll()
 	app := api.SetupApp()
 	defer app.Shutdown()
@@ -84,7 +79,12 @@ func TestCreateFlag(t *testing.T) {
 		t.Fatal("Challenge creation returned nil")
 	}
 
-	for _, test := range testCreateFlag {
+	for _, test := range testDeleteFlag {
+		_, err := db.CreateFlag(context.Background(), chall.ID, "test", false)
+		if err != nil {
+			t.Fatalf("Failed to create flag: %v", err)
+		}
+
 		session := utils.NewApiTestSession(t, app)
 		session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
 		if body, ok := test.testBody.(JSON); ok && body != nil {
@@ -92,7 +92,7 @@ func TestCreateFlag(t *testing.T) {
 				test.testBody.(JSON)["chall_id"] = chall.ID
 			}
 		}
-		session.Post("/flag", test.testBody, test.expectedStatus)
+		session.Delete("/flag", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }

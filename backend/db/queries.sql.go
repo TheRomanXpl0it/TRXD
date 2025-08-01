@@ -34,6 +34,7 @@ type CheckFlagsParams struct {
 	ChallID int32  `json:"chall_id"`
 }
 
+// Check if a flag matches any flags for a challenge
 func (q *Queries) CheckFlags(ctx context.Context, arg CheckFlagsParams) (bool, error) {
 	row := q.queryRow(ctx, q.checkFlagsStmt, checkFlags, arg.Flag, arg.ChallID)
 	var bool_or bool
@@ -114,6 +115,41 @@ type CreateFlagParams struct {
 // Insert a new flag for a challenge
 func (q *Queries) CreateFlag(ctx context.Context, arg CreateFlagParams) error {
 	_, err := q.exec(ctx, q.createFlagStmt, createFlag, arg.Flag, arg.ChallID, arg.Regex)
+	return err
+}
+
+const deleteCategory = `-- name: DeleteCategory :exec
+DELETE FROM categories WHERE name = $1
+`
+
+// Delete a category and all associated challenges
+func (q *Queries) DeleteCategory(ctx context.Context, name interface{}) error {
+	_, err := q.exec(ctx, q.deleteCategoryStmt, deleteCategory, name)
+	return err
+}
+
+const deleteChallenge = `-- name: DeleteChallenge :exec
+DELETE FROM challenges WHERE id = $1
+`
+
+// Delete a challenge and all associated flags
+func (q *Queries) DeleteChallenge(ctx context.Context, id int32) error {
+	_, err := q.exec(ctx, q.deleteChallengeStmt, deleteChallenge, id)
+	return err
+}
+
+const deleteFlag = `-- name: DeleteFlag :exec
+DELETE FROM flags WHERE chall_id = $1 AND flag = $2
+`
+
+type DeleteFlagParams struct {
+	ChallID int32  `json:"chall_id"`
+	Flag    string `json:"flag"`
+}
+
+// Delete a flag from a challenge
+func (q *Queries) DeleteFlag(ctx context.Context, arg DeleteFlagParams) error {
+	_, err := q.exec(ctx, q.deleteFlagStmt, deleteFlag, arg.ChallID, arg.Flag)
 	return err
 }
 
@@ -338,6 +374,36 @@ func (q *Queries) RegisterUser(ctx context.Context, arg RegisterUserParams) (Use
 	return i, err
 }
 
+const resetTeamPassword = `-- name: ResetTeamPassword :exec
+UPDATE teams SET password_hash = $1 WHERE id = $2
+`
+
+type ResetTeamPasswordParams struct {
+	PasswordHash interface{} `json:"password_hash"`
+	ID           int32       `json:"id"`
+}
+
+// Reset a team's password to a new password
+func (q *Queries) ResetTeamPassword(ctx context.Context, arg ResetTeamPasswordParams) error {
+	_, err := q.exec(ctx, q.resetTeamPasswordStmt, resetTeamPassword, arg.PasswordHash, arg.ID)
+	return err
+}
+
+const resetUserPassword = `-- name: ResetUserPassword :exec
+UPDATE users SET password_hash = $1 WHERE id = $2
+`
+
+type ResetUserPasswordParams struct {
+	PasswordHash interface{} `json:"password_hash"`
+	ID           int32       `json:"id"`
+}
+
+// Reset a user's password to a new password
+func (q *Queries) ResetUserPassword(ctx context.Context, arg ResetUserPasswordParams) error {
+	_, err := q.exec(ctx, q.resetUserPasswordStmt, resetUserPassword, arg.PasswordHash, arg.ID)
+	return err
+}
+
 const submit = `-- name: Submit :one
 INSERT INTO submissions (user_id, chall_id, status, flag) VALUES ($1, $2, $3, $4) RETURNING status
 `
@@ -374,5 +440,59 @@ type UpdateConfigParams struct {
 // Update an existing configuration setting
 func (q *Queries) UpdateConfig(ctx context.Context, arg UpdateConfigParams) error {
 	_, err := q.exec(ctx, q.updateConfigStmt, updateConfig, arg.Key, arg.Value)
+	return err
+}
+
+const updateTeam = `-- name: UpdateTeam :exec
+UPDATE teams
+SET
+  nationality = COALESCE($2, nationality),
+  image = COALESCE($3, image),
+  bio = COALESCE($4, bio)
+WHERE id = $1
+`
+
+type UpdateTeamParams struct {
+	ID          int32          `json:"id"`
+	Nationality sql.NullString `json:"nationality"`
+	Image       sql.NullString `json:"image"`
+	Bio         sql.NullString `json:"bio"`
+}
+
+// Update team details
+func (q *Queries) UpdateTeam(ctx context.Context, arg UpdateTeamParams) error {
+	_, err := q.exec(ctx, q.updateTeamStmt, updateTeam,
+		arg.ID,
+		arg.Nationality,
+		arg.Image,
+		arg.Bio,
+	)
+	return err
+}
+
+const updateUser = `-- name: UpdateUser :exec
+UPDATE users
+SET
+  name = COALESCE($2, name),
+  nationality = COALESCE($3, nationality),
+  image = COALESCE($4, image)
+WHERE id = $1
+`
+
+type UpdateUserParams struct {
+	ID          int32          `json:"id"`
+	Name        sql.NullString `json:"name"`
+	Nationality sql.NullString `json:"nationality"`
+	Image       sql.NullString `json:"image"`
+}
+
+// Update user details
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
+	_, err := q.exec(ctx, q.updateUserStmt, updateUser,
+		arg.ID,
+		arg.Name,
+		arg.Nationality,
+		arg.Image,
+	)
 	return err
 }

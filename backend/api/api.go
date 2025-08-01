@@ -28,15 +28,28 @@ func SetupApp() *fiber.App {
 	app.Post("/login", routes.Login)
 	app.Post("/logout", routes.Logout)
 
+	app.Patch("/user", auth.PlayerRequired, routes.UpdateUser)
 	app.Post("/register-team", auth.PlayerRequired, routes.RegisterTeam)
 	app.Post("/join-team", auth.PlayerRequired, routes.JoinTeam)
+	app.Patch("/team", auth.PlayerRequired, routes.UpdateTeam)
 	app.Post("/submit", auth.PlayerRequired, routes.Submit)
+	// app.Post("/instance", auth.PlayerRequired, routes.CreateInstance)
+	// app.Patch("/instance", auth.PlayerRequired, routes.ExtendInstance)
+	// app.Delete("/instance", auth.PlayerRequired, routes.DeleteInstance)
 
-	app.Post("/create-category", auth.AuthorRequired, routes.CreateCategory)
-	app.Post("/create-challenge", auth.AuthorRequired, routes.CreateChallenge)
-	app.Post("/create-flag", auth.AuthorRequired, routes.CreateFlag)
+	app.Post("/category", auth.AuthorRequired, routes.CreateCategory)
+	// app.Patch("/category", auth.AuthorRequired, routes.UpdateCategory)
+	app.Delete("/category", auth.AuthorRequired, routes.DeleteCategory)
+	app.Post("/challenge", auth.AuthorRequired, routes.CreateChallenge)
+	// app.Patch("/challenge", auth.AuthorRequired, routes.UpdateChallenge)
+	app.Delete("/challenge", auth.AuthorRequired, routes.DeleteChallenge)
+	app.Post("/flag", auth.AuthorRequired, routes.CreateFlag)
+	// app.Patch("/flag", auth.AuthorRequired, routes.UpdateFlag)
+	app.Delete("/flag", auth.AuthorRequired, routes.DeleteFlag)
 
-	app.Post("/update-config", auth.AdminRequired, routes.UpdateConfig)
+	app.Patch("/config", auth.AdminRequired, routes.UpdateConfig)
+	app.Post("/reset-user-password", auth.AdminRequired, routes.ResetUserPassword)
+	app.Post("/reset-team-password", auth.AdminRequired, routes.ResetTeamPassword)
 
 	// TODO: remove this endpoint
 	//! ############################## TEST ENDPOINT ##############################

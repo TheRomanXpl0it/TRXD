@@ -8,12 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func Submit(c *fiber.Ctx) error {
-	tid := c.Locals("tid")
-	if tid != nil && tid.(int32) == -1 {
-		return utils.Error(c, fiber.StatusForbidden, consts.Unauthorized)
-	}
-
+func DeleteFlag(c *fiber.Ctx) error {
 	var data struct {
 		ChallID *int32 `json:"chall_id"`
 		Flag    string `json:"flag"`
@@ -37,14 +32,10 @@ func Submit(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusNotFound, consts.ChallengeNotFound)
 	}
 
-	uid := c.Locals("uid").(int32)
-
-	status, err := db.SubmitFlag(c.Context(), uid, *data.ChallID, data.Flag)
+	err = db.DeleteFlag(c.Context(), *data.ChallID, data.Flag)
 	if err != nil {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorSubmittingFlag, err)
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorDeletingFlag, err)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"status": status,
-	})
+	return c.SendStatus(fiber.StatusOK)
 }

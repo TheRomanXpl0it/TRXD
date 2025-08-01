@@ -108,9 +108,9 @@ func TestCreateChallenge(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	_, err := db.RegisterUser(context.Background(), "admin", "admin@test.test", "adminpass", db.UserRoleAdmin)
+	_, err := db.RegisterUser(context.Background(), "author", "author@test.test", "authorpass", db.UserRoleAuthor)
 	if err != nil {
-		t.Fatalf("Failed to register admin user: %v", err)
+		t.Fatalf("Failed to register author user: %v", err)
 	}
 	_, err = db.CreateCategory(context.Background(), "cat", "icon")
 	if err != nil {
@@ -119,8 +119,8 @@ func TestCreateChallenge(t *testing.T) {
 
 	for _, test := range testCreateChallenge {
 		session := utils.NewApiTestSession(t, app)
-		session.Post("/login", JSON{"email": "admin@test.test", "password": "adminpass"}, http.StatusOK)
-		session.Post("/create-challenge", test.testBody, test.expectedStatus)
+		session.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
+		session.Post("/challenge", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }

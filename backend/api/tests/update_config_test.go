@@ -66,7 +66,7 @@ func TestUpdateConfig(t *testing.T) {
 	for _, test := range testUpdateConfig {
 		session := utils.NewApiTestSession(t, app)
 		session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
-		session.Post("/update-config", test.testBody, test.expectedStatus)
+		session.Patch("/config", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }

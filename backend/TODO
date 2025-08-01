@@ -1,0 +1,3 @@
+when finished endpoints, review needed data and revome `RETURNIN *;` and similar when not needed
+sort constants alphabetically
+sort/group queries in queries.sql

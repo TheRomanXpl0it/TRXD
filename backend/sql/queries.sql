@@ -80,4 +80,43 @@ SELECT * FROM challenges WHERE id = $1;
 INSERT INTO submissions (user_id, chall_id, status, flag) VALUES ($1, $2, $3, $4) RETURNING status;
 
 -- name: CheckFlags :one
+-- Check if a flag matches any flags for a challenge
 SELECT BOOL_OR(($1 = flag) OR (regex AND $1 ~ flag)) FROM flags WHERE chall_id = $2;
+
+-- name: UpdateUser :exec
+-- Update user details
+UPDATE users
+SET
+  name = COALESCE(sqlc.narg('name'), name),
+  nationality = COALESCE(sqlc.narg('nationality'), nationality),
+  image = COALESCE(sqlc.narg('image'), image)
+WHERE id = $1;
+
+-- name: UpdateTeam :exec
+-- Update team details
+UPDATE teams
+SET
+  nationality = COALESCE(sqlc.narg('nationality'), nationality),
+  image = COALESCE(sqlc.narg('image'), image),
+  bio = COALESCE(sqlc.narg('bio'), bio)
+WHERE id = $1;
+
+-- name: DeleteCategory :exec
+-- Delete a category and all associated challenges
+DELETE FROM categories WHERE name = $1;
+
+-- name: DeleteChallenge :exec
+-- Delete a challenge and all associated flags
+DELETE FROM challenges WHERE id = $1;
+
+-- name: DeleteFlag :exec
+-- Delete a flag from a challenge
+DELETE FROM flags WHERE chall_id = $1 AND flag = $2;
+
+-- name: ResetUserPassword :exec
+-- Reset a user's password to a new password
+UPDATE users SET password_hash = $1 WHERE id = $2;
+
+-- name: ResetTeamPassword :exec
+-- Reset a team's password to a new password
+UPDATE teams SET password_hash = $1 WHERE id = $2;

@@ -85,15 +85,23 @@ func (s *apiTestSession) Post(url string, body interface{}, expectedStatus int) 
 	return s.Request(http.MethodPost, url, body, expectedStatus)
 }
 
-func (s *apiTestSession) CheckResponse(expectedResponse map[string]interface{}) {
+func (s *apiTestSession) Put(url string, body interface{}, expectedStatus int) *http.Response {
+	return s.Request(http.MethodPut, url, body, expectedStatus)
+}
+
+func (s *apiTestSession) Patch(url string, body interface{}, expectedStatus int) *http.Response {
+	return s.Request(http.MethodPatch, url, body, expectedStatus)
+}
+
+func (s *apiTestSession) Delete(url string, body interface{}, expectedStatus int) *http.Response {
+	return s.Request(http.MethodDelete, url, body, expectedStatus)
+}
+
+func (s *apiTestSession) Body() map[string]interface{} {
 	defer s.lastResp.Body.Close()
 	bodyBytes, err := io.ReadAll(s.lastResp.Body)
 	if err != nil {
 		s.t.Fatalf("Failed to read response body: %v", err)
-	}
-
-	if expectedResponse == nil {
-		return
 	}
 
 	var jsonDecoded map[string]interface{}
@@ -102,6 +110,15 @@ func (s *apiTestSession) CheckResponse(expectedResponse map[string]interface{}) 
 		s.t.Fatalf("Failed to unmarshal response body: %v", err)
 	}
 
+	return jsonDecoded
+}
+
+func (s *apiTestSession) CheckResponse(expectedResponse map[string]interface{}) {
+	if expectedResponse == nil {
+		return
+	}
+
+	jsonDecoded := s.Body()
 	if !reflect.DeepEqual(expectedResponse, jsonDecoded) {
 		expectedBytes, _ := json.MarshalIndent(expectedResponse, "", "  ")
 		actualBytes, _ := json.MarshalIndent(jsonDecoded, "", "  ")

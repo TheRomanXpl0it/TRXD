@@ -12,6 +12,8 @@ import (
 // TODO: set store as redis + set configs (expire time, etc.)
 var Store = session.New(session.Config{})
 
+// TODO: make auth_test.go
+
 func AuthRequired(c *fiber.Ctx) error {
 	sess, err := Store.Get(c)
 	if err != nil {
@@ -47,6 +49,13 @@ func PlayerRequired(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusForbidden, consts.Unauthorized)
 	}
 
+	if user.Role == db.UserRolePlayer {
+		if user.TeamID.Valid {
+			c.Locals("tid", user.TeamID.Int32)
+		} else {
+			c.Locals("tid", int32(-1))
+		}
+	}
 	c.Locals("uid", uid)
 	return c.Next()
 }

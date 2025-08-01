@@ -7,6 +7,7 @@ import (
 	"strings"
 	"trxd/api"
 	"trxd/db"
+	"trxd/utils"
 	"trxd/utils/consts"
 
 	"github.com/joho/godotenv"
@@ -31,10 +32,20 @@ func Flags() {
 
 	if register != "" {
 		parts := strings.SplitN(register, ":", 3)
-		if len(parts) != 3 {
+		var name, email, password string
+		if len(parts) == 2 {
+			var err error
+			password, err = utils.GenerateRandPass()
+			if err != nil {
+				log.Fatal("Error generating random password", "err", err)
+			}
+			log.Warn("No password provided, using generated password:", "password", password)
+			name, email = parts[0], parts[1]
+		} else if len(parts) == 3 {
+			name, email, password = parts[0], parts[1], parts[2]
+		} else {
 			log.Fatal("Invalid format for registration. Use 'username:email:password'")
 		}
-		name, email, password := parts[0], parts[1], parts[2]
 
 		if name == "" || email == "" || password == "" {
 			log.Fatal("Username, email, and password must not be empty")
