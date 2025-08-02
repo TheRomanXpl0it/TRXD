@@ -1,4 +1,5 @@
 import { api } from "@/api/axios";
+import axios from "axios";
 
 
 export async function getChallenges(){
@@ -233,24 +234,68 @@ export async function getCategories(){
     return JSON.stringify(categories);
 }
 
-export async function login({ email, password }: { email: string; password: string }) {
+export async function login({
+  email,
+  password,
+}: {
+  email: string;
+  password: string;
+}): Promise<{ status: number; data?: any }> {
+  try {
     const response = await api.post(
-        "/login",
-        { "email": email, "password": password },
-        { withCredentials: true } // important for cookies
+      "/login",
+      { email, password },
+      { withCredentials: true }
     );
-    console.log("Login response:", response.data);
-    return response.data; // usually contains token or user info
+    return { status: response.status, data: response.data };
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      return {
+        status: error.response.status,
+        data: error.response.data,
+      };
+    }
+
+    console.error("Unexpected login error:", error);
+    return {
+      status: 500,
+      data: { message: "Unexpected error occurred" },
+    };
+  }
 }
 
-export async function register({ username, email, password }: { username: string; email: string; password: string }) {
+export async function register({
+  username,
+  email,
+  password,
+}: {
+  username: string;
+  email: string;
+  password: string;
+}): Promise<{ status: number; data?: any }> {
+  try {
     const response = await api.post(
-        "/register",
-        { "username": username, "email": email, "password": password },
-        { withCredentials: true } // important for cookies
+      "/register",
+      { username, email, password },
+      { withCredentials: true }
     );
-    console.log("Register response:", response.data);
-    return response.data; // usually contains token or user info
+    return { status: response.status, data: response.data };
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      // Return the server's status and any data it returned
+      return {
+        status: error.response.status,
+        data: error.response.data,
+      };
+    }
+
+    // Unknown error (network error or non-Axios error)
+    console.error("Unexpected error during registration:", error);
+    return {
+      status: 500,
+      data: { message: "Unexpected error occurred" },
+    };
+  }
 }
 
 export async function fetchTeamData(): Promise<{ name: string; members: string[]; score: number; teamlogo:string, rank: number }> {

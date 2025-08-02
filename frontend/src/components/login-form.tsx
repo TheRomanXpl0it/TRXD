@@ -16,6 +16,8 @@ import { Input } from "@/components/ui/input"
 import { useContext } from "react"
 import AuthContext from "@/context/AuthProvider"
 import { login } from "@/lib/backend-interaction"
+import { data } from "react-router-dom"
+import { set } from "date-fns"
 
 
 
@@ -44,21 +46,43 @@ export function LoginForm() {
     })
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-      try {
-          const data = await login(values); // contains accessToken, roles, etc.
-          const { username, roles } = data;
-
-          setAuth({
-              username,
-              roles,
-          });
-
-
-      } catch (error: any) {
-          console.error("Login failed:", error.response?.data || error.message);
-          form.setError("email", { message: "Invalid credentials" });
-          form.setError("password", { message: "Invalid credentials" });
-      }
+          const response = await login(values); // contains accessToken, role, etc.
+          switch (response.status) {
+              case 200:
+                  console.log("Login successful:", response.data);
+                  const { username, role } = response.data; // Assuming response contains these fields
+                  if (!username || !role) {
+                      form.setError("root", {
+                          type: "manual",
+                          message: "Invalid response from server",
+                      });
+                      return;
+                  }
+                  setAuth({
+                      username,
+                      roles: [role], // Assuming role is a string, adjust if it's an array
+                  });
+                  break;
+              case 400:
+                  form.setError("root", {
+                      type: "manual",
+                      message: "Invalid input. Please check your data.",
+                  });
+                  return;
+              case 401:
+                  form.setError("root", {
+                      type: "manual",
+                      message: "Invalid credentials",
+                  });
+                  form.setError("password", { type: "manual", message: "Invalid credentials" });
+                  return;
+              default:
+                  form.setError("root", {
+                      type: "manual",
+                      message: "An unexpected error occurred",
+                  });
+                  return;
+          }
     }
 
     return (

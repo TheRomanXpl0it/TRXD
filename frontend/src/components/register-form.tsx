@@ -44,7 +44,29 @@ export function RegisterForm() {
     })
     async function onSubmit(values: z.infer<typeof formSchema>) {
         const response = await register(values);
-        console.log("Registration response:", response);
+        switch (response.status) {
+            case 200:
+                console.log("Registration successful:", response.data);
+                break;
+            case 400:
+                form.setError("root", {
+                    type: "manual",
+                    message: "Invalid input. Please check your data.",
+                });
+                break;
+            case 409:
+                form.setError("email", {
+                    type: "manual",
+                    message: "Email is already taken.",
+                });
+                break;
+            default:
+                form.setError("root", {
+                    type: "manual",
+                    message: "Unexpected error occurred.",
+                });
+                break;
+        }
     }
 
     return (
