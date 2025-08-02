@@ -247,7 +247,9 @@ export async function login({
       { email, password },
       { withCredentials: true }
     );
-    return { status: response.status, data: response.data };
+
+    console.log("Login response:", response);
+    return { status: response.status, data: await response.data };
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
       return {

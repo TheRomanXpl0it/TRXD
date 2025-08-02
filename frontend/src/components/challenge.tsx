@@ -215,17 +215,16 @@ function Challenge({
     return (
         <Dialog key={challenge.id}>
             <DialogTrigger asChild>
-                <Card className = {  challenge.hidden ? "m-4 w-[250px] h-[130px] cursor-pointer  bg-gray-300" : "m-4 w-[250px] h-[130px] cursor-pointer"}>
+                <Card className={challenge.hidden ? "m-4 w-[250px] h-[130px] cursor-pointer border-dashed border-2" : "m-4 w-[250px] h-[130px] cursor-pointer"}>
                     <CardHeader>
-                    <CardTitle>{ challenge.title }</CardTitle>
-                    <CardDescription>
-                        { challengeSettings.showTags && showTags(challenge.tags) }
-                    </CardDescription>
+                        <CardTitle>{challenge.title}</CardTitle>
+                        <CardDescription>
+                            {challengeSettings.showTags && showTags(challenge.tags)}
+                        </CardDescription>
                     </CardHeader>
                     <CardFooter className="flex justify-between">
-                        { challenge.points && showPoints(challenge.points) }
-
-                        { challenge.solved && <CircleCheck size={24} className="text-green-500" /> }
+                        {challenge.points && showPoints(challenge.points)}
+                        {challenge.solved && <CircleCheck size={24} className="text-green-500" />}
                     </CardFooter>
                 </Card>
             </DialogTrigger>
