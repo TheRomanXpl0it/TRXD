@@ -4,13 +4,16 @@ import App from "./App"
 import "./index.css"
 import { AuthProvider } from "@/context/AuthProvider"
 import { SettingsProvider } from "@/context/SettingsProvider"
+import { HashRouter as Router } from "react-router-dom"
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <AuthProvider >
-      <SettingsProvider>
-        <App />
-      </SettingsProvider>
-    </AuthProvider>
+    <Router>
+      <AuthProvider >
+        <SettingsProvider>
+          <App />
+        </SettingsProvider>
+      </AuthProvider>
+    </Router>
   </React.StrictMode>,
 )

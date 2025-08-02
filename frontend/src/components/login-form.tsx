@@ -16,8 +16,7 @@ import { Input } from "@/components/ui/input"
 import { useContext } from "react"
 import AuthContext from "@/context/AuthProvider"
 import { login } from "@/lib/backend-interaction"
-import { data } from "react-router-dom"
-import { set } from "date-fns"
+import { useNavigate } from "react-router-dom";
 
 
 
@@ -35,7 +34,7 @@ const formSchema = z.object({
 
 export function LoginForm() {
     const { auth,setAuth } = useContext(AuthContext);
-
+    const navigate = useNavigate();
 
     const form = useForm<z.infer<typeof formSchema>>({
       resolver: zodResolver(formSchema),
@@ -62,6 +61,7 @@ export function LoginForm() {
                       username,
                       roles: [role], // Assuming role is a string, adjust if it's an array
                   });
+                  navigate("/challenges");
                   break;
               case 400:
                   form.setError("root", {
@@ -87,7 +87,7 @@ export function LoginForm() {
 
     return (
         <>
-          {auth.username ? <h1>already logged in</h1> : null}
+          {auth && auth.username ? <h1>already logged in</h1> : null}
           <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField

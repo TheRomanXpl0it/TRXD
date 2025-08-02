@@ -48,7 +48,7 @@ export const Categories: React.FC<CategoriesProps & { categories: string[] }> = 
 
     return (
         <>
-            { isVisible && categories.map((category) => (
+            { isVisible && auth && categories.map((category) => (
                     <React.Fragment key={category}>
                         { displayCategory(category, challenges, challengeSettings, auth) }
                     </React.Fragment>

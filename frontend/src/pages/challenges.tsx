@@ -11,7 +11,7 @@ export function Challenges() {
     const { settings } = useContext(SettingContext);
     const { auth } = useContext(AuthContext);
     const showQuotes = settings.General?.find((setting) => setting.title === 'Show Quotes')?.value;
-    const canPost = auth.roles.includes('admin') || auth.roles.includes('author');
+    const canPost = auth && (auth.roles.includes('Admin') || auth.roles.includes('author'));
 
     useEffect(() => {
         async function fetchChallenges() {

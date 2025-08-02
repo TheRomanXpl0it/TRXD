@@ -7,25 +7,6 @@ import AuthContext from "@/context/AuthProvider"
 import SettingContext from "@/context/SettingsProvider"
 
 
-
-function displayLoggedInItems(
-    loggedInItems: {
-        title: string;
-        icon: React.ForwardRefExoticComponent<Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>>;
-        url: string;
-    }[]
-){
-    return loggedInItems.map((item, index) => (
-        <div key={index}><DropdownMenuItem asChild>
-                <Link to = {item.url}>
-                    <item.icon/>
-                    <span>{item.title}</span>
-                </Link>
-            </DropdownMenuItem>
-        </div>
-    ));
-}
-
 function displayAdminItems(
     adminItems: {
         title: string;
@@ -44,11 +25,11 @@ function displayAdminItems(
 }
 
 export function AppSidebar() {
-    const { auth } = useContext(AuthContext);
+    const { auth, logout } = useContext(AuthContext);
     const { settings } = useContext(SettingContext);
-    
-    const isLoggedIn = auth.username !== null && auth.username !== "";
-    const isAdmin = auth.roles.includes('admin');
+
+    const isLoggedIn = auth && auth.username !== null && auth.username !== "";
+    const isAdmin = auth && auth.roles.includes('Admin');
 
     const allowWriteups = settings.General.find((setting) => setting.title === 'Allow Writeups')?.value;
     const allowTeamPlay = settings.General.find((setting) => setting.title === 'Allow Team Play')?.value;
@@ -58,12 +39,7 @@ export function AppSidebar() {
             title: 'Account',
             icon: UserPen,
             url: '/account',
-        },
-        {
-            title: 'Logout',
-            icon: LogOut,
-            url: '/logout',
-        },
+        }
     ];
 
     let items = [
@@ -125,8 +101,21 @@ export function AppSidebar() {
                 align="start"
                 className="w-full"
             >
-                {isAdmin ? displayAdminItems(adminItems) : null}
-                {displayLoggedInItems(loggedInItems)}
+                {isAdmin && displayAdminItems(adminItems)}
+                {loggedInItems.map((item, index) => (
+                <DropdownMenuItem asChild key={index}>
+                    <Link to={item.url}>
+                    <item.icon />
+                    <span>{item.title}</span>
+                    </Link>
+                </DropdownMenuItem>
+                ))}
+
+                <DropdownMenuItem onSelect={logout}>
+                <LogOut />
+                <span>Logout</span>
+                </DropdownMenuItem>
+
             </DropdownMenuContent>
             </DropdownMenu>
         </SidebarMenuItem>

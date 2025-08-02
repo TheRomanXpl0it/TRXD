@@ -94,7 +94,7 @@ export async function getChallenges(){
             attachments: [
                 { name: "Dockerfile", url: "/files/challenge4/Dockerfile" }
             ] as Attachment[],
-            authors: ["admin","author2"],
+            authors: ["Admin","author2"],
             hidden: false,
             instanced: true,
             timeout: new Date(Date.now() + 5 * 60 * 1000),
@@ -315,4 +315,19 @@ export async function leaveTeam() {
     // Simulate leaving a team
     console.log("Leaving team...");
     return { success: true, message: "You have left the team." };
+}
+
+export async function checkSession(): Promise<{ status: number; data?: any }> {
+  try {
+    const response = await api.get("/auth"); // or your auth check endpoint
+    return { status: response.status, data: response.data };
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      return {
+        status: error.response.status,
+        data: error.response.data,
+      };
+    }
+    return { status: 500, data: { message: "Unexpected error" } };
+  }
 }
