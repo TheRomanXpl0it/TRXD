@@ -91,6 +91,9 @@ var defaultConfigs = map[string]any{
 	"allow-register":     false,
 	"chall-min-points":   50,
 	"chall-points-decay": 15,
+	"instance-lifetime":  30 * 60, // 30 minutes
+	"instance-max-cpu":   "1.0",
+	"instance-max-mem":   512,
 }
 
 func InitConfigs() error {

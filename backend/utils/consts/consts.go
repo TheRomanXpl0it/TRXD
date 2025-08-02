@@ -69,6 +69,8 @@ const (
 	InvalidUserID              = "Invalid user ID, must be greater than 0"
 	ErrorResettingUserPassword = "Error resetting user password"
 	ErrorDeletingFlag          = "Error deleting flag"
+	ErrorFetchingConfig        = "Error fetching configuration"
+	DisabledRegistration       = "Registration is disabled"
 )
 
 var UserRegex = regexp.MustCompile(`(^[^@\s]+@[^@\s]+\.[^@\s]+$)`)

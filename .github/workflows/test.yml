@@ -92,6 +92,8 @@ jobs:
           exit 1
         fi
 
+        ./trxd -t
+
         cd ../tests/
         python3 register_team_race.py 500
 

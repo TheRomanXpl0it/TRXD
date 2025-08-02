@@ -16,17 +16,27 @@ import (
 
 func Flags() {
 	var (
-		help     bool
-		h        bool
-		register string
+		help                bool
+		h                   bool
+		register            string
+		toggleRegisterAllow bool
 	)
 	flag.BoolVar(&help, "help", false, "Show help")
 	flag.BoolVar(&h, "h", false, "Show help")
+	flag.BoolVar(&toggleRegisterAllow, "t", false, "Toggle the allow-register config")
 	flag.StringVar(&register, "r", "", "Register a new admin user with 'username:email:password'")
 	flag.Parse()
 
 	if help || h {
 		flag.Usage()
+		os.Exit(0)
+	}
+
+	if toggleRegisterAllow {
+		err := db.UpdateConfig(context.Background(), "allow-register", "true")
+		if err != nil {
+			log.Fatal("Error updating allow-register config", "err", err)
+		}
 		os.Exit(0)
 	}
 
