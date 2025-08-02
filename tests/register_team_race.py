@@ -18,7 +18,7 @@ email = user + "@test.test"
 # print(user, email)
 
 s = requests.Session()
-r = s.post('http://localhost:1337/register', json={
+r = s.post('http://localhost:1337/api/register', json={
 	"username": user,
 	"email": email,
 	"password": "test1234",
@@ -43,7 +43,7 @@ counter = {
 lock = threading.Lock()
 
 def register_team(name):
-	r = s.post('http://localhost:1337/register-team', json={
+	r = s.post('http://localhost:1337/api/player/register-team', json={
 		"name": name,
 		"password": "testpass",
 	})

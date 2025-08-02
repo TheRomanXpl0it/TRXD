@@ -1,75 +1,115 @@
 package api
 
 import (
+	"encoding/json"
+	"os"
 	"trxd/api/auth"
 	"trxd/api/routes"
-	"trxd/db"
 	"trxd/utils"
 	"trxd/utils/consts"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/proxy"
+	"github.com/tde-nico/log"
 )
+
+func debugMiddleware(c *fiber.Ctx) error {
+
+	reqBody := c.BodyRaw()
+	body := string(reqBody)
+	var tmp map[string]interface{}
+	if err := json.Unmarshal(reqBody, &tmp); err == nil {
+		if tmp2, err := json.MarshalIndent(tmp, "", "  "); err == nil {
+			body = string(tmp2)
+		}
+	}
+	log.Debug("Request:", "method", c.Method(), "path", c.Path(), "body", body)
+
+	e := c.Next()
+
+	resStatus := c.Response().StatusCode()
+	resBody := c.Response().Body()
+	body = string(resBody)
+	tmp = map[string]interface{}{}
+	if err := json.Unmarshal(resBody, &tmp); err == nil {
+		if tmp2, err := json.MarshalIndent(tmp, "", "  "); err == nil {
+			body = string(tmp2)
+		}
+	}
+	log.Debug("Response:", "status", resStatus, "body", body)
+
+	return e
+}
 
 func SetupApp() *fiber.App {
 	app := fiber.New(fiber.Config{
 		AppName: "TRXd",
 	})
 
-	// TODO: fix CORS settings
-	// app.Use(cors.New(cors.Config{
-	// 	AllowOrigins:     "http://localhost:5173",
-	// 	AllowCredentials: true,
-	// 	// AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",
-	// 	// AllowHeaders:     "Origin,Content-Type,Accept,Authorization",
-	// 	// ExposeHeaders:    "Content-Length,Content-Type",
-	// }))
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     "http://localhost:1337",
+		AllowCredentials: true,
+	}))
 
-	app.Post("/register", routes.Register)
-	app.Post("/login", routes.Login)
-	app.Post("/logout", routes.Logout)
+	var api fiber.Router
+	if log.GetLevel() == log.DebugLevel {
+		api = app.Group("/api", debugMiddleware)
+	} else {
+		api = app.Group("/api")
+	}
+	player := api.Group("/player", auth.PlayerRequired)
+	author := api.Group("/author", auth.AuthorRequired)
+	admin := api.Group("/admin", auth.AdminRequired)
 
-	app.Patch("/user", auth.PlayerRequired, routes.UpdateUser)
-	app.Post("/register-team", auth.PlayerRequired, routes.RegisterTeam)
-	app.Post("/join-team", auth.PlayerRequired, routes.JoinTeam)
-	app.Patch("/team", auth.PlayerRequired, routes.UpdateTeam)
-	app.Post("/submit", auth.PlayerRequired, routes.Submit)
-	// app.Post("/instance", auth.PlayerRequired, routes.CreateInstance)
-	// app.Patch("/instance", auth.PlayerRequired, routes.ExtendInstance)
-	// app.Delete("/instance", auth.PlayerRequired, routes.DeleteInstance)
+	api.Post("/register", routes.Register)
+	api.Post("/login", routes.Login)
+	api.Post("/logout", routes.Logout)
+	api.Get("/auth", auth.AuthRequired, routes.Auth)
 
-	app.Post("/category", auth.AuthorRequired, routes.CreateCategory)
-	// app.Patch("/category", auth.AuthorRequired, routes.UpdateCategory)
-	app.Delete("/category", auth.AuthorRequired, routes.DeleteCategory)
-	app.Post("/challenge", auth.AuthorRequired, routes.CreateChallenge)
-	// app.Patch("/challenge", auth.AuthorRequired, routes.UpdateChallenge)
-	app.Delete("/challenge", auth.AuthorRequired, routes.DeleteChallenge)
-	app.Post("/flag", auth.AuthorRequired, routes.CreateFlag)
-	// app.Patch("/flag", auth.AuthorRequired, routes.UpdateFlag)
-	app.Delete("/flag", auth.AuthorRequired, routes.DeleteFlag)
+	player.Patch("/user", routes.UpdateUser)
+	player.Post("/register-team", routes.RegisterTeam)
+	player.Post("/join-team", routes.JoinTeam)
+	player.Patch("/team", routes.UpdateTeam)
+	player.Post("/submit", routes.Submit)
+	// player.Post("/instance", routes.CreateInstance)
+	// player.Patch("/instance", routes.ExtendInstance)
+	// player.Delete("/instance", routes.DeleteInstance)
 
-	app.Patch("/config", auth.AdminRequired, routes.UpdateConfig)
-	app.Post("/reset-user-password", auth.AdminRequired, routes.ResetUserPassword)
-	app.Post("/reset-team-password", auth.AdminRequired, routes.ResetTeamPassword)
+	author.Post("/category", routes.CreateCategory)
+	// author.Patch("/category", routes.UpdateCategory)
+	author.Delete("/category", routes.DeleteCategory)
+	author.Post("/challenge", routes.CreateChallenge)
+	// author.Patch("/challenge", routes.UpdateChallenge)
+	author.Delete("/challenge", routes.DeleteChallenge)
+	author.Post("/flag", routes.CreateFlag)
+	// author.Patch("/flag", routes.UpdateFlag)
+	author.Delete("/flag", routes.DeleteFlag)
 
-	// TODO: remove this endpoint
-	//! ############################## TEST ENDPOINT ##############################
-	app.Get("/test", auth.AuthRequired, func(c *fiber.Ctx) error {
-		uid := c.Locals("uid")
-		team, err := db.GetTeamFromUser(c.Context(), uid.(int32))
-		if err != nil {
-			return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingTeam, err)
+	admin.Patch("/config", routes.UpdateConfig)
+	admin.Post("/reset-user-password", routes.ResetUserPassword)
+	admin.Post("/reset-team-password", routes.ResetTeamPassword)
+
+	if log.GetLevel() == log.DebugLevel {
+		// Serve frontend in development mode
+		frontendAddr := "http://127.0.0.1:5173/"
+		if os.Getenv("FRONTEND_ADDR") != "" {
+			frontendAddr = os.Getenv("FRONTEND_ADDR")
 		}
-
-		return c.JSON(fiber.Map{
-			"uid":  uid,
-			"team": team,
+		app.Use(func(c *fiber.Ctx) error {
+			err := proxy.Do(c, frontendAddr+c.Path()[1:])
+			if err != nil {
+				return err
+			}
+			c.Response().Header.Del(fiber.HeaderServer)
+			return nil
 		})
-	})
-	//! ############################## TEST ENDPOINT ##############################
-
-	app.Use(func(c *fiber.Ctx) error {
-		return utils.Error(c, fiber.StatusNotFound, consts.EndpointNotFound)
-	})
+	} else {
+		// 404 handler
+		app.Use(func(c *fiber.Ctx) error {
+			return utils.Error(c, fiber.StatusNotFound, consts.EndpointNotFound)
+		})
+	}
 
 	return app
 }

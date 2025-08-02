@@ -3,42 +3,38 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"os"
+	"trxd/utils"
 
 	"github.com/joho/godotenv"
 )
 
-var test_db *sql.DB
+var tmp_db *sql.DB
 
 func OpenTestDB(testDBName string) error {
 	godotenv.Load(".env")
 
-	user := os.Getenv("POSTGRES_USER")
-	password := os.Getenv("POSTGRES_PASSWORD")
-	dbName := os.Getenv("POSTGRES_DB")
-
-	if user == "" || password == "" || dbName == "" {
-		return fmt.Errorf("POSTGRES_USER, POSTGRES_PASSWORD, and POSTGRES_DB must be set")
+	info, err := utils.GetDBInfoFromEnv()
+	if err != nil {
+		return fmt.Errorf("failed to get DB info from env: %v", err)
 	}
 
-	var err error
-	connStr := fmt.Sprintf(connStrTemplate, user, password, dbName)
-	test_db, err = sql.Open("postgres", connStr)
+	tmp_db, err = sql.Open("postgres", info.ConnectionString())
 	if err != nil {
 		return err
 	}
 
-	_, err = test_db.Exec(fmt.Sprintf(`DROP DATABASE IF EXISTS %s;`, testDBName))
+	_, err = tmp_db.Exec(fmt.Sprintf(`DROP DATABASE IF EXISTS %s;`, testDBName))
 	if err != nil {
 		return err
 	}
-	_, err = test_db.Exec(fmt.Sprintf(`CREATE DATABASE %s;`, testDBName))
+	_, err = tmp_db.Exec(fmt.Sprintf(`CREATE DATABASE %s;`, testDBName))
 	if err != nil {
 		return err
 	}
-	defer test_db.Exec(fmt.Sprintf(`DROP DATABASE IF EXISTS %s;`, testDBName))
+	defer tmp_db.Exec(fmt.Sprintf(`DROP DATABASE IF EXISTS %s;`, testDBName))
 
-	err = setupTestDB(testDBName)
+	info.DBName = testDBName
+	err = setupTestDB(info)
 	if err != nil {
 		return err
 	}
@@ -46,13 +42,8 @@ func OpenTestDB(testDBName string) error {
 	return nil
 }
 
-func setupTestDB(testDBName string) error {
-	err := ConnectDB(
-		os.Getenv("POSTGRES_USER"),
-		os.Getenv("POSTGRES_PASSWORD"),
-		testDBName,
-		true,
-	)
+func setupTestDB(info *utils.DBInfo) error {
+	err := ConnectDB(info, true)
 	if err != nil {
 		return err
 	}
@@ -62,8 +53,8 @@ func setupTestDB(testDBName string) error {
 
 func CloseTestDB() {
 	CloseDB()
-	if test_db != nil {
-		test_db.Close()
+	if tmp_db != nil {
+		tmp_db.Close()
 	}
 }
 

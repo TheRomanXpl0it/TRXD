@@ -84,12 +84,12 @@ func TestRegisterTeam(t *testing.T) {
 	}
 
 	session := utils.NewApiTestSession(t, app)
-	session.Post("/register", JSON{
+	session.Post("/api/register", JSON{
 		"username": "test",
 		"email":    "test@test.test",
 		"password": "testpass",
 	}, http.StatusOK)
-	session.Post("/register", JSON{
+	session.Post("/api/register", JSON{
 		"username": "test2",
 		"email":    "test2@test.test",
 		"password": "testpass",
@@ -98,11 +98,11 @@ func TestRegisterTeam(t *testing.T) {
 	for _, test := range testRegisterTeam {
 		session := utils.NewApiTestSession(t, app)
 		if test.secondUser {
-			session.Post("/login", JSON{"email": "test2@test.test", "password": "testpass"}, http.StatusOK)
+			session.Post("/api/login", JSON{"email": "test2@test.test", "password": "testpass"}, http.StatusOK)
 		} else {
-			session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+			session.Post("/api/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
 		}
-		session.Post("/register-team", test.testBody, test.expectedStatus)
+		session.Post("/api/player/register-team", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }
@@ -178,16 +178,16 @@ func TestJoinTeam(t *testing.T) {
 	}
 
 	session := utils.NewApiTestSession(t, app)
-	session.Post("/register", JSON{
+	session.Post("/api/register", JSON{
 		"username": "test",
 		"email":    "test@test.test",
 		"password": "testpass",
 	}, http.StatusOK)
-	session.Post("/register-team", JSON{
+	session.Post("/api/player/register-team", JSON{
 		"name":     "test",
 		"password": "testpass",
 	}, http.StatusOK)
-	session.Post("/register", JSON{
+	session.Post("/api/register", JSON{
 		"username": "test2",
 		"email":    "test2@test.test",
 		"password": "testpass",
@@ -196,11 +196,11 @@ func TestJoinTeam(t *testing.T) {
 	for _, test := range testJoinTeam {
 		session := utils.NewApiTestSession(t, app)
 		if test.secondUser {
-			session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+			session.Post("/api/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
 		} else {
-			session.Post("/login", JSON{"email": "test2@test.test", "password": "testpass"}, http.StatusOK)
+			session.Post("/api/login", JSON{"email": "test2@test.test", "password": "testpass"}, http.StatusOK)
 		}
-		session.Post("/join-team", test.testBody, test.expectedStatus)
+		session.Post("/api/player/join-team", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }
@@ -251,13 +251,13 @@ func TestUpdateTeam(t *testing.T) {
 	}
 
 	session := utils.NewApiTestSession(t, app)
-	session.Post("/register", JSON{"username": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
-	session.Post("/register-team", JSON{"name": "test-team", "password": "testpass"}, http.StatusOK)
+	session.Post("/api/register", JSON{"username": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/api/player/register-team", JSON{"name": "test-team", "password": "testpass"}, http.StatusOK)
 
 	for _, test := range testUpdateTeam {
 		session := utils.NewApiTestSession(t, app)
-		session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
-		session.Patch("/team", test.testBody, test.expectedStatus)
+		session.Post("/api/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+		session.Patch("/api/player/team", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }
@@ -329,13 +329,13 @@ func TestResetTeamPassword(t *testing.T) {
 
 	for i, test := range testResetTeamPassword {
 		session := utils.NewApiTestSession(t, app)
-		session.Post("/login", JSON{"email": "admin@test.test", "password": "adminpass"}, http.StatusOK)
+		session.Post("/api/login", JSON{"email": "admin@test.test", "password": "adminpass"}, http.StatusOK)
 		if body, ok := test.testBody.(JSON); ok && body != nil {
 			if content, ok := body["team_id"]; ok && content == 0 {
 				test.testBody.(JSON)["team_id"] = team.ID
 			}
 		}
-		session.Post("/reset-team-password", test.testBody, test.expectedStatus)
+		session.Post("/api/admin/reset-team-password", test.testBody, test.expectedStatus)
 		if test.expectedStatus == http.StatusOK {
 			body := session.Body()
 			newPasswordInterface, ok := body["new_password"]
@@ -349,8 +349,8 @@ func TestResetTeamPassword(t *testing.T) {
 		}
 
 		session = utils.NewApiTestSession(t, app)
-		session.Post("/register", JSON{"username": "test", "email": fmt.Sprintf("test%d@test.test", i), "password": "testpass"}, http.StatusOK)
-		session.Post("/join-team", JSON{"name": "test", "password": password}, http.StatusOK)
-		session.Post("/submit", JSON{}, http.StatusBadRequest)
+		session.Post("/api/register", JSON{"username": "test", "email": fmt.Sprintf("test%d@test.test", i), "password": "testpass"}, http.StatusOK)
+		session.Post("/api/player/join-team", JSON{"name": "test", "password": password}, http.StatusOK)
+		session.Post("/api/player/submit", JSON{}, http.StatusBadRequest)
 	}
 }

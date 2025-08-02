@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"time"
 	"trxd/db"
 	"trxd/utils"
 	"trxd/utils/consts"
@@ -10,7 +11,11 @@ import (
 )
 
 // TODO: set store as redis + set configs (expire time, etc.)
-var Store = session.New(session.Config{})
+var Store = session.New(session.Config{
+	Expiration:     30 * 24 * time.Hour,
+	CookiePath:     "/",
+	CookieSameSite: fiber.CookieSameSiteLaxMode,
+})
 
 // TODO: make auth_test.go
 
