@@ -8,6 +8,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"time"
 )
 
 const addTeamMember = `-- name: AddTeamMember :exec
@@ -287,6 +288,26 @@ func (q *Queries) GetTagsByChallenge(ctx context.Context, challID int32) ([]stri
 	return items, nil
 }
 
+const getTeamByID = `-- name: GetTeamByID :one
+SELECT id, name, password_hash, score, nationality, image, bio FROM teams WHERE id = $1
+`
+
+// Retrieve a team by its ID
+func (q *Queries) GetTeamByID(ctx context.Context, id int32) (Team, error) {
+	row := q.queryRow(ctx, q.getTeamByIDStmt, getTeamByID, id)
+	var i Team
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.PasswordHash,
+		&i.Score,
+		&i.Nationality,
+		&i.Image,
+		&i.Bio,
+	)
+	return i, err
+}
+
 const getTeamByName = `-- name: GetTeamByName :one
 SELECT id, name, password_hash, score, nationality, image, bio FROM teams WHERE name = $1
 `
@@ -327,6 +348,74 @@ func (q *Queries) GetTeamFromUser(ctx context.Context, id int32) (Team, error) {
 		&i.Bio,
 	)
 	return i, err
+}
+
+const getTeamMembers = `-- name: GetTeamMembers :many
+SELECT id, name, role, score FROM users WHERE team_id = $1
+`
+
+type GetTeamMembersRow struct {
+	ID    int32    `json:"id"`
+	Name  string   `json:"name"`
+	Role  UserRole `json:"role"`
+	Score int32    `json:"score"`
+}
+
+// Retrieve all members of a team by team ID
+func (q *Queries) GetTeamMembers(ctx context.Context, teamID sql.NullInt32) ([]GetTeamMembersRow, error) {
+	rows, err := q.query(ctx, q.getTeamMembersStmt, getTeamMembers, teamID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTeamMembersRow
+	for rows.Next() {
+		var i GetTeamMembersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Role,
+			&i.Score,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTeams = `-- name: GetTeams :many
+SELECT id FROM teams
+`
+
+// Retrieve all teams
+func (q *Queries) GetTeams(ctx context.Context) ([]int32, error) {
+	rows, err := q.query(ctx, q.getTeamsStmt, getTeams)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int32
+	for rows.Next() {
+		var id int32
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
@@ -398,6 +487,77 @@ func (q *Queries) GetUserByName(ctx context.Context, name string) (User, error) 
 	return i, err
 }
 
+const getUserSolves = `-- name: GetUserSolves :many
+SELECT c.id, c.name, c.category, s.timestamp FROM challenges c
+  JOIN submissions s ON s.chall_id = c.id
+    WHERE s.user_id = $1
+      AND s.status = 'Correct'
+`
+
+type GetUserSolvesRow struct {
+	ID        int32     `json:"id"`
+	Name      string    `json:"name"`
+	Category  string    `json:"category"`
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// Retrieve all challenges solved by a user
+func (q *Queries) GetUserSolves(ctx context.Context, userID int32) ([]GetUserSolvesRow, error) {
+	rows, err := q.query(ctx, q.getUserSolvesStmt, getUserSolves, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUserSolvesRow
+	for rows.Next() {
+		var i GetUserSolvesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Category,
+			&i.Timestamp,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUsers = `-- name: GetUsers :many
+SELECT id FROM users
+`
+
+// Retrieve all users
+func (q *Queries) GetUsers(ctx context.Context) ([]int32, error) {
+	rows, err := q.query(ctx, q.getUsersStmt, getUsers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int32
+	for rows.Next() {
+		var id int32
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const isChallengeSolved = `-- name: IsChallengeSolved :one
 SELECT EXISTS(
   SELECT 1
@@ -416,7 +576,7 @@ type IsChallengeSolvedParams struct {
 	ID      int32 `json:"id"`
 }
 
-// Check if a challenge is solved by a user
+// Check if a challenge is solved by a user's team
 func (q *Queries) IsChallengeSolved(ctx context.Context, arg IsChallengeSolvedParams) (bool, error) {
 	row := q.queryRow(ctx, q.isChallengeSolvedStmt, isChallengeSolved, arg.ChallID, arg.ID)
 	var exists bool

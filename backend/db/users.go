@@ -3,6 +3,8 @@ package db
 import (
 	"context"
 	"database/sql"
+	"time"
+	"trxd/utils"
 
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
@@ -98,4 +100,93 @@ func ResetUserPassword(ctx context.Context, userID int32, newPassword string) er
 	}
 
 	return nil
+}
+
+type UserData struct {
+	ID           int32              `json:"id"`
+	Name         string             `json:"name"`
+	Email        string             `json:"email"`
+	Role         string             `json:"role"`
+	Score        int32              `json:"score"`
+	Nationality  string             `json:"nationality"`
+	Image        string             `json:"image"`
+	RegisteredAt *time.Time         `json:"registered_at,omitempty"`
+	Team         string             `json:"team,omitempty"`
+	Solves       []GetUserSolvesRow `json:"solves,omitempty"`
+}
+
+func GetUser(ctx context.Context, id int32, admin bool, minimal bool) (*UserData, error) {
+	data := UserData{}
+
+	user, err := queries.GetUserByID(ctx, id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	if !admin && utils.In(user.Role, []UserRole{UserRoleAuthor, UserRoleAdmin}) {
+		return nil, nil
+	}
+
+	data.ID = user.ID
+	data.Name = user.Name
+	if admin {
+		data.Email = user.Email
+		data.Role = string(user.Role)
+	}
+	data.Score = user.Score
+	if user.Nationality.Valid {
+		data.Nationality = user.Nationality.String
+	}
+	if user.Image.Valid {
+		data.Image = user.Image.String
+	}
+
+	if minimal {
+		return &data, nil
+	}
+
+	data.RegisteredAt = &user.CreatedAt
+
+	team, err := GetTeamFromUser(ctx, user.ID)
+	if err != nil {
+		return nil, err
+	}
+	if team != nil {
+		data.Team = team.Name
+	}
+
+	solves, err := queries.GetUserSolves(ctx, user.ID)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	data.Solves = []GetUserSolvesRow{}
+	if solves != nil {
+		data.Solves = solves
+	}
+
+	return &data, nil
+}
+
+func GetUsers(ctx context.Context, admin bool) ([]*UserData, error) {
+	userIDs, err := queries.GetUsers(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	usersData := make([]*UserData, 0)
+	for _, userID := range userIDs {
+		userData, err := GetUser(ctx, userID, admin, true)
+		if err != nil {
+			return nil, err
+		}
+		if userData == nil {
+			continue
+		}
+		usersData = append(usersData, userData)
+	}
+
+	return usersData, nil
 }

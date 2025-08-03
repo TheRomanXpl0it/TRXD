@@ -71,12 +71,24 @@ SELECT * FROM users WHERE email = $1;
 -- Retrieve a team by its name
 SELECT * FROM teams WHERE name = $1;
 
+-- name: GetTeamByID :one
+-- Retrieve a team by its ID
+SELECT * FROM teams WHERE id = $1;
+
+-- name: GetTeamMembers :many
+-- Retrieve all members of a team by team ID
+SELECT id, name, role, score FROM users WHERE team_id = $1;
+
+-- name: GetTeams :many
+-- Retrieve all teams
+SELECT id FROM teams;
+
 -- name: GetChallengeByID :one
 -- Retrieve a challenge by its ID
 SELECT * FROM challenges WHERE id = $1;
 
 -- name: IsChallengeSolved :one
--- Check if a challenge is solved by a user
+-- Check if a challenge is solved by a user's team
 SELECT EXISTS(
   SELECT 1
     FROM submissions
@@ -87,6 +99,17 @@ SELECT EXISTS(
       AND submissions.status = 'Correct'
       AND submissions.chall_id = $1
 );
+
+-- name: GetUsers :many
+-- Retrieve all users
+SELECT id FROM users;
+
+-- name: GetUserSolves :many
+-- Retrieve all challenges solved by a user
+SELECT c.id, c.name, c.category, s.timestamp FROM challenges c
+  JOIN submissions s ON s.chall_id = c.id
+    WHERE s.user_id = $1
+      AND s.status = 'Correct';
 
 -- name: GetChallenges :many
 -- Retrieve all challenges

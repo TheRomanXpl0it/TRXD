@@ -32,6 +32,10 @@ func decodeJSONBody(body []byte) string {
 }
 
 func debugMiddleware(c *fiber.Ctx) error {
+	if c.Path() == "/countries" {
+		return c.Next()
+	}
+
 	reqBody := c.BodyRaw()
 	body := decodeJSONBody(reqBody)
 	log.Debug("Request:", "method", c.Method(), "path", c.Path(), "body", body)
@@ -62,6 +66,7 @@ func SetupApp() *fiber.App {
 	} else {
 		api = app.Group("/api")
 	}
+	// TODO: remove these groups
 	// spectator := api.Group("", auth.AuthRequired)
 	player := api.Group("/player", auth.PlayerRequired)
 	author := api.Group("/author", auth.AuthorRequired)
@@ -70,10 +75,16 @@ func SetupApp() *fiber.App {
 	api.Post("/register", routes.Register)
 	api.Post("/login", routes.Login)
 	api.Post("/logout", routes.Logout)
+	api.Get("/countries", func(c *fiber.Ctx) error { return c.JSON(consts.Countries) })
 
-	api.Get("/auth", auth.AuthRequired, routes.Auth)
+	api.Get("/info", auth.AuthRequired, routes.Info)
 	api.Get("/challenges", auth.AuthRequired, auth.TeamRequired, routes.GetChallenges)
 	api.Get("/challenge/:id", auth.AuthRequired, auth.TeamRequired, routes.GetChallenge)
+	api.Get("/users", auth.AuthRequired, routes.GetUsers)
+	api.Get("/user/:id", auth.AuthRequired, routes.GetUser)
+	api.Get("/teams", auth.AuthRequired, routes.GetTeams)
+	api.Get("/team", auth.AuthRequired, auth.TeamRequired, routes.GetSelfTeam)
+	api.Get("/team/:id", auth.AuthRequired, routes.GetTeam)
 
 	player.Patch("/user", routes.UpdateUser)
 	player.Post("/register-team", routes.RegisterTeam)

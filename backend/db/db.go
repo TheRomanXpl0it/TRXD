@@ -66,11 +66,20 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getTagsByChallengeStmt, err = db.PrepareContext(ctx, getTagsByChallenge); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTagsByChallenge: %w", err)
 	}
+	if q.getTeamByIDStmt, err = db.PrepareContext(ctx, getTeamByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTeamByID: %w", err)
+	}
 	if q.getTeamByNameStmt, err = db.PrepareContext(ctx, getTeamByName); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTeamByName: %w", err)
 	}
 	if q.getTeamFromUserStmt, err = db.PrepareContext(ctx, getTeamFromUser); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTeamFromUser: %w", err)
+	}
+	if q.getTeamMembersStmt, err = db.PrepareContext(ctx, getTeamMembers); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTeamMembers: %w", err)
+	}
+	if q.getTeamsStmt, err = db.PrepareContext(ctx, getTeams); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTeams: %w", err)
 	}
 	if q.getUserByEmailStmt, err = db.PrepareContext(ctx, getUserByEmail); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserByEmail: %w", err)
@@ -80,6 +89,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.getUserByNameStmt, err = db.PrepareContext(ctx, getUserByName); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserByName: %w", err)
+	}
+	if q.getUserSolvesStmt, err = db.PrepareContext(ctx, getUserSolves); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUserSolves: %w", err)
+	}
+	if q.getUsersStmt, err = db.PrepareContext(ctx, getUsers); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUsers: %w", err)
 	}
 	if q.isChallengeSolvedStmt, err = db.PrepareContext(ctx, isChallengeSolved); err != nil {
 		return nil, fmt.Errorf("error preparing query IsChallengeSolved: %w", err)
@@ -183,6 +198,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getTagsByChallengeStmt: %w", cerr)
 		}
 	}
+	if q.getTeamByIDStmt != nil {
+		if cerr := q.getTeamByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTeamByIDStmt: %w", cerr)
+		}
+	}
 	if q.getTeamByNameStmt != nil {
 		if cerr := q.getTeamByNameStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getTeamByNameStmt: %w", cerr)
@@ -191,6 +211,16 @@ func (q *Queries) Close() error {
 	if q.getTeamFromUserStmt != nil {
 		if cerr := q.getTeamFromUserStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getTeamFromUserStmt: %w", cerr)
+		}
+	}
+	if q.getTeamMembersStmt != nil {
+		if cerr := q.getTeamMembersStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTeamMembersStmt: %w", cerr)
+		}
+	}
+	if q.getTeamsStmt != nil {
+		if cerr := q.getTeamsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTeamsStmt: %w", cerr)
 		}
 	}
 	if q.getUserByEmailStmt != nil {
@@ -206,6 +236,16 @@ func (q *Queries) Close() error {
 	if q.getUserByNameStmt != nil {
 		if cerr := q.getUserByNameStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getUserByNameStmt: %w", cerr)
+		}
+	}
+	if q.getUserSolvesStmt != nil {
+		if cerr := q.getUserSolvesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUserSolvesStmt: %w", cerr)
+		}
+	}
+	if q.getUsersStmt != nil {
+		if cerr := q.getUsersStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUsersStmt: %w", cerr)
 		}
 	}
 	if q.isChallengeSolvedStmt != nil {
@@ -306,11 +346,16 @@ type Queries struct {
 	getConfigStmt           *sql.Stmt
 	getFlagsByChallengeStmt *sql.Stmt
 	getTagsByChallengeStmt  *sql.Stmt
+	getTeamByIDStmt         *sql.Stmt
 	getTeamByNameStmt       *sql.Stmt
 	getTeamFromUserStmt     *sql.Stmt
+	getTeamMembersStmt      *sql.Stmt
+	getTeamsStmt            *sql.Stmt
 	getUserByEmailStmt      *sql.Stmt
 	getUserByIDStmt         *sql.Stmt
 	getUserByNameStmt       *sql.Stmt
+	getUserSolvesStmt       *sql.Stmt
+	getUsersStmt            *sql.Stmt
 	isChallengeSolvedStmt   *sql.Stmt
 	registerTeamStmt        *sql.Stmt
 	registerUserStmt        *sql.Stmt
@@ -340,11 +385,16 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getConfigStmt:           q.getConfigStmt,
 		getFlagsByChallengeStmt: q.getFlagsByChallengeStmt,
 		getTagsByChallengeStmt:  q.getTagsByChallengeStmt,
+		getTeamByIDStmt:         q.getTeamByIDStmt,
 		getTeamByNameStmt:       q.getTeamByNameStmt,
 		getTeamFromUserStmt:     q.getTeamFromUserStmt,
+		getTeamMembersStmt:      q.getTeamMembersStmt,
+		getTeamsStmt:            q.getTeamsStmt,
 		getUserByEmailStmt:      q.getUserByEmailStmt,
 		getUserByIDStmt:         q.getUserByIDStmt,
 		getUserByNameStmt:       q.getUserByNameStmt,
+		getUserSolvesStmt:       q.getUserSolvesStmt,
+		getUsersStmt:            q.getUsersStmt,
 		isChallengeSolvedStmt:   q.isChallengeSolvedStmt,
 		registerTeamStmt:        q.registerTeamStmt,
 		registerUserStmt:        q.registerUserStmt,

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"trxd/utils"
 
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
@@ -105,6 +106,18 @@ func GetTeamFromUser(ctx context.Context, userID int32) (*Team, error) {
 	return &team, nil
 }
 
+func GetTeamByName(ctx context.Context, name string) (*Team, error) {
+	team, err := queries.GetTeamByName(ctx, name)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &team, nil
+}
+
 func UpdateTeam(ctx context.Context, teamID int32, nationality, image, bio string) error {
 	err := queries.UpdateTeam(ctx, UpdateTeamParams{
 		ID:          teamID,
@@ -134,4 +147,81 @@ func ResetTeamPassword(ctx context.Context, teamID int32, newPassword string) er
 	}
 
 	return nil
+}
+
+type TeamData struct {
+	ID          int32               `json:"id"`
+	Name        string              `json:"name"`
+	Score       int32               `json:"score"`
+	Nationality string              `json:"nationality"`
+	Image       string              `json:"image"`
+	Bio         string              `json:"bio,omitempty"`
+	Members     []GetTeamMembersRow `json:"members,omitempty"`
+}
+
+func GetTeam(ctx context.Context, teamID int32, admin bool, minimal bool) (*TeamData, error) {
+	teamData := TeamData{}
+
+	team, err := queries.GetTeamByID(ctx, teamID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	teamData.ID = team.ID
+	teamData.Name = team.Name
+	teamData.Score = team.Score
+	if team.Nationality.Valid {
+		teamData.Nationality = team.Nationality.String
+	}
+	if team.Image.Valid {
+		teamData.Image = team.Image.String
+	}
+
+	if minimal {
+		return &teamData, nil
+	}
+
+	if team.Bio.Valid {
+		teamData.Bio = team.Bio.String
+	}
+	// TODO: maybe add a default bio if not set
+
+	members, err := queries.GetTeamMembers(ctx, sql.NullInt32{Int32: teamID, Valid: true})
+	if err != nil {
+		return nil, err
+	}
+
+	teamData.Members = make([]GetTeamMembersRow, 0)
+	for _, member := range members {
+		if !admin && utils.In(member.Role, []UserRole{UserRoleAuthor, UserRoleAdmin}) {
+			continue
+		}
+		teamData.Members = append(teamData.Members, member)
+	}
+
+	return &teamData, nil
+}
+
+func GetTeams(ctx context.Context, admin bool) ([]*TeamData, error) {
+	teamIDs, err := queries.GetTeams(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var teams []*TeamData
+	for _, teamID := range teamIDs {
+		team, err := GetTeam(ctx, teamID, admin, true)
+		if err != nil {
+			return nil, err
+		}
+		if team == nil {
+			continue
+		}
+		teams = append(teams, team)
+	}
+
+	return teams, nil
 }

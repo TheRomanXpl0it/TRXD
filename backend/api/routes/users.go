@@ -188,7 +188,7 @@ func ResetUserPassword(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"new_password": newPassword})
 }
 
-func Auth(c *fiber.Ctx) error {
+func Info(c *fiber.Ctx) error {
 	uid := c.Locals("uid").(int32)
 
 	user, err := db.GetUserByID(c.Context(), uid)
@@ -199,8 +199,56 @@ func Auth(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser)
 	}
 
-	return c.JSON(fiber.Map{
-		"username": user.Name,
-		"role":     user.Role,
+	team, err := db.GetTeamFromUser(c.Context(), uid)
+	if err != nil {
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingTeam, err)
+	}
+
+	teamID := int32(-1)
+	teamName := ""
+	if team != nil {
+		teamID = team.ID
+		teamName = team.Name
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"username":  user.Name,
+		"role":      user.Role,
+		"team_id":   teamID,
+		"team_name": teamName,
 	})
+}
+
+// TODO: tests
+func GetUsers(c *fiber.Ctx) error {
+	role := c.Locals("role").(db.UserRole)
+
+	allData := utils.In(role, []db.UserRole{db.UserRoleAuthor, db.UserRoleAdmin})
+	usersData, err := db.GetUsers(c.Context(), allData)
+	if err != nil {
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(usersData)
+}
+
+// TODO: tests
+func GetUser(c *fiber.Ctx) error {
+	role := c.Locals("role").(db.UserRole)
+
+	userID, err := c.ParamsInt("id")
+	if err != nil {
+		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidUserID)
+	}
+
+	allData := utils.In(role, []db.UserRole{db.UserRoleAuthor, db.UserRoleAdmin})
+	userData, err := db.GetUser(c.Context(), int32(userID), allData, false)
+	if err != nil {
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
+	}
+	if userData == nil {
+		return utils.Error(c, fiber.StatusNotFound, consts.UserNotFound)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(userData)
 }

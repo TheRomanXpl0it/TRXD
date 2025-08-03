@@ -33,12 +33,10 @@ func AuthRequired(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
 	}
 
-	if user.Role == db.UserRolePlayer {
-		if user.TeamID.Valid {
-			c.Locals("tid", user.TeamID.Int32)
-		} else {
-			c.Locals("tid", int32(-1))
-		}
+	if user.TeamID.Valid {
+		c.Locals("tid", user.TeamID.Int32)
+	} else {
+		c.Locals("tid", int32(-1))
 	}
 	c.Locals("uid", uid)
 	c.Locals("role", user.Role)
@@ -48,9 +46,10 @@ func AuthRequired(c *fiber.Ctx) error {
 
 // TODO: tests
 func TeamRequired(c *fiber.Ctx) error {
-	tid := c.Locals("tid")
+	tid := c.Locals("tid").(int32)
+	role := c.Locals("role").(db.UserRole)
 
-	if tid != nil && tid.(int32) == -1 {
+	if role == db.UserRolePlayer && tid == -1 {
 		return utils.Error(c, fiber.StatusForbidden, consts.Unauthorized)
 	}
 
@@ -77,12 +76,10 @@ func PlayerRequired(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusForbidden, consts.Unauthorized)
 	}
 
-	if user.Role == db.UserRolePlayer {
-		if user.TeamID.Valid {
-			c.Locals("tid", user.TeamID.Int32)
-		} else {
-			c.Locals("tid", int32(-1))
-		}
+	if user.TeamID.Valid {
+		c.Locals("tid", user.TeamID.Int32)
+	} else {
+		c.Locals("tid", int32(-1))
 	}
 	c.Locals("uid", uid)
 	c.Locals("role", user.Role)
@@ -109,6 +106,11 @@ func AuthorRequired(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusForbidden, consts.Unauthorized)
 	}
 
+	if user.TeamID.Valid {
+		c.Locals("tid", user.TeamID.Int32)
+	} else {
+		c.Locals("tid", int32(-1))
+	}
 	c.Locals("uid", uid)
 	c.Locals("role", user.Role)
 	return c.Next()
@@ -133,6 +135,11 @@ func AdminRequired(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusForbidden, consts.Unauthorized)
 	}
 
+	if user.TeamID.Valid {
+		c.Locals("tid", user.TeamID.Int32)
+	} else {
+		c.Locals("tid", int32(-1))
+	}
 	c.Locals("uid", uid)
 	c.Locals("role", user.Role)
 	return c.Next()

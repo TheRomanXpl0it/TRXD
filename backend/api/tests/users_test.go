@@ -238,7 +238,7 @@ func TestLogout(t *testing.T) {
 	}
 }
 
-func TestAuth(t *testing.T) {
+func TestInfo(t *testing.T) {
 	db.DeleteAll()
 	db.InitConfigs()
 	app := api.SetupApp()
@@ -251,14 +251,14 @@ func TestAuth(t *testing.T) {
 
 	session := utils.NewApiTestSession(t, app)
 
-	session.Get("/api/auth", nil, http.StatusUnauthorized)
+	session.Get("/api/info", nil, http.StatusUnauthorized)
 	session.CheckResponse(errorf(consts.Unauthorized))
 
 	session.Post("/api/register", JSON{"username": "test", "email": "allow@test.test", "password": "testpass"}, http.StatusOK)
 	session.CheckResponse(JSON{"username": "test", "role": string(db.UserRolePlayer)})
 
-	session.Get("/api/auth", nil, http.StatusOK)
-	session.CheckResponse(JSON{"username": "test", "role": string(db.UserRolePlayer)})
+	session.Get("/api/info", nil, http.StatusOK)
+	session.CheckResponse(JSON{"username": "test", "role": string(db.UserRolePlayer), "team_id": float64(-1), "team_name": ""})
 }
 
 var testUpdateUser = []struct {

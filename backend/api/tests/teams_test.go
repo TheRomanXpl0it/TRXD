@@ -51,7 +51,7 @@ var testRegisterTeam = []struct {
 	{
 		testBody:         JSON{"name": "test", "password": "testpass"},
 		expectedStatus:   http.StatusOK,
-		expectedResponse: JSON{"name": "test"},
+		expectedResponse: JSON{"name": "test", "id": 0},
 	},
 	{
 		testBody:         JSON{"name": "test", "password": "testpass"},
@@ -68,7 +68,7 @@ var testRegisterTeam = []struct {
 		testBody:         JSON{"name": "test1", "password": "testpass"},
 		expectedStatus:   http.StatusOK,
 		secondUser:       true,
-		expectedResponse: JSON{"name": "test1"},
+		expectedResponse: JSON{"name": "test1", "id": 0},
 	},
 }
 
@@ -103,6 +103,16 @@ func TestRegisterTeam(t *testing.T) {
 			session.Post("/api/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
 		}
 		session.Post("/api/player/register-team", test.testBody, test.expectedStatus)
+		if test.expectedStatus == http.StatusOK {
+			team, err := db.GetTeamByName(context.Background(), test.testBody.(JSON)["name"].(string))
+			if err != nil {
+				t.Fatalf("Failed to get team by name: %v", err)
+			}
+			if team == nil {
+				t.Fatalf("Expected team to be created, but got nil")
+			}
+			test.expectedResponse["id"] = float64(team.ID)
+		}
 		session.CheckResponse(test.expectedResponse)
 	}
 }
@@ -156,7 +166,7 @@ var testJoinTeam = []struct {
 	{
 		testBody:         JSON{"name": "test", "password": "testpass"},
 		expectedStatus:   http.StatusOK,
-		expectedResponse: JSON{"name": "test"},
+		expectedResponse: JSON{"name": "test", "id": 0},
 	},
 	{
 		testBody:         JSON{"name": "test", "password": "testpass"},
@@ -201,6 +211,16 @@ func TestJoinTeam(t *testing.T) {
 			session.Post("/api/login", JSON{"email": "test2@test.test", "password": "testpass"}, http.StatusOK)
 		}
 		session.Post("/api/player/join-team", test.testBody, test.expectedStatus)
+		if test.expectedStatus == http.StatusOK {
+			team, err := db.GetTeamByName(context.Background(), test.testBody.(JSON)["name"].(string))
+			if err != nil {
+				t.Fatalf("Failed to get team by name: %v", err)
+			}
+			if team == nil {
+				t.Fatalf("Expected team to be created, but got nil")
+			}
+			test.expectedResponse["id"] = float64(team.ID)
+		}
 		session.CheckResponse(test.expectedResponse)
 	}
 }
