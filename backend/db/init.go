@@ -8,28 +8,31 @@ import (
 	"os"
 	"strings"
 	"time"
+	"trxd/utils"
 
+	"github.com/gofiber/fiber/v2/log"
 	"github.com/lib/pq"
 )
-
-// TODO: make this configurable
-const connStrTemplate = "postgres://%s:%s@localhost:5432/%s?sslmode=disable"
 
 var db *sql.DB
 var queries *Queries
 
-func ConnectDB(user string, password string, dbName string, test ...bool) error {
-	connStr := fmt.Sprintf(connStrTemplate, user, password, dbName)
-
+func ConnectDB(info *utils.DBInfo, test ...bool) error {
 	var err error
-	db, err = sql.Open("postgres", connStr)
+	db, err = sql.Open("postgres", info.ConnectionString())
 	if err != nil {
 		return err
 	}
 
-	// TODO: make these configurable
-	db.SetMaxOpenConns(50)
-	db.SetMaxIdleConns(50)
+	if info.MaxConnections <= 0 {
+		log.Fatal("invalid max connections: must be greater than 0")
+	} else if info.MaxConnections > 100 {
+		log.Warn("max connections is set to a high value, hard cap set to 100")
+		info.MaxConnections = 100
+	}
+
+	db.SetMaxOpenConns(info.MaxConnections)
+	db.SetMaxIdleConns(info.MaxConnections)
 	db.SetConnMaxIdleTime(time.Hour)
 
 	queries = New(db)

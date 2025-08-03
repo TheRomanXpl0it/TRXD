@@ -187,3 +187,20 @@ func ResetUserPassword(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"new_password": newPassword})
 }
+
+func Auth(c *fiber.Ctx) error {
+	uid := c.Locals("uid").(int32)
+
+	user, err := db.GetUserByID(c.Context(), uid)
+	if err != nil {
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
+	}
+	if user == nil {
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser)
+	}
+
+	return c.JSON(fiber.Map{
+		"username": user.Name,
+		"role":     user.Role,
+	})
+}

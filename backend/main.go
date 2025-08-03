@@ -86,13 +86,19 @@ func Flags() {
 }
 
 func main() {
+	if _, err := os.Stat("DEV"); !os.IsNotExist(err) {
+		log.SetLogLevel("debug")
+		log.SetReportCaller(false)
+	}
+
 	godotenv.Load()
 
-	err := db.ConnectDB(
-		os.Getenv("POSTGRES_USER"),
-		os.Getenv("POSTGRES_PASSWORD"),
-		os.Getenv("POSTGRES_DB"),
-	)
+	info, err := utils.GetDBInfoFromEnv()
+	if err != nil {
+		log.Fatal("Error getting database info from env", "err", err)
+	}
+
+	err = db.ConnectDB(info)
 	if err != nil {
 		log.Fatal("Error connecting to database", "err", err)
 	}
