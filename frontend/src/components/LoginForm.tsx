@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { useContext } from "react"
 import AuthContext from "@/context/AuthProvider"
-import { login } from "@/lib/backend-interaction"
+import { getUsersTeamData, login } from "@/lib/backend-interaction"
 import { useNavigate } from "react-router-dom";
 
 
@@ -57,9 +57,12 @@ export function LoginForm() {
                       });
                       return;
                   }
+                  const team = await getUsersTeamData();
+
                   setAuth({
-                      username,
-                      roles: [role], // Assuming role is a string, adjust if it's an array
+                    username,
+                    roles: [role],
+                    team: team ?? null,
                   });
                   navigate("/challenges");
                   break;

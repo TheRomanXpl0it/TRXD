@@ -1,8 +1,8 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Layout } from "@/Layout";
-import Loading from "@/components/Loading";
 import { AuthProvider } from "@/context/AuthProvider";
+import Loading from "@/components/Loading";
 import PrivateRoute from "@/context/PrivateRoute";
 import "@/App.css";
 
@@ -23,24 +23,24 @@ function App() {
     <Suspense fallback={<Loading />}>
       <Router>
         <AuthProvider>
-          <Routes>
-            <Route element={<Layout />}>
-              <Route path="/" element={<LazyHome />} />
-              <Route path="/leaderboard" element={<LazyLeaderboard />} />
-              <Route path="/writeups" element={<LazyWriteups />} />
-              <Route path="/login" element={<LazyLogin />} /> 
+            <Routes>
+              <Route element={<Layout />}>
+                <Route path="/" element={<LazyHome />} />
+                <Route path="/leaderboard" element={<LazyLeaderboard />} />
+                <Route path="/writeups" element={<LazyWriteups />} />
+                <Route path="/login" element={<LazyLogin />} /> 
 
-              { /* Authenticated routes */ }
-              <Route path="/challenges" element={<PrivateRoute><LazyChallenges /></PrivateRoute>} />
-              <Route path="/settings" element={<PrivateRoute><LazySettings /></PrivateRoute>} />
-              <Route path="/account" element={<PrivateRoute><LazyAccount /></PrivateRoute>} />
-              <Route path="/team" element={<PrivateRoute><LazyTeam /></PrivateRoute>} />
-              <Route path="/createteam" element={<PrivateRoute><LazyCreateTeam /></PrivateRoute>} />
-              <Route path="/jointeam" element={<PrivateRoute><LazyJoinTeam /></PrivateRoute>} />
-            </Route>
-          </Routes>
-        </AuthProvider>
-      </Router>
+                { /* Authenticated routes */ }
+                <Route path="/challenges" element={<PrivateRoute><LazyChallenges /></PrivateRoute>} />
+                <Route path="/settings" element={<PrivateRoute><LazySettings /></PrivateRoute>} />
+                <Route path="/account" element={<PrivateRoute><LazyAccount /></PrivateRoute>} />
+                <Route path="/team" element={<PrivateRoute><LazyTeam /></PrivateRoute>} />
+                <Route path="/createteam" element={<PrivateRoute><LazyCreateTeam /></PrivateRoute>} />
+                <Route path="/jointeam" element={<PrivateRoute><LazyJoinTeam /></PrivateRoute>} />
+              </Route>
+            </Routes>
+          </AuthProvider>
+        </Router>
     </Suspense>
   );
 }

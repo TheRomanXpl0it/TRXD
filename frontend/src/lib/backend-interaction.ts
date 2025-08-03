@@ -1,7 +1,6 @@
 import { api } from "@/api/axios";
 import axios from "axios";
 
-
 export async function getChallengeData(){
     // Simulate file attachments as objects with name and url
     type Attachment = {
@@ -74,212 +73,10 @@ export async function getChallengeData(){
                 instanced: false,
                 timeout: undefined,
             },
-        },
-        {
-            challenge: {
-                id : 2,
-                title: 'Challenge 2',
-                description: 'This is the second challenge',
-                flag: 'flag{second_challenge}',
-                points: 100,
-                solves: 1,
-                category: 'Web',
-                tags: ['Web', 'Medium'],
-                difficulty: 'Easy',
-                remote: 'https://example.com',
-                solved: true,
-                attachments: [
-                    { name: "dockerfile", url: "/files/challenge2/dockerfile" }
-                ] as Attachment[],
-                authors: ["author2"],
-                hidden: false,
-                instanced: false,
-                timeout: undefined,
-            }
-        },
-        {
-            challenge:
-            {
-                id : 3,
-                title: 'Challenge 3',
-                description: 'This is the third challenge',
-                flag: 'flag{third_challenge}',
-                points: 100,
-                solves: 0,
-                category: 'Pwn',
-                tags: ['Stack', 'Easy'],
-                difficulty: 'Easy',
-                remote: 'https://example.com',
-                solved: false,
-                attachments: [
-                    { name: "executable", url: "/files/challenge3/executable" }
-                ] as Attachment[],
-                authors: ["author1"],
-                hidden: false,
-                instanced: true,
-                timeout: undefined,
-            }
-        },
-        {   
-            challenge:{
-            id : 4,
-            title: 'Challenge 4',
-            description: 'This is the fourth challenge',
-            flag: 'flag{fourth_challenge}',
-            points: 100,
-            solves: 5,
-            category: 'Rev',
-            tags: ['RC4', 'Medium'],
-            difficulty: 'Easy',
-            remote: 'https://example.com',
-            solved: false,
-            attachments: [
-                { name: "Dockerfile", url: "/files/challenge4/Dockerfile" }
-            ] as Attachment[],
-            authors: ["Admin","author2"],
-            hidden: false,
-            instanced: true,
-            timeout: new Date(Date.now() + 5 * 60 * 1000),
-            }
-        },
-        {challenge:{
-            id : 5,
-            title: 'Challenge 5',
-            description: 'This is the fifth challenge',
-            flag: 'flag{fifth_challenge}',
-            points: 100,
-            solves: 10,
-            category: 'Crypto',
-            tags: ['Diffie-Hellman', 'Easy'],
-            difficulty: 'Easy',
-            remote: 'https://example.com',
-            solved: false,
-            attachments: [],
-            authors: ["author2"],
-            hidden: false,
-            instanced: true,
-            timeout: undefined,
-        }},
-        {challenge:{
-            id : 6,
-            title: 'Challenge 6',
-            description: 'This is the sixth challenge',
-            flag: 'flag{sixth_challenge}',
-            points: 100,
-            solves: 0,
-            category: 'Misc',
-            tags: ['Packets', 'Easy'],
-            difficulty: 'Easy',
-            remote: 'https://example.com',
-            solved: false,
-            attachments: [
-                { name: "packets", url: "/files/challenge6/packets" }
-            ] as Attachment[],
-            authors: ["author1,author2"],
-            hidden: false,
-            instanced: true,
-        }},
-        {challenge:{
-            id : 7,
-            title: 'Challenge 7',
-            description: 'This is the seventh challenge',
-            flag: 'flag{seventh_challenge}',
-            points: 100,
-            solves: 0,
-            category: 'Forensics',
-            tags: ['Random stuff', 'Easy'],
-            difficulty: 'Easy',
-            remote: 'https://example.com',
-            solved: false,
-            attachments: [
-                { name: "packets", url: "/files/challenge7/packets" }
-            ] as Attachment[],
-            authors: ["author1,author2"],
-            hidden: false,
-            instanced: true,
-            timeout: undefined,
-        }},
-        {challenge:{
-            id : 8,
-            title: 'Challenge 8',
-            description: 'This is the eighth challenge',
-            flag: 'flag{eighth_challenge}',
-            points: 100,
-            solves: 0,
-            category: 'Crypto',
-            tags: ['Hash', 'Easy'],
-            difficulty: 'Easy',
-            remote: 'https://example.com',
-            solved: false,
-            attachments: [
-                { name: "hashes", url: "/files/challenge8/hashes" }
-            ] as Attachment[],
-            authors: ["author1, author2"],
-            hidden: false,
-            instanced: true,
-            timeout: undefined,
-        }},
-        {challenge:{
-            id : 9,
-            title: 'Challenge 9',
-            description: 'This is the ninth challenge',
-            flag: 'flag{ninth_challenge}',
-            points: 100,
-            solves: 0,
-            category: 'Pwn',
-            tags: ['Kpwn', 'Hard'],
-            difficulty: 'Easy',
-            remote: 'https://example.com',
-            solved: false,
-            attachments: [
-                { name: "executable", url: "/files/challenge9/executable" }
-            ] as Attachment[],
-            authors: ["author1"],
-            hidden: false,
-            instanced: true,
-            timeout: undefined,
-        }},
-        {challenge:{
-            id : 10,
-            title: 'Challenge 10',
-            description: 'This is the tenth challenge',
-            flag: 'flag{tenth_challenge}',
-            points: 100,
-            solves: 0,
-            category: 'Web',
-            tags: ['ClientSide', 'Hard'],
-            difficulty: 'Easy',
-            remote: 'https://example.com',
-            solved: false,
-            attachments: [
-                { name: "ciao", url: "/files/challenge10/ciao" }
-            ] as Attachment[],
-            authors: ["admin"],
-            hidden: false,
-            instanced: true,
-            timeout: undefined,
-        }}
+        }
     ];
     return JSON.stringify(mockChallenges);
 } 
-
-export async function getCategories(){
-    /*const categories = [
-        'Web',
-        'Rev',
-        'Forensics',
-        'Crypto',
-        'Pwn',
-        'Misc',
-    ]*/
-
-    let categories = [
-      'cat-1',
-      'cat-2',
-    ];
-
-    return JSON.stringify(categories);
-}
 
 export async function login({
   email,
@@ -347,15 +144,39 @@ export async function register({
   }
 }
 
-export async function fetchTeamData(): Promise<{ name: string; members: string[]; score: number; teamlogo:string, rank: number }> {
+export async function fetchTeamData(teamId: number): Promise<{ name: string; members: string[]; score: number; teamlogo:string, rank: number }> {
     // Simulate fetching team data
-    return {
-        name: "Un team popo demmerda",
-        members: ["Alice", "Bob"],
+    let teamData = {
+        id: teamId,
+        name: "",
+        members: [""],
         teamlogo: "/teamLogo.png",
-        score: 1500,
-        rank: 1,
+        score: 0,
+        rank: -1,
     };
+    try{
+        const response = await api.get(`/team/${teamId}`);
+        teamData = response.data;
+    } catch (error) {
+        console.error("Error fetching team data:", error);
+    }
+    return teamData;
+}
+
+export async function getUsersTeamData(): Promise<{ id: number, name: string; }> {
+    // Simulate fetching team data
+    let teamData = { id: -1, name: "" };
+    try {
+        const response = await api.get("/team");
+        if (response.status === 200) {
+            return response.data;
+        } else {
+            console.error("Error fetching user's team data:", response.statusText);
+        }
+    } catch (error) {
+        console.error("Error fetching user's team data:", error);
+    }
+    return teamData;
 }
 
 export async function leaveTeam() {
@@ -364,18 +185,27 @@ export async function leaveTeam() {
     return { success: true, message: "You have left the team." };
 }
 
-export async function checkSession(): Promise<{ status: number; data?: any }> {
+export async function checkSession(): Promise<{ status: number; data?: any; team?: any }> {
   try {
     const response = await api.get("/auth"); // or your auth check endpoint
-    return { status: response.status, data: response.data };
+    const data = response.data;
+
+    const team = data.team ?? null;
+
+    return { status: response.status, data, team };
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
       return {
         status: error.response.status,
         data: error.response.data,
+        team: null,
       };
     }
-    return { status: 500, data: { message: "Unexpected error" } };
+    return {
+      status: 500,
+      data: { message: "Unexpected error" },
+      team: null,
+    };
   }
 }
 
@@ -398,6 +228,56 @@ export async function submitFlag(
       };
     }
     console.error("Unexpected error during flag submission:", error);
+    return { status: 500, data: { message: "Unexpected error occurred" } };
+  }
+}
+
+export async function fetchCountries(): Promise<JSON[]> {
+  try {
+    const response = await api.get("/countries");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching countries:", error);
+    return [];
+  }
+}
+
+export async function registerTeam(teamName:string, teamPassword: string): Promise<{ status: number; data?: any }> {
+  try {
+    const response = await api.post(
+      "/player/register-team",
+      { name: teamName, password: teamPassword },
+      { withCredentials: true }
+    );
+    return { status: response.status, data: response.data };
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      return {
+        status: error.response.status,
+        data: error.response.data,
+      };
+    }
+    console.error("Unexpected error during team registration:", error);
+    return { status: 500, data: { message: "Unexpected error occurred" } };
+  }
+}
+
+export async function updateTeam(teamDescription:string | undefined, teamCountry: string| undefined, teamProfilePicture: string| undefined): Promise<{ status: number; data?: any }> {
+  try {
+    const response = await api.patch(
+      "/player/update-team",
+      { bio: teamDescription, nationality: teamCountry, image: teamProfilePicture },
+      { withCredentials: true }
+    );
+    return { status: response.status, data: response.data };
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      return {
+        status: error.response.status,
+        data: error.response.data,
+      };
+    }
+    console.error("Unexpected error during team update:", error);
     return { status: 500, data: { message: "Unexpected error occurred" } };
   }
 }
