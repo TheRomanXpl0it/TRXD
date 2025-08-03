@@ -20,8 +20,8 @@ export function CreateChallenge(){
 
     return(
         <Sheet>
-            <SheetTrigger>
-                <span className="flex items-center space-x-2 cursor-pointer outline p-2 rounded-lg bg-green-500 text-white">
+            <SheetTrigger className="flex h-full">
+                <span className="flex items-center cursor-pointer outline p-2 rounded-lg bg-green-500 text-white">
                     <NotebookPen size={24}/>
                     Create Challenge
                 </span>

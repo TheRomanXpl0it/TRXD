@@ -2,7 +2,7 @@ import { api } from "@/api/axios";
 import axios from "axios";
 
 
-export async function getChallenges(){
+export async function getChallengeData(){
     // Simulate file attachments as objects with name and url
     type Attachment = {
         name: string;
@@ -10,6 +10,7 @@ export async function getChallenges(){
     };
 
     let challenges = [];
+    let categories = [];
 
     try {
       challenges = (await api.get("/challenges")).data;
@@ -46,7 +47,9 @@ export async function getChallenges(){
                 timeout: challenge.timeout ? new Date(challenge.timeout) : undefined,
         };
     });
-    return JSON.stringify(challenges);
+    categories = challenges.map((challenge: any) => challenge.category);
+    categories = [...new Set(categories)]; // Remove duplicates
+    return JSON.stringify({ challenges, categories });
 
     const mockChallenges = [
         {

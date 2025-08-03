@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getChallenges, getCategories } from '@/lib/backend-interaction';
+import { getChallengeData } from '@/lib/backend-interaction';
 
 // Types
 export type Challenge = {
@@ -44,19 +44,13 @@ function ChallengeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     async function fetchChallenges() {
-      const challengesResult = await getChallenges();
-      const challenges = JSON.parse(challengesResult);
+      const challengesResult = await getChallengeData();
+      const { challenges, categories } = JSON.parse(challengesResult);
       setChallenges(challenges);
-    }
-
-    async function fetchCategories() {
-      const categoriesResult = await getCategories();
-      const categories = JSON.parse(categoriesResult);
       setCategories(categories);
     }
 
     fetchChallenges();
-    fetchCategories();
   }, []);
 
   return (

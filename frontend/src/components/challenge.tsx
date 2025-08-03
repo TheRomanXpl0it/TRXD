@@ -26,6 +26,7 @@ import { AuthProps } from "@/context/AuthProvider";
 import { Challenge as ChallengeType } from "@/context/ChallengeProvider";
 
 
+
 export function displayChallenges(
     challenges: ChallengeType[],
     category: string,
