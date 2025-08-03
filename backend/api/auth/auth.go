@@ -10,14 +10,12 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/session"
 )
 
-// TODO: set store as redis + set configs (expire time, etc.)
+// TODO: set store as redis
 var Store = session.New(session.Config{
 	Expiration:     30 * 24 * time.Hour,
 	CookiePath:     "/",
 	CookieSameSite: fiber.CookieSameSiteLaxMode,
 })
-
-// TODO: make auth_test.go
 
 func AuthRequired(c *fiber.Ctx) error {
 	sess, err := Store.Get(c)
@@ -30,7 +28,32 @@ func AuthRequired(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusUnauthorized, consts.Unauthorized)
 	}
 
+	user, err := db.GetUserByID(c.Context(), uid.(int32))
+	if err != nil {
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
+	}
+
+	if user.Role == db.UserRolePlayer {
+		if user.TeamID.Valid {
+			c.Locals("tid", user.TeamID.Int32)
+		} else {
+			c.Locals("tid", int32(-1))
+		}
+	}
 	c.Locals("uid", uid)
+	c.Locals("role", user.Role)
+
+	return c.Next()
+}
+
+// TODO: tests
+func TeamRequired(c *fiber.Ctx) error {
+	tid := c.Locals("tid")
+
+	if tid != nil && tid.(int32) == -1 {
+		return utils.Error(c, fiber.StatusForbidden, consts.Unauthorized)
+	}
+
 	return c.Next()
 }
 
@@ -62,6 +85,8 @@ func PlayerRequired(c *fiber.Ctx) error {
 		}
 	}
 	c.Locals("uid", uid)
+	c.Locals("role", user.Role)
+
 	return c.Next()
 }
 
@@ -85,6 +110,7 @@ func AuthorRequired(c *fiber.Ctx) error {
 	}
 
 	c.Locals("uid", uid)
+	c.Locals("role", user.Role)
 	return c.Next()
 }
 
@@ -108,5 +134,6 @@ func AdminRequired(c *fiber.Ctx) error {
 	}
 
 	c.Locals("uid", uid)
+	c.Locals("role", user.Role)
 	return c.Next()
 }

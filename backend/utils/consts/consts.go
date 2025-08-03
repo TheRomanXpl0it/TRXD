@@ -71,6 +71,7 @@ const (
 	ErrorDeletingFlag          = "Error deleting flag"
 	ErrorFetchingConfig        = "Error fetching configuration"
 	DisabledRegistration       = "Registration is disabled"
+	ErrorFetchingChallenges    = "Error fetching challenges"
 )
 
 var UserRegex = regexp.MustCompile(`(^[^@\s]+@[^@\s]+\.[^@\s]+$)`)

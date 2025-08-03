@@ -75,6 +75,31 @@ SELECT * FROM teams WHERE name = $1;
 -- Retrieve a challenge by its ID
 SELECT * FROM challenges WHERE id = $1;
 
+-- name: IsChallengeSolved :one
+-- Check if a challenge is solved by a user
+SELECT EXISTS(
+  SELECT 1
+    FROM submissions
+    JOIN users ON users.id = submissions.user_id
+    JOIN teams ON users.team_id = teams.id
+      AND teams.id = (SELECT team_id FROM users WHERE users.id = $2)
+    WHERE users.role = 'Player'
+      AND submissions.status = 'Correct'
+      AND submissions.chall_id = $1
+);
+
+-- name: GetChallenges :many
+-- Retrieve all challenges
+SELECT id FROM challenges;
+
+-- name: GetFlagsByChallenge :many
+-- Retrieve all flags associated with a challenge
+SELECT flag, regex FROM flags WHERE chall_id = $1;
+
+-- name: GetTagsByChallenge :many
+-- Retrieve all tags associated with a challenge
+SELECT name FROM tags WHERE chall_id = $1;
+
 -- name: Submit :one
 -- Insert a new submission
 INSERT INTO submissions (user_id, chall_id, status, flag) VALUES ($1, $2, $3, $4) RETURNING status;

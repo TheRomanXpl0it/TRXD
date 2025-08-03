@@ -99,12 +99,43 @@ func CreateFlag(c *fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusOK)
 }
 
-func Submit(c *fiber.Ctx) error {
-	tid := c.Locals("tid")
-	if tid != nil && tid.(int32) == -1 {
-		return utils.Error(c, fiber.StatusForbidden, consts.Unauthorized)
+// TODO: tests
+func GetChallenges(c *fiber.Ctx) error {
+	uid := c.Locals("uid").(int32)
+	role := c.Locals("role").(db.UserRole)
+
+	all := utils.In(role, []db.UserRole{db.UserRoleAuthor, db.UserRoleAdmin})
+	challenges, err := db.GetChallenges(c.Context(), uid, all)
+	if err != nil {
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingChallenges, err)
 	}
 
+	return c.Status(fiber.StatusOK).JSON(challenges)
+}
+
+// TODO: tests
+func GetChallenge(c *fiber.Ctx) error {
+	uid := c.Locals("uid").(int32)
+	role := c.Locals("role").(db.UserRole)
+
+	challengeID, err := c.ParamsInt("id")
+	if err != nil {
+		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidChallengeID)
+	}
+
+	all := utils.In(role, []db.UserRole{db.UserRoleAuthor, db.UserRoleAdmin})
+	challenge, err := db.GetChallenge(c.Context(), int32(challengeID), uid, all)
+	if err != nil {
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingChallenges, err)
+	}
+	if challenge == nil {
+		return utils.Error(c, fiber.StatusNotFound, consts.ChallengeNotFound)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(challenge)
+}
+
+func Submit(c *fiber.Ctx) error {
 	var data struct {
 		ChallID *int32 `json:"chall_id"`
 		Flag    string `json:"flag"`

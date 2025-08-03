@@ -99,10 +99,7 @@ func JoinTeam(c *fiber.Ctx) error {
 }
 
 func UpdateTeam(c *fiber.Ctx) error {
-	tid := c.Locals("tid")
-	if tid != nil && tid.(int32) == -1 {
-		return utils.Error(c, fiber.StatusForbidden, consts.Unauthorized)
-	}
+	tid := c.Locals("tid").(int32)
 
 	var data struct {
 		Nationality string `json:"nationality"`
@@ -120,7 +117,7 @@ func UpdateTeam(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusBadRequest, consts.LongNationality)
 	}
 
-	err := db.UpdateTeam(c.Context(), tid.(int32), data.Nationality, data.Image, data.Bio)
+	err := db.UpdateTeam(c.Context(), tid, data.Nationality, data.Image, data.Bio)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorUpdatingUser, err)
 	}

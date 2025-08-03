@@ -21,7 +21,7 @@ func RegisterUser(ctx context.Context, name, email, password string, role ...Use
 	params := RegisterUserParams{
 		Name:         name,
 		Email:        email,
-		PasswordHash: passwordHash,
+		PasswordHash: string(passwordHash),
 		Role:         role[0],
 	}
 	user, err := queries.RegisterUser(ctx, params)
@@ -46,7 +46,7 @@ func LoginUser(ctx context.Context, email, password string) (*User, error) {
 		return nil, err
 	}
 
-	err = bcrypt.CompareHashAndPassword(user.PasswordHash.([]byte), []byte(password))
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
 	if err != nil {
 		if err == bcrypt.ErrMismatchedHashAndPassword {
 			return nil, nil
@@ -91,7 +91,7 @@ func ResetUserPassword(ctx context.Context, userID int32, newPassword string) er
 
 	err = queries.ResetUserPassword(ctx, ResetUserPasswordParams{
 		ID:           userID,
-		PasswordHash: passwordHash,
+		PasswordHash: string(passwordHash),
 	})
 	if err != nil {
 		return err

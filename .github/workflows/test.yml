@@ -17,7 +17,7 @@ jobs:
       postgres:
         image: postgres:15
         ports:
-          - 5432:5432
+          - 2345:5432
         env:
           POSTGRES_USER: testuser
           POSTGRES_PASSWORD: testpass
@@ -65,6 +65,7 @@ jobs:
         echo "POSTGRES_DB=testdb" >> $GITHUB_ENV
         echo "POSTGRES_USER=testuser" >> $GITHUB_ENV
         echo "POSTGRES_PASSWORD=testpass" >> $GITHUB_ENV
+        echo "POSTGRES_PORT=2345" >> $GITHUB_ENV
         echo "CLICOLOR_FORCE=1" >> $GITHUB_ENV
 
     - name: Build main binary

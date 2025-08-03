@@ -47,8 +47,8 @@ INSERT INTO categories (name, icon) VALUES ($1, $2)
 `
 
 type CreateCategoryParams struct {
-	Name interface{} `json:"name"`
-	Icon interface{} `json:"icon"`
+	Name string `json:"name"`
+	Icon string `json:"icon"`
 }
 
 // Insert a new category
@@ -63,12 +63,12 @@ INSERT INTO challenges (name, category, description, type, max_points, score_typ
 `
 
 type CreateChallengeParams struct {
-	Name        interface{} `json:"name"`
-	Category    interface{} `json:"category"`
-	Description string      `json:"description"`
-	Type        DeployType  `json:"type"`
-	MaxPoints   int32       `json:"max_points"`
-	ScoreType   ScoreType   `json:"score_type"`
+	Name        string     `json:"name"`
+	Category    string     `json:"category"`
+	Description string     `json:"description"`
+	Type        DeployType `json:"type"`
+	MaxPoints   int32      `json:"max_points"`
+	ScoreType   ScoreType  `json:"score_type"`
 }
 
 // Insert a new challenge
@@ -123,7 +123,7 @@ DELETE FROM categories WHERE name = $1
 `
 
 // Delete a category and all associated challenges
-func (q *Queries) DeleteCategory(ctx context.Context, name interface{}) error {
+func (q *Queries) DeleteCategory(ctx context.Context, name string) error {
 	_, err := q.exec(ctx, q.deleteCategoryStmt, deleteCategory, name)
 	return err
 }
@@ -181,6 +181,34 @@ func (q *Queries) GetChallengeByID(ctx context.Context, id int32) (Challenge, er
 	return i, err
 }
 
+const getChallenges = `-- name: GetChallenges :many
+SELECT id FROM challenges
+`
+
+// Retrieve all challenges
+func (q *Queries) GetChallenges(ctx context.Context) ([]int32, error) {
+	rows, err := q.query(ctx, q.getChallengesStmt, getChallenges)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int32
+	for rows.Next() {
+		var id int32
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getConfig = `-- name: GetConfig :one
 SELECT key, type, value, description FROM configs WHERE key = $1
 `
@@ -196,6 +224,67 @@ func (q *Queries) GetConfig(ctx context.Context, key string) (Config, error) {
 		&i.Description,
 	)
 	return i, err
+}
+
+const getFlagsByChallenge = `-- name: GetFlagsByChallenge :many
+SELECT flag, regex FROM flags WHERE chall_id = $1
+`
+
+type GetFlagsByChallengeRow struct {
+	Flag  string `json:"flag"`
+	Regex bool   `json:"regex"`
+}
+
+// Retrieve all flags associated with a challenge
+func (q *Queries) GetFlagsByChallenge(ctx context.Context, challID int32) ([]GetFlagsByChallengeRow, error) {
+	rows, err := q.query(ctx, q.getFlagsByChallengeStmt, getFlagsByChallenge, challID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetFlagsByChallengeRow
+	for rows.Next() {
+		var i GetFlagsByChallengeRow
+		if err := rows.Scan(&i.Flag, &i.Regex); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTagsByChallenge = `-- name: GetTagsByChallenge :many
+SELECT name FROM tags WHERE chall_id = $1
+`
+
+// Retrieve all tags associated with a challenge
+func (q *Queries) GetTagsByChallenge(ctx context.Context, challID int32) ([]string, error) {
+	rows, err := q.query(ctx, q.getTagsByChallengeStmt, getTagsByChallenge, challID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+		items = append(items, name)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getTeamByName = `-- name: GetTeamByName :one
@@ -309,6 +398,32 @@ func (q *Queries) GetUserByName(ctx context.Context, name string) (User, error) 
 	return i, err
 }
 
+const isChallengeSolved = `-- name: IsChallengeSolved :one
+SELECT EXISTS(
+  SELECT 1
+    FROM submissions
+    JOIN users ON users.id = submissions.user_id
+    JOIN teams ON users.team_id = teams.id
+      AND teams.id = (SELECT team_id FROM users WHERE users.id = $2)
+    WHERE users.role = 'Player'
+      AND submissions.status = 'Correct'
+      AND submissions.chall_id = $1
+)
+`
+
+type IsChallengeSolvedParams struct {
+	ChallID int32 `json:"chall_id"`
+	ID      int32 `json:"id"`
+}
+
+// Check if a challenge is solved by a user
+func (q *Queries) IsChallengeSolved(ctx context.Context, arg IsChallengeSolvedParams) (bool, error) {
+	row := q.queryRow(ctx, q.isChallengeSolvedStmt, isChallengeSolved, arg.ChallID, arg.ID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const registerTeam = `-- name: RegisterTeam :exec
 WITH locked_user AS (
     SELECT id FROM users
@@ -328,9 +443,9 @@ UPDATE users
 `
 
 type RegisterTeamParams struct {
-	ID           int32       `json:"id"`
-	Name         string      `json:"name"`
-	PasswordHash interface{} `json:"password_hash"`
+	ID           int32  `json:"id"`
+	Name         string `json:"name"`
+	PasswordHash string `json:"password_hash"`
 }
 
 // Insert a new team and add the founder user to the team
@@ -344,10 +459,10 @@ INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4) RET
 `
 
 type RegisterUserParams struct {
-	Name         string      `json:"name"`
-	Email        string      `json:"email"`
-	PasswordHash interface{} `json:"password_hash"`
-	Role         UserRole    `json:"role"`
+	Name         string   `json:"name"`
+	Email        string   `json:"email"`
+	PasswordHash string   `json:"password_hash"`
+	Role         UserRole `json:"role"`
 }
 
 // Insert a new user and return the created user
@@ -379,8 +494,8 @@ UPDATE teams SET password_hash = $1 WHERE id = $2
 `
 
 type ResetTeamPasswordParams struct {
-	PasswordHash interface{} `json:"password_hash"`
-	ID           int32       `json:"id"`
+	PasswordHash string `json:"password_hash"`
+	ID           int32  `json:"id"`
 }
 
 // Reset a team's password to a new password
@@ -394,8 +509,8 @@ UPDATE users SET password_hash = $1 WHERE id = $2
 `
 
 type ResetUserPasswordParams struct {
-	PasswordHash interface{} `json:"password_hash"`
-	ID           int32       `json:"id"`
+	PasswordHash string `json:"password_hash"`
+	ID           int32  `json:"id"`
 }
 
 // Reset a user's password to a new password

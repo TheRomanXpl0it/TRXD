@@ -23,13 +23,6 @@ CREATE TYPE submission_status AS ENUM (
   'Invalid'
 );
 
-CREATE DOMAIN name AS VARCHAR(64);
-CREATE DOMAIN short_name AS VARCHAR(32);
-CREATE DOMAIN long_name AS VARCHAR(128);
-CREATE DOMAIN bcrypt_hash AS CHAR(60);
-CREATE DOMAIN port AS INTEGER CHECK (VALUE >= 1 AND VALUE <= 65535);
-
-
 CREATE TABLE IF NOT EXISTS configs (
   key TEXT NOT NULL,
   type TEXT NOT NULL DEFAULT 'text',
@@ -40,8 +33,8 @@ CREATE TABLE IF NOT EXISTS configs (
 
 CREATE TABLE IF NOT EXISTS teams (
   id SERIAL NOT NULL,
-  name name UNIQUE NOT NULL,
-  password_hash bcrypt_hash NOT NULL,
+  name VARCHAR(64) UNIQUE NOT NULL,
+  password_hash CHAR(60) NOT NULL,
   score INTEGER NOT NULL DEFAULT 0,
   nationality VARCHAR(3),
   image TEXT,
@@ -51,9 +44,9 @@ CREATE TABLE IF NOT EXISTS teams (
 
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL NOT NULL,
-  name name NOT NULL,
+  name VARCHAR(64) NOT NULL,
   email VARCHAR(256) UNIQUE NOT NULL,
-  password_hash bcrypt_hash NOT NULL,
+  password_hash CHAR(60) NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   score INTEGER NOT NULL DEFAULT 0,
@@ -68,7 +61,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS badges (
-  name name NOT NULL,
+  name VARCHAR(64) NOT NULL,
   description VARCHAR(1024) NOT NULL,
   team_id INTEGER NOT NULL,
   FOREIGN KEY(team_id) REFERENCES teams(id) ON DELETE CASCADE,
@@ -76,15 +69,15 @@ CREATE TABLE IF NOT EXISTS badges (
 );
 
 CREATE TABLE IF NOT EXISTS categories (
-  name short_name NOT NULL,
+  name VARCHAR(32) NOT NULL,
   visible_challs INTEGER NOT NULL DEFAULT 0,
-  icon short_name NOT NULL,
+  icon VARCHAR(32) NOT NULL,
   PRIMARY KEY(name)
 );
 
 CREATE TABLE IF NOT EXISTS team_category_solves (
   team_id INTEGER NOT NULL,
-  category short_name NOT NULL,
+  category VARCHAR(32) NOT NULL,
   solves INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (team_id, category),
   FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE,
@@ -93,8 +86,8 @@ CREATE TABLE IF NOT EXISTS team_category_solves (
 
 CREATE TABLE IF NOT EXISTS challenges (
   id SERIAL NOT NULL,
-  name long_name UNIQUE NOT NULL,
-  category short_name NOT NULL,
+  name VARCHAR(128) UNIQUE NOT NULL,
+  category VARCHAR(32) NOT NULL,
   description VARCHAR(1024) NOT NULL,
   difficulty VARCHAR(16),
   authors TEXT,
@@ -107,7 +100,7 @@ CREATE TABLE IF NOT EXISTS challenges (
   solves INTEGER NOT NULL DEFAULT 0,
 
   host TEXT,
-  port port,
+  port INTEGER CHECK (port >= 1 AND port <= 65535),
   attachments TEXT, -- List of attachments separated by nullbytes
 
   FOREIGN KEY(category) REFERENCES categories(name),
@@ -140,14 +133,14 @@ CREATE TABLE IF NOT EXISTS instances (
   chall_id INTEGER NOT NULL,
   expires_at TIMESTAMP NOT NULL,
   host TEXT NOT NULL,
-  port port NOT NULL,
+  port INTEGER CHECK (port >= 1 AND port <= 65535) NOT NULL,
   FOREIGN KEY(team_id) REFERENCES teams(id) ON DELETE CASCADE,
   FOREIGN KEY(chall_id) REFERENCES challenges(id) ON DELETE CASCADE,
   PRIMARY KEY(team_id, chall_id)
 );
 
 CREATE TABLE IF NOT EXISTS tags (
-  name short_name NOT NULL,
+  name VARCHAR(32) NOT NULL,
   chall_id INTEGER NOT NULL,
   FOREIGN KEY(chall_id) REFERENCES challenges(id) ON DELETE CASCADE,
   PRIMARY KEY(name, chall_id)

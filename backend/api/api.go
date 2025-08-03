@@ -14,29 +14,33 @@ import (
 	"github.com/tde-nico/log"
 )
 
-func debugMiddleware(c *fiber.Ctx) error {
+func decodeJSONBody(body []byte) string {
+	if len(body) == 0 {
+		return ""
+	}
 
-	reqBody := c.BodyRaw()
-	body := string(reqBody)
-	var tmp map[string]interface{}
-	if err := json.Unmarshal(reqBody, &tmp); err == nil {
+	defaultBody := string(body)
+
+	var tmp interface{}
+	if err := json.Unmarshal(body, &tmp); err == nil {
 		if tmp2, err := json.MarshalIndent(tmp, "", "  "); err == nil {
-			body = string(tmp2)
+			return string(tmp2)
 		}
 	}
+
+	return defaultBody
+}
+
+func debugMiddleware(c *fiber.Ctx) error {
+	reqBody := c.BodyRaw()
+	body := decodeJSONBody(reqBody)
 	log.Debug("Request:", "method", c.Method(), "path", c.Path(), "body", body)
 
 	e := c.Next()
 
 	resStatus := c.Response().StatusCode()
 	resBody := c.Response().Body()
-	body = string(resBody)
-	tmp = map[string]interface{}{}
-	if err := json.Unmarshal(resBody, &tmp); err == nil {
-		if tmp2, err := json.MarshalIndent(tmp, "", "  "); err == nil {
-			body = string(tmp2)
-		}
-	}
+	body = decodeJSONBody(resBody)
 	log.Debug("Response:", "status", resStatus, "body", body)
 
 	return e
@@ -58,6 +62,7 @@ func SetupApp() *fiber.App {
 	} else {
 		api = app.Group("/api")
 	}
+	// spectator := api.Group("", auth.AuthRequired)
 	player := api.Group("/player", auth.PlayerRequired)
 	author := api.Group("/author", auth.AuthorRequired)
 	admin := api.Group("/admin", auth.AdminRequired)
@@ -65,13 +70,16 @@ func SetupApp() *fiber.App {
 	api.Post("/register", routes.Register)
 	api.Post("/login", routes.Login)
 	api.Post("/logout", routes.Logout)
+
 	api.Get("/auth", auth.AuthRequired, routes.Auth)
+	api.Get("/challenges", auth.AuthRequired, auth.TeamRequired, routes.GetChallenges)
+	api.Get("/challenge/:id", auth.AuthRequired, auth.TeamRequired, routes.GetChallenge)
 
 	player.Patch("/user", routes.UpdateUser)
 	player.Post("/register-team", routes.RegisterTeam)
 	player.Post("/join-team", routes.JoinTeam)
-	player.Patch("/team", routes.UpdateTeam)
-	player.Post("/submit", routes.Submit)
+	player.Patch("/team", auth.TeamRequired, routes.UpdateTeam)
+	player.Post("/submit", auth.TeamRequired, routes.Submit)
 	// player.Post("/instance", routes.CreateInstance)
 	// player.Patch("/instance", routes.ExtendInstance)
 	// player.Delete("/instance", routes.DeleteInstance)

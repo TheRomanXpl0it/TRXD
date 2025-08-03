@@ -6,6 +6,10 @@ DECLARE
   team INTEGER;
   existing_correct_count INTEGER;
 BEGIN
+  IF (SELECT role FROM users WHERE id = NEW.user_id) != 'Player' THEN
+    RETURN NEW;
+  END IF;
+
   SELECT team_id INTO team
     FROM users
     WHERE id = NEW.user_id;

@@ -18,7 +18,7 @@ func RegisterTeam(ctx context.Context, name, password string, userID int32) (*Te
 	err = queries.RegisterTeam(ctx, RegisterTeamParams{
 		ID:           userID,
 		Name:         name,
-		PasswordHash: passwordHash,
+		PasswordHash: string(passwordHash),
 	})
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
@@ -50,7 +50,7 @@ func authTeam(ctx context.Context, qtx *Queries, name, password string) (*Team, 
 		return nil, err
 	}
 
-	err = bcrypt.CompareHashAndPassword(team.PasswordHash.([]byte), []byte(password))
+	err = bcrypt.CompareHashAndPassword([]byte(team.PasswordHash), []byte(password))
 	if err != nil {
 		if err == bcrypt.ErrMismatchedHashAndPassword {
 			return nil, nil
@@ -127,7 +127,7 @@ func ResetTeamPassword(ctx context.Context, teamID int32, newPassword string) er
 
 	err = queries.ResetTeamPassword(ctx, ResetTeamPasswordParams{
 		ID:           teamID,
-		PasswordHash: passwordHash,
+		PasswordHash: string(passwordHash),
 	})
 	if err != nil {
 		return err

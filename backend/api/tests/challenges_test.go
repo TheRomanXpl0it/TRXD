@@ -190,7 +190,7 @@ func TestCreateFlag(t *testing.T) {
 	if cat == nil {
 		t.Fatal("Category creation returned nil")
 	}
-	chall, err := db.CreateChallenge(context.Background(), "chall", cat.Name.(string), "test-desc", db.DeployTypeNormal, 1, db.ScoreTypeStatic)
+	chall, err := db.CreateChallenge(context.Background(), "chall", cat.Name, "test-desc", db.DeployTypeNormal, 1, db.ScoreTypeStatic)
 	if err != nil {
 		t.Fatalf("Failed to create challenge: %v", err)
 	}
@@ -308,7 +308,7 @@ func TestSubmit(t *testing.T) {
 	if cat == nil {
 		t.Fatal("Category creation returned nil")
 	}
-	chall, err := db.CreateChallenge(context.Background(), "chall", cat.Name.(string), "test-desc", db.DeployTypeNormal, 1, db.ScoreTypeDynamic)
+	chall, err := db.CreateChallenge(context.Background(), "chall", cat.Name, "test-desc", db.DeployTypeNormal, 1, db.ScoreTypeDynamic)
 	if err != nil {
 		t.Fatalf("Failed to create challenge: %v", err)
 	}
@@ -462,7 +462,7 @@ func TestDeleteFlag(t *testing.T) {
 	if cat == nil {
 		t.Fatal("Category creation returned nil")
 	}
-	chall, err := db.CreateChallenge(context.Background(), "chall", cat.Name.(string), "test-desc", db.DeployTypeNormal, 1, db.ScoreTypeStatic)
+	chall, err := db.CreateChallenge(context.Background(), "chall", cat.Name, "test-desc", db.DeployTypeNormal, 1, db.ScoreTypeStatic)
 	if err != nil {
 		t.Fatalf("Failed to create challenge: %v", err)
 	}

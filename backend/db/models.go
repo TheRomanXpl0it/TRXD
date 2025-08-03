@@ -191,15 +191,15 @@ type Badge struct {
 }
 
 type Category struct {
-	Name          interface{} `json:"name"`
-	VisibleChalls int32       `json:"visible_challs"`
-	Icon          interface{} `json:"icon"`
+	Name          string `json:"name"`
+	VisibleChalls int32  `json:"visible_challs"`
+	Icon          string `json:"icon"`
 }
 
 type Challenge struct {
 	ID          int32          `json:"id"`
-	Name        interface{}    `json:"name"`
-	Category    interface{}    `json:"category"`
+	Name        string         `json:"name"`
+	Category    string         `json:"category"`
 	Description string         `json:"description"`
 	Difficulty  sql.NullString `json:"difficulty"`
 	Authors     sql.NullString `json:"authors"`
@@ -210,7 +210,7 @@ type Challenge struct {
 	Points      int32          `json:"points"`
 	Solves      int32          `json:"solves"`
 	Host        sql.NullString `json:"host"`
-	Port        interface{}    `json:"port"`
+	Port        sql.NullInt32  `json:"port"`
 	Attachments sql.NullString `json:"attachments"`
 }
 
@@ -239,11 +239,11 @@ type Flag struct {
 }
 
 type Instance struct {
-	TeamID    int32       `json:"team_id"`
-	ChallID   int32       `json:"chall_id"`
-	ExpiresAt time.Time   `json:"expires_at"`
-	Host      string      `json:"host"`
-	Port      interface{} `json:"port"`
+	TeamID    int32     `json:"team_id"`
+	ChallID   int32     `json:"chall_id"`
+	ExpiresAt time.Time `json:"expires_at"`
+	Host      string    `json:"host"`
+	Port      int32     `json:"port"`
 }
 
 type Submission struct {
@@ -256,14 +256,14 @@ type Submission struct {
 }
 
 type Tag struct {
-	Name    interface{} `json:"name"`
-	ChallID int32       `json:"chall_id"`
+	Name    string `json:"name"`
+	ChallID int32  `json:"chall_id"`
 }
 
 type Team struct {
 	ID           int32          `json:"id"`
 	Name         string         `json:"name"`
-	PasswordHash interface{}    `json:"password_hash"`
+	PasswordHash string         `json:"password_hash"`
 	Score        int32          `json:"score"`
 	Nationality  sql.NullString `json:"nationality"`
 	Image        sql.NullString `json:"image"`
@@ -271,16 +271,16 @@ type Team struct {
 }
 
 type TeamCategorySolf struct {
-	TeamID   int32       `json:"team_id"`
-	Category interface{} `json:"category"`
-	Solves   int32       `json:"solves"`
+	TeamID   int32  `json:"team_id"`
+	Category string `json:"category"`
+	Solves   int32  `json:"solves"`
 }
 
 type User struct {
 	ID           int32          `json:"id"`
 	Name         string         `json:"name"`
 	Email        string         `json:"email"`
-	PasswordHash interface{}    `json:"password_hash"`
+	PasswordHash string         `json:"password_hash"`
 	CreatedAt    time.Time      `json:"created_at"`
 	Score        int32          `json:"score"`
 	Role         UserRole       `json:"role"`
