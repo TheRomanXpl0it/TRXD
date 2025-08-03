@@ -7,7 +7,7 @@ import {
 } from "react";
 import { checkSession, login as loginRequest } from "@/lib/backend-interaction";
 import { useNavigate } from "react-router-dom";
-import { api } from "@/api/axios";
+import { api, setUnauthorizedHandler } from "@/api/axios";
 
 export interface AuthProps {
   username: string;
@@ -28,49 +28,58 @@ const AuthContext = createContext<AuthContextType>({
   logout: () => {},
 });
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [auth, setAuth] = useState<AuthProps | null>(null);
   const navigate = useNavigate();
 
-    // Logout function
-    const logout = useCallback(async () => {
-        setAuth(null);
-        const response = await api.post("/logout", {}, { withCredentials: true });
-        if (response.status === 200) {
-        console.log("Logout successful");
-        } else {
-        console.error("Logout failed", response);
-        }
-        navigate("/");
-    }, [navigate]);  
-  
-    // Login function
-    const login = useCallback(async (email: string, password: string) => {
-        const response = await loginRequest({ email, password });
-        if (response.status === 200) {
+  // 🔓 Logout function
+  const logout = useCallback(async () => {
+    setAuth(null);
+    try {
+      await api.post("/logout");
+    } catch (err) {
+      console.warn("Logout request error:", err);
+    }
+    navigate("/");
+  }, [navigate]);
+
+  // 🔐 Login function
+  const login = useCallback(
+    async (email: string, password: string) => {
+      const response = await loginRequest({ email, password });
+      if (response.status === 200) {
         const { username, role } = response.data;
         setAuth({ username, roles: [role] });
-        navigate("/challenges");
         return true;
-        } else {
-        logout();
+      } else {
+        await logout();
         return false;
-        }
-    }, [navigate]);
+      }
+    },
+    [logout]
+  );
 
-    // On app load: check if session is valid
-    useEffect(() => {
-        const verifySession = async () => {
-        const response = await checkSession();
-        if (response.status === 200) {
-            const { username, role } = response.data;
-            setAuth({ username, roles: [role] });
-        } else {
-            logout();
-        }
-        };
-        verifySession();
-    }, []);
+  // 📡 Session check on mount
+  useEffect(() => {
+    const verifySession = async () => {
+      const response = await checkSession();
+      if (response.status === 200) {
+        const { username, role } = response.data;
+        setAuth({ username, roles: [role] });
+      } else {
+        await logout();
+      }
+    };
+    verifySession();
+  }, [logout]);
+
+  // 🧩 Register global 401 handler
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      setAuth(null);
+      navigate("/login");
+    });
+  }, [navigate]);
 
   return (
     <AuthContext.Provider value={{ auth, setAuth, login, logout }}>

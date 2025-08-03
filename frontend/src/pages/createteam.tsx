@@ -1,6 +1,5 @@
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import SettingContext from '@/context/SettingsProvider';
-import { useNavigate } from 'react-router-dom';
 
 
 export function CreateTeam() {
