@@ -13,6 +13,10 @@ import AuthContext from "@/context/AuthProvider"
 
 export function CreateChallenge(){
     const {auth} = useContext(AuthContext);
+    if (!auth) {
+        console.error("Auth context is not available");
+        return null;
+    }
 
     return(
         <Sheet>

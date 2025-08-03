@@ -14,9 +14,6 @@ import {
 } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import {
-  cn
-} from "@/lib/utils"
-import {
   Button
 } from "@/components/ui/button"
 import {
@@ -65,8 +62,8 @@ import {
   MultiSelectorList,
   MultiSelectorTrigger
 } from "@/components/ui/multi-select"
-import { ChallengeProps } from "./Challenge"
 import { AuthProps } from "@/context/AuthProvider"
+import { Challenge as ChallengeType } from "@/context/ChallengeProvider"
 
 const formSchema = z.object({
   title: z.string().min(1),
@@ -93,8 +90,8 @@ function displayAuthors(authors: string[]){
   )
 }
 
-export function ChallengeForm( { challengeProp, auth } : { 
-  challengeProp?: ChallengeProps,
+export function ChallengeForm( { challenge, auth } : { 
+  challenge?: ChallengeType,
   auth: AuthProps
 }) {
 
@@ -108,14 +105,18 @@ export function ChallengeForm( { challengeProp, auth } : {
   let authors: string[] = [];
 
 
-  if ( challengeProp ){
-    challengeProp.challenge.authors ? defaultAuthors = challengeProp.challenge.authors : [];
-    challengeProp.challenge.description ? defaultDescription = challengeProp.challenge.description : "";
-    challengeProp.challenge.difficulty ? defaultDifficulty = challengeProp.challenge.difficulty : "Easy";
-    challengeProp.challenge.tags ? defaultTags = challengeProp.challenge.tags : ["Easy"];
-    challengeProp.challenge.hidden!==undefined ? defaultHidden = challengeProp.challenge.hidden : true;
-    challengeProp.challenge.flags?.length ? defaultFlags = challengeProp.challenge.flags : [""];
-    challengeProp.challenge.title ? defaultTitle = challengeProp.challenge.title : "";
+  if ( challenge ){
+    defaultAuthors = challenge.authors ?? [auth.username];
+    defaultDescription = challenge.description ?? "";
+    defaultDifficulty = challenge.difficulty ?? "Easy";
+    defaultTags = challenge.tags ?? ["Easy"];
+    defaultHidden = challenge.hidden ?? true;
+    defaultTitle = challenge.title ?? "";
+    if (challenge.flags?.length) {
+      defaultFlags = challenge.flags.map(flag =>
+        typeof flag === "string" ? { flag: flag, regex: false } : flag
+      );
+    }
   }
 
 
@@ -255,7 +256,7 @@ export function ChallengeForm( { challengeProp, auth } : {
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="" />
+                    <SelectValue placeholder="Select difficulty" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>

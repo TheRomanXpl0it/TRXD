@@ -1,4 +1,3 @@
-import { ChallengeProps } from "./Challenge";
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -9,14 +8,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { AuthProps } from "@/context/AuthProvider";
 import { Trash } from "lucide-react"
+import { Challenge } from "@/context/ChallengeProvider";
 
 
 
-export function DeleteChallenge({challengeProp, auth} : {challengeProp: ChallengeProps, auth: AuthProps}){
+export function DeleteChallenge({challenge, auth} : {challenge: Challenge, auth: AuthProps}){
     return(
     <Dialog>
         <DialogTrigger asChild>
@@ -24,7 +22,7 @@ export function DeleteChallenge({challengeProp, auth} : {challengeProp: Challeng
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-            <DialogTitle>Delete {challengeProp.challenge.title}</DialogTitle>
+            <DialogTitle>Delete {challenge.title}</DialogTitle>
             <DialogDescription>
                 Are you sure you want to delete this challenge? This action cannot be undone.
             </DialogDescription>

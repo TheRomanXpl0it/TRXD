@@ -6,6 +6,7 @@ import AuthContext from "@/context/AuthProvider";
 import Loading from "@/components/Loading";
 
 const Categories = lazy(() => import("@/components/Categories").then(module => ({ default: module.Categories })));
+const ChallengeProvider = lazy(() => import("@/context/ChallengeProvider").then(module => ({ default: module.ChallengeProvider })));
 
 export function Challenges() {
     const { settings } = useContext(SettingContext);
@@ -29,7 +30,9 @@ export function Challenges() {
             </div>
         )}
         <Suspense fallback={<Loading />}>
-            <Categories />
+            <ChallengeProvider>
+                <Categories />
+            </ChallengeProvider>
         </Suspense>
     </>
     )

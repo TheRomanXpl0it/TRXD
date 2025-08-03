@@ -23,33 +23,13 @@ import { Flag,UserPen, EyeClosed, CircleCheck, Download, Droplet } from "lucide-
 import { UpdateChallenge } from "@/components/UpdateChallenge";
 import { DeleteChallenge } from "@/components/DeleteChallenge";
 import { AuthProps } from "@/context/AuthProvider";
+import { Challenge as ChallengeType } from "@/context/ChallengeProvider";
 
-
-export interface ChallengeProps {
-    challenge: {
-        id: number;
-        title: string;
-        description: string;
-        solves?: number;
-        points?: number;
-        category: string;
-        remote: string;
-        solved: boolean;
-        tags?: string[];
-        difficulty?: string;
-        attachments?: File[];
-        authors?: string[];
-        hidden: boolean;
-        flags?: [{ flag: string; regex: boolean }];
-        instanced?: boolean;
-        timeout?: Date;
-    };
-}
 
 export function displayChallenges(
-    challenges: ChallengeProps[],
-    category: string, 
-    settings:{
+    challenges: ChallengeType[],
+    category: string,
+    settings: {
         title: string;
         value: boolean;
         description: string;
@@ -65,11 +45,11 @@ export function displayChallenges(
         showDifficulty : settings?.find((setting) => setting.title === 'Show Difficulty')?.value ?? false,
     }
     
-    return challenges.map((challengeProp: ChallengeProps) => {
-        if (challengeProp.challenge.category.includes(category)) {
+    return challenges.map((challenge: ChallengeType) => {
+        if (challenge.category.includes(category)) {
             return (
                 <Challenge
-                    challengeProp = { challengeProp }
+                    challenge = { challenge }
                     challengeSettings = { challengeSettings }
                     auth = { auth }
                 />
@@ -183,12 +163,12 @@ function showCategory(category: string){
 
 function showControls(
     auth: AuthProps,
-    challengeProp:ChallengeProps
+    challenge: ChallengeType
 ){
     return(
         <div className="flex items-right justify-end space-x-2 mr-5 w-33">
-            <UpdateChallenge challengeProp={challengeProp} auth={auth}/>
-            <DeleteChallenge challengeProp={challengeProp} auth={auth}/>
+            <UpdateChallenge challenge={challenge} auth={auth}/>
+            <DeleteChallenge challenge={challenge} auth={auth}/>
         </div>
     )
 }
@@ -196,11 +176,11 @@ function showControls(
 
 
 function Challenge({
-    challengeProp,
+    challenge,
     challengeSettings,
     auth
 }: {
-    challengeProp: ChallengeProps,
+    challenge: ChallengeType,
     challengeSettings: {
         showSolves: boolean;
         showPoints: boolean;
@@ -209,20 +189,19 @@ function Challenge({
     },
     auth: AuthProps
 }) {
-    const challenge = challengeProp.challenge;
     const canEdit = auth.roles.includes('Admin') || (auth.roles.includes('Author') && challenge.authors?.includes(auth.username));
 
     return (
         <Dialog key={challenge.id}>
             <DialogTrigger asChild>
                 <Card className={challenge.hidden ? "m-4 w-[250px] h-[130px] cursor-pointer border-dashed border-2" : "m-4 w-[250px] h-[130px] cursor-pointer"}>
-                    <CardHeader>
+                    <CardHeader className="px-4 flex flex-col justify-between h-full">
                         <CardTitle>{challenge.title}</CardTitle>
-                        <CardDescription>
+                        <CardDescription className=" h-5">
                             {challengeSettings.showTags && showTags(challenge.tags)}
                         </CardDescription>
                     </CardHeader>
-                    <CardFooter className="flex justify-between">
+                    <CardFooter className="px-4 pt-2 flex justify-between items-end mt-auto">
                         {challenge.points && showPoints(challenge.points)}
                         {challenge.solved && <CircleCheck size={24} className="text-green-500" />}
                     </CardFooter>
@@ -236,7 +215,7 @@ function Challenge({
                                 { showTitle(challenge.title) }
                                 { showCategory(challenge.category) }
                             </>
-                            { canEdit && showControls(auth, challengeProp)}
+                            { canEdit && showControls(auth, challenge)}
                         </div>
                         { challenge.tags && showTags(challenge.tags) }
                         { challenge.hidden && showHidden() }
@@ -256,7 +235,7 @@ function Challenge({
                         <span className="flex text-green-500 font-semibold align-middle justify-center w-full">
                             Challenge Solved
                         </span>
-                    : FlagSubmit(challengeProp) }
+                    : <FlagSubmit challenge={challenge} /> }
                 </DialogFooter>
             </DialogContent>
         </Dialog>

@@ -14,8 +14,14 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Container } from "lucide-react"
-import { ChallengeProps } from "./Challenge"
 import { useState, useEffect } from "react"
+import { submitFlag } from "@/lib/backend-interaction"
+import { cn } from "@/lib/utils"
+import { toast } from "sonner";
+import { useContext } from "react"
+import { ChallengeContext } from "@/context/ChallengeProvider"
+import { Challenge as ChallengeType } from "@/context/ChallengeProvider"
+
 
 const formSchema = z.object({
     flag: z.string().nonempty({
@@ -26,14 +32,24 @@ const formSchema = z.object({
 
 
 
+export function FlagSubmit({
+  challenge
+}: {
+  challenge: ChallengeType
+}) {
+  const isInstanced: boolean = challenge.instanced ?? false;
+  const timeout: Date = challenge.timeout ? new Date(challenge.timeout) : new Date();
+  const challengeContext = useContext(ChallengeContext);
+  if (!challengeContext) throw new Error("ChallengeContext is undefined");
+  const { challenges, setChallenges } = challengeContext;
 
-export function FlagSubmit(challengeProp: ChallengeProps) {
-  const isInstanced: boolean = challengeProp.challenge.instanced ?? false;
-  const timeout: Date = challengeProp.challenge.timeout ? new Date(challengeProp.challenge.timeout) : new Date();
+
 
   const [remainingTime, setRemainingTime] = useState(
     Math.max(0, Math.floor((timeout.getTime() - Date.now()) / 1000))
   );
+  const [submissionStatus, setSubmissionStatus] = useState<"Idle" | "Correct" | "Wrong" | "Invalid" | "Repeated">("Idle");
+
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -81,7 +97,19 @@ export function FlagSubmit(challengeProp: ChallengeProps) {
                   render={({ field }) => (
                     <FormItem className="flex-1">
                       <FormControl>
-                        <Input placeholder="TRX{...}" {...field} />
+                        <Input
+                          placeholder="TRX{...}"
+                          className={cn(
+                            submissionStatus === "Correct" && "border-green-500",
+                            submissionStatus === "Wrong" && "border-red-500",
+                            submissionStatus === "Invalid" && "border-yellow-500"
+                          )}
+                          {...field}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            setSubmissionStatus("Idle");
+                          }}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -102,11 +130,42 @@ export function FlagSubmit(challengeProp: ChallengeProps) {
 
   const form = useForm({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      flag: "",
+    },
   });
 
-  const onSubmit = (data: any) => {
-    console.log(data);
-  };
+const onSubmit = async (data: any) => {
+  const result = await submitFlag(challenge.id, data.flag);
+  const status = result.data.status as typeof submissionStatus;
+  setSubmissionStatus(status);
+
+  switch (status) {
+    case "Correct":
+      toast.success("Flag submitted successfully!");
+      setChallenges(prevChallenges =>
+        prevChallenges.map(c =>
+          c.id === challenge.id
+            ? { ...c, solved: true }
+            : c
+        )
+      );
+      break;
+    case "Wrong":
+      toast.error("Wrong flag.");
+      break;
+    case "Repeated":
+      toast.error("Flag already submitted.");
+      break;
+    case "Invalid":
+      toast.error("Invalid flag format.");
+      break;
+    default:
+      toast.error("An unexpected error occurred.");
+      console.error("Unexpected result:", result);
+      break;
+  }
+};
 
   return <>{isInstanced ? showDockerControls() : showFlagSubmit()}</>;
 }

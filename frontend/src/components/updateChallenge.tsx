@@ -7,13 +7,13 @@ import {
     SheetTrigger,
   } from "@/components/ui/sheet"
 import { ChallengeForm } from "@/components/ChallengeForm"
-import { ChallengeProps } from "./Challenge"
 import { AuthProps } from "@/context/AuthProvider"
 import { Pencil } from "lucide-react"
+import { Challenge as ChallengeType } from "@/context/ChallengeProvider"
 
-export function UpdateChallenge({auth,challengeProp}:{
+export function UpdateChallenge({auth,challenge}:{
     auth: AuthProps,
-    challengeProp:ChallengeProps
+    challenge:ChallengeType
     }
  ){
 
@@ -32,7 +32,7 @@ export function UpdateChallenge({auth,challengeProp}:{
                 </SheetDescription>
                 </SheetHeader>
                 <span className="ml-4 mr-4">
-                    <ChallengeForm auth={auth} challengeProp={challengeProp}/>
+                    <ChallengeForm auth={auth} challenge={challenge}/>
                 </span>
             </SheetContent>
         </Sheet>

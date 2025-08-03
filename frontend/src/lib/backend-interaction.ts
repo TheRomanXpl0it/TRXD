@@ -25,7 +25,6 @@ export async function getChallenges(){
     }
     challenges = challenges.map((challenge: any) => {
         return {
-            challenge: {
                 id: challenge.id,
                 title: challenge.name,
                 description: challenge.description,
@@ -45,7 +44,6 @@ export async function getChallenges(){
                 flags: challenge.flags,
                 instanced: challenge.instance,
                 timeout: challenge.timeout ? new Date(challenge.timeout) : undefined,
-            }
         };
     });
     return JSON.stringify(challenges);
@@ -375,5 +373,28 @@ export async function checkSession(): Promise<{ status: number; data?: any }> {
       };
     }
     return { status: 500, data: { message: "Unexpected error" } };
+  }
+}
+
+export async function submitFlag(
+  challengeId: number,
+  flag: string
+): Promise<{ status: number; data?: any }> {
+  try {
+    const response = await api.post(
+      `/player/submit`,
+      { "chall_id": challengeId, "flag": flag },
+      { withCredentials: true }
+    );
+    return { status: response.status, data: response.data };
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      return {
+        status: error.response.status,
+        data: error.response.data,
+      };
+    }
+    console.error("Unexpected error during flag submission:", error);
+    return { status: 500, data: { message: "Unexpected error occurred" } };
   }
 }
