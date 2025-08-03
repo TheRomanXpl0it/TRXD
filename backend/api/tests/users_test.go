@@ -238,6 +238,29 @@ func TestLogout(t *testing.T) {
 	}
 }
 
+func TestAuth(t *testing.T) {
+	db.DeleteAll()
+	db.InitConfigs()
+	app := api.SetupApp()
+	defer app.Shutdown()
+
+	err := db.UpdateConfig(context.Background(), "allow-register", "true")
+	if err != nil {
+		t.Fatalf("Failed to update config: %v", err)
+	}
+
+	session := utils.NewApiTestSession(t, app)
+
+	session.Get("/api/auth", nil, http.StatusUnauthorized)
+	session.CheckResponse(errorf(consts.Unauthorized))
+
+	session.Post("/api/register", JSON{"username": "test", "email": "allow@test.test", "password": "testpass"}, http.StatusOK)
+	session.CheckResponse(JSON{"username": "test", "role": string(db.UserRolePlayer)})
+
+	session.Get("/api/auth", nil, http.StatusOK)
+	session.CheckResponse(JSON{"username": "test", "role": string(db.UserRolePlayer)})
+}
+
 var testUpdateUser = []struct {
 	testBody         interface{}
 	expectedStatus   int
