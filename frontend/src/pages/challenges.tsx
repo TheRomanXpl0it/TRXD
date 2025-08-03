@@ -1,32 +1,17 @@
-import { Categories } from "@/components/categories"
-import { CreateChallenge } from "@/components/createChallenge";
-import { useState, useEffect, useContext } from "react";
-import { getChallenges, getCategories } from "@/lib/backend-interaction";
+import { CreateChallenge } from "@/components/CreateChallenge";
+import { lazy, Suspense } from "react";
+import { useContext } from "react";
 import SettingContext from "@/context/SettingsProvider";
 import AuthContext from "@/context/AuthProvider";
+import Loading from "@/components/Loading";
+
+const Categories = lazy(() => import("@/components/Categories").then(module => ({ default: module.Categories })));
 
 export function Challenges() {
-    const [challenges, setChallenges] = useState([]);
-    const [categories, setCategories] = useState([]);
     const { settings } = useContext(SettingContext);
     const { auth } = useContext(AuthContext);
     const showQuotes = settings.General?.find((setting) => setting.title === 'Show Quotes')?.value;
     const canPost = auth && (auth.roles.includes('Admin') || auth.roles.includes('author'));
-
-    useEffect(() => {
-        async function fetchChallenges() {
-            const challengesResult = await getChallenges();
-            const challenges = JSON.parse(challengesResult);
-            setChallenges(challenges);
-        }
-        async function fetchCategories() {
-            const categoriesResult = await getCategories();
-            const categories = JSON.parse(categoriesResult);
-            setCategories(categories);
-        }
-        fetchCategories();
-        fetchChallenges();
-    }, []);
 
     return (
     <>
@@ -43,7 +28,9 @@ export function Challenges() {
                 <CreateChallenge/>
             </div>
         )}
-        <Categories challenges={challenges} categories={categories} />
+        <Suspense fallback={<Loading />}>
+            <Categories />
+        </Suspense>
     </>
     )
 }

@@ -7,7 +7,7 @@ import {
     SheetTrigger,
   } from "@/components/ui/sheet"
 import { ChallengeForm } from "@/components/ChallengeForm"
-import { ChallengeProps } from "./challenge"
+import { ChallengeProps } from "./Challenge"
 import { AuthProps } from "@/context/AuthProvider"
 import { Pencil } from "lucide-react"
 

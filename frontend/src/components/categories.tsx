@@ -1,12 +1,11 @@
-import { displayChallenges, ChallengeProps } from './challenge'
+import { displayChallenges, ChallengeProps } from './Challenge'
 import React, { useContext } from 'react';
 import SettingContext from '@/context/SettingsProvider';
 import AuthContext from '@/context/AuthProvider';
 import { AuthProps } from '@/context/AuthProvider';
+import { useState, useEffect } from 'react';
+import { getChallenges, getCategories } from '@/lib/backend-interaction';
 
-interface CategoriesProps {
-    challenges: ChallengeProps[];
-}
 
 function challengeByCategory(challengeProps: ChallengeProps[], category: string) {
     return challengeProps.filter((challengeProp) => challengeProp.challenge.category.includes(category));
@@ -40,9 +39,26 @@ function displayCategory(
     )
 }
 
-export const Categories: React.FC<CategoriesProps & { categories: string[] }> = ({ challenges, categories }) => {
+export const Categories: React.FC = () => {
     const { settings } = useContext(SettingContext);
     const { auth } = useContext(AuthContext);
+    const [challenges, setChallenges] = useState([]);
+    const [categories, setCategories] = useState([]);
+
+    useEffect(() => {
+        async function fetchChallenges() {
+            const challengesResult = await getChallenges();
+            const challenges = JSON.parse(challengesResult);
+            setChallenges(challenges);
+        }
+        async function fetchCategories() {
+            const categoriesResult = await getCategories();
+            const categories = JSON.parse(categoriesResult);
+            setCategories(categories);
+        }
+        fetchCategories();
+        fetchChallenges();
+    }, []);
     const isVisible = settings.Challenges?.find((setting) => setting.title === 'Visible')?.value;
     const challengeSettings = settings.Challenges;
 

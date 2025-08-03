@@ -19,6 +19,7 @@ interface AuthContextType {
   setAuth: React.Dispatch<React.SetStateAction<AuthProps | null>>;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -26,13 +27,14 @@ const AuthContext = createContext<AuthContextType>({
   setAuth: () => {},
   login: async () => false,
   logout: () => {},
+  loading: true,
 });
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [auth, setAuth] = useState<AuthProps | null>(null);
   const navigate = useNavigate();
 
-  // 🔓 Logout function
+
   const logout = useCallback(async () => {
     setAuth(null);
     try {
@@ -40,7 +42,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } catch (err) {
       console.warn("Logout request error:", err);
     }
-    navigate("/");
   }, [navigate]);
 
   // 🔐 Login function
@@ -59,9 +60,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     [logout]
   );
 
-  // 📡 Session check on mount
-  useEffect(() => {
-    const verifySession = async () => {
+const [loading, setLoading] = useState(true);
+
+useEffect(() => {
+  const verifySession = async () => {
+    try {
       const response = await checkSession();
       if (response.status === 200) {
         const { username, role } = response.data;
@@ -69,20 +72,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       } else {
         await logout();
       }
-    };
-    verifySession();
-  }, [logout]);
+    } catch {
+      await logout();
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // 🧩 Register global 401 handler
+  verifySession();
+}, [logout]);
+
+  // register global unauthorized handler
   useEffect(() => {
     setUnauthorizedHandler(() => {
       setAuth(null);
-      navigate("/login");
     });
-  }, [navigate]);
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ auth, setAuth, login, logout }}>
+    <AuthContext.Provider value={{ auth, setAuth, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

@@ -17,11 +17,11 @@ import {
   } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { FlagSubmit } from "./flag-submit";
-import { CategoryIcon } from "./category-icon";
+import { FlagSubmit } from "./FlagSubmit";
+import { CategoryIcon } from "./CategoryIcon";
 import { Flag,UserPen, EyeClosed, CircleCheck, Download, Droplet } from "lucide-react";
-import { UpdateChallenge } from "@/components/updateChallenge";
-import { DeleteChallenge } from "@/components/deleteChallenge";
+import { UpdateChallenge } from "@/components/UpdateChallenge";
+import { DeleteChallenge } from "@/components/DeleteChallenge";
 import { AuthProps } from "@/context/AuthProvider";
 
 
@@ -40,7 +40,7 @@ export interface ChallengeProps {
         attachments?: File[];
         authors?: string[];
         hidden: boolean;
-        flag?: string;
+        flags?: [{ flag: string; regex: boolean }];
         instanced?: boolean;
         timeout?: Date;
     };
@@ -262,4 +262,3 @@ function Challenge({
         </Dialog>
     )
 }
-

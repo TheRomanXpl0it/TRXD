@@ -9,6 +9,47 @@ export async function getChallenges(){
         url: string;
     };
 
+    let challenges = [];
+
+    try {
+      challenges = (await api.get("/challenges")).data;
+      console.log("Fetched challenges:", challenges);
+    }
+    catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+            console.error("Error fetching challenges:", error.response.data);
+            return JSON.stringify([]);
+        }
+        console.error("Unexpected error:", error);
+        return JSON.stringify([]);
+    }
+    challenges = challenges.map((challenge: any) => {
+        return {
+            challenge: {
+                id: challenge.id,
+                title: challenge.name,
+                description: challenge.description,
+                solves: challenge.solves,
+                points: challenge.points,
+                category: challenge.category,
+                remote: challenge.host,
+                solved: challenge.solved,
+                tags: challenge.tags,
+                difficulty: challenge.difficulty,
+                attachments: challenge.attachments.map((attachment: any) => ({
+                    name: attachment.name,
+                    url: attachment.url,
+                })) as Attachment[],
+                authors: challenge.authors,
+                hidden: challenge.hidden,
+                flags: challenge.flags,
+                instanced: challenge.instance,
+                timeout: challenge.timeout ? new Date(challenge.timeout) : undefined,
+            }
+        };
+    });
+    return JSON.stringify(challenges);
+
     const mockChallenges = [
         {
             challenge : {
@@ -222,14 +263,19 @@ export async function getChallenges(){
 } 
 
 export async function getCategories(){
-    const categories = [
+    /*const categories = [
         'Web',
         'Rev',
         'Forensics',
         'Crypto',
         'Pwn',
         'Misc',
-    ]
+    ]*/
+
+    let categories = [
+      'cat-1',
+      'cat-2',
+    ];
 
     return JSON.stringify(categories);
 }

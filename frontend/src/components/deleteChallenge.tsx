@@ -1,4 +1,4 @@
-import { ChallengeProps } from "./challenge";
+import { ChallengeProps } from "./Challenge";
 import { Button } from "@/components/ui/button"
 import {
   Dialog,

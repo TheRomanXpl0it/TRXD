@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Container } from "lucide-react"
-import { ChallengeProps } from "./challenge"
+import { ChallengeProps } from "./Challenge"
 import { useState, useEffect } from "react"
 
 const formSchema = z.object({

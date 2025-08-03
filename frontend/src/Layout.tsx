@@ -1,8 +1,8 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/app-sidebar"
+import { AppSidebar } from "@/components/AppSidebar"
 import { Outlet } from 'react-router-dom'
-import { ThemeProvider } from "@/components/theme-provider"
-import { ModeToggle } from "./components/mode-toggle";
+import { ThemeProvider } from "@/components/ThemeProvider"
+import { ModeToggle } from "./components/ModeToggle";
 import { Toaster } from "@/components/ui/sonner"
 
 

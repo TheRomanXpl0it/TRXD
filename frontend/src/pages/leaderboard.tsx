@@ -1,6 +1,6 @@
-import { Chart } from "@/components/chart";
-import { Scoreboard } from "@/components/scoreboard";
-import { Player, columns } from "@/components/scores";
+import { Chart } from "@/components/Chart";
+import { Scoreboard } from "@/components/Scoreboard";
+import { Player, columns } from "@/components/Scores";
 import SettingContext from "@/context/SettingsProvider";
 import { useContext } from "react";
 

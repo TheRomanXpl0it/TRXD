@@ -3,7 +3,7 @@ import SettingContext from "@/context/SettingsProvider"
 import AuthContext from "@/context/AuthProvider";
 import { fetchTeamData } from "@/lib/backend-interaction"; // Assuming you have a function to fetch team data
 import { Button } from "@/components/ui/button"
-import { Scoreboard } from "@/components/scoreboard";
+import { Scoreboard } from "@/components/Scoreboard";
 import { teamColumns } from "@/components/columns/teamColumns"; // defined above
 import { useNavigate } from "react-router-dom";
 import { Medal,LogOut } from "lucide-react";

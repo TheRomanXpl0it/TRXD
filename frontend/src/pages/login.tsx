@@ -6,8 +6,8 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
-import { LoginForm } from "@/components/login-form"
-import { RegisterForm } from "@/components/register-form"
+import { LoginForm } from "@/components/LoginForm"
+import { RegisterForm } from "@/components/RegisterForm"
 import { Title } from "@/components/ui/title"
 
 

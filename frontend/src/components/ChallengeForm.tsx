@@ -6,7 +6,8 @@ import {
   toast
 } from "sonner"
 import {
-  useForm
+  useForm,
+  useFieldArray
 } from "react-hook-form"
 import {
   zodResolver
@@ -64,12 +65,17 @@ import {
   MultiSelectorList,
   MultiSelectorTrigger
 } from "@/components/ui/multi-select"
-import { ChallengeProps } from "./challenge"
+import { ChallengeProps } from "./Challenge"
 import { AuthProps } from "@/context/AuthProvider"
 
 const formSchema = z.object({
   title: z.string().min(1),
-  flag: z.string().min(1),
+  flags: z.array(
+    z.object({
+      flag: z.string().min(1),
+      regex: z.boolean(),
+    })
+  ).min(1, "At least one flag required"),
   description: z.string(),
   difficulty: z.string(),
   tags: z.array(z.string()).nonempty("Please at least one item"),
@@ -77,6 +83,7 @@ const formSchema = z.object({
   files: z.string(),
   authors: z.array(z.string())
 });
+
 
 function displayAuthors(authors: string[]){
   return (
@@ -97,24 +104,23 @@ export function ChallengeForm( { challengeProp, auth } : {
   let defaultDifficulty: string | undefined = "Easy";
   let defaultTags: string[] | undefined = ["Easy"];
   let defaultHidden: boolean | undefined = true;
-  let defaultFlag : string | undefined = "";
+  let defaultFlags: { flag: string; regex: boolean }[] = [{ flag: "", regex: false }];
   let authors: string[] = [];
 
 
   if ( challengeProp ){
-    console.log(challengeProp);
     challengeProp.challenge.authors ? defaultAuthors = challengeProp.challenge.authors : [];
     challengeProp.challenge.description ? defaultDescription = challengeProp.challenge.description : "";
     challengeProp.challenge.difficulty ? defaultDifficulty = challengeProp.challenge.difficulty : "Easy";
     challengeProp.challenge.tags ? defaultTags = challengeProp.challenge.tags : ["Easy"];
     challengeProp.challenge.hidden!==undefined ? defaultHidden = challengeProp.challenge.hidden : true;
-    defaultTitle = challengeProp.challenge.title;
-    defaultFlag = challengeProp.challenge.flag;
+    challengeProp.challenge.flags?.length ? defaultFlags = challengeProp.challenge.flags : [""];
+    challengeProp.challenge.title ? defaultTitle = challengeProp.challenge.title : "";
   }
 
 
   const [files, setFiles] = useState < File[] | null > (null);
-
+  
   const dropZoneConfig = {
     maxFiles: 5,
     maxSize: 1024 * 1024 * 4,
@@ -124,7 +130,7 @@ export function ChallengeForm( { challengeProp, auth } : {
     resolver: zodResolver(formSchema),
     defaultValues: {
       "title" : defaultTitle,
-      "flag": defaultFlag,
+      "flags": defaultFlags,
       "description" : defaultDescription,
       "difficulty" : defaultDifficulty,
       "tags": defaultTags,
@@ -132,6 +138,12 @@ export function ChallengeForm( { challengeProp, auth } : {
       "hidden": defaultHidden,
     },
   })
+  
+  const { control } = form;
+  const { fields: flagFields, append, remove } = useFieldArray({
+    control,
+    name: "flags",
+  });
 
   function onSubmit(values: z.infer < typeof formSchema > ) {
     try {
@@ -170,24 +182,50 @@ export function ChallengeForm( { challengeProp, auth } : {
           )}
         />
         
-        <FormField
-          control={form.control}
-          name="flag"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Flag</FormLabel>
-              <FormControl>
-                <Input 
-                placeholder="TRX{...}"
-                
-                type="text"
-                {...field} />
-              </FormControl>
-              <FormDescription>Correct Flag</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+       <FormLabel>Flags</FormLabel>
+        {flagFields.map((field, index) => (
+          <div key={field.id} className="space-y-2 border p-4 rounded-md">
+            <FormField
+              control={form.control}
+              name={`flags.${index}.flag`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm text-muted-foreground">Flag {index + 1}</FormLabel>
+                  <FormControl>
+                    <Input type="text" placeholder="TRX{...}" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name={`flags.${index}.regex`}
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel>Regex</FormLabel>
+                    <FormDescription>Enable if this flag should be matched as a regular expression.</FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            {flagFields.length > 1 && (
+              <Button type="button" variant="destructive" onClick={() => remove(index)}>
+                Remove
+              </Button>
+            )}
+          </div>
+        ))}
+        <Button type="button" onClick={() => append({ flag: "", regex: false })}>
+          + Add Flag
+        </Button>
         
         <FormField
           control={form.control}
