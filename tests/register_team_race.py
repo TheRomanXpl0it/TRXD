@@ -26,7 +26,7 @@ r = s.post('http://localhost:1337/api/register', json={
 
 if r.status_code == 409:
 	print("User already exists, logging in with existing user.")
-	r = s.post('http://localhost:1337/login', json={
+	r = s.post('http://localhost:1337/api/login', json={
 		"email": email,
 		"password": "test1234",
 	})
