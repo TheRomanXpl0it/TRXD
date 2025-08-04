@@ -1,5 +1,7 @@
 import { api } from "@/api/axios";
+import type { Team, AuthProps, User } from "@/context/AuthProvider";
 import axios from "axios";
+
 
 export async function getChallengeData(){
     // Simulate file attachments as objects with name and url
@@ -84,30 +86,23 @@ export async function login({
 }: {
   email: string;
   password: string;
-}): Promise<{ status: number; data?: any }> {
+}): Promise< number > {
   try {
     const response = await api.post(
       "/login",
       { email, password },
       { withCredentials: true }
     );
-
-    console.log("Login response:", response);
-    return { status: response.status, data: await response.data };
+    return response.status;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
-      return {
-        status: error.response.status,
-        data: error.response.data,
-      };
+      return error.response.status;
     }
 
     console.error("Unexpected login error:", error);
-    return {
-      status: 500,
-      data: { message: "Unexpected error occurred" },
-    };
+    return 500;
   }
+
 }
 
 export async function register({
@@ -118,33 +113,27 @@ export async function register({
   username: string;
   email: string;
   password: string;
-}): Promise<{ status: number; data?: any }> {
+}): Promise< number> {
   try {
     const response = await api.post(
       "/register",
       { username, email, password },
       { withCredentials: true }
     );
-    return { status: response.status, data: response.data };
+    return response.status ;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
       // Return the server's status and any data it returned
-      return {
-        status: error.response.status,
-        data: error.response.data,
-      };
+      return error.response.status
     }
 
     // Unknown error (network error or non-Axios error)
     console.error("Unexpected error during registration:", error);
-    return {
-      status: 500,
-      data: { message: "Unexpected error occurred" },
-    };
+    return 500;
   }
 }
 
-export async function fetchTeamData(teamId: number): Promise<{ name: string; members: string[]; score: number; teamlogo:string, rank: number }> {
+export async function fetchTeamData(teamId: number): Promise<Team> {
     // Simulate fetching team data
     let teamData = {
         id: teamId,
@@ -163,13 +152,13 @@ export async function fetchTeamData(teamId: number): Promise<{ name: string; mem
     return teamData;
 }
 
-export async function getUsersTeamData(): Promise<{ id: number, name: string; }> {
+export async function getUsersTeamData(): Promise<Team | null> {
     // Simulate fetching team data
-    let teamData = { id: -1, name: "" };
+    let teamData = null;
     try {
         const response = await api.get("/team");
         if (response.status === 200) {
-            return response.data;
+            teamData = { id: response.data.id, name: response.data.name, logo: response.data.logo, members: response.data.members } as Team;
         } else {
             console.error("Error fetching user's team data:", response.statusText);
         }
@@ -185,27 +174,21 @@ export async function leaveTeam() {
     return { success: true, message: "You have left the team." };
 }
 
-export async function checkSession(): Promise<{ status: number; data?: any; team?: any }> {
+export async function getSessionInfo(): Promise<AuthProps | number> {
   try {
-    const response = await api.get("/auth"); // or your auth check endpoint
+    const response = await api.get("/info"); // or your auth check endpoint
     const data = response.data;
-
-    const team = data.team ?? null;
-
-    return { status: response.status, data, team };
+    return {
+      id: data.id,
+      username: data.username,
+      role: data.role,
+      teamId: data.team_id,
+    };
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
-      return {
-        status: error.response.status,
-        data: error.response.data,
-        team: null,
-      };
+      return error.response.status;
     }
-    return {
-      status: 500,
-      data: { message: "Unexpected error" },
-      team: null,
-    };
+    return 500;
   }
 }
 
@@ -215,7 +198,7 @@ export async function submitFlag(
 ): Promise<{ status: number; data?: any }> {
   try {
     const response = await api.post(
-      `/player/submit`,
+      `/submit`,
       { "chall_id": challengeId, "flag": flag },
       { withCredentials: true }
     );
@@ -242,30 +225,31 @@ export async function fetchCountries(): Promise<JSON[]> {
   }
 }
 
-export async function registerTeam(teamName:string, teamPassword: string): Promise<{ status: number; data?: any }> {
+export async function registerTeam(teamName:string, teamPassword: string): Promise<Team | {status: number, error: string}> {
   try {
     const response = await api.post(
-      "/player/register-team",
+      "/teams",
       { name: teamName, password: teamPassword },
       { withCredentials: true }
     );
-    return { status: response.status, data: response.data };
+    const teamData = response.data;
+    return { id: teamData.id, name: teamData.name, logo: teamData.logo, members: teamData.members, country: teamData.nationality } as Team;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
       return {
         status: error.response.status,
-        data: error.response.data,
+        error: error.response.data,
       };
     }
     console.error("Unexpected error during team registration:", error);
-    return { status: 500, data: { message: "Unexpected error occurred" } };
+    return { status: 500, error:  "Unexpected error occurred" };
   }
 }
 
 export async function updateTeam(teamDescription:string | undefined, teamCountry: string| undefined, teamProfilePicture: string| undefined): Promise<{ status: number; data?: any }> {
   try {
     const response = await api.patch(
-      "/player/update-team",
+      "/teams",
       { bio: teamDescription, nationality: teamCountry, image: teamProfilePicture },
       { withCredentials: true }
     );
@@ -279,5 +263,24 @@ export async function updateTeam(teamDescription:string | undefined, teamCountry
     }
     console.error("Unexpected error during team update:", error);
     return { status: 500, data: { message: "Unexpected error occurred" } };
+  }
+}
+
+export async function fetchUserData(userId: number): Promise< User | null > {
+  try {
+    if (userId === -1) {
+      console.warn("Invalid userId provided, returning default user data.");
+      return { id: -1, username: "", email: "", role: "", score: -1, country: "", joinedAt: "", solves: [], teamId: null };
+    }
+    const response = await api.get(`/users/${userId}`);
+    switch (response.status) {
+      case 200:
+        return {id: response.data.id, role: response.data.role, score: response.data.score, profilePicture: response.data.image, username: response.data.name, email: response.data.email, country: response.data.nationality, joinedAt: response.data.joined_at, solves: response.data.solves, teamId: response.data.team_id};
+      default:
+        return { id:-1, username: "", email: "", role: "", score: -1, country: "", joinedAt: "", solves: [], teamId: null };
+    }
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    return { id:-1, username: "", email: "", role: "", score: -1, country: "", joinedAt: "", solves: [], teamId: null };
   }
 }

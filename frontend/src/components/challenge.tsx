@@ -190,8 +190,8 @@ function Challenge({
     },
     auth: AuthProps
 }) {
-    const canEdit = auth.roles.includes('Admin') || (auth.roles.includes('Author') && challenge.authors?.includes(auth.username));
-
+    const canEdit = auth.role === 'Admin' || (auth.role === 'Author' && challenge.authors?.includes(auth.username));
+    
     return (
         <Dialog key={challenge.id}>
             <DialogTrigger asChild>

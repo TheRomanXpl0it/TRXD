@@ -47,7 +47,9 @@ import {
 } from "@/components/ui/file-upload"
 import { registerTeam, updateTeam } from "@/lib/backend-interaction"
 import { Label } from '@radix-ui/react-dropdown-menu';
-import { register } from 'module';
+import { AuthContext, isTeam } from '@/context/AuthProvider';
+import { useNavigate } from "react-router-dom";
+
 
 const formSchema = z.object({
   TeamName: z.string().min(1),
@@ -58,7 +60,6 @@ const formSchema = z.object({
   TeamProfilePicture: z.string().optional()
 });
 
-import AuthContext from '@/context/AuthProvider';
 
 function CreateTeamForm() {
   const authContext = useContext(AuthContext);
@@ -71,8 +72,8 @@ function CreateTeamForm() {
   const [countryName, setCountryName] = useState < string > ('')
   const [files, setFiles] = useState < File[] | null > (null);
   // Removed usage of auth?.team as 'team' does not exist on AuthContextType
-  const auth = authContext.auth;
-  const team = auth.team || null;
+  const { auth } = useContext(AuthContext);
+  const navigate = useNavigate();
 
 
   const dropZoneConfig = {
@@ -86,23 +87,19 @@ function CreateTeamForm() {
   })
 
   async function onSubmit(values: z.infer < typeof formSchema > ) {
-    let teamId, teamName;
     try {
       const result = await registerTeam(values.TeamName, values.TeamPassword);
-      switch (result.status) {
-        case 200:
-          teamId = result.data.id;
-          teamName = result.data.name;
-          break;
-        case 400:
-          toast.error("Password too short");
-          form.setError("TeamPassword", {
-            type: "manual",
-            message: "Password must be at least 8 characters long"
+      if ( !isTeam(result) ){
+        switch (result.status) {
+          case 400:
+            toast.error("Password too short");
+            form.setError("TeamPassword", {
+              type: "manual",
+              message: "Password must be at least 8 characters long"
           });
           return;
         case 409:
-          const error = result.data.error;
+          const error = result.error;
           toast.error(error);
           form.setError("TeamName", {
             type: "manual",
@@ -116,9 +113,12 @@ function CreateTeamForm() {
           toast.error("Team registration failed: Unknown error");
           return;
       }
+    }
+
     } catch (error) {
       console.error("Form submission error", error);
       toast.error("Failed to register the team.");
+      return;
     }
     try {
       if ( values.TeamCountry || values.TeamDescription || values.TeamProfilePicture) {
@@ -145,16 +145,9 @@ function CreateTeamForm() {
       console.error("Form submission error", error);
       toast.error("Failed to update the team.");
     }
-    
-      authContext.setAuth({
-        username: auth.username,
-        roles: auth.roles,
-        team: {
-          id: teamId,
-          name: teamName,
-        }
-      });
     toast.success("Team created successfully!");
+    // Redirect to the team page after successful creation
+    navigate("/team");
   }
 
   return (

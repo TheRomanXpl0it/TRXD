@@ -9,7 +9,7 @@ import {
 import { NotebookPen } from "lucide-react"
 import { ChallengeForm } from "@/components/ChallengeForm"
 import { useContext } from "react"
-import AuthContext from "@/context/AuthProvider"
+import { AuthContext } from "@/context/AuthProvider"
 
 export function CreateChallenge(){
     const {auth} = useContext(AuthContext);

@@ -28,7 +28,8 @@ function App() {
                 <Route path="/" element={<LazyHome />} />
                 <Route path="/leaderboard" element={<LazyLeaderboard />} />
                 <Route path="/writeups" element={<LazyWriteups />} />
-                <Route path="/login" element={<LazyLogin />} /> 
+                <Route path="/login" element={<LazyLogin />} />
+                <Route path="/account/:username" element={<LazyAccount />} />
 
                 { /* Authenticated routes */ }
                 <Route path="/challenges" element={<PrivateRoute><LazyChallenges /></PrivateRoute>} />

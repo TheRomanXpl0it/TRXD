@@ -14,10 +14,10 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { register } from "@/lib/backend-interaction"
+import { register,getSessionInfo } from "@/lib/backend-interaction"
 import { useContext } from "react"
 import { useNavigate } from "react-router-dom";
-import AuthContext from "@/context/AuthProvider"
+import { AuthContext, isAuthProps } from "@/context/AuthProvider"
 
 
 const formSchema = z.object({
@@ -49,22 +49,8 @@ export function RegisterForm() {
     })
     async function onSubmit(values: z.infer<typeof formSchema>) {
         const response = await register(values);
-        switch (response.status) {
+        switch (response) {
             case 200:
-                console.log("Registration successful:", response.data);
-                const { username, role } = response.data; // Assuming response contains these fields
-                  if (!username || !role) {
-                      form.setError("root", {
-                          type: "manual",
-                          message: "Invalid response from server",
-                      });
-                      return;
-                  }
-                  setAuth({
-                      username,
-                      roles: [role], // Assuming role is a string, adjust if it's an array
-                  });
-                  navigate("/challenges");
                   break;
             case 400:
                 form.setError("root", {
@@ -85,6 +71,12 @@ export function RegisterForm() {
                 });
                 break;
         }
+        const sessionInfo = await getSessionInfo();
+        if (isAuthProps(sessionInfo)) {
+            setAuth(sessionInfo);
+            navigate("/challenges");
+        }
+        return;
     }
 
     return (

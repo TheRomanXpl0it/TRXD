@@ -3,7 +3,7 @@ import { lazy, Suspense, useState } from "react";
 import { useContext } from "react";
 import { Filter } from "lucide-react";
 import SettingContext from "@/context/SettingsProvider";
-import AuthContext from "@/context/AuthProvider";
+import { AuthContext } from "@/context/AuthProvider";
 import Loading from "@/components/Loading";
 import {
   MultiSelector,
@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/multi-select";
 import { Separator } from "@/components/ui/separator";
 import { useChallenges } from "@/context/ChallengeProvider";
+import { toast } from "sonner";
+import { Navigate, useNavigate } from "react-router-dom";
 
 const Categories = lazy(() =>
   import("@/components/Categories").then((module) => ({
@@ -76,6 +78,7 @@ return (
 export function Challenges() {
   const { settings } = useContext(SettingContext);
   const { auth } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
 
@@ -91,7 +94,15 @@ export function Challenges() {
   )?.value;
 
   const canPost =
-    auth && (auth.roles.includes("Admin") || auth.roles.includes("author"));
+    auth && (auth.role === "Admin" || auth.role === "author");
+
+  const canView = auth?.teamId !== null;
+
+  if (!canView) {
+    toast.error("You must join a team to view challenges.");
+    return <Navigate to="/team" />;
+  }
+
 
   return (
     <>

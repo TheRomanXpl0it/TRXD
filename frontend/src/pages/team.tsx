@@ -1,12 +1,13 @@
 import { useContext, useEffect, useState } from "react";
 import SettingContext from "@/context/SettingsProvider";
-import AuthContext from "@/context/AuthProvider";
+import { AuthContext, isTeam } from "@/context/AuthProvider";
 import { fetchTeamData, leaveTeam } from "@/lib/backend-interaction";
 import { Button } from "@/components/ui/button";
 import { Scoreboard } from "@/components/Scoreboard";
 import { teamColumns } from "@/components/columns/teamColumns";
 import { useNavigate } from "react-router-dom";
 import { Medal, LogOut } from "lucide-react";
+import { toast } from "sonner";
 
 function getMedalColor(rank: number) {
   switch (rank) {
@@ -24,14 +25,14 @@ export function CreateOrJoinTeam() {
       <p className="mb-4">To participate in team challenges, create or join a team.</p>
       <div className="flex items-center justify-center gap-8 mt-6 flex-wrap">
         <div className="flex flex-col items-center">
-          <button className="bg-blue-600 text-white rounded-lg shadow-lg hover:brightness-110 transition-all"
+          <button className="bg-blue-600 text-white rounded-lg shadow-lg hover:brightness-110 hover:cursor-pointer transition-all"
             onClick={() => navigate("/createteam")}>
             <img src="/createTeam.svg" alt="Create Team" className="w-full h-full rounded-lg" />
           </button>
-          <span className="mt-2 text-xl font-bold text-blue-700">Create Team</span>
+            <span className="mt-2 text-xl font-bold text-blue-700">Create Team</span>
         </div>
         <div className="flex flex-col items-center">
-          <button className="bg-pink-600 text-white rounded-lg shadow-lg hover:brightness-110 transition-all"
+          <button className="bg-pink-600 text-white rounded-lg shadow-lg hover:brightness-110 hover:cursor-pointer transition-all"
             onClick={() => navigate("/jointeam")}>
             <img src="/joinTeam.svg" alt="Join Team" className="w-full h-full rounded-lg" />
           </button>
@@ -45,24 +46,31 @@ export function CreateOrJoinTeam() {
 export function Team() {
   const { settings } = useContext(SettingContext);
   const { auth } = useContext(AuthContext);
-  const [teamData, setTeamData] = useState<null | any>(null);
+  let [teamData, setTeamData] = useState<null | any>(null);
   const showQuotes = settings.General?.find((s) => s.title === 'Show Quotes')?.value;
   const allowTeamPlay = settings.General?.find((s) => s.title === 'Allow Team Play')?.value;
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (auth?.team?.id) {
-      fetchTeamData(auth.team.id).then(setTeamData).catch(console.error);
-    }
-  }, [auth?.team?.id]);
 
   if (!auth) {
-    return <div>Error: Authentication context is not available.</div>;
+    toast.error("You must be logged in to view your team.");
+    navigate("/login");
+    return null;
   }
+
+  useEffect(() => {
+    if (auth.teamId !== null) {
+      const response = fetchTeamData(auth.teamId);
+      isTeam(response) ? setTeamData(response) : setTeamData(null);
+      console.log("Fetched team data:", teamData);
+    }
+  }, [auth.teamId]);
+
 
   return (
     <>
       <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
-        {auth.team ? auth.team.name : "Join or create a team"}
+        { teamData ? teamData.name : "Join or create a team"}
       </h2>
 
       {showQuotes && (
@@ -71,7 +79,7 @@ export function Team() {
         </blockquote>
       )}
 
-      {allowTeamPlay && auth.team && teamData && (
+      {allowTeamPlay && console.log(teamData) && teamData && (
         <div className="p-6 max-w-3xl mx-auto text-center">
           <div className="flex justify-center mb-6">
             <img
@@ -106,7 +114,7 @@ export function Team() {
         </div>
       )}
 
-      {allowTeamPlay && !auth.team && <CreateOrJoinTeam />}
+      {allowTeamPlay && !teamData && <CreateOrJoinTeam />}
 
       {!allowTeamPlay && (
         <div className="p-4">

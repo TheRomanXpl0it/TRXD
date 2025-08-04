@@ -3,7 +3,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupConte
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Link } from "react-router-dom"
 import { useContext } from "react"
-import AuthContext from "@/context/AuthProvider"
+import { AuthContext } from "@/context/AuthProvider"
 import SettingContext from "@/context/SettingsProvider"
 
 
@@ -29,7 +29,7 @@ export function AppSidebar() {
     const { settings } = useContext(SettingContext);
 
     const isLoggedIn = auth && auth.username !== null && auth.username !== "";
-    const isAdmin = auth && auth.roles.includes('Admin');
+    const isAdmin = auth && auth.role === 'Admin';
 
     const allowWriteups = settings.General.find((setting) => setting.title === 'Allow Writeups')?.value;
     const allowTeamPlay = settings.General.find((setting) => setting.title === 'Allow Team Play')?.value;

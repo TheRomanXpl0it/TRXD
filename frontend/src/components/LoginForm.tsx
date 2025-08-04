@@ -14,8 +14,8 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { useContext } from "react"
-import AuthContext from "@/context/AuthProvider"
-import { getUsersTeamData, login } from "@/lib/backend-interaction"
+import { AuthContext, isAuthProps } from "@/context/AuthProvider"
+import { getSessionInfo, getUsersTeamData, login } from "@/lib/backend-interaction"
 import { useNavigate } from "react-router-dom";
 
 
@@ -45,26 +45,10 @@ export function LoginForm() {
     })
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-          const response = await login(values); // contains accessToken, role, etc.
-          switch (response.status) {
-              case 200:
-                  console.log("Login successful:", response.data);
-                  const { username, role } = response.data; // Assuming response contains these fields
-                  if (!username || !role) {
-                      form.setError("root", {
-                          type: "manual",
-                          message: "Invalid response from server",
-                      });
-                      return;
-                  }
-                  const team = await getUsersTeamData();
+          const status = await login(values);
 
-                  setAuth({
-                    username,
-                    roles: [role],
-                    team: team ?? null,
-                  });
-                  navigate("/challenges");
+          switch (status) {
+              case 200:
                   break;
               case 400:
                   form.setError("root", {
@@ -86,6 +70,12 @@ export function LoginForm() {
                   });
                   return;
           }
+          const sessionInfo = await getSessionInfo();
+          if (isAuthProps(sessionInfo)) {
+              setAuth(sessionInfo);
+              navigate("/challenges");
+          }
+          return;
     }
 
     return (

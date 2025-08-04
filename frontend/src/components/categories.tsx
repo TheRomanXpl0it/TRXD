@@ -1,7 +1,7 @@
 import { displayChallenges } from './Challenge';
 import React, { useContext } from 'react';
 import SettingContext from '@/context/SettingsProvider';
-import AuthContext from '@/context/AuthProvider';
+import { AuthContext } from '@/context/AuthProvider';
 import { AuthProps } from '@/context/AuthProvider';
 import { useChallenges } from '@/context/ChallengeProvider';
 import { Challenge } from '@/context/ChallengeProvider';
