@@ -182,6 +182,12 @@ func TestLogin(t *testing.T) {
 		session.Post("/login", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
+
+	session := utils.NewApiTestSession(t, app)
+	session.Post("/login", testLogin[len(testLogin)-1].testBody, http.StatusOK)
+	session.CheckResponse(testLogin[len(testLogin)-1].expectedResponse)
+	session.Post("/login", testLogin[len(testLogin)-1].testBody, http.StatusForbidden)
+	session.CheckResponse(errorf(consts.AlreadyLoggedIn))
 }
 
 var testLogout = []struct {
@@ -191,7 +197,7 @@ var testLogout = []struct {
 	expectedStatus int
 }{
 	{
-		expectedStatus: http.StatusOK,
+		expectedStatus: http.StatusUnauthorized,
 	},
 	{
 		testBody:       JSON{"username": "test", "email": "test@test.test", "password": "testpass"},

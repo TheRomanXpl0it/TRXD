@@ -16,8 +16,8 @@ var testAuthMiddlewares = []struct {
 }{
 	{
 		method:           "POST",
-		endpoint:         "/logout",
-		expectedStatuses: []int{http.StatusOK, http.StatusOK, http.StatusOK, http.StatusOK, http.StatusOK},
+		endpoint:         "/login",
+		expectedStatuses: []int{http.StatusBadRequest, http.StatusForbidden, http.StatusForbidden, http.StatusForbidden, http.StatusForbidden},
 	},
 	{
 		method:           "GET",

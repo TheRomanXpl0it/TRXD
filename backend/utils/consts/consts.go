@@ -75,6 +75,9 @@ const (
 	UserNotFound               = "User not found"
 	TeamNotFound               = "Team not found"
 	AlreadyRegistered          = "Already registered"
+	AlreadyLoggedIn            = "Already logged in"
+	NotLoggedIn                = "Not logged in"
+	Forbidden                  = "Forbidden"
 )
 
 var UserRegex = regexp.MustCompile(`(^[^@\s]+@[^@\s]+\.[^@\s]+$)`)

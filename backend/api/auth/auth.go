@@ -77,7 +77,7 @@ func Team(c *fiber.Ctx) error {
 	role := c.Locals("role").(db.UserRole)
 
 	if role == db.UserRolePlayer && tid == -1 {
-		return utils.Error(c, fiber.StatusForbidden, consts.Unauthorized)
+		return utils.Error(c, fiber.StatusForbidden, consts.Forbidden)
 	}
 
 	return c.Next()
@@ -100,7 +100,7 @@ func Player(c *fiber.Ctx) error {
 	}
 	if user == nil || (user.Role != db.UserRolePlayer &&
 		user.Role != db.UserRoleAuthor && user.Role != db.UserRoleAdmin) {
-		return utils.Error(c, fiber.StatusForbidden, consts.Unauthorized)
+		return utils.Error(c, fiber.StatusForbidden, consts.Forbidden)
 	}
 
 	if user.TeamID.Valid {
@@ -130,7 +130,7 @@ func Author(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
 	}
 	if user == nil || (user.Role != db.UserRoleAuthor && user.Role != db.UserRoleAdmin) {
-		return utils.Error(c, fiber.StatusForbidden, consts.Unauthorized)
+		return utils.Error(c, fiber.StatusForbidden, consts.Forbidden)
 	}
 
 	if user.TeamID.Valid {
@@ -159,7 +159,7 @@ func Admin(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
 	}
 	if user == nil || user.Role != db.UserRoleAdmin {
-		return utils.Error(c, fiber.StatusForbidden, consts.Unauthorized)
+		return utils.Error(c, fiber.StatusForbidden, consts.Forbidden)
 	}
 
 	if user.TeamID.Valid {

@@ -157,7 +157,8 @@ type TeamData struct {
 	Image       string              `json:"image,omitempty"`
 	Bio         string              `json:"bio,omitempty"`
 	Members     []GetTeamMembersRow `json:"members,omitempty"`
-	// TODO: solve list of team members
+	Solves      []GetTeamSolvesRow  `json:"solves,omitempty"`
+	// TODO: add badges
 }
 
 func GetTeam(ctx context.Context, teamID int32, admin bool, minimal bool) (*TeamData, error) {
@@ -193,7 +194,6 @@ func GetTeam(ctx context.Context, teamID int32, admin bool, minimal bool) (*Team
 	if err != nil {
 		return nil, err
 	}
-
 	teamData.Members = make([]GetTeamMembersRow, 0)
 	for _, member := range members {
 		if !admin && utils.In(member.Role, []UserRole{UserRoleAuthor, UserRoleAdmin}) {
@@ -201,6 +201,12 @@ func GetTeam(ctx context.Context, teamID int32, admin bool, minimal bool) (*Team
 		}
 		teamData.Members = append(teamData.Members, member)
 	}
+
+	solves, err := queries.GetTeamSolves(ctx, teamID)
+	if err != nil {
+		return nil, err
+	}
+	teamData.Solves = solves
 
 	return &teamData, nil
 }

@@ -182,6 +182,47 @@ func (q *Queries) GetChallengeByID(ctx context.Context, id int32) (Challenge, er
 	return i, err
 }
 
+const getChallengeSolves = `-- name: GetChallengeSolves :many
+SELECT teams.id, teams.name, submissions.timestamp
+  FROM submissions
+  JOIN users ON users.id = submissions.user_id
+  JOIN teams ON users.team_id = teams.id
+  WHERE users.role = 'Player'
+    AND submissions.chall_id = $1
+    AND submissions.status = 'Correct'
+  ORDER BY submissions.timestamp ASC
+`
+
+type GetChallengeSolvesRow struct {
+	ID        int32     `json:"id"`
+	Name      string    `json:"name"`
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// Retrieve all teams that solved a challenge
+func (q *Queries) GetChallengeSolves(ctx context.Context, challID int32) ([]GetChallengeSolvesRow, error) {
+	rows, err := q.query(ctx, q.getChallengeSolvesStmt, getChallengeSolves, challID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetChallengeSolvesRow
+	for rows.Next() {
+		var i GetChallengeSolvesRow
+		if err := rows.Scan(&i.ID, &i.Name, &i.Timestamp); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getChallenges = `-- name: GetChallenges :many
 SELECT id FROM challenges
 `
@@ -376,6 +417,54 @@ func (q *Queries) GetTeamMembers(ctx context.Context, teamID sql.NullInt32) ([]G
 			&i.Name,
 			&i.Role,
 			&i.Score,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTeamSolves = `-- name: GetTeamSolves :many
+SELECT challenges.id, challenges.name, challenges.category, submissions.timestamp
+  FROM submissions
+  JOIN users ON users.id = submissions.user_id
+  JOIN teams ON users.team_id = teams.id
+  JOIN challenges ON challenges.id = submissions.chall_id
+  WHERE users.role = 'Player'
+    AND teams.id = $1
+    AND submissions.status = 'Correct'
+  ORDER BY submissions.timestamp DESC
+`
+
+type GetTeamSolvesRow struct {
+	ID        int32     `json:"id"`
+	Name      string    `json:"name"`
+	Category  string    `json:"category"`
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// Retrieve all challenges solved by a team's members
+func (q *Queries) GetTeamSolves(ctx context.Context, id int32) ([]GetTeamSolvesRow, error) {
+	rows, err := q.query(ctx, q.getTeamSolvesStmt, getTeamSolves, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTeamSolvesRow
+	for rows.Next() {
+		var i GetTeamSolvesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Category,
+			&i.Timestamp,
 		); err != nil {
 			return nil, err
 		}

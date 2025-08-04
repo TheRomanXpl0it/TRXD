@@ -54,6 +54,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getChallengeByIDStmt, err = db.PrepareContext(ctx, getChallengeByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetChallengeByID: %w", err)
 	}
+	if q.getChallengeSolvesStmt, err = db.PrepareContext(ctx, getChallengeSolves); err != nil {
+		return nil, fmt.Errorf("error preparing query GetChallengeSolves: %w", err)
+	}
 	if q.getChallengesStmt, err = db.PrepareContext(ctx, getChallenges); err != nil {
 		return nil, fmt.Errorf("error preparing query GetChallenges: %w", err)
 	}
@@ -77,6 +80,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.getTeamMembersStmt, err = db.PrepareContext(ctx, getTeamMembers); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTeamMembers: %w", err)
+	}
+	if q.getTeamSolvesStmt, err = db.PrepareContext(ctx, getTeamSolves); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTeamSolves: %w", err)
 	}
 	if q.getTeamsStmt, err = db.PrepareContext(ctx, getTeams); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTeams: %w", err)
@@ -178,6 +184,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getChallengeByIDStmt: %w", cerr)
 		}
 	}
+	if q.getChallengeSolvesStmt != nil {
+		if cerr := q.getChallengeSolvesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getChallengeSolvesStmt: %w", cerr)
+		}
+	}
 	if q.getChallengesStmt != nil {
 		if cerr := q.getChallengesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getChallengesStmt: %w", cerr)
@@ -216,6 +227,11 @@ func (q *Queries) Close() error {
 	if q.getTeamMembersStmt != nil {
 		if cerr := q.getTeamMembersStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getTeamMembersStmt: %w", cerr)
+		}
+	}
+	if q.getTeamSolvesStmt != nil {
+		if cerr := q.getTeamSolvesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTeamSolvesStmt: %w", cerr)
 		}
 	}
 	if q.getTeamsStmt != nil {
@@ -342,6 +358,7 @@ type Queries struct {
 	deleteChallengeStmt     *sql.Stmt
 	deleteFlagStmt          *sql.Stmt
 	getChallengeByIDStmt    *sql.Stmt
+	getChallengeSolvesStmt  *sql.Stmt
 	getChallengesStmt       *sql.Stmt
 	getConfigStmt           *sql.Stmt
 	getFlagsByChallengeStmt *sql.Stmt
@@ -350,6 +367,7 @@ type Queries struct {
 	getTeamByNameStmt       *sql.Stmt
 	getTeamFromUserStmt     *sql.Stmt
 	getTeamMembersStmt      *sql.Stmt
+	getTeamSolvesStmt       *sql.Stmt
 	getTeamsStmt            *sql.Stmt
 	getUserByEmailStmt      *sql.Stmt
 	getUserByIDStmt         *sql.Stmt
@@ -381,6 +399,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deleteChallengeStmt:     q.deleteChallengeStmt,
 		deleteFlagStmt:          q.deleteFlagStmt,
 		getChallengeByIDStmt:    q.getChallengeByIDStmt,
+		getChallengeSolvesStmt:  q.getChallengeSolvesStmt,
 		getChallengesStmt:       q.getChallengesStmt,
 		getConfigStmt:           q.getConfigStmt,
 		getFlagsByChallengeStmt: q.getFlagsByChallengeStmt,
@@ -389,6 +408,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getTeamByNameStmt:       q.getTeamByNameStmt,
 		getTeamFromUserStmt:     q.getTeamFromUserStmt,
 		getTeamMembersStmt:      q.getTeamMembersStmt,
+		getTeamSolvesStmt:       q.getTeamSolvesStmt,
 		getTeamsStmt:            q.getTeamsStmt,
 		getUserByEmailStmt:      q.getUserByEmailStmt,
 		getUserByIDStmt:         q.getUserByIDStmt,

@@ -108,6 +108,7 @@ type Chall struct {
 	Flags       []GetFlagsByChallengeRow `json:"flags"`
 	Timeout     int32                    `json:"timeout"`
 	Solved      bool                     `json:"solved"`
+	SolvesList  []GetChallengeSolvesRow  `json:"solves_list"`
 }
 
 func GetChallenge(ctx context.Context, id int32, uid int32, author bool) (*Chall, error) {
@@ -179,6 +180,15 @@ func GetChallenge(ctx context.Context, id int32, uid int32, author bool) (*Chall
 		chall.Tags = tags
 	}
 	chall.Solved = solved
+
+	solves, err := queries.GetChallengeSolves(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if solves == nil {
+		solves = []GetChallengeSolvesRow{}
+	}
+	chall.SolvesList = solves
 
 	return &chall, nil
 }
