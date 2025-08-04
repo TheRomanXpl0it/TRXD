@@ -99,7 +99,6 @@ func CreateFlag(c *fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusOK)
 }
 
-// TODO: tests
 func GetChallenges(c *fiber.Ctx) error {
 	uid := c.Locals("uid").(int32)
 	role := c.Locals("role").(db.UserRole)
@@ -113,7 +112,6 @@ func GetChallenges(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(challenges)
 }
 
-// TODO: tests
 func GetChallenge(c *fiber.Ctx) error {
 	uid := c.Locals("uid").(int32)
 	role := c.Locals("role").(db.UserRole)

@@ -75,6 +75,11 @@ func Register(c *fiber.Ctx) error {
 }
 
 func Login(c *fiber.Ctx) error {
+	uid := c.Locals("uid")
+	if uid != nil {
+		return utils.Error(c, fiber.StatusForbidden, consts.AlreadyLoggedIn)
+	}
+
 	var data struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -116,6 +121,11 @@ func Login(c *fiber.Ctx) error {
 }
 
 func Logout(c *fiber.Ctx) error {
+	uid := c.Locals("uid")
+	if uid == nil {
+		return utils.Error(c, fiber.StatusUnauthorized, consts.NotLoggedIn)
+	}
+
 	sess, err := auth.Store.Get(c)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingSession, err)
@@ -126,7 +136,7 @@ func Logout(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorDestroyingSession, err)
 	}
 
-	return c.Status(fiber.StatusOK).SendString("")
+	return c.SendStatus(fiber.StatusOK)
 }
 
 func UpdateUser(c *fiber.Ctx) error {

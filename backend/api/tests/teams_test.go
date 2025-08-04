@@ -468,6 +468,20 @@ func TestGetTeam(t *testing.T) {
 		"name":        "A",
 		"nationality": "",
 		"score":       1498,
+		"solves": []map[string]interface{}{
+			{
+				"category": "cat-1",
+				"name":     "chall-1",
+			},
+			{
+				"category": "cat-1",
+				"name":     "chall-3",
+			},
+			{
+				"category": "cat-1",
+				"name":     "chall-4",
+			},
+		},
 	}
 
 	session := utils.NewApiTestSession(t, app)
@@ -475,6 +489,10 @@ func TestGetTeam(t *testing.T) {
 	body := session.Body()
 	for _, member := range body.(map[string]interface{})["members"].([]interface{}) {
 		delete(member.(map[string]interface{}), "id")
+	}
+	for _, solve := range body.(map[string]interface{})["solves"].([]interface{}) {
+		delete(solve.(map[string]interface{}), "id")
+		delete(solve.(map[string]interface{}), "timestamp")
 	}
 	err = utils.Compare(expectedPlayer, body)
 	if err != nil {
@@ -487,6 +505,10 @@ func TestGetTeam(t *testing.T) {
 	body = session.Body()
 	for _, member := range body.(map[string]interface{})["members"].([]interface{}) {
 		delete(member.(map[string]interface{}), "id")
+	}
+	for _, solve := range body.(map[string]interface{})["solves"].([]interface{}) {
+		delete(solve.(map[string]interface{}), "id")
+		delete(solve.(map[string]interface{}), "timestamp")
 	}
 	err = utils.Compare(expectedPlayer, body)
 	if err != nil {
@@ -515,6 +537,20 @@ func TestGetTeam(t *testing.T) {
 		"name":        "A",
 		"nationality": "",
 		"score":       1498,
+		"solves": []map[string]interface{}{
+			{
+				"category": "cat-1",
+				"name":     "chall-1",
+			},
+			{
+				"category": "cat-1",
+				"name":     "chall-3",
+			},
+			{
+				"category": "cat-1",
+				"name":     "chall-4",
+			},
+		},
 	}
 
 	user, err := db.RegisterUser(context.Background(), "admin", "admin@admin.com", "adminpass", db.UserRoleAdmin)
@@ -530,6 +566,10 @@ func TestGetTeam(t *testing.T) {
 	body = session.Body()
 	for _, member := range body.(map[string]interface{})["members"].([]interface{}) {
 		delete(member.(map[string]interface{}), "id")
+	}
+	for _, solve := range body.(map[string]interface{})["solves"].([]interface{}) {
+		delete(solve.(map[string]interface{}), "id")
+		delete(solve.(map[string]interface{}), "timestamp")
 	}
 	err = utils.Compare(expectedAdmin, body)
 	if err != nil {

@@ -100,6 +100,29 @@ SELECT EXISTS(
       AND submissions.chall_id = $1
 );
 
+-- name: GetTeamSolves :many
+-- Retrieve all challenges solved by a team's members
+SELECT challenges.id, challenges.name, challenges.category, submissions.timestamp
+  FROM submissions
+  JOIN users ON users.id = submissions.user_id
+  JOIN teams ON users.team_id = teams.id
+  JOIN challenges ON challenges.id = submissions.chall_id
+  WHERE users.role = 'Player'
+    AND teams.id = $1
+    AND submissions.status = 'Correct'
+  ORDER BY submissions.timestamp DESC;
+
+-- name: GetChallengeSolves :many
+-- Retrieve all teams that solved a challenge
+SELECT teams.id, teams.name, submissions.timestamp
+  FROM submissions
+  JOIN users ON users.id = submissions.user_id
+  JOIN teams ON users.team_id = teams.id
+  WHERE users.role = 'Player'
+    AND submissions.chall_id = $1
+    AND submissions.status = 'Correct'
+  ORDER BY submissions.timestamp ASC;
+
 -- name: GetUsers :many
 -- Retrieve all users
 SELECT id FROM users;
