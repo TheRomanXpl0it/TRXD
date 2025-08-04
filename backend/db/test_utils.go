@@ -62,3 +62,17 @@ func DeleteAll() error {
 	_, err := db.Exec(`SELECT delete_all();`)
 	return err
 }
+
+func InsertMockData() error {
+	_, err := db.Exec(`SELECT insert_mock_data();`)
+	if err != nil {
+		return fmt.Errorf("failed to insert mock data: %v", err)
+	}
+
+	_, err = db.Exec(`SELECT insert_mock_submissions();`)
+	if err != nil {
+		return fmt.Errorf("failed to insert mock submissions: %v", err)
+	}
+
+	return nil
+}

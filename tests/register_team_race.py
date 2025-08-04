@@ -43,7 +43,7 @@ counter = {
 lock = threading.Lock()
 
 def register_team(name):
-	r = s.post('http://localhost:1337/api/player/register-team', json={
+	r = s.post('http://localhost:1337/api/teams', json={
 		"name": name,
 		"password": "testpass",
 	})
@@ -55,6 +55,7 @@ def register_team(name):
 			elif res["error"] == "Error registering team":
 				counter["Error registering team"] += 1
 			else:
+				print(f"Unexpected error: {res['error']}")
 				counter["invalid"] += 1
 		else:
 			counter["valid"] += 1

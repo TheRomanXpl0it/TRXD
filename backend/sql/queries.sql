@@ -77,11 +77,11 @@ SELECT * FROM teams WHERE id = $1;
 
 -- name: GetTeamMembers :many
 -- Retrieve all members of a team by team ID
-SELECT id, name, role, score FROM users WHERE team_id = $1;
+SELECT id, name, role, score FROM users WHERE team_id = $1 ORDER BY id;
 
 -- name: GetTeams :many
 -- Retrieve all teams
-SELECT id FROM teams;
+SELECT id FROM teams ORDER BY id;
 
 -- name: GetChallengeByID :one
 -- Retrieve a challenge by its ID
@@ -106,8 +106,7 @@ SELECT id FROM users;
 
 -- name: GetUserSolves :many
 -- Retrieve all challenges solved by a user
-SELECT c.id, c.name, c.category, s.timestamp FROM challenges c
-  JOIN submissions s ON s.chall_id = c.id
+SELECT s.chall_id, s.timestamp FROM submissions s
     WHERE s.user_id = $1
       AND s.status = 'Correct';
 

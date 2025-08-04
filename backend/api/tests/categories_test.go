@@ -70,8 +70,8 @@ func TestCreateCategory(t *testing.T) {
 
 	for _, test := range testCreateCategory {
 		session := utils.NewApiTestSession(t, app)
-		session.Post("/api/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
-		session.Post("/api/author/category", test.testBody, test.expectedStatus)
+		session.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
+		session.Post("/category", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }
@@ -123,8 +123,8 @@ func TestDeleteCategory(t *testing.T) {
 		}
 
 		session := utils.NewApiTestSession(t, app)
-		session.Post("/api/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
-		session.Delete("/api/author/category", test.testBody, test.expectedStatus)
+		session.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
+		session.Delete("/category", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }

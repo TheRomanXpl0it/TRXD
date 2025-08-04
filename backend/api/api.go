@@ -66,48 +66,48 @@ func SetupApp() *fiber.App {
 	} else {
 		api = app.Group("/api")
 	}
-	// TODO: remove these groups
-	// spectator := api.Group("", auth.AuthRequired)
-	player := api.Group("/player", auth.PlayerRequired)
-	author := api.Group("/author", auth.AuthorRequired)
-	admin := api.Group("/admin", auth.AdminRequired)
+
+	api.Get("/countries", func(c *fiber.Ctx) error { return c.JSON(consts.Countries) })
 
 	api.Post("/register", routes.Register)
 	api.Post("/login", routes.Login)
 	api.Post("/logout", routes.Logout)
-	api.Get("/countries", func(c *fiber.Ctx) error { return c.JSON(consts.Countries) })
 
-	api.Get("/info", auth.AuthRequired, routes.Info)
-	api.Get("/challenges", auth.AuthRequired, auth.TeamRequired, routes.GetChallenges)
-	api.Get("/challenge/:id", auth.AuthRequired, auth.TeamRequired, routes.GetChallenge)
-	api.Get("/users", auth.AuthRequired, routes.GetUsers)
-	api.Get("/user/:id", auth.AuthRequired, routes.GetUser)
-	api.Get("/teams", auth.AuthRequired, routes.GetTeams)
-	api.Get("/team", auth.AuthRequired, auth.TeamRequired, routes.GetSelfTeam)
-	api.Get("/team/:id", auth.AuthRequired, routes.GetTeam)
+	api.Get("/info", auth.Spectator, routes.Info)
+	api.Get("/challenges", auth.Spectator, auth.Team, routes.GetChallenges)
+	api.Get("/challenges/:id", auth.Spectator, auth.Team, routes.GetChallenge)
 
-	player.Patch("/user", routes.UpdateUser)
-	player.Post("/register-team", routes.RegisterTeam)
-	player.Post("/join-team", routes.JoinTeam)
-	player.Patch("/team", auth.TeamRequired, routes.UpdateTeam)
-	player.Post("/submit", auth.TeamRequired, routes.Submit)
-	// player.Post("/instance", routes.CreateInstance)
-	// player.Patch("/instance", routes.ExtendInstance)
-	// player.Delete("/instance", routes.DeleteInstance)
+	api.Get("/users", auth.NoAuth, routes.GetUsers)
+	api.Get("/users/:id", auth.NoAuth, routes.GetUser)
+	api.Patch("/users", auth.Player, routes.UpdateUser)
+	api.Patch("/users/password", auth.Admin, routes.ResetUserPassword)
 
-	author.Post("/category", routes.CreateCategory)
-	// author.Patch("/category", routes.UpdateCategory)
-	author.Delete("/category", routes.DeleteCategory)
-	author.Post("/challenge", routes.CreateChallenge)
-	// author.Patch("/challenge", routes.UpdateChallenge)
-	author.Delete("/challenge", routes.DeleteChallenge)
-	author.Post("/flag", routes.CreateFlag)
-	// author.Patch("/flag", routes.UpdateFlag)
-	author.Delete("/flag", routes.DeleteFlag)
+	api.Get("/teams", auth.NoAuth, routes.GetTeams)
+	api.Get("/teams/:id", auth.NoAuth, routes.GetTeam)
+	api.Post("/teams", auth.Player, routes.RegisterTeam)
+	api.Put("/teams", auth.Player, routes.JoinTeam)
+	api.Patch("/teams", auth.Player, auth.Team, routes.UpdateTeam)
+	api.Patch("/teams/password", auth.Admin, routes.ResetTeamPassword)
 
-	admin.Patch("/config", routes.UpdateConfig)
-	admin.Post("/reset-user-password", routes.ResetUserPassword)
-	admin.Post("/reset-team-password", routes.ResetTeamPassword)
+	api.Post("/submit", auth.Player, auth.Team, routes.Submit)
+
+	// api.Post("/instance", auth.Player, routes.CreateInstance)
+	// api.Patch("/instance", auth.Player, routes.ExtendInstance)
+	// api.Delete("/instance", auth.Player, routes.DeleteInstance)
+
+	api.Post("/category", auth.Author, routes.CreateCategory)
+	// api.Patch("/category", auth.Author, routes.UpdateCategory)
+	api.Delete("/category", auth.Author, routes.DeleteCategory)
+
+	api.Post("/challenges", auth.Author, routes.CreateChallenge)
+	// api.Patch("/challenges", routes.UpdateChallenge)
+	api.Delete("/challenges", auth.Author, routes.DeleteChallenge)
+
+	api.Post("/flag", auth.Author, routes.CreateFlag)
+	// api.Patch("/flag", auth.Author, routes.UpdateFlag)
+	api.Delete("/flag", auth.Author, routes.DeleteFlag)
+
+	api.Patch("/config", auth.Admin, routes.UpdateConfig)
 
 	if log.GetLevel() == log.DebugLevel {
 		// Serve frontend in development mode

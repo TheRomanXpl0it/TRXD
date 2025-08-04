@@ -154,9 +154,10 @@ type TeamData struct {
 	Name        string              `json:"name"`
 	Score       int32               `json:"score"`
 	Nationality string              `json:"nationality"`
-	Image       string              `json:"image"`
+	Image       string              `json:"image,omitempty"`
 	Bio         string              `json:"bio,omitempty"`
 	Members     []GetTeamMembersRow `json:"members,omitempty"`
+	// TODO: solve list of team members
 }
 
 func GetTeam(ctx context.Context, teamID int32, admin bool, minimal bool) (*TeamData, error) {
@@ -187,7 +188,6 @@ func GetTeam(ctx context.Context, teamID int32, admin bool, minimal bool) (*Team
 	if team.Bio.Valid {
 		teamData.Bio = team.Bio.String
 	}
-	// TODO: maybe add a default bio if not set
 
 	members, err := queries.GetTeamMembers(ctx, sql.NullInt32{Int32: teamID, Valid: true})
 	if err != nil {

@@ -16,27 +16,27 @@ var testAuthMiddlewares = []struct {
 }{
 	{
 		method:           "POST",
-		endpoint:         "/api/register",
+		endpoint:         "/register",
 		expectedStatuses: []int{http.StatusBadRequest, http.StatusBadRequest, http.StatusBadRequest, http.StatusBadRequest, http.StatusBadRequest},
 	},
 	{
 		method:           "GET",
-		endpoint:         "/api/info",
+		endpoint:         "/info",
 		expectedStatuses: []int{http.StatusUnauthorized, http.StatusOK, http.StatusOK, http.StatusOK, http.StatusOK},
 	},
 	{
 		method:           "POST",
-		endpoint:         "/api/player/register-team",
+		endpoint:         "/teams",
 		expectedStatuses: []int{http.StatusUnauthorized, http.StatusForbidden, http.StatusBadRequest, http.StatusBadRequest, http.StatusBadRequest},
 	},
 	{
 		method:           "POST",
-		endpoint:         "/api/author/category",
+		endpoint:         "/category",
 		expectedStatuses: []int{http.StatusUnauthorized, http.StatusForbidden, http.StatusForbidden, http.StatusBadRequest, http.StatusBadRequest},
 	},
 	{
 		method:           "PATCH",
-		endpoint:         "/api/admin/config",
+		endpoint:         "/config",
 		expectedStatuses: []int{http.StatusUnauthorized, http.StatusForbidden, http.StatusForbidden, http.StatusForbidden, http.StatusBadRequest},
 	},
 }
@@ -74,7 +74,7 @@ func TestAuthMiddlewares(t *testing.T) {
 		for j, user := range users {
 			session := utils.NewApiTestSession(t, app)
 			if user != nil {
-				session.Post("/api/login", JSON{"email": user.Email, "password": "testpass"}, http.StatusOK)
+				session.Post("/login", JSON{"email": user.Email, "password": "testpass"}, http.StatusOK)
 			}
 			session.Request(test.method, test.endpoint, nil, test.expectedStatuses[j])
 		}

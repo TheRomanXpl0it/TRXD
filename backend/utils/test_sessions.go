@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"reflect"
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
@@ -52,7 +51,11 @@ func (s *apiTestSession) Request(method string, url string, body interface{}, ex
 		}
 	}
 
-	req, err := http.NewRequest(method, url, bytes.NewReader(reqBody))
+	if url[0] != '/' {
+		url = "/" + url
+	}
+
+	req, err := http.NewRequest(method, "/api"+url, bytes.NewReader(reqBody))
 	if err != nil {
 		s.t.Fatalf("Failed to create request: %v", err)
 	}
@@ -97,31 +100,27 @@ func (s *apiTestSession) Delete(url string, body interface{}, expectedStatus int
 	return s.Request(http.MethodDelete, url, body, expectedStatus)
 }
 
-func (s *apiTestSession) Body() map[string]interface{} {
+func (s *apiTestSession) Body() interface{} {
 	defer s.lastResp.Body.Close()
 	bodyBytes, err := io.ReadAll(s.lastResp.Body)
 	if err != nil {
 		s.t.Fatalf("Failed to read response body: %v", err)
 	}
 
-	var jsonDecoded map[string]interface{}
+	var jsonDecoded interface{}
 	err = json.Unmarshal(bodyBytes, &jsonDecoded)
 	if err != nil {
-		s.t.Fatalf("Failed to unmarshal response body: %v", err)
+		return nil
 	}
 
 	return jsonDecoded
 }
 
-func (s *apiTestSession) CheckResponse(expectedResponse map[string]interface{}) {
-	if expectedResponse == nil {
-		return
-	}
-
+func (s *apiTestSession) CheckResponse(expectedResponse interface{}) {
 	jsonDecoded := s.Body()
-	if !reflect.DeepEqual(expectedResponse, jsonDecoded) {
-		expectedBytes, _ := json.MarshalIndent(expectedResponse, "", "  ")
-		actualBytes, _ := json.MarshalIndent(jsonDecoded, "", "  ")
-		s.t.Fatalf("Response body does not match. (if same, try changing types)\nExpected:\n%s\nGot:\n%s", expectedBytes, actualBytes)
+
+	err := Compare(expectedResponse, jsonDecoded)
+	if err != nil {
+		s.t.Fatalf("Response body does not match: %v", err)
 	}
 }

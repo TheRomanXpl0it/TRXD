@@ -17,7 +17,34 @@ var Store = session.New(session.Config{
 	CookieSameSite: fiber.CookieSameSiteLaxMode,
 })
 
-func AuthRequired(c *fiber.Ctx) error {
+func NoAuth(c *fiber.Ctx) error {
+	sess, err := Store.Get(c)
+	if err != nil {
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingSession, err)
+	}
+
+	uid := sess.Get("uid")
+	if uid == nil {
+		return c.Next()
+	}
+
+	user, err := db.GetUserByID(c.Context(), uid.(int32))
+	if err != nil {
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
+	}
+
+	if user.TeamID.Valid {
+		c.Locals("tid", user.TeamID.Int32)
+	} else {
+		c.Locals("tid", int32(-1))
+	}
+	c.Locals("uid", uid)
+	c.Locals("role", user.Role)
+
+	return c.Next()
+}
+
+func Spectator(c *fiber.Ctx) error {
 	sess, err := Store.Get(c)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingSession, err)
@@ -45,7 +72,7 @@ func AuthRequired(c *fiber.Ctx) error {
 }
 
 // TODO: tests
-func TeamRequired(c *fiber.Ctx) error {
+func Team(c *fiber.Ctx) error {
 	tid := c.Locals("tid").(int32)
 	role := c.Locals("role").(db.UserRole)
 
@@ -56,7 +83,7 @@ func TeamRequired(c *fiber.Ctx) error {
 	return c.Next()
 }
 
-func PlayerRequired(c *fiber.Ctx) error {
+func Player(c *fiber.Ctx) error {
 	sess, err := Store.Get(c)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingSession, err)
@@ -87,7 +114,7 @@ func PlayerRequired(c *fiber.Ctx) error {
 	return c.Next()
 }
 
-func AuthorRequired(c *fiber.Ctx) error {
+func Author(c *fiber.Ctx) error {
 	sess, err := Store.Get(c)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingSession, err)
@@ -116,7 +143,7 @@ func AuthorRequired(c *fiber.Ctx) error {
 	return c.Next()
 }
 
-func AdminRequired(c *fiber.Ctx) error {
+func Admin(c *fiber.Ctx) error {
 	sess, err := Store.Get(c)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingSession, err)

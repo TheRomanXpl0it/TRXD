@@ -351,7 +351,7 @@ func (q *Queries) GetTeamFromUser(ctx context.Context, id int32) (Team, error) {
 }
 
 const getTeamMembers = `-- name: GetTeamMembers :many
-SELECT id, name, role, score FROM users WHERE team_id = $1
+SELECT id, name, role, score FROM users WHERE team_id = $1 ORDER BY id
 `
 
 type GetTeamMembersRow struct {
@@ -391,7 +391,7 @@ func (q *Queries) GetTeamMembers(ctx context.Context, teamID sql.NullInt32) ([]G
 }
 
 const getTeams = `-- name: GetTeams :many
-SELECT id FROM teams
+SELECT id FROM teams ORDER BY id
 `
 
 // Retrieve all teams
@@ -488,16 +488,13 @@ func (q *Queries) GetUserByName(ctx context.Context, name string) (User, error) 
 }
 
 const getUserSolves = `-- name: GetUserSolves :many
-SELECT c.id, c.name, c.category, s.timestamp FROM challenges c
-  JOIN submissions s ON s.chall_id = c.id
+SELECT s.chall_id, s.timestamp FROM submissions s
     WHERE s.user_id = $1
       AND s.status = 'Correct'
 `
 
 type GetUserSolvesRow struct {
-	ID        int32     `json:"id"`
-	Name      string    `json:"name"`
-	Category  string    `json:"category"`
+	ChallID   int32     `json:"chall_id"`
 	Timestamp time.Time `json:"timestamp"`
 }
 
@@ -511,12 +508,7 @@ func (q *Queries) GetUserSolves(ctx context.Context, userID int32) ([]GetUserSol
 	var items []GetUserSolvesRow
 	for rows.Next() {
 		var i GetUserSolvesRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Category,
-			&i.Timestamp,
-		); err != nil {
+		if err := rows.Scan(&i.ChallID, &i.Timestamp); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

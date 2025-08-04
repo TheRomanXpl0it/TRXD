@@ -84,12 +84,12 @@ func TestRegisterTeam(t *testing.T) {
 	}
 
 	session := utils.NewApiTestSession(t, app)
-	session.Post("/api/register", JSON{
+	session.Post("/register", JSON{
 		"username": "test",
 		"email":    "test@test.test",
 		"password": "testpass",
 	}, http.StatusOK)
-	session.Post("/api/register", JSON{
+	session.Post("/register", JSON{
 		"username": "test2",
 		"email":    "test2@test.test",
 		"password": "testpass",
@@ -98,11 +98,11 @@ func TestRegisterTeam(t *testing.T) {
 	for _, test := range testRegisterTeam {
 		session := utils.NewApiTestSession(t, app)
 		if test.secondUser {
-			session.Post("/api/login", JSON{"email": "test2@test.test", "password": "testpass"}, http.StatusOK)
+			session.Post("/login", JSON{"email": "test2@test.test", "password": "testpass"}, http.StatusOK)
 		} else {
-			session.Post("/api/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+			session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
 		}
-		session.Post("/api/player/register-team", test.testBody, test.expectedStatus)
+		session.Post("/teams", test.testBody, test.expectedStatus)
 		if test.expectedStatus == http.StatusOK {
 			team, err := db.GetTeamByName(context.Background(), test.testBody.(JSON)["name"].(string))
 			if err != nil {
@@ -111,7 +111,7 @@ func TestRegisterTeam(t *testing.T) {
 			if team == nil {
 				t.Fatalf("Expected team to be created, but got nil")
 			}
-			test.expectedResponse["id"] = float64(team.ID)
+			test.expectedResponse["id"] = team.ID
 		}
 		session.CheckResponse(test.expectedResponse)
 	}
@@ -188,16 +188,16 @@ func TestJoinTeam(t *testing.T) {
 	}
 
 	session := utils.NewApiTestSession(t, app)
-	session.Post("/api/register", JSON{
+	session.Post("/register", JSON{
 		"username": "test",
 		"email":    "test@test.test",
 		"password": "testpass",
 	}, http.StatusOK)
-	session.Post("/api/player/register-team", JSON{
+	session.Post("/teams", JSON{
 		"name":     "test",
 		"password": "testpass",
 	}, http.StatusOK)
-	session.Post("/api/register", JSON{
+	session.Post("/register", JSON{
 		"username": "test2",
 		"email":    "test2@test.test",
 		"password": "testpass",
@@ -206,11 +206,11 @@ func TestJoinTeam(t *testing.T) {
 	for _, test := range testJoinTeam {
 		session := utils.NewApiTestSession(t, app)
 		if test.secondUser {
-			session.Post("/api/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+			session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
 		} else {
-			session.Post("/api/login", JSON{"email": "test2@test.test", "password": "testpass"}, http.StatusOK)
+			session.Post("/login", JSON{"email": "test2@test.test", "password": "testpass"}, http.StatusOK)
 		}
-		session.Post("/api/player/join-team", test.testBody, test.expectedStatus)
+		session.Put("/teams", test.testBody, test.expectedStatus)
 		if test.expectedStatus == http.StatusOK {
 			team, err := db.GetTeamByName(context.Background(), test.testBody.(JSON)["name"].(string))
 			if err != nil {
@@ -219,7 +219,7 @@ func TestJoinTeam(t *testing.T) {
 			if team == nil {
 				t.Fatalf("Expected team to be created, but got nil")
 			}
-			test.expectedResponse["id"] = float64(team.ID)
+			test.expectedResponse["id"] = team.ID
 		}
 		session.CheckResponse(test.expectedResponse)
 	}
@@ -271,13 +271,13 @@ func TestUpdateTeam(t *testing.T) {
 	}
 
 	session := utils.NewApiTestSession(t, app)
-	session.Post("/api/register", JSON{"username": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
-	session.Post("/api/player/register-team", JSON{"name": "test-team", "password": "testpass"}, http.StatusOK)
+	session.Post("/register", JSON{"username": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/teams", JSON{"name": "test-team", "password": "testpass"}, http.StatusOK)
 
 	for _, test := range testUpdateTeam {
 		session := utils.NewApiTestSession(t, app)
-		session.Post("/api/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
-		session.Patch("/api/player/team", test.testBody, test.expectedStatus)
+		session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+		session.Patch("/teams", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }
@@ -349,15 +349,15 @@ func TestResetTeamPassword(t *testing.T) {
 
 	for i, test := range testResetTeamPassword {
 		session := utils.NewApiTestSession(t, app)
-		session.Post("/api/login", JSON{"email": "admin@test.test", "password": "adminpass"}, http.StatusOK)
+		session.Post("/login", JSON{"email": "admin@test.test", "password": "adminpass"}, http.StatusOK)
 		if body, ok := test.testBody.(JSON); ok && body != nil {
 			if content, ok := body["team_id"]; ok && content == 0 {
 				test.testBody.(JSON)["team_id"] = team.ID
 			}
 		}
-		session.Post("/api/admin/reset-team-password", test.testBody, test.expectedStatus)
+		session.Patch("/teams/password", test.testBody, test.expectedStatus)
 		if test.expectedStatus == http.StatusOK {
-			body := session.Body()
+			body := session.Body().(map[string]interface{})
 			newPasswordInterface, ok := body["new_password"]
 			if !ok {
 				t.Fatalf("Expected 'new_password' in response, got: %v", body)
@@ -369,8 +369,191 @@ func TestResetTeamPassword(t *testing.T) {
 		}
 
 		session = utils.NewApiTestSession(t, app)
-		session.Post("/api/register", JSON{"username": "test", "email": fmt.Sprintf("test%d@test.test", i), "password": "testpass"}, http.StatusOK)
-		session.Post("/api/player/join-team", JSON{"name": "test", "password": password}, http.StatusOK)
-		session.Post("/api/player/submit", JSON{}, http.StatusBadRequest)
+		session.Post("/register", JSON{"username": "test", "email": fmt.Sprintf("test%d@test.test", i), "password": "testpass"}, http.StatusOK)
+		session.Put("/teams", JSON{"name": "test", "password": password}, http.StatusOK)
+		session.Post("/submit", JSON{}, http.StatusBadRequest)
+	}
+}
+
+func TestGetTeams(t *testing.T) {
+	db.DeleteAll()
+	db.InitConfigs()
+	db.InsertMockData()
+	app := api.SetupApp()
+	defer app.Shutdown()
+
+	err := db.UpdateConfig(context.Background(), "allow-register", "true")
+	if err != nil {
+		t.Fatalf("Failed to update config: %v", err)
+	}
+
+	A, err := db.GetTeamByName(context.Background(), "A")
+	if err != nil {
+		t.Fatalf("Failed to get team A: %v", err)
+	}
+	if A == nil {
+		t.Fatal("Team A not found")
+	}
+	B, err := db.GetTeamByName(context.Background(), "B")
+	if err != nil {
+		t.Fatalf("Failed to get team B: %v", err)
+	}
+	if B == nil {
+		t.Fatal("Team B not found")
+	}
+	C, err := db.GetTeamByName(context.Background(), "C")
+	if err != nil {
+		t.Fatalf("Failed to get team C: %v", err)
+	}
+	if C == nil {
+		t.Fatal("Team C not found")
+	}
+
+	expected := []map[string]interface{}{
+		{
+			"id":          A.ID,
+			"name":        "A",
+			"nationality": "",
+			"score":       1498,
+		},
+		{
+			"id":          B.ID,
+			"name":        "B",
+			"nationality": "",
+			"score":       998,
+		},
+		{
+			"id":          C.ID,
+			"name":        "C",
+			"nationality": "",
+			"score":       0,
+		},
+	}
+
+	session := utils.NewApiTestSession(t, app)
+	session.Get("/teams", nil, http.StatusOK)
+	session.CheckResponse(expected)
+
+	session = utils.NewApiTestSession(t, app)
+	session.Post("/register", JSON{"username": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
+	session.Get("/teams", nil, http.StatusOK)
+	session.CheckResponse(expected)
+
+	user, err := db.RegisterUser(context.Background(), "admin", "admin@admin.com", "adminpass", db.UserRoleAdmin)
+	if err != nil {
+		t.Fatalf("Failed to register admin user: %v", err)
+	}
+	if user == nil {
+		t.Fatal("User registration returned nil")
+	}
+	session = utils.NewApiTestSession(t, app)
+	session.Post("/login", JSON{"email": "admin@admin.com", "password": "adminpass"}, http.StatusOK)
+	session.Get("/teams", nil, http.StatusOK)
+	session.CheckResponse(expected)
+}
+
+func TestGetTeam(t *testing.T) {
+	db.DeleteAll()
+	db.InitConfigs()
+	db.InsertMockData()
+	app := api.SetupApp()
+	defer app.Shutdown()
+
+	err := db.UpdateConfig(context.Background(), "allow-register", "true")
+	if err != nil {
+		t.Fatalf("Failed to update config: %v", err)
+	}
+
+	A, err := db.GetTeamByName(context.Background(), "A")
+	if err != nil {
+		t.Fatalf("Failed to get team A: %v", err)
+	}
+	if A == nil {
+		t.Fatal("Team A not found")
+	}
+
+	expectedPlayer := map[string]interface{}{
+		"id": A.ID,
+		"members": []map[string]interface{}{
+			{
+				"name":  "a",
+				"role":  "Player",
+				"score": 1498,
+			},
+			{
+				"name":  "b",
+				"role":  "Player",
+				"score": 0,
+			},
+		},
+		"name":        "A",
+		"nationality": "",
+		"score":       1498,
+	}
+
+	session := utils.NewApiTestSession(t, app)
+	session.Get(fmt.Sprintf("/teams/%d", A.ID), nil, http.StatusOK)
+	body := session.Body()
+	for _, member := range body.(map[string]interface{})["members"].([]interface{}) {
+		delete(member.(map[string]interface{}), "id")
+	}
+	err = utils.Compare(expectedPlayer, body)
+	if err != nil {
+		t.Fatalf("Compare Error: %v", err)
+	}
+
+	session = utils.NewApiTestSession(t, app)
+	session.Post("/register", JSON{"username": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
+	session.Get(fmt.Sprintf("/teams/%d", A.ID), nil, http.StatusOK)
+	body = session.Body()
+	for _, member := range body.(map[string]interface{})["members"].([]interface{}) {
+		delete(member.(map[string]interface{}), "id")
+	}
+	err = utils.Compare(expectedPlayer, body)
+	if err != nil {
+		t.Fatalf("Compare Error: %v", err)
+	}
+
+	expectedAdmin := map[string]interface{}{
+		"id": A.ID,
+		"members": []map[string]interface{}{
+			{
+				"name":  "a",
+				"role":  "Player",
+				"score": 1498,
+			},
+			{
+				"name":  "b",
+				"role":  "Player",
+				"score": 0,
+			},
+			{
+				"name":  "e",
+				"role":  "Admin",
+				"score": 0,
+			},
+		},
+		"name":        "A",
+		"nationality": "",
+		"score":       1498,
+	}
+
+	user, err := db.RegisterUser(context.Background(), "admin", "admin@admin.com", "adminpass", db.UserRoleAdmin)
+	if err != nil {
+		t.Fatalf("Failed to register admin user: %v", err)
+	}
+	if user == nil {
+		t.Fatal("User registration returned nil")
+	}
+	session = utils.NewApiTestSession(t, app)
+	session.Post("/login", JSON{"email": "admin@admin.com", "password": "adminpass"}, http.StatusOK)
+	session.Get(fmt.Sprintf("/teams/%d", A.ID), nil, http.StatusOK)
+	body = session.Body()
+	for _, member := range body.(map[string]interface{})["members"].([]interface{}) {
+		delete(member.(map[string]interface{}), "id")
+	}
+	err = utils.Compare(expectedAdmin, body)
+	if err != nil {
+		t.Fatalf("Compare Error: %v", err)
 	}
 }

@@ -66,10 +66,7 @@ func Register(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorSavingSession, err)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"username": user.Name,
-		"role":     user.Role,
-	})
+	return c.SendStatus(fiber.StatusOK)
 }
 
 func Login(c *fiber.Ctx) error {
@@ -110,10 +107,7 @@ func Login(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorSavingSession, err)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"username": user.Name,
-		"role":     user.Role,
-	})
+	return c.SendStatus(fiber.StatusOK)
 }
 
 func Logout(c *fiber.Ctx) error {
@@ -185,7 +179,9 @@ func ResetUserPassword(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorResettingUserPassword, err)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"new_password": newPassword})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"new_password": newPassword,
+	})
 }
 
 func Info(c *fiber.Ctx) error {
@@ -199,31 +195,26 @@ func Info(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser)
 	}
 
-	team, err := db.GetTeamFromUser(c.Context(), uid)
-	if err != nil {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingTeam, err)
-	}
-
 	teamID := int32(-1)
-	teamName := ""
-	if team != nil {
-		teamID = team.ID
-		teamName = team.Name
+	if user.TeamID.Valid {
+		teamID = user.TeamID.Int32
 	}
-
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"username":  user.Name,
-		"role":      user.Role,
-		"team_id":   teamID,
-		"team_name": teamName,
+		"id":       user.ID,
+		"username": user.Name,
+		"role":     user.Role,
+		"team_id":  teamID,
 	})
 }
 
 // TODO: tests
 func GetUsers(c *fiber.Ctx) error {
-	role := c.Locals("role").(db.UserRole)
+	role := c.Locals("role")
 
-	allData := utils.In(role, []db.UserRole{db.UserRoleAuthor, db.UserRoleAdmin})
+	allData := false
+	if role != nil {
+		allData = utils.In(role.(db.UserRole), []db.UserRole{db.UserRoleAuthor, db.UserRoleAdmin})
+	}
 	usersData, err := db.GetUsers(c.Context(), allData)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
@@ -234,14 +225,21 @@ func GetUsers(c *fiber.Ctx) error {
 
 // TODO: tests
 func GetUser(c *fiber.Ctx) error {
-	role := c.Locals("role").(db.UserRole)
+	uid := c.Locals("uid")
+	role := c.Locals("role")
 
 	userID, err := c.ParamsInt("id")
 	if err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidUserID)
 	}
 
-	allData := utils.In(role, []db.UserRole{db.UserRoleAuthor, db.UserRoleAdmin})
+	allData := false
+	if uid != nil {
+		allData = uid.(int32) == int32(userID)
+	}
+	if !allData && role != nil {
+		allData = utils.In(role.(db.UserRole), []db.UserRole{db.UserRoleAuthor, db.UserRoleAdmin})
+	}
 	userData, err := db.GetUser(c.Context(), int32(userID), allData, false)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)

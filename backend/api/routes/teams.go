@@ -151,14 +151,18 @@ func ResetTeamPassword(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorResettingTeamPassword, err)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"new_password": newPassword})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"new_password": newPassword,
+	})
 }
 
-// TODO: tests
 func GetTeams(c *fiber.Ctx) error {
-	role := c.Locals("role").(db.UserRole)
+	role := c.Locals("role")
 
-	allData := utils.In(role, []db.UserRole{db.UserRoleAuthor, db.UserRoleAdmin})
+	allData := false
+	if role != nil {
+		allData = utils.In(role.(db.UserRole), []db.UserRole{db.UserRoleAuthor, db.UserRoleAdmin})
+	}
 	teamsData, err := db.GetTeams(c.Context(), allData)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
@@ -167,37 +171,18 @@ func GetTeams(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(teamsData)
 }
 
-// TODO: tests
-func GetSelfTeam(c *fiber.Ctx) error {
-	role := c.Locals("role").(db.UserRole)
-	tid := c.Locals("tid").(int32)
-
-	if tid == -1 {
-		return utils.Error(c, fiber.StatusNotFound, consts.TeamNotFound)
-	}
-
-	allData := utils.In(role, []db.UserRole{db.UserRoleAuthor, db.UserRoleAdmin})
-	teamData, err := db.GetTeam(c.Context(), tid, allData, false)
-	if err != nil {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingTeam, err)
-	}
-	if teamData == nil {
-		return utils.Error(c, fiber.StatusNotFound, consts.TeamNotFound)
-	}
-
-	return c.Status(fiber.StatusOK).JSON(teamData)
-}
-
-// TODO: tests
 func GetTeam(c *fiber.Ctx) error {
-	role := c.Locals("role").(db.UserRole)
+	role := c.Locals("role")
 
 	teamID, err := c.ParamsInt("id")
 	if err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidTeamID)
 	}
 
-	allData := utils.In(role, []db.UserRole{db.UserRoleAuthor, db.UserRoleAdmin})
+	allData := false
+	if !allData && role != nil {
+		allData = utils.In(role.(db.UserRole), []db.UserRole{db.UserRoleAuthor, db.UserRoleAdmin})
+	}
 	teamData, err := db.GetTeam(c.Context(), int32(teamID), allData, false)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingTeam, err)

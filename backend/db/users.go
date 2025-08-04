@@ -103,16 +103,16 @@ func ResetUserPassword(ctx context.Context, userID int32, newPassword string) er
 }
 
 type UserData struct {
-	ID           int32              `json:"id"`
-	Name         string             `json:"name"`
-	Email        string             `json:"email"`
-	Role         string             `json:"role"`
-	Score        int32              `json:"score"`
-	Nationality  string             `json:"nationality"`
-	Image        string             `json:"image"`
-	RegisteredAt *time.Time         `json:"registered_at,omitempty"`
-	Team         string             `json:"team,omitempty"`
-	Solves       []GetUserSolvesRow `json:"solves,omitempty"`
+	ID          int32              `json:"id"`
+	Name        string             `json:"name"`
+	Email       string             `json:"email"`
+	Role        string             `json:"role"`
+	Score       int32              `json:"score"`
+	Nationality string             `json:"nationality"`
+	Image       string             `json:"image"`
+	TeamID      int32              `json:"team_id"`
+	JoinedAt    *time.Time         `json:"joined_at,omitempty"`
+	Solves      []GetUserSolvesRow `json:"solves,omitempty"`
 }
 
 func GetUser(ctx context.Context, id int32, admin bool, minimal bool) (*UserData, error) {
@@ -148,14 +148,11 @@ func GetUser(ctx context.Context, id int32, admin bool, minimal bool) (*UserData
 		return &data, nil
 	}
 
-	data.RegisteredAt = &user.CreatedAt
+	data.JoinedAt = &user.CreatedAt
 
-	team, err := GetTeamFromUser(ctx, user.ID)
-	if err != nil {
-		return nil, err
-	}
-	if team != nil {
-		data.Team = team.Name
+	data.TeamID = -1
+	if user.TeamID.Valid {
+		data.TeamID = user.TeamID.Int32
 	}
 
 	solves, err := queries.GetUserSolves(ctx, user.ID)

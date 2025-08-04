@@ -3,6 +3,7 @@ package utils
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
@@ -43,4 +44,22 @@ func GenerateRandPass() (string, error) {
 		return "", fmt.Errorf("expected to read %d bytes, but got %d", PassLen, n)
 	}
 	return BytesToHex(data), nil
+}
+
+func Compare(a, b interface{}) error {
+	expectedBytes, err := json.MarshalIndent(a, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal expected response: %v", err)
+	}
+
+	actualBytes, err := json.MarshalIndent(b, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal actual response: %v", err)
+	}
+
+	if string(expectedBytes) != string(actualBytes) {
+		return fmt.Errorf("\nExpected:\n%s\nGot:\n%s", expectedBytes, actualBytes)
+	}
+
+	return nil
 }

@@ -29,6 +29,15 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+CREATE OR REPLACE FUNCTION insert_mock_configs()
+RETURNS VOID AS $$
+BEGIN
+  INSERT INTO configs (key, type, value) VALUES ('chall-min-points', 'int', '100');
+  INSERT INTO configs (key, type, value) VALUES ('chall-points-decay', 'int', '5');
+END;
+$$ LANGUAGE plpgsql;
+
+
 CREATE OR REPLACE FUNCTION insert_mock_data()
 RETURNS VOID AS $$
 BEGIN
@@ -42,8 +51,6 @@ BEGIN
     C: f (author)
     no-team: d (player)
   */
-  INSERT INTO configs (key, type, value) VALUES ('chall-min-points', 'int', '100');
-  INSERT INTO configs (key, type, value) VALUES ('chall-points-decay', 'int', '5');
   INSERT INTO categories (name, icon) VALUES ('cat-1', 'cat-1');
   INSERT INTO categories (name, icon) VALUES ('cat-2', 'cat-2');
   INSERT INTO challenges (name, category, description, difficulty, authors, type, max_points, score_type, host, port, hidden) VALUES ('chall-1', 'cat-1', 'TEST chall-1 DESC', 'Easy', 'author1,author2', 'Normal', 500, 'Dynamic', 'http://theromanxpl0.it', 1337, false);
@@ -76,12 +83,68 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+CREATE OR REPLACE FUNCTION insert_mock_submissions()
+RETURNS VOID AS $$
+BEGIN
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='a'),
+    (SELECT id FROM challenges WHERE name='chall-1'),
+    'Wrong', 'flag');
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='a'),
+    (SELECT id FROM challenges WHERE name='chall-1'),
+    'Repeated', 'flag');
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='a'),
+    (SELECT id FROM challenges WHERE name='chall-1'),
+    'Correct', 'flag');
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='a'),
+    (SELECT id FROM challenges WHERE name='chall-3'),
+    'Correct', 'flag');
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='a'),
+    (SELECT id FROM challenges WHERE name='chall-4'),
+    'Correct', 'flag');
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='a'),
+    (SELECT id FROM challenges WHERE name='chall-4'),
+    'Correct', 'flag');
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='a'),
+    (SELECT id FROM challenges WHERE name='chall-1'),
+    'Correct', 'flag');
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='b'),
+    (SELECT id FROM challenges WHERE name='chall-3'),
+    'Correct', 'flag');
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='c'),
+    (SELECT id FROM challenges WHERE name='chall-4'),
+    'Correct', 'flag');
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='c'),
+    (SELECT id FROM challenges WHERE name='chall-2'),
+    'Correct', 'flag');
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='f'),
+    (SELECT id FROM challenges WHERE name='chall-3'),
+    'Correct', 'flag');
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='d'),
+    (SELECT id FROM challenges WHERE name='chall-1'),
+    'Correct', 'flag');
+END;
+$$ LANGUAGE plpgsql;
+
+
 CREATE OR REPLACE FUNCTION tests()
 RETURNS VOID AS $$
 DECLARE
   tmp INTEGER;
 BEGIN
   PERFORM delete_all();
+  PERFORM insert_mock_configs();
   PERFORM insert_mock_data();
 
   -- insert a wrong submission from 'a' to 'chal-1'

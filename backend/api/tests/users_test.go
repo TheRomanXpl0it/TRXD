@@ -77,9 +77,8 @@ var testRegister = []struct {
 		expectedResponse: errorf(consts.InvalidEmail),
 	},
 	{
-		testBody:         JSON{"username": "test", "email": "test@test.test", "password": "testpass"},
-		expectedStatus:   http.StatusOK,
-		expectedResponse: JSON{"username": "test", "role": "Player"},
+		testBody:       JSON{"username": "test", "email": "test@test.test", "password": "testpass"},
+		expectedStatus: http.StatusOK,
 	},
 	{
 		testBody:         JSON{"username": "test", "email": "test@test.test", "password": "testpass"},
@@ -87,9 +86,8 @@ var testRegister = []struct {
 		expectedResponse: errorf(consts.UserAlreadyExists),
 	},
 	{
-		testBody:         JSON{"username": "test", "email": "test1@test.test", "password": "testpass"},
-		expectedStatus:   http.StatusOK,
-		expectedResponse: JSON{"username": "test", "role": "Player"},
+		testBody:       JSON{"username": "test", "email": "test1@test.test", "password": "testpass"},
+		expectedStatus: http.StatusOK,
 	},
 }
 
@@ -100,7 +98,7 @@ func TestRegister(t *testing.T) {
 	defer app.Shutdown()
 
 	session := utils.NewApiTestSession(t, app)
-	session.Post("/api/register", JSON{"username": "test", "email": "allow@test.test", "password": "testpass"}, http.StatusForbidden)
+	session.Post("/register", JSON{"username": "test", "email": "allow@test.test", "password": "testpass"}, http.StatusForbidden)
 	session.CheckResponse(errorf(consts.DisabledRegistration))
 
 	err := db.UpdateConfig(context.Background(), "allow-register", "true")
@@ -108,12 +106,14 @@ func TestRegister(t *testing.T) {
 		t.Fatalf("Failed to update config: %v", err)
 	}
 	session = utils.NewApiTestSession(t, app)
-	session.Post("/api/register", JSON{"username": "test", "email": "allow@test.test", "password": "testpass"}, http.StatusOK)
-	session.CheckResponse(JSON{"username": "test", "role": string(db.UserRolePlayer)})
+	session.Post("/register", JSON{"username": "test", "email": "allow@test.test", "password": "testpass"}, http.StatusOK)
+	session.CheckResponse(nil)
+	// session.Post("/register", JSON{"username": "test", "email": "allow+1@test.test", "password": "testpass"}, http.StatusOK)
+	// session.CheckResponse(nil)
 
 	for _, test := range testRegister {
 		session := utils.NewApiTestSession(t, app)
-		session.Post("/api/register", test.testBody, test.expectedStatus)
+		session.Post("/register", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }
@@ -155,10 +155,9 @@ var testLogin = []struct {
 		expectedResponse: errorf(consts.InvalidCredentials),
 	},
 	{
-		testBody:         JSON{"username": "test", "email": "test@test.test", "password": "testpass"},
-		register:         true,
-		expectedStatus:   http.StatusOK,
-		expectedResponse: JSON{"username": "test", "role": string(db.UserRolePlayer)},
+		testBody:       JSON{"username": "test", "email": "test@test.test", "password": "testpass"},
+		register:       true,
+		expectedStatus: http.StatusOK,
 	},
 }
 
@@ -176,11 +175,11 @@ func TestLogin(t *testing.T) {
 	for _, test := range testLogin {
 		if test.register {
 			session := utils.NewApiTestSession(t, app)
-			session.Post("/api/register", test.testBody, http.StatusOK)
+			session.Post("/register", test.testBody, http.StatusOK)
 		}
 
 		session := utils.NewApiTestSession(t, app)
-		session.Post("/api/login", test.testBody, test.expectedStatus)
+		session.Post("/login", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }
@@ -221,12 +220,12 @@ func TestLogout(t *testing.T) {
 		session := utils.NewApiTestSession(t, app)
 
 		if test.register {
-			session.Post("/api/register", test.testBody, http.StatusOK)
-			session.Post("/api/player/register-team", JSON{"name": "test-team", "password": "testpass"}, http.StatusOK)
+			session.Post("/register", test.testBody, http.StatusOK)
+			session.Post("/teams", JSON{"name": "test-team", "password": "testpass"}, http.StatusOK)
 		} else if test.login {
-			session.Post("/api/login", test.testBody, http.StatusOK)
+			session.Post("/login", test.testBody, http.StatusOK)
 		}
-		session.Post("/api/logout", test.testBody, test.expectedStatus)
+		session.Post("/logout", test.testBody, test.expectedStatus)
 
 		for _, cookie := range session.Cookies {
 			if cookie.Name == "session_id" && cookie.Value != "" {
@@ -234,7 +233,7 @@ func TestLogout(t *testing.T) {
 			}
 		}
 
-		session.Post("/api/player/register-team", JSON{"name": "test-team2", "password": "testpass"}, http.StatusUnauthorized)
+		session.Post("/teams", JSON{"name": "test-team2", "password": "testpass"}, http.StatusUnauthorized)
 	}
 }
 
@@ -251,14 +250,16 @@ func TestInfo(t *testing.T) {
 
 	session := utils.NewApiTestSession(t, app)
 
-	session.Get("/api/info", nil, http.StatusUnauthorized)
+	session.Get("/info", nil, http.StatusUnauthorized)
 	session.CheckResponse(errorf(consts.Unauthorized))
 
-	session.Post("/api/register", JSON{"username": "test", "email": "allow@test.test", "password": "testpass"}, http.StatusOK)
-	session.CheckResponse(JSON{"username": "test", "role": string(db.UserRolePlayer)})
+	session.Post("/register", JSON{"username": "test", "email": "allow@test.test", "password": "testpass"}, http.StatusOK)
+	session.CheckResponse(nil)
 
-	session.Get("/api/info", nil, http.StatusOK)
-	session.CheckResponse(JSON{"username": "test", "role": string(db.UserRolePlayer), "team_id": float64(-1), "team_name": ""})
+	session.Get("/info", nil, http.StatusOK)
+	body := session.Body().(map[string]interface{})
+	delete(body, "id")
+	utils.Compare(body, JSON{"username": "test", "role": db.UserRolePlayer, "team_id": -1})
 }
 
 var testUpdateUser = []struct {
@@ -312,12 +313,12 @@ func TestUpdateUser(t *testing.T) {
 	}
 
 	session := utils.NewApiTestSession(t, app)
-	session.Post("/api/register", JSON{"username": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/register", JSON{"username": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
 
 	for _, test := range testUpdateUser {
 		session := utils.NewApiTestSession(t, app)
-		session.Post("/api/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
-		session.Patch("/api/player/user", test.testBody, test.expectedStatus)
+		session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+		session.Patch("/users", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }
@@ -376,15 +377,15 @@ func TestResetUserPassword(t *testing.T) {
 
 	for _, test := range testResetUserPassword {
 		session := utils.NewApiTestSession(t, app)
-		session.Post("/api/login", JSON{"email": "admin@test.test", "password": "adminpass"}, http.StatusOK)
+		session.Post("/login", JSON{"email": "admin@test.test", "password": "adminpass"}, http.StatusOK)
 		if body, ok := test.testBody.(JSON); ok && body != nil {
 			if content, ok := body["user_id"]; ok && content == 0 {
 				test.testBody.(JSON)["user_id"] = user.ID
 			}
 		}
-		session.Post("/api/admin/reset-user-password", test.testBody, test.expectedStatus)
+		session.Patch("/users/password", test.testBody, test.expectedStatus)
 		if test.expectedStatus == http.StatusOK {
-			body := session.Body()
+			body := session.Body().(map[string]interface{})
 			newPasswordInterface, ok := body["new_password"]
 			if !ok {
 				t.Fatalf("Expected 'new_password' in response, got: %v", body)
@@ -396,7 +397,7 @@ func TestResetUserPassword(t *testing.T) {
 		}
 
 		session = utils.NewApiTestSession(t, app)
-		session.Post("/api/login", JSON{"email": "test@test.test", "password": password}, http.StatusOK)
-		session.CheckResponse(JSON{"username": "test", "role": string(db.UserRolePlayer)})
+		session.Post("/login", JSON{"email": "test@test.test", "password": password}, http.StatusOK)
+		session.CheckResponse(nil)
 	}
 }

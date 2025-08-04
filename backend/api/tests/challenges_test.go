@@ -119,8 +119,8 @@ func TestCreateChallenge(t *testing.T) {
 
 	for _, test := range testCreateChallenge {
 		session := utils.NewApiTestSession(t, app)
-		session.Post("/api/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
-		session.Post("/api/author/challenge", test.testBody, test.expectedStatus)
+		session.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
+		session.Post("/challenges", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }
@@ -200,13 +200,13 @@ func TestCreateFlag(t *testing.T) {
 
 	for _, test := range testCreateFlag {
 		session := utils.NewApiTestSession(t, app)
-		session.Post("/api/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+		session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
 		if body, ok := test.testBody.(JSON); ok && body != nil {
 			if content, ok := body["chall_id"]; ok && content == "" {
 				test.testBody.(JSON)["chall_id"] = chall.ID
 			}
 		}
-		session.Post("/api/author/flag", test.testBody, test.expectedStatus)
+		session.Post("/flag", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }
@@ -270,8 +270,8 @@ func TestSubmit(t *testing.T) {
 	}
 
 	session := utils.NewApiTestSession(t, app)
-	session.Post("/api/register", JSON{"username": "test2", "email": "test2@test.test", "password": "testpass"}, http.StatusOK)
-	session.Post("/api/player/submit", JSON{"chall_id": 0, "flag": "flag{test}"}, http.StatusForbidden)
+	session.Post("/register", JSON{"username": "test2", "email": "test2@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/submit", JSON{"chall_id": 0, "flag": "flag{test}"}, http.StatusForbidden)
 	session.CheckResponse(errorf(consts.Unauthorized))
 
 	user3, err := db.RegisterUser(context.Background(), "test3", "test3@test.test", "testpass", db.UserRoleAdmin)
@@ -282,8 +282,8 @@ func TestSubmit(t *testing.T) {
 		t.Fatal("User registration returned nil")
 	}
 	session = utils.NewApiTestSession(t, app)
-	session.Post("/api/login", JSON{"email": "test3@test.test", "password": "testpass"}, http.StatusOK)
-	session.Post("/api/player/submit", JSON{"chall_id": 0, "flag": "flag{test}"}, http.StatusNotFound)
+	session.Post("/login", JSON{"email": "test3@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/submit", JSON{"chall_id": 0, "flag": "flag{test}"}, http.StatusNotFound)
 	session.CheckResponse(errorf(consts.ChallengeNotFound))
 
 	user, err := db.RegisterUser(context.Background(), "test", "test@test.test", "testpass")
@@ -325,13 +325,13 @@ func TestSubmit(t *testing.T) {
 
 	for _, test := range testSubmit {
 		session := utils.NewApiTestSession(t, app)
-		session.Post("/api/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+		session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
 		if body, ok := test.testBody.(JSON); ok && body != nil {
 			if content, ok := body["chall_id"]; ok && content == "" {
 				test.testBody.(JSON)["chall_id"] = chall.ID
 			}
 		}
-		session.Post("/api/player/submit", test.testBody, test.expectedStatus)
+		session.Post("/submit", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }
@@ -391,13 +391,13 @@ func TestDeleteChallenge(t *testing.T) {
 		}
 
 		session := utils.NewApiTestSession(t, app)
-		session.Post("/api/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
+		session.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
 		if body, ok := test.testBody.(JSON); ok && body != nil {
 			if content, ok := body["chall_id"]; ok && content == "" {
 				test.testBody.(JSON)["chall_id"] = challID
 			}
 		}
-		session.Delete("/api/author/challenge", test.testBody, test.expectedStatus)
+		session.Delete("/challenges", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }
@@ -477,13 +477,13 @@ func TestDeleteFlag(t *testing.T) {
 		}
 
 		session := utils.NewApiTestSession(t, app)
-		session.Post("/api/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+		session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
 		if body, ok := test.testBody.(JSON); ok && body != nil {
 			if content, ok := body["chall_id"]; ok && content == "" {
 				test.testBody.(JSON)["chall_id"] = chall.ID
 			}
 		}
-		session.Delete("/api/author/flag", test.testBody, test.expectedStatus)
+		session.Delete("/flag", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }

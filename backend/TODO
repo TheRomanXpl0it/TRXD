@@ -7,6 +7,8 @@
 - redis
 - rate limiter middleware
 
+- link to join team
+- kick user fron team
 - maybe set default starting points for challenges as config
 - endpoint + cli cmd to parse a category/challenge file with all infos
 - flag submit that checks for all challenges and mark solved the one of the correct flag (credits to: midnightsun)
