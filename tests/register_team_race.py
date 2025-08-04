@@ -47,9 +47,14 @@ def register_team(name):
 		"name": name,
 		"password": "testpass",
 	})
-	res = r.json()
+	if r.status_code != 200:
+		res = r.json()
+	else:
+		res = None
 	with lock:
-		if "error" in res:
+		if res is None:
+			counter["valid"] += 1
+		elif "error" in res:
 			if res["error"] == "Already in a team":
 				counter["Already in a team"] += 1
 			elif res["error"] == "Error registering team":
@@ -58,7 +63,8 @@ def register_team(name):
 				print(f"Unexpected error: {res['error']}")
 				counter["invalid"] += 1
 		else:
-			counter["valid"] += 1
+			print(f"Unexpected result: {res}")
+			counter["invalid"] += 1
 
 threads = []
 for _ in range(N):

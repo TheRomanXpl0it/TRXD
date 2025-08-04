@@ -18,6 +18,11 @@ func Register(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusForbidden, consts.DisabledRegistration)
 	}
 
+	uid := c.Locals("uid")
+	if uid != nil {
+		return utils.Error(c, fiber.StatusForbidden, consts.AlreadyRegistered)
+	}
+
 	var data struct {
 		Username string `json:"username"`
 		Email    string `json:"email"`
@@ -195,9 +200,9 @@ func Info(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser)
 	}
 
-	teamID := int32(-1)
+	var teamID *int32
 	if user.TeamID.Valid {
-		teamID = user.TeamID.Int32
+		teamID = &user.TeamID.Int32
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"id":       user.ID,

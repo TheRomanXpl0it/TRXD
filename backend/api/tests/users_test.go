@@ -108,8 +108,8 @@ func TestRegister(t *testing.T) {
 	session = utils.NewApiTestSession(t, app)
 	session.Post("/register", JSON{"username": "test", "email": "allow@test.test", "password": "testpass"}, http.StatusOK)
 	session.CheckResponse(nil)
-	// session.Post("/register", JSON{"username": "test", "email": "allow+1@test.test", "password": "testpass"}, http.StatusOK)
-	// session.CheckResponse(nil)
+	session.Post("/register", JSON{"username": "test", "email": "allow+1@test.test", "password": "testpass"}, http.StatusForbidden)
+	session.CheckResponse(errorf(consts.AlreadyRegistered))
 
 	for _, test := range testRegister {
 		session := utils.NewApiTestSession(t, app)
@@ -259,7 +259,18 @@ func TestInfo(t *testing.T) {
 	session.Get("/info", nil, http.StatusOK)
 	body := session.Body().(map[string]interface{})
 	delete(body, "id")
-	utils.Compare(body, JSON{"username": "test", "role": db.UserRolePlayer, "team_id": -1})
+	utils.Compare(body, JSON{"username": "test", "role": db.UserRolePlayer, "team_id": nil})
+
+	session.Post("/teams", JSON{"name": "test", "password": "testpass"}, http.StatusOK)
+
+	session.Get("/info", nil, http.StatusOK)
+	body = session.Body().(map[string]interface{})
+	delete(body, "id")
+	if body["team_id"] == nil {
+		t.Errorf("Expected team_id to be set, got nil")
+	}
+	delete(body, "team_id")
+	utils.Compare(body, JSON{"username": "test", "role": db.UserRolePlayer})
 }
 
 var testUpdateUser = []struct {

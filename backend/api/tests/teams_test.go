@@ -49,9 +49,8 @@ var testRegisterTeam = []struct {
 		expectedResponse: errorf(consts.LongName),
 	},
 	{
-		testBody:         JSON{"name": "test", "password": "testpass"},
-		expectedStatus:   http.StatusOK,
-		expectedResponse: JSON{"name": "test", "id": 0},
+		testBody:       JSON{"name": "test", "password": "testpass"},
+		expectedStatus: http.StatusOK,
 	},
 	{
 		testBody:         JSON{"name": "test", "password": "testpass"},
@@ -65,10 +64,9 @@ var testRegisterTeam = []struct {
 		expectedResponse: errorf(consts.TeamAlreadyExists),
 	},
 	{
-		testBody:         JSON{"name": "test1", "password": "testpass"},
-		expectedStatus:   http.StatusOK,
-		secondUser:       true,
-		expectedResponse: JSON{"name": "test1", "id": 0},
+		testBody:       JSON{"name": "test1", "password": "testpass"},
+		expectedStatus: http.StatusOK,
+		secondUser:     true,
 	},
 }
 
@@ -89,6 +87,7 @@ func TestRegisterTeam(t *testing.T) {
 		"email":    "test@test.test",
 		"password": "testpass",
 	}, http.StatusOK)
+	session = utils.NewApiTestSession(t, app)
 	session.Post("/register", JSON{
 		"username": "test2",
 		"email":    "test2@test.test",
@@ -103,16 +102,6 @@ func TestRegisterTeam(t *testing.T) {
 			session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
 		}
 		session.Post("/teams", test.testBody, test.expectedStatus)
-		if test.expectedStatus == http.StatusOK {
-			team, err := db.GetTeamByName(context.Background(), test.testBody.(JSON)["name"].(string))
-			if err != nil {
-				t.Fatalf("Failed to get team by name: %v", err)
-			}
-			if team == nil {
-				t.Fatalf("Expected team to be created, but got nil")
-			}
-			test.expectedResponse["id"] = team.ID
-		}
 		session.CheckResponse(test.expectedResponse)
 	}
 }
@@ -164,9 +153,8 @@ var testJoinTeam = []struct {
 		expectedResponse: errorf(consts.InvalidTeamCredentials),
 	},
 	{
-		testBody:         JSON{"name": "test", "password": "testpass"},
-		expectedStatus:   http.StatusOK,
-		expectedResponse: JSON{"name": "test", "id": 0},
+		testBody:       JSON{"name": "test", "password": "testpass"},
+		expectedStatus: http.StatusOK,
 	},
 	{
 		testBody:         JSON{"name": "test", "password": "testpass"},
@@ -197,6 +185,7 @@ func TestJoinTeam(t *testing.T) {
 		"name":     "test",
 		"password": "testpass",
 	}, http.StatusOK)
+	session = utils.NewApiTestSession(t, app)
 	session.Post("/register", JSON{
 		"username": "test2",
 		"email":    "test2@test.test",
@@ -211,16 +200,6 @@ func TestJoinTeam(t *testing.T) {
 			session.Post("/login", JSON{"email": "test2@test.test", "password": "testpass"}, http.StatusOK)
 		}
 		session.Put("/teams", test.testBody, test.expectedStatus)
-		if test.expectedStatus == http.StatusOK {
-			team, err := db.GetTeamByName(context.Background(), test.testBody.(JSON)["name"].(string))
-			if err != nil {
-				t.Fatalf("Failed to get team by name: %v", err)
-			}
-			if team == nil {
-				t.Fatalf("Expected team to be created, but got nil")
-			}
-			test.expectedResponse["id"] = team.ID
-		}
 		session.CheckResponse(test.expectedResponse)
 	}
 }

@@ -69,9 +69,9 @@ func SetupApp() *fiber.App {
 
 	api.Get("/countries", func(c *fiber.Ctx) error { return c.JSON(consts.Countries) })
 
-	api.Post("/register", routes.Register)
-	api.Post("/login", routes.Login)
-	api.Post("/logout", routes.Logout)
+	api.Post("/register", auth.NoAuth, routes.Register)
+	api.Post("/login", auth.NoAuth, routes.Login)
+	api.Post("/logout", auth.NoAuth, routes.Logout)
 
 	api.Get("/info", auth.Spectator, routes.Info)
 	api.Get("/challenges", auth.Spectator, auth.Team, routes.GetChallenges)

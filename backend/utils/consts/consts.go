@@ -74,6 +74,7 @@ const (
 	ErrorFetchingChallenges    = "Error fetching challenges"
 	UserNotFound               = "User not found"
 	TeamNotFound               = "Team not found"
+	AlreadyRegistered          = "Already registered"
 )
 
 var UserRegex = regexp.MustCompile(`(^[^@\s]+@[^@\s]+\.[^@\s]+$)`)

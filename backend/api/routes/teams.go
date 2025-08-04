@@ -48,10 +48,7 @@ func RegisterTeam(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusConflict, consts.TeamAlreadyExists)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"name": team.Name,
-		"id":   team.ID,
-	})
+	return c.SendStatus(fiber.StatusOK)
 }
 
 func JoinTeam(c *fiber.Ctx) error {
@@ -94,10 +91,7 @@ func JoinTeam(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusConflict, consts.InvalidTeamCredentials)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"name": team.Name,
-		"id":   team.ID,
-	})
+	return c.SendStatus(fiber.StatusOK)
 }
 
 func UpdateTeam(c *fiber.Ctx) error {
