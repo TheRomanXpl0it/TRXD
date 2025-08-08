@@ -77,6 +77,8 @@ func SetupApp() *fiber.App {
 	api.Get("/challenges", auth.Spectator, auth.Team, routes.GetChallenges)
 	api.Get("/challenges/:id", auth.Spectator, auth.Team, routes.GetChallenge)
 
+	// api.Get("/scoreboard", auth.NoAuth)
+
 	api.Get("/users", auth.NoAuth, routes.GetUsers)
 	api.Get("/users/:id", auth.NoAuth, routes.GetUser)
 	api.Patch("/users", auth.Player, routes.UpdateUser)
@@ -86,6 +88,7 @@ func SetupApp() *fiber.App {
 	api.Get("/teams/:id", auth.NoAuth, routes.GetTeam)
 	api.Post("/teams", auth.Player, routes.RegisterTeam)
 	api.Put("/teams", auth.Player, routes.JoinTeam)
+	// api.Get("/teams/join/:token", ruotes.JoinTeamWithToken)
 	api.Patch("/teams", auth.Player, auth.Team, routes.UpdateTeam)
 	api.Patch("/teams/password", auth.Admin, routes.ResetTeamPassword)
 

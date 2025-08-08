@@ -125,7 +125,7 @@ SELECT teams.id, teams.name, submissions.timestamp
 
 -- name: GetUsers :many
 -- Retrieve all users
-SELECT id FROM users;
+SELECT id FROM users ORDER BY id ASC;
 
 -- name: GetUserSolves :many
 -- Retrieve all challenges solved by a user

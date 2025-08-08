@@ -110,7 +110,7 @@ type UserData struct {
 	Score       int32              `json:"score"`
 	Nationality string             `json:"nationality"`
 	Image       string             `json:"image"`
-	TeamID      int32              `json:"team_id"`
+	TeamID      *int32             `json:"team_id"`
 	JoinedAt    *time.Time         `json:"joined_at,omitempty"`
 	Solves      []GetUserSolvesRow `json:"solves,omitempty"`
 }
@@ -150,9 +150,9 @@ func GetUser(ctx context.Context, id int32, admin bool, minimal bool) (*UserData
 
 	data.JoinedAt = &user.CreatedAt
 
-	data.TeamID = -1
+	data.TeamID = nil
 	if user.TeamID.Valid {
-		data.TeamID = user.TeamID.Int32
+		data.TeamID = &user.TeamID.Int32
 	}
 
 	solves, err := queries.GetUserSolves(ctx, user.ID)

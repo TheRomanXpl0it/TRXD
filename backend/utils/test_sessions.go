@@ -71,7 +71,7 @@ func (s *apiTestSession) Request(method string, url string, body interface{}, ex
 	}
 
 	if resp.StatusCode != expectedStatus {
-		s.t.Errorf("Expected status %d, got %d", expectedStatus, resp.StatusCode)
+		s.t.Errorf("%s %s: Expected status %d, got %d", method, url, expectedStatus, resp.StatusCode)
 	}
 
 	s.updateCookies(resp.Cookies())

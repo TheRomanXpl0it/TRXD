@@ -222,7 +222,6 @@ func Info(c *fiber.Ctx) error {
 	})
 }
 
-// TODO: tests
 func GetUsers(c *fiber.Ctx) error {
 	role := c.Locals("role")
 
@@ -238,7 +237,6 @@ func GetUsers(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(usersData)
 }
 
-// TODO: tests
 func GetUser(c *fiber.Ctx) error {
 	uid := c.Locals("uid")
 	role := c.Locals("role")

@@ -98,6 +98,7 @@ CREATE TABLE IF NOT EXISTS challenges (
   score_type score_type NOT NULL,
   points INTEGER NOT NULL,
   solves INTEGER NOT NULL DEFAULT 0,
+  -- TODO: first_blood VARCHAR(64), FOREIGN KEY(first_blood) REFERENCES teams(name),
 
   host TEXT,
   port INTEGER CHECK (port >= 1 AND port <= 65535),

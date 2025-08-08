@@ -2,6 +2,7 @@ package tests
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 	"testing"
@@ -416,5 +417,371 @@ func TestResetUserPassword(t *testing.T) {
 		session = utils.NewApiTestSession(t, app)
 		session.Post("/login", JSON{"email": "test@test.test", "password": password}, http.StatusOK)
 		session.CheckResponse(nil)
+	}
+}
+
+func TestGetUSers(t *testing.T) {
+	db.DeleteAll()
+	db.InitConfigs()
+	db.InsertMockData()
+	app := api.SetupApp()
+	defer app.Shutdown()
+
+	err := db.UpdateConfig(context.Background(), "allow-register", "true")
+	if err != nil {
+		t.Fatalf("Failed to update config: %v", err)
+	}
+
+	expectedNoAuth := []JSON{
+		{
+			"email":       "",
+			"image":       "",
+			"name":        "a",
+			"nationality": "",
+			"role":        "",
+			"score":       1498,
+			"team_id":     nil,
+		},
+		{
+			"email":       "",
+			"image":       "",
+			"name":        "b",
+			"nationality": "",
+			"role":        "",
+			"score":       0,
+			"team_id":     nil,
+		},
+		{
+			"email":       "",
+			"image":       "",
+			"name":        "c",
+			"nationality": "",
+			"role":        "",
+			"score":       998,
+			"team_id":     nil,
+		},
+		{
+			"email":       "",
+			"image":       "",
+			"name":        "d",
+			"nationality": "",
+			"role":        "",
+			"score":       0,
+			"team_id":     nil,
+		},
+	}
+
+	session := utils.NewApiTestSession(t, app)
+	session.Get("/users", nil, http.StatusOK)
+	body := session.Body()
+	for _, user := range body.([]interface{}) {
+		delete(user.(map[string]interface{}), "id")
+	}
+	err = utils.Compare(expectedNoAuth, body)
+	if err != nil {
+		t.Fatalf("Compare Error: %v", err)
+	}
+
+	expectedPlayer := []JSON{
+		{
+			"email":       "",
+			"image":       "",
+			"name":        "a",
+			"nationality": "",
+			"role":        "",
+			"score":       1498,
+			"team_id":     nil,
+		},
+		{
+			"email":       "",
+			"image":       "",
+			"name":        "b",
+			"nationality": "",
+			"role":        "",
+			"score":       0,
+			"team_id":     nil,
+		},
+		{
+			"email":       "",
+			"image":       "",
+			"name":        "c",
+			"nationality": "",
+			"role":        "",
+			"score":       998,
+			"team_id":     nil,
+		},
+		{
+			"email":       "",
+			"image":       "",
+			"name":        "d",
+			"nationality": "",
+			"role":        "",
+			"score":       0,
+			"team_id":     nil,
+		},
+		{
+			"email":       "",
+			"image":       "",
+			"name":        "test",
+			"nationality": "",
+			"role":        "",
+			"score":       0,
+			"team_id":     nil,
+		},
+	}
+
+	session = utils.NewApiTestSession(t, app)
+	session.Post("/register", JSON{"username": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
+	session.Get("/users", nil, http.StatusOK)
+	body = session.Body()
+	for _, user := range body.([]interface{}) {
+		delete(user.(map[string]interface{}), "id")
+	}
+	err = utils.Compare(expectedPlayer, body)
+	if err != nil {
+		t.Fatalf("Compare Error: %v", err)
+	}
+
+	expectedAdmin := []JSON{
+		{
+			"email":       "a@a",
+			"image":       "",
+			"name":        "a",
+			"nationality": "",
+			"role":        "Player",
+			"score":       1498,
+			"team_id":     nil,
+		},
+		{
+			"email":       "b@b",
+			"image":       "",
+			"name":        "b",
+			"nationality": "",
+			"role":        "Player",
+			"score":       0,
+			"team_id":     nil,
+		},
+		{
+			"email":       "c@c",
+			"image":       "",
+			"name":        "c",
+			"nationality": "",
+			"role":        "Player",
+			"score":       998,
+			"team_id":     nil,
+		},
+		{
+			"email":       "d@d",
+			"image":       "",
+			"name":        "d",
+			"nationality": "",
+			"role":        "Player",
+			"score":       0,
+			"team_id":     nil,
+		},
+		{
+			"email":       "e@e",
+			"image":       "",
+			"name":        "e",
+			"nationality": "",
+			"role":        "Admin",
+			"score":       0,
+			"team_id":     nil,
+		},
+		{
+			"email":       "f@f",
+			"image":       "",
+			"name":        "f",
+			"nationality": "",
+			"role":        "Author",
+			"score":       0,
+			"team_id":     nil,
+		},
+		{
+			"email":       "test@test.test",
+			"image":       "",
+			"name":        "test",
+			"nationality": "",
+			"role":        "Player",
+			"score":       0,
+			"team_id":     nil,
+		},
+		{
+			"email":       "admin@test.com",
+			"image":       "",
+			"name":        "admin",
+			"nationality": "",
+			"role":        "Admin",
+			"score":       0,
+			"team_id":     nil,
+		},
+	}
+
+	admin, err := db.RegisterUser(context.Background(), "admin", "admin@test.com", "testpass", db.UserRoleAdmin)
+	if err != nil {
+		t.Fatalf("Failed to register admin user: %v", err)
+	}
+	if admin == nil {
+		t.Fatal("Admin registration returned nil")
+	}
+
+	session = utils.NewApiTestSession(t, app)
+	session.Post("/login", JSON{"email": "admin@test.com", "password": "testpass"}, http.StatusOK)
+	session.Get("/users", nil, http.StatusOK)
+	body = session.Body()
+	for _, user := range body.([]interface{}) {
+		delete(user.(map[string]interface{}), "id")
+	}
+	err = utils.Compare(expectedAdmin, body)
+	if err != nil {
+		t.Fatalf("Compare Error: %v", err)
+	}
+}
+
+func TestGetUser(t *testing.T) {
+	db.DeleteAll()
+	db.InitConfigs()
+	db.InsertMockData()
+	app := api.SetupApp()
+	defer app.Shutdown()
+
+	err := db.UpdateConfig(context.Background(), "allow-register", "true")
+	if err != nil {
+		t.Fatalf("Failed to update config: %v", err)
+	}
+
+	admin, err := db.RegisterUser(context.Background(), "admin", "admin@test.com", "testpass", db.UserRoleAdmin)
+	if err != nil {
+		t.Fatalf("Failed to register admin user: %v", err)
+	}
+	if admin == nil {
+		t.Fatal("Admin registration returned nil")
+	}
+
+	session := utils.NewApiTestSession(t, app)
+	session.Post("/login", JSON{"email": "admin@test.com", "password": "testpass"}, http.StatusOK)
+	session.Get("/users", nil, http.StatusOK)
+	body := session.Body()
+	idPlayer := int32(body.([]interface{})[0].(map[string]interface{})["id"].(float64))
+	idAdmin := int32(body.([]interface{})[len(body.([]interface{}))-1].(map[string]interface{})["id"].(float64))
+
+	session = utils.NewApiTestSession(t, app)
+	session.Post("/register", JSON{"username": "self", "email": "self@test.com", "password": "testpass"}, http.StatusOK)
+	session.Get("/info", nil, http.StatusOK)
+	body = session.Body()
+	idSelf := int32(body.(map[string]interface{})["id"].(float64))
+
+	expectedNoAuth := JSON{
+		"email":       "",
+		"image":       "",
+		"name":        "a",
+		"nationality": "",
+		"role":        "",
+		"score":       1498,
+	}
+
+	session = utils.NewApiTestSession(t, app)
+	session.Get(fmt.Sprintf("/users/%d", idAdmin), nil, http.StatusNotFound)
+
+	session = utils.NewApiTestSession(t, app)
+	session.Get(fmt.Sprintf("/users/%d", idPlayer), nil, http.StatusOK)
+	body = session.Body()
+	delete(body.(map[string]interface{}), "id")
+	delete(body.(map[string]interface{}), "joined_at")
+	delete(body.(map[string]interface{}), "solves")
+	delete(body.(map[string]interface{}), "team_id")
+	err = utils.Compare(expectedNoAuth, body)
+	if err != nil {
+		t.Fatalf("Compare Error: %v", err)
+	}
+
+	expectedPlayer := JSON{
+		"email":       "",
+		"image":       "",
+		"name":        "a",
+		"nationality": "",
+		"role":        "",
+		"score":       1498,
+	}
+	expectedSelf := JSON{
+		"email":       "self@test.com",
+		"image":       "",
+		"name":        "self",
+		"nationality": "",
+		"role":        "Player",
+		"score":       0,
+	}
+
+	session = utils.NewApiTestSession(t, app)
+	session.Post("/login", JSON{"email": "self@test.com", "password": "testpass"}, http.StatusOK)
+	session.Get(fmt.Sprintf("/users/%d", idAdmin), nil, http.StatusNotFound)
+
+	session = utils.NewApiTestSession(t, app)
+	session.Post("/login", JSON{"email": "self@test.com", "password": "testpass"}, http.StatusOK)
+	session.Get(fmt.Sprintf("/users/%d", idPlayer), nil, http.StatusOK)
+	body = session.Body()
+	delete(body.(map[string]interface{}), "id")
+	delete(body.(map[string]interface{}), "joined_at")
+	delete(body.(map[string]interface{}), "solves")
+	delete(body.(map[string]interface{}), "team_id")
+	err = utils.Compare(expectedPlayer, body)
+	if err != nil {
+		t.Fatalf("Compare Error: %v", err)
+	}
+
+	session = utils.NewApiTestSession(t, app)
+	session.Post("/login", JSON{"email": "self@test.com", "password": "testpass"}, http.StatusOK)
+	session.Get(fmt.Sprintf("/users/%d", idSelf), nil, http.StatusOK)
+	body = session.Body()
+	delete(body.(map[string]interface{}), "id")
+	delete(body.(map[string]interface{}), "joined_at")
+	delete(body.(map[string]interface{}), "solves")
+	delete(body.(map[string]interface{}), "team_id")
+	err = utils.Compare(expectedSelf, body)
+	if err != nil {
+		t.Fatalf("Compare Error: %v", err)
+	}
+
+	expectedPlayerAdmin := JSON{
+		"email":       "a@a",
+		"image":       "",
+		"name":        "a",
+		"nationality": "",
+		"role":        "Player",
+		"score":       1498,
+	}
+	expectedAdmin := JSON{
+		"email":       "admin@test.com",
+		"image":       "",
+		"name":        "admin",
+		"nationality": "",
+		"role":        "Admin",
+		"score":       0,
+		"team_id":     nil,
+	}
+
+	session = utils.NewApiTestSession(t, app)
+	session.Post("/login", JSON{"email": "admin@test.com", "password": "testpass"}, http.StatusOK)
+	session.Get(fmt.Sprintf("/users/%d", idPlayer), nil, http.StatusOK)
+	body = session.Body()
+	delete(body.(map[string]interface{}), "id")
+	delete(body.(map[string]interface{}), "joined_at")
+	delete(body.(map[string]interface{}), "solves")
+	delete(body.(map[string]interface{}), "team_id")
+	err = utils.Compare(expectedPlayerAdmin, body)
+	if err != nil {
+		t.Fatalf("Compare Error: %v", err)
+	}
+
+	session = utils.NewApiTestSession(t, app)
+	session.Post("/login", JSON{"email": "admin@test.com", "password": "testpass"}, http.StatusOK)
+	session.Get(fmt.Sprintf("/users/%d", idAdmin), nil, http.StatusOK)
+	body = session.Body()
+	delete(body.(map[string]interface{}), "id")
+	delete(body.(map[string]interface{}), "joined_at")
+	delete(body.(map[string]interface{}), "solves")
+	err = utils.Compare(expectedAdmin, body)
+	if err != nil {
+		t.Fatalf("Compare Error: %v", err)
 	}
 }

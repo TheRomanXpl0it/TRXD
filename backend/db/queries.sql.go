@@ -612,7 +612,7 @@ func (q *Queries) GetUserSolves(ctx context.Context, userID int32) ([]GetUserSol
 }
 
 const getUsers = `-- name: GetUsers :many
-SELECT id FROM users
+SELECT id FROM users ORDER BY id ASC
 `
 
 // Retrieve all users
