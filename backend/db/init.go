@@ -15,7 +15,7 @@ import (
 )
 
 var db *sql.DB
-var queries *Queries
+var Sql *Queries
 
 func ConnectDB(info *utils.DBInfo, test ...bool) error {
 	var err error
@@ -35,7 +35,7 @@ func ConnectDB(info *utils.DBInfo, test ...bool) error {
 	db.SetMaxIdleConns(info.MaxConnections)
 	db.SetConnMaxIdleTime(time.Hour)
 
-	queries = New(db)
+	Sql = New(db)
 
 	success, err := initDB(len(test) > 0 && test[0])
 	if err != nil {
@@ -49,8 +49,8 @@ func ConnectDB(info *utils.DBInfo, test ...bool) error {
 }
 
 func CloseDB() {
-	if queries != nil {
-		queries.Close()
+	if Sql != nil {
+		Sql.Close()
 	}
 	if db != nil {
 		db.Close()

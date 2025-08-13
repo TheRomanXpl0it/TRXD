@@ -60,7 +60,7 @@ func (q *Queries) CreateCategory(ctx context.Context, arg CreateCategoryParams) 
 
 const createChallenge = `-- name: CreateChallenge :one
 INSERT INTO challenges (name, category, description, type, max_points, score_type)
-	VALUES ($1, $2, $3, $4, $5, $6) RETURNING id
+  VALUES ($1, $2, $3, $4, $5, $6) RETURNING id
 `
 
 type CreateChallengeParams struct {

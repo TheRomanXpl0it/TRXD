@@ -9,7 +9,7 @@ import (
 )
 
 func CreateConfig(ctx context.Context, key string, value any) (*Config, error) {
-	err := queries.CreateConfig(ctx, CreateConfigParams{
+	err := Sql.CreateConfig(ctx, CreateConfigParams{
 		Key:   key,
 		Type:  fmt.Sprintf("%T", value),
 		Value: fmt.Sprint(value),
@@ -22,6 +22,7 @@ func CreateConfig(ctx context.Context, key string, value any) (*Config, error) {
 		}
 		return nil, err
 	}
+
 	return &Config{
 		Key:   key,
 		Type:  fmt.Sprintf("%T", value),
@@ -30,23 +31,25 @@ func CreateConfig(ctx context.Context, key string, value any) (*Config, error) {
 }
 
 func UpdateConfig(ctx context.Context, key string, value any) error {
-	err := queries.UpdateConfig(ctx, UpdateConfigParams{
+	err := Sql.UpdateConfig(ctx, UpdateConfigParams{
 		Key:   key,
 		Value: fmt.Sprint(value),
 	})
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
 func GetConfig(ctx context.Context, key string) (*Config, error) {
-	config, err := queries.GetConfig(ctx, key)
+	config, err := Sql.GetConfig(ctx, key)
 	if err != nil {
 		if err = sql.ErrNoRows; err != nil {
 			return nil, nil
 		}
 		return nil, err
 	}
+
 	return &config, nil
 }

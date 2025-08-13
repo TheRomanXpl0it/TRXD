@@ -1,7 +1,9 @@
 version: "2"
 sql:
   - engine: "postgresql"
-    queries: "sql/queries.sql"
+    queries:
+     - "sql/queries.sql"
+     - "api/routes/*/queries.sql"
     schema: "sql/schema.sql"
     gen:
       go:

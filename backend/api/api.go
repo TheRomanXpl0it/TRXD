@@ -4,7 +4,30 @@ import (
 	"encoding/json"
 	"os"
 	"trxd/api/auth"
-	"trxd/api/routes"
+	"trxd/api/routes/category_create"
+	"trxd/api/routes/category_delete"
+	"trxd/api/routes/challenge_create"
+	"trxd/api/routes/challenge_delete"
+	"trxd/api/routes/challenge_flag_create"
+	"trxd/api/routes/challenge_flag_delete"
+	"trxd/api/routes/challenge_get"
+	"trxd/api/routes/challenge_submit"
+	"trxd/api/routes/challenges_get"
+	"trxd/api/routes/config_update"
+	"trxd/api/routes/team_get"
+	"trxd/api/routes/team_join"
+	"trxd/api/routes/team_password"
+	"trxd/api/routes/team_register"
+	"trxd/api/routes/team_update"
+	"trxd/api/routes/teams_get"
+	"trxd/api/routes/user_get"
+	"trxd/api/routes/user_info"
+	"trxd/api/routes/user_login"
+	"trxd/api/routes/user_logout"
+	"trxd/api/routes/user_password"
+	"trxd/api/routes/user_register"
+	"trxd/api/routes/user_update"
+	"trxd/api/routes/users_get"
 	"trxd/utils"
 	"trxd/utils/consts"
 
@@ -69,48 +92,49 @@ func SetupApp() *fiber.App {
 
 	api.Get("/countries", func(c *fiber.Ctx) error { return c.JSON(consts.Countries) })
 
-	api.Post("/register", auth.NoAuth, routes.Register)
-	api.Post("/login", auth.NoAuth, routes.Login)
-	api.Post("/logout", auth.NoAuth, routes.Logout)
+	// TODO: make consts for routes
+	api.Post("/register", auth.NoAuth, user_register.Route)
+	api.Post("/login", auth.NoAuth, user_login.Route)
+	api.Post("/logout", auth.NoAuth, user_logout.Route)
 
-	api.Get("/info", auth.Spectator, routes.Info)
-	api.Get("/challenges", auth.Spectator, auth.Team, routes.GetChallenges)
-	api.Get("/challenges/:id", auth.Spectator, auth.Team, routes.GetChallenge)
+	api.Get("/info", auth.Spectator, user_info.Route)
+	api.Get("/challenges", auth.Spectator, auth.Team, challenges_get.Route)
+	api.Get("/challenges/:id", auth.Spectator, auth.Team, challenge_get.Route)
 
 	// api.Get("/scoreboard", auth.NoAuth)
 
-	api.Get("/users", auth.NoAuth, routes.GetUsers)
-	api.Get("/users/:id", auth.NoAuth, routes.GetUser)
-	api.Patch("/users", auth.Player, routes.UpdateUser)
-	api.Patch("/users/password", auth.Admin, routes.ResetUserPassword)
+	api.Get("/users", auth.NoAuth, users_get.Route)
+	api.Get("/users/:id", auth.NoAuth, user_get.Route)
+	api.Patch("/users", auth.Player, user_update.Route)
+	api.Patch("/users/password", auth.Admin, user_password.Route)
 
-	api.Get("/teams", auth.NoAuth, routes.GetTeams)
-	api.Get("/teams/:id", auth.NoAuth, routes.GetTeam)
-	api.Post("/teams", auth.Player, routes.RegisterTeam)
-	api.Put("/teams", auth.Player, routes.JoinTeam)
-	// api.Get("/teams/join/:token", ruotes.JoinTeamWithToken)
-	api.Patch("/teams", auth.Player, auth.Team, routes.UpdateTeam)
-	api.Patch("/teams/password", auth.Admin, routes.ResetTeamPassword)
+	api.Get("/teams", auth.NoAuth, teams_get.Route)
+	api.Get("/teams/:id", auth.NoAuth, team_get.Route)
+	api.Post("/teams", auth.Player, team_register.Route)
+	api.Put("/teams", auth.Player, team_join.Route)
+	// api.Get("/teams/join/:token", routes.JoinTeamWithToken)
+	api.Patch("/teams", auth.Player, auth.Team, team_update.Route)
+	api.Patch("/teams/password", auth.Admin, team_password.Route)
 
-	api.Post("/submit", auth.Player, auth.Team, routes.Submit)
+	api.Post("/submit", auth.Player, auth.Team, challenge_submit.Route)
 
 	// api.Post("/instance", auth.Player, routes.CreateInstance)
 	// api.Patch("/instance", auth.Player, routes.ExtendInstance)
 	// api.Delete("/instance", auth.Player, routes.DeleteInstance)
 
-	api.Post("/category", auth.Author, routes.CreateCategory)
+	api.Post("/category", auth.Author, category_create.Route)
 	// api.Patch("/category", auth.Author, routes.UpdateCategory)
-	api.Delete("/category", auth.Author, routes.DeleteCategory)
+	api.Delete("/category", auth.Author, category_delete.Route)
 
-	api.Post("/challenges", auth.Author, routes.CreateChallenge)
+	api.Post("/challenges", auth.Author, challenge_create.Route)
 	// api.Patch("/challenges", routes.UpdateChallenge)
-	api.Delete("/challenges", auth.Author, routes.DeleteChallenge)
+	api.Delete("/challenges", auth.Author, challenge_delete.Route)
 
-	api.Post("/flag", auth.Author, routes.CreateFlag)
+	api.Post("/flag", auth.Author, challenge_flag_create.Route)
 	// api.Patch("/flag", auth.Author, routes.UpdateFlag)
-	api.Delete("/flag", auth.Author, routes.DeleteFlag)
+	api.Delete("/flag", auth.Author, challenge_flag_delete.Route)
 
-	api.Patch("/config", auth.Admin, routes.UpdateConfig)
+	api.Patch("/config", auth.Admin, config_update.Route)
 
 	if log.GetLevel() == log.DebugLevel {
 		// Serve frontend in development mode

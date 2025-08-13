@@ -1,0 +1,110 @@
+package challenge_flag_create_test
+
+import (
+	"context"
+	"net/http"
+	"strings"
+	"testing"
+	"trxd/api"
+	"trxd/api/routes/category_create"
+	"trxd/api/routes/challenge_create"
+	"trxd/api/routes/user_register"
+	"trxd/db"
+	"trxd/utils/consts"
+	"trxd/utils/test_utils"
+)
+
+type JSON map[string]interface{}
+
+func errorf(val interface{}) JSON {
+	return JSON{"error": val}
+}
+
+func TestMain(m *testing.M) {
+	test_utils.Main(m, "../../../", "flag_create")
+}
+
+var testFlagCreate = []struct {
+	testBody         interface{}
+	expectedStatus   int
+	expectedResponse JSON
+}{
+	{
+		testBody:         nil,
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.InvalidJSON),
+	},
+	{
+		testBody:         JSON{"chall_id": ""},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.MissingRequiredFields),
+	},
+	{
+		testBody:         JSON{"flag": "test"},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.MissingRequiredFields),
+	},
+	{
+		testBody:         JSON{"chall_id": "", "flag": strings.Repeat("a", consts.MaxFlagLength+1)},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.LongFlag),
+	},
+	{
+		testBody:         JSON{"chall_id": 99999, "flag": "flag{test}"},
+		expectedStatus:   http.StatusNotFound,
+		expectedResponse: errorf(consts.ChallengeNotFound),
+	},
+	{
+		testBody:       JSON{"chall_id": "", "flag": "test"},
+		expectedStatus: http.StatusOK,
+	},
+	{
+		testBody:       JSON{"chall_id": "", "flag": `flag\{test\}`, "regex": true},
+		expectedStatus: http.StatusOK,
+	},
+	{
+		testBody:         JSON{"chall_id": "", "flag": "test"},
+		expectedStatus:   http.StatusConflict,
+		expectedResponse: errorf(consts.FlagAlreadyExists),
+	},
+}
+
+func TestFlagCreate(t *testing.T) {
+	app := api.SetupApp()
+	defer app.Shutdown()
+
+	user, err := user_register.RegisterUser(context.Background(), "test", "test@test.test", "testpass", db.UserRoleAuthor)
+	if err != nil {
+		t.Fatalf("Failed to register author user: %v", err)
+	}
+	if user == nil {
+		t.Fatal("User registration returned nil")
+	}
+
+	cat, err := category_create.CreateCategory(context.Background(), "cat", "icon")
+	if err != nil {
+		t.Fatalf("Failed to create category: %v", err)
+	}
+	if cat == nil {
+		t.Fatal("Category creation returned nil")
+	}
+	chall, err := challenge_create.CreateChallenge(context.Background(), "chall", cat.Name, "test-desc", db.DeployTypeNormal, 1, db.ScoreTypeStatic)
+	if err != nil {
+		t.Fatalf("Failed to create challenge: %v", err)
+	}
+	if chall == nil {
+		t.Fatal("Challenge creation returned nil")
+	}
+
+	for _, test := range testFlagCreate {
+		session := test_utils.NewApiTestSession(t, app)
+		session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+		if body, ok := test.testBody.(JSON); ok && body != nil {
+			if content, ok := body["chall_id"]; ok && content == "" {
+				test.testBody.(JSON)["chall_id"] = chall.ID
+			}
+		}
+		session.Post("/flag", test.testBody, test.expectedStatus)
+		session.CheckResponse(test.expectedResponse)
+	}
+}

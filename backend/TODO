@@ -1,3 +1,8 @@
+- rename routes
+- rename queries
+- nationality -> country
+- change all test contexes from todos to t.context
+
 - resolve TODOs left into the code
 - when finished endpoints, review needed data and revome `RETURNIN *;` and similar when not needed
 - sort constants alphabetically

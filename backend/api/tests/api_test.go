@@ -7,8 +7,8 @@ import (
 	"testing"
 	"trxd/api"
 	"trxd/db"
-	"trxd/utils"
 	"trxd/utils/consts"
+	"trxd/utils/test_utils"
 )
 
 type JSON map[string]interface{}
@@ -35,10 +35,9 @@ func TestMain(m *testing.M) {
 }
 
 func Test404(t *testing.T) {
-	db.DeleteAll()
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	session := utils.NewApiTestSession(t, app)
+	session := test_utils.NewApiTestSession(t, app)
 	session.Get("/nonexistent-endpoint", errorf(consts.EndpointNotFound), http.StatusNotFound)
 }

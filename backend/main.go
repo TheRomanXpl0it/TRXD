@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 	"trxd/api"
+	"trxd/api/routes/user_register"
 	"trxd/db"
 	"trxd/utils"
 	"trxd/utils/consts"
@@ -18,13 +19,13 @@ func Flags() {
 	var (
 		help                bool
 		h                   bool
-		register            string
+		user                string
 		toggleRegisterAllow bool
 	)
 	flag.BoolVar(&help, "help", false, "Show help")
 	flag.BoolVar(&h, "h", false, "Show help")
 	flag.BoolVar(&toggleRegisterAllow, "t", false, "Toggle the allow-register config")
-	flag.StringVar(&register, "r", "", "Register a new admin user with 'username:email:password'")
+	flag.StringVar(&user, "r", "", "Register a new admin user with 'username:email:password'")
 	flag.Parse()
 
 	if help || h {
@@ -40,8 +41,8 @@ func Flags() {
 		os.Exit(0)
 	}
 
-	if register != "" {
-		parts := strings.SplitN(register, ":", 3)
+	if user != "" {
+		parts := strings.SplitN(user, ":", 3)
 		var name, email, password string
 		if len(parts) == 2 {
 			var err error
@@ -73,7 +74,7 @@ func Flags() {
 			log.Fatal(consts.LongPassword)
 		}
 
-		user, err := db.RegisterUser(context.Background(), name, email, password, db.UserRoleAdmin)
+		user, err := user_register.RegisterUser(context.Background(), name, email, password, db.UserRoleAdmin)
 		if err != nil {
 			log.Fatal("Error registering admin user", "err", err)
 		}
