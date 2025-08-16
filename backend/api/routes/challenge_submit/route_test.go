@@ -11,7 +11,7 @@ import (
 	"trxd/api/routes/challenge_flag_create"
 	"trxd/api/routes/team_register"
 	"trxd/api/routes/user_register"
-	"trxd/db"
+	"trxd/db/sqlc"
 	"trxd/utils/consts"
 	"trxd/utils/test_utils"
 )
@@ -59,17 +59,17 @@ var testChallengeSubmit = []struct {
 	{
 		testBody:         JSON{"chall_id": "", "flag": "test"},
 		expectedStatus:   http.StatusOK,
-		expectedResponse: JSON{"status": string(db.SubmissionStatusWrong)},
+		expectedResponse: JSON{"status": sqlc.SubmissionStatusWrong},
 	},
 	{
 		testBody:         JSON{"chall_id": "", "flag": "flag{test}"},
 		expectedStatus:   http.StatusOK,
-		expectedResponse: JSON{"status": string(db.SubmissionStatusCorrect)},
+		expectedResponse: JSON{"status": sqlc.SubmissionStatusCorrect},
 	},
 	{
 		testBody:         JSON{"chall_id": "", "flag": "flag{test}"},
 		expectedStatus:   http.StatusOK,
-		expectedResponse: JSON{"status": string(db.SubmissionStatusRepeated)},
+		expectedResponse: JSON{"status": sqlc.SubmissionStatusRepeated},
 	},
 }
 
@@ -82,7 +82,7 @@ func TestChallengeSubmit(t *testing.T) {
 	session.Post("/submit", JSON{"chall_id": 0, "flag": "flag{test}"}, http.StatusForbidden)
 	session.CheckResponse(errorf(consts.Forbidden))
 
-	user3, err := user_register.RegisterUser(context.Background(), "test3", "test3@test.test", "testpass", db.UserRoleAdmin)
+	user3, err := user_register.RegisterUser(context.Background(), "test3", "test3@test.test", "testpass", sqlc.UserRoleAdmin)
 	if err != nil {
 		t.Fatalf("Failed to register test user: %v", err)
 	}
@@ -116,7 +116,7 @@ func TestChallengeSubmit(t *testing.T) {
 	if cat == nil {
 		t.Fatal("Category creation returned nil")
 	}
-	chall, err := challenge_create.CreateChallenge(context.Background(), "chall", cat.Name, "test-desc", db.DeployTypeNormal, 1, db.ScoreTypeDynamic)
+	chall, err := challenge_create.CreateChallenge(context.Background(), "chall", cat.Name, "test-desc", sqlc.DeployTypeNormal, 1, sqlc.ScoreTypeDynamic)
 	if err != nil {
 		t.Fatalf("Failed to create challenge: %v", err)
 	}

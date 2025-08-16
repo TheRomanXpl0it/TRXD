@@ -1,7 +1,7 @@
 package challenge_create
 
 import (
-	"trxd/db"
+	"trxd/db/sqlc"
 	"trxd/utils"
 	"trxd/utils/consts"
 
@@ -11,12 +11,12 @@ import (
 
 func Route(c *fiber.Ctx) error {
 	var data struct {
-		Name        string        `json:"name"`
-		Category    string        `json:"category"`
-		Description string        `json:"description"`
-		Type        db.DeployType `json:"type"`
-		MaxPoints   int32         `json:"max_points"`
-		ScoreType   db.ScoreType  `json:"score_type"`
+		Name        string          `json:"name"`
+		Category    string          `json:"category"`
+		Description string          `json:"description"`
+		Type        sqlc.DeployType `json:"type"`
+		MaxPoints   int32           `json:"max_points"`
+		ScoreType   sqlc.ScoreType  `json:"score_type"`
 	}
 	if err := c.BodyParser(&data); err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidJSON)
@@ -34,13 +34,13 @@ func Route(c *fiber.Ctx) error {
 	if len(data.Description) > consts.MaxChallDescLength {
 		return utils.Error(c, fiber.StatusBadRequest, consts.LongChallDesc)
 	}
-	if !utils.In(data.Type, []db.DeployType{db.DeployTypeNormal, db.DeployTypeContainer, db.DeployTypeCompose}) {
+	if !utils.In(data.Type, []sqlc.DeployType{sqlc.DeployTypeNormal, sqlc.DeployTypeContainer, sqlc.DeployTypeCompose}) {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidChallType)
 	}
 	if data.MaxPoints <= 0 {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidChallMaxPoints)
 	}
-	if !utils.In(data.ScoreType, []db.ScoreType{db.ScoreTypeStatic, db.ScoreTypeDynamic}) {
+	if !utils.In(data.ScoreType, []sqlc.ScoreType{sqlc.ScoreTypeStatic, sqlc.ScoreTypeDynamic}) {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidChallScoreType)
 	}
 

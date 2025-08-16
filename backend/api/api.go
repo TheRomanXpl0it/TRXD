@@ -92,7 +92,6 @@ func SetupApp() *fiber.App {
 
 	api.Get("/countries", func(c *fiber.Ctx) error { return c.JSON(consts.Countries) })
 
-	// TODO: make consts for routes
 	api.Post("/register", auth.NoAuth, user_register.Route)
 	api.Post("/login", auth.NoAuth, user_login.Route)
 	api.Post("/logout", auth.NoAuth, user_logout.Route)

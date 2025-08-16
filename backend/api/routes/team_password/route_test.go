@@ -9,6 +9,7 @@ import (
 	"trxd/api/routes/team_register"
 	"trxd/api/routes/user_register"
 	"trxd/db"
+	"trxd/db/sqlc"
 	"trxd/utils/consts"
 	"trxd/utils/test_utils"
 )
@@ -62,7 +63,7 @@ func TestResetTeamPassword(t *testing.T) {
 		t.Fatalf("Failed to update config: %v", err)
 	}
 
-	admin, err := user_register.RegisterUser(context.Background(), "admin", "admin@test.test", "adminpass", db.UserRoleAdmin)
+	admin, err := user_register.RegisterUser(context.Background(), "admin", "admin@test.test", "adminpass", sqlc.UserRoleAdmin)
 	if err != nil {
 		t.Fatalf("Failed to register admin user: %v", err)
 	}

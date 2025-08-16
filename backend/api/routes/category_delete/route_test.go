@@ -8,7 +8,7 @@ import (
 	"trxd/api"
 	"trxd/api/routes/category_create"
 	"trxd/api/routes/user_register"
-	"trxd/db"
+	"trxd/db/sqlc"
 	"trxd/utils/consts"
 	"trxd/utils/test_utils"
 )
@@ -57,7 +57,7 @@ func TestDeleteCategoryDelete(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	_, err := user_register.RegisterUser(context.Background(), "author", "author@test.test", "authorpass", db.UserRoleAuthor)
+	_, err := user_register.RegisterUser(context.Background(), "author", "author@test.test", "authorpass", sqlc.UserRoleAuthor)
 	if err != nil {
 		t.Fatalf("Failed to register author user: %v", err)
 	}

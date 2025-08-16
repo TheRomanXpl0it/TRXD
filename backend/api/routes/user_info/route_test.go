@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 	"trxd/api"
-	"trxd/db"
+	"trxd/db/sqlc"
 	"trxd/utils"
 	"trxd/utils/consts"
 	"trxd/utils/test_utils"
@@ -35,7 +35,7 @@ func TestUserInfo(t *testing.T) {
 	session.Get("/info", nil, http.StatusOK)
 	body := session.Body().(map[string]interface{})
 	delete(body, "id")
-	utils.Compare(body, JSON{"username": "test", "role": db.UserRolePlayer, "team_id": nil})
+	utils.Compare(body, JSON{"username": "test", "role": sqlc.UserRolePlayer, "team_id": nil})
 
 	session.Post("/teams", JSON{"name": "test", "password": "testpass"}, http.StatusOK)
 
@@ -46,5 +46,5 @@ func TestUserInfo(t *testing.T) {
 		t.Errorf("Expected team_id to be set, got nil")
 	}
 	delete(body, "team_id")
-	utils.Compare(body, JSON{"username": "test", "role": db.UserRolePlayer})
+	utils.Compare(body, JSON{"username": "test", "role": sqlc.UserRolePlayer})
 }

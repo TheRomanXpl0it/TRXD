@@ -3,13 +3,14 @@ package challenge_create
 import (
 	"context"
 	"trxd/db"
+	"trxd/db/sqlc"
 
 	"github.com/lib/pq"
 )
 
 func CreateChallenge(ctx context.Context, name, category, description string,
-	challType db.DeployType, maxPoints int32, scoreType db.ScoreType) (*db.Challenge, error) {
-	id, err := db.Sql.CreateChallenge(ctx, db.CreateChallengeParams{
+	challType sqlc.DeployType, maxPoints int32, scoreType sqlc.ScoreType) (*sqlc.Challenge, error) {
+	id, err := db.Sql.CreateChallenge(ctx, sqlc.CreateChallengeParams{
 		Name:        name,
 		Category:    category,
 		Description: description,
@@ -26,7 +27,7 @@ func CreateChallenge(ctx context.Context, name, category, description string,
 		return nil, err
 	}
 
-	return &db.Challenge{
+	return &sqlc.Challenge{
 		ID:          id,
 		Name:        name,
 		Category:    category,

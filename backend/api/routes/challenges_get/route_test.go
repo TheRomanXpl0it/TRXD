@@ -6,19 +6,15 @@ import (
 	"testing"
 	"trxd/api"
 	"trxd/api/routes/user_register"
-	"trxd/db"
+	"trxd/db/sqlc"
 	"trxd/utils"
 	"trxd/utils/test_utils"
 )
 
 type JSON map[string]interface{}
 
-func errorf(val interface{}) JSON {
-	return JSON{"error": val}
-}
-
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "challenges_submit")
+	test_utils.Main(m, "../../../", "challenges_get")
 }
 
 func TestGetChallenges(t *testing.T) {
@@ -27,119 +23,57 @@ func TestGetChallenges(t *testing.T) {
 
 	expectedPlayer := []JSON{
 		{
-			"attachments": []interface{}{},
-			"authors": []interface{}{
-				"author1",
-				"author2",
-			},
-			"category":    "cat-1",
-			"description": "TEST chall-1 DESC",
-			"difficulty":  "Easy",
-			"flags":       nil,
-			"hidden":      false,
-			"host":        "http://theromanxpl0.it",
-			"instance":    false,
-			"name":        "chall-1",
-			"points":      500,
-			"port":        1337,
-			"solved":      false,
-			"solves":      1,
-			"solves_list": []map[string]interface{}{
-				{
-					"name": "A",
-				},
-			},
+			"category":   "cat-1",
+			"difficulty": "Easy",
+			"hidden":     false,
+			"instance":   false,
+			"name":       "chall-1",
+			"points":     500,
+			"solved":     false,
+			"solves":     1,
 			"tags": []interface{}{
 				"tag-1",
 				"test-tag",
 			},
-			"timeout": 0,
 		},
 		{
-			"attachments": []interface{}{},
-			"authors": []interface{}{
-				"author1",
-			},
-			"category":    "cat-1",
-			"description": "TEST chall-3 DESC",
-			"difficulty":  "Hard",
-			"flags":       nil,
-			"hidden":      false,
-			"host":        "",
-			"instance":    true,
-			"name":        "chall-3",
-			"points":      500,
-			"port":        0,
-			"solved":      false,
-			"solves":      1,
-			"solves_list": []map[string]interface{}{
-				{
-					"name": "A",
-				},
-			},
+			"category":   "cat-1",
+			"difficulty": "Hard",
+			"hidden":     false,
+			"instance":   true,
+			"name":       "chall-3",
+			"points":     500,
+			"solved":     false,
+			"solves":     1,
 			"tags": []interface{}{
 				"tag-3",
 			},
-			"timeout": 0,
 		},
 		{
-			"attachments": []interface{}{},
-			"authors": []interface{}{
-				"author2",
-			},
-			"category":    "cat-1",
-			"description": "TEST chall-4 DESC",
-			"difficulty":  "Insane",
-			"flags":       nil,
-			"hidden":      false,
-			"host":        "",
-			"instance":    true,
-			"name":        "chall-4",
-			"points":      498,
-			"port":        0,
-			"solved":      false,
-			"solves":      2,
-			"solves_list": []map[string]interface{}{
-				{
-					"name": "A",
-				},
-				{
-					"name": "B",
-				},
-			},
+			"category":   "cat-1",
+			"difficulty": "Insane",
+			"hidden":     false,
+			"instance":   true,
+			"name":       "chall-4",
+			"points":     498,
+			"solved":     false,
+			"solves":     2,
 			"tags": []interface{}{
 				"tag-4",
 			},
-			"timeout": 0,
 		},
 		{
-			"attachments": []interface{}{},
-			"authors": []interface{}{
-				"author1",
-				"author2",
-				"author3",
-			},
-			"category":    "cat-2",
-			"description": "TEST chall-2 DESC",
-			"difficulty":  "Medium",
-			"flags":       nil,
-			"hidden":      false,
-			"host":        "",
-			"instance":    false,
-			"name":        "chall-2",
-			"points":      500,
-			"port":        0,
-			"solved":      false,
-			"solves":      1,
-			"solves_list": []map[string]interface{}{
-				{
-					"name": "B",
-				},
-			},
+			"category":   "cat-2",
+			"difficulty": "Medium",
+			"hidden":     false,
+			"instance":   false,
+			"name":       "chall-2",
+			"points":     500,
+			"solved":     false,
+			"solves":     1,
 			"tags": []interface{}{
 				"tag-2",
 			},
-			"timeout": 0,
 		},
 	}
 
@@ -150,10 +84,6 @@ func TestGetChallenges(t *testing.T) {
 	body := session.Body()
 	for _, chall := range body.([]interface{}) {
 		delete(chall.(map[string]interface{}), "id")
-		for _, solve := range chall.(map[string]interface{})["solves_list"].([]interface{}) {
-			delete(solve.(map[string]interface{}), "id")
-			delete(solve.(map[string]interface{}), "timestamp")
-		}
 	}
 	err := utils.Compare(expectedPlayer, body)
 	if err != nil {
@@ -162,175 +92,74 @@ func TestGetChallenges(t *testing.T) {
 
 	expectedAuthor := []JSON{
 		{
-			"attachments": []interface{}{},
-			"authors": []interface{}{
-				"author3",
-			},
-			"category":    "cat-2",
-			"description": "TEST chall-5 DESC",
-			"difficulty":  "Easy",
-			"flags": []map[string]interface{}{
-				{
-					"flag":  "flag{test-5}",
-					"regex": false,
-				},
-			},
-			"hidden":      true,
-			"host":        "",
-			"instance":    false,
-			"name":        "chall-5",
-			"points":      500,
-			"port":        0,
-			"solved":      false,
-			"solves":      0,
-			"solves_list": []map[string]interface{}{},
+			"category":   "cat-2",
+			"difficulty": "Easy",
+			"hidden":     true,
+			"instance":   false,
+			"name":       "chall-5",
+			"points":     500,
+			"solved":     false,
+			"solves":     0,
 			"tags": []interface{}{
 				"tag-5",
 			},
-			"timeout": 0,
 		},
 		{
-			"attachments": []interface{}{},
-			"authors": []interface{}{
-				"author1",
-				"author2",
-			},
-			"category":    "cat-1",
-			"description": "TEST chall-1 DESC",
-			"difficulty":  "Easy",
-			"flags": []map[string]interface{}{
-				{
-					"flag":  "flag{test-1}",
-					"regex": false,
-				},
-				{
-					"flag":  "flag\\{test-[a-z]{2}\\}",
-					"regex": true,
-				},
-			},
-			"hidden":   false,
-			"host":     "http://theromanxpl0.it",
-			"instance": false,
-			"name":     "chall-1",
-			"points":   500,
-			"port":     1337,
-			"solved":   false,
-			"solves":   1,
-			"solves_list": []map[string]interface{}{
-				{
-					"name": "A",
-				},
-			},
+			"category":   "cat-1",
+			"difficulty": "Easy",
+			"hidden":     false,
+			"instance":   false,
+			"name":       "chall-1",
+			"points":     500,
+			"solved":     false,
+			"solves":     1,
 			"tags": []interface{}{
 				"tag-1",
 				"test-tag",
 			},
-			"timeout": 0,
 		},
 		{
-			"attachments": []interface{}{},
-			"authors": []interface{}{
-				"author1",
-			},
-			"category":    "cat-1",
-			"description": "TEST chall-3 DESC",
-			"difficulty":  "Hard",
-			"flags": []map[string]interface{}{
-				{
-					"flag":  "flag{test-3}",
-					"regex": false,
-				},
-			},
-			"hidden":   false,
-			"host":     "",
-			"instance": true,
-			"name":     "chall-3",
-			"points":   500,
-			"port":     0,
-			"solved":   false,
-			"solves":   1,
-			"solves_list": []map[string]interface{}{
-				{
-					"name": "A",
-				},
-			},
+			"category":   "cat-1",
+			"difficulty": "Hard",
+			"hidden":     false,
+			"instance":   true,
+			"name":       "chall-3",
+			"points":     500,
+			"solved":     false,
+			"solves":     1,
 			"tags": []interface{}{
 				"tag-3",
 			},
-			"timeout": 0,
 		},
 		{
-			"attachments": []interface{}{},
-			"authors": []interface{}{
-				"author2",
-			},
-			"category":    "cat-1",
-			"description": "TEST chall-4 DESC",
-			"difficulty":  "Insane",
-			"flags": []map[string]interface{}{
-				{
-					"flag":  "flag{test-4}",
-					"regex": false,
-				},
-			},
-			"hidden":   false,
-			"host":     "",
-			"instance": true,
-			"name":     "chall-4",
-			"points":   498,
-			"port":     0,
-			"solved":   false,
-			"solves":   2,
-			"solves_list": []map[string]interface{}{
-				{
-					"name": "A",
-				},
-				{
-					"name": "B",
-				},
-			},
+			"category":   "cat-1",
+			"difficulty": "Insane",
+			"hidden":     false,
+			"instance":   true,
+			"name":       "chall-4",
+			"points":     498,
+			"solved":     false,
+			"solves":     2,
 			"tags": []interface{}{
 				"tag-4",
 			},
-			"timeout": 0,
 		},
 		{
-			"attachments": []interface{}{},
-			"authors": []interface{}{
-				"author1",
-				"author2",
-				"author3",
-			},
-			"category":    "cat-2",
-			"description": "TEST chall-2 DESC",
-			"difficulty":  "Medium",
-			"flags": []map[string]interface{}{
-				{
-					"flag":  "flag{test-2}",
-					"regex": false,
-				},
-			},
-			"hidden":   false,
-			"host":     "",
-			"instance": false,
-			"name":     "chall-2",
-			"points":   500,
-			"port":     0,
-			"solved":   false,
-			"solves":   1,
-			"solves_list": []map[string]interface{}{
-				{
-					"name": "B",
-				},
-			},
+			"category":   "cat-2",
+			"difficulty": "Medium",
+			"hidden":     false,
+			"instance":   false,
+			"name":       "chall-2",
+			"points":     500,
+			"solved":     false,
+			"solves":     1,
 			"tags": []interface{}{
 				"tag-2",
 			},
-			"timeout": 0,
 		},
 	}
 
-	user, err := user_register.RegisterUser(context.Background(), "test2", "test3@test.test", "testpass", db.UserRoleAuthor)
+	user, err := user_register.RegisterUser(context.Background(), "test2", "test3@test.test", "testpass", sqlc.UserRoleAuthor)
 	if err != nil {
 		t.Fatalf("Failed to register author user: %v", err)
 	}
@@ -344,10 +173,6 @@ func TestGetChallenges(t *testing.T) {
 	body = session.Body()
 	for _, chall := range body.([]interface{}) {
 		delete(chall.(map[string]interface{}), "id")
-		for _, solve := range chall.(map[string]interface{})["solves_list"].([]interface{}) {
-			delete(solve.(map[string]interface{}), "id")
-			delete(solve.(map[string]interface{}), "timestamp")
-		}
 	}
 	err = utils.Compare(expectedAuthor, body)
 	if err != nil {

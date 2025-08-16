@@ -4,11 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"trxd/db"
+	"trxd/db/sqlc"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
-func LoginUser(ctx context.Context, email, password string) (*db.User, error) {
+func LoginUser(ctx context.Context, email, password string) (*sqlc.User, error) {
 	user, err := db.Sql.GetUserByEmail(ctx, email)
 	if err != nil {
 		if err == sql.ErrNoRows {

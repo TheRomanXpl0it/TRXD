@@ -3,12 +3,13 @@ package challenge_flag_create
 import (
 	"context"
 	"trxd/db"
+	"trxd/db/sqlc"
 
 	"github.com/lib/pq"
 )
 
-func CreateFlag(ctx context.Context, challengeID int32, flag string, regex bool) (*db.Flag, error) {
-	err := db.Sql.CreateFlag(ctx, db.CreateFlagParams{
+func CreateFlag(ctx context.Context, challengeID int32, flag string, regex bool) (*sqlc.Flag, error) {
+	err := db.Sql.CreateFlag(ctx, sqlc.CreateFlagParams{
 		Flag:    flag,
 		ChallID: challengeID,
 		Regex:   regex,
@@ -22,7 +23,7 @@ func CreateFlag(ctx context.Context, challengeID int32, flag string, regex bool)
 		return nil, err
 	}
 
-	return &db.Flag{
+	return &sqlc.Flag{
 		ChallID: challengeID,
 		Flag:    flag,
 		Regex:   regex,

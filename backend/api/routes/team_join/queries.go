@@ -4,11 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"trxd/db"
+	"trxd/db/sqlc"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
-func authTeam(ctx context.Context, name, password string) (*db.Team, error) {
+func authTeam(ctx context.Context, name, password string) (*sqlc.Team, error) {
 	team, err := db.GetTeamByName(ctx, name)
 	if err != nil {
 		return nil, err
@@ -28,7 +29,7 @@ func authTeam(ctx context.Context, name, password string) (*db.Team, error) {
 	return team, nil
 }
 
-func JoinTeam(ctx context.Context, name, password string, userID int32) (*db.Team, error) {
+func JoinTeam(ctx context.Context, name, password string, userID int32) (*sqlc.Team, error) {
 	team, err := authTeam(ctx, name, password)
 	if err != nil {
 		return nil, err
@@ -37,7 +38,7 @@ func JoinTeam(ctx context.Context, name, password string, userID int32) (*db.Tea
 		return nil, nil
 	}
 
-	err = db.Sql.AddTeamMember(ctx, db.AddTeamMemberParams{
+	err = db.Sql.AddTeamMember(ctx, sqlc.AddTeamMemberParams{
 		TeamID: sql.NullInt32{Int32: team.ID, Valid: true},
 		ID:     userID,
 	})

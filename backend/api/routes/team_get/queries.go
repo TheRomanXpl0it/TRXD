@@ -4,25 +4,26 @@ import (
 	"context"
 	"database/sql"
 	"trxd/db"
+	"trxd/db/sqlc"
 	"trxd/utils"
 )
 
 type TeamData struct {
-	ID          int32                  `json:"id"`
-	Name        string                 `json:"name"`
-	Score       int32                  `json:"score"`
-	Nationality string                 `json:"nationality"`
-	Image       string                 `json:"image,omitempty"`
-	Bio         string                 `json:"bio,omitempty"`
-	Members     []db.GetTeamMembersRow `json:"members,omitempty"`
-	Solves      []db.GetTeamSolvesRow  `json:"solves,omitempty"`
+	ID          int32                    `json:"id"`
+	Name        string                   `json:"name"`
+	Score       int32                    `json:"score"`
+	Nationality string                   `json:"nationality"`
+	Image       string                   `json:"image,omitempty"`
+	Bio         string                   `json:"bio,omitempty"`
+	Members     []sqlc.GetTeamMembersRow `json:"members,omitempty"`
+	Solves      []sqlc.GetTeamSolvesRow  `json:"solves,omitempty"`
 	// TODO: add badges
 }
 
-func GetTeam(ctx context.Context, teamID int32, admin bool, minimal bool) (*TeamData, error) {
+func GetTeam(ctx context.Context, teamID int32, admin bool) (*TeamData, error) {
 	teamData := TeamData{}
 
-	team, err := db.Sql.GetTeamByID(ctx, teamID)
+	team, err := db.GetTeamByID(ctx, teamID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -40,10 +41,6 @@ func GetTeam(ctx context.Context, teamID int32, admin bool, minimal bool) (*Team
 		teamData.Image = team.Image.String
 	}
 
-	if minimal {
-		return &teamData, nil
-	}
-
 	if team.Bio.Valid {
 		teamData.Bio = team.Bio.String
 	}
@@ -52,9 +49,9 @@ func GetTeam(ctx context.Context, teamID int32, admin bool, minimal bool) (*Team
 	if err != nil {
 		return nil, err
 	}
-	teamData.Members = make([]db.GetTeamMembersRow, 0)
+	teamData.Members = make([]sqlc.GetTeamMembersRow, 0)
 	for _, member := range members {
-		if !admin && utils.In(member.Role, []db.UserRole{db.UserRoleAuthor, db.UserRoleAdmin}) {
+		if !admin && utils.In(member.Role, []sqlc.UserRole{sqlc.UserRoleAuthor, sqlc.UserRoleAdmin}) {
 			continue
 		}
 		teamData.Members = append(teamData.Members, member)

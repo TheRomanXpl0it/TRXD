@@ -1,7 +1,7 @@
 package user_get
 
 import (
-	"trxd/db"
+	"trxd/db/sqlc"
 	"trxd/utils"
 	"trxd/utils/consts"
 
@@ -22,9 +22,9 @@ func Route(c *fiber.Ctx) error {
 		allData = uid.(int32) == int32(userID)
 	}
 	if !allData && role != nil {
-		allData = utils.In(role.(db.UserRole), []db.UserRole{db.UserRoleAuthor, db.UserRoleAdmin})
+		allData = utils.In(role.(sqlc.UserRole), []sqlc.UserRole{sqlc.UserRoleAuthor, sqlc.UserRoleAdmin})
 	}
-	userData, err := GetUser(c.Context(), int32(userID), allData, false)
+	userData, err := GetUser(c.Context(), int32(userID), allData)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
 	}

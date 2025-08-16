@@ -7,6 +7,7 @@ import (
 	"trxd/api"
 	"trxd/api/routes/user_register"
 	"trxd/db"
+	"trxd/db/sqlc"
 	"trxd/utils/test_utils"
 )
 
@@ -76,7 +77,7 @@ func TestTeamsGet(t *testing.T) {
 	session.Get("/teams", nil, http.StatusOK)
 	session.CheckResponse(expected)
 
-	user, err := user_register.RegisterUser(context.Background(), "admin", "admin@admin.com", "adminpass", db.UserRoleAdmin)
+	user, err := user_register.RegisterUser(context.Background(), "admin", "admin@admin.com", "adminpass", sqlc.UserRoleAdmin)
 	if err != nil {
 		t.Fatalf("Failed to register admin user: %v", err)
 	}

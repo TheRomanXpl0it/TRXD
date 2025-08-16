@@ -8,7 +8,7 @@ import (
 	"trxd/api/routes/category_create"
 	"trxd/api/routes/challenge_create"
 	"trxd/api/routes/user_register"
-	"trxd/db"
+	"trxd/db/sqlc"
 	"trxd/utils/consts"
 	"trxd/utils/test_utils"
 )
@@ -57,7 +57,7 @@ func TestChallengeDelete(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	_, err := user_register.RegisterUser(context.Background(), "author", "author@test.test", "authorpass", db.UserRoleAuthor)
+	_, err := user_register.RegisterUser(context.Background(), "author", "author@test.test", "authorpass", sqlc.UserRoleAuthor)
 	if err != nil {
 		t.Fatalf("Failed to register author user: %v", err)
 	}
@@ -68,7 +68,7 @@ func TestChallengeDelete(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Failed to create category: %v", err)
 		}
-		chall, err := challenge_create.CreateChallenge(context.Background(), "chall", "cat", "test-desc", db.DeployTypeNormal, 1, db.ScoreTypeStatic)
+		chall, err := challenge_create.CreateChallenge(context.Background(), "chall", "cat", "test-desc", sqlc.DeployTypeNormal, 1, sqlc.ScoreTypeStatic)
 		if err != nil {
 			t.Fatalf("Failed to create challenge: %v", err)
 		}

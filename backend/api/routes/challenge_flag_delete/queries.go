@@ -3,10 +3,11 @@ package challenge_flag_delete
 import (
 	"context"
 	"trxd/db"
+	"trxd/db/sqlc"
 )
 
 func DeleteFlag(ctx context.Context, challengeID int32, flag string) error {
-	err := db.Sql.DeleteFlag(ctx, db.DeleteFlagParams{
+	err := db.Sql.DeleteFlag(ctx, sqlc.DeleteFlagParams{
 		ChallID: challengeID,
 		Flag:    flag,
 	})

@@ -1,7 +1,7 @@
 package challenge_get
 
 import (
-	"trxd/db"
+	"trxd/db/sqlc"
 	"trxd/utils"
 	"trxd/utils/consts"
 
@@ -10,14 +10,14 @@ import (
 
 func Route(c *fiber.Ctx) error {
 	uid := c.Locals("uid").(int32)
-	role := c.Locals("role").(db.UserRole)
+	role := c.Locals("role").(sqlc.UserRole)
 
 	challengeID, err := c.ParamsInt("id")
 	if err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidChallengeID)
 	}
 
-	all := utils.In(role, []db.UserRole{db.UserRoleAuthor, db.UserRoleAdmin})
+	all := utils.In(role, []sqlc.UserRole{sqlc.UserRoleAuthor, sqlc.UserRoleAdmin})
 	challenge, err := GetChallenge(c.Context(), int32(challengeID), uid, all)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingChallenges, err)

@@ -6,7 +6,7 @@ import (
 	"testing"
 	"trxd/api"
 	"trxd/api/routes/user_register"
-	"trxd/db"
+	"trxd/db/sqlc"
 	"trxd/utils"
 	"trxd/utils/test_utils"
 )
@@ -29,7 +29,6 @@ func TestUsersGet(t *testing.T) {
 			"nationality": "",
 			"role":        "",
 			"score":       1498,
-			"team_id":     nil,
 		},
 		{
 			"email":       "",
@@ -38,7 +37,6 @@ func TestUsersGet(t *testing.T) {
 			"nationality": "",
 			"role":        "",
 			"score":       0,
-			"team_id":     nil,
 		},
 		{
 			"email":       "",
@@ -47,7 +45,6 @@ func TestUsersGet(t *testing.T) {
 			"nationality": "",
 			"role":        "",
 			"score":       998,
-			"team_id":     nil,
 		},
 		{
 			"email":       "",
@@ -56,7 +53,6 @@ func TestUsersGet(t *testing.T) {
 			"nationality": "",
 			"role":        "",
 			"score":       0,
-			"team_id":     nil,
 		},
 	}
 
@@ -79,7 +75,6 @@ func TestUsersGet(t *testing.T) {
 			"nationality": "",
 			"role":        "",
 			"score":       1498,
-			"team_id":     nil,
 		},
 		{
 			"email":       "",
@@ -88,7 +83,6 @@ func TestUsersGet(t *testing.T) {
 			"nationality": "",
 			"role":        "",
 			"score":       0,
-			"team_id":     nil,
 		},
 		{
 			"email":       "",
@@ -97,7 +91,6 @@ func TestUsersGet(t *testing.T) {
 			"nationality": "",
 			"role":        "",
 			"score":       998,
-			"team_id":     nil,
 		},
 		{
 			"email":       "",
@@ -106,7 +99,6 @@ func TestUsersGet(t *testing.T) {
 			"nationality": "",
 			"role":        "",
 			"score":       0,
-			"team_id":     nil,
 		},
 		{
 			"email":       "",
@@ -115,7 +107,6 @@ func TestUsersGet(t *testing.T) {
 			"nationality": "",
 			"role":        "",
 			"score":       0,
-			"team_id":     nil,
 		},
 	}
 
@@ -139,7 +130,6 @@ func TestUsersGet(t *testing.T) {
 			"nationality": "",
 			"role":        "Player",
 			"score":       1498,
-			"team_id":     nil,
 		},
 		{
 			"email":       "b@b",
@@ -148,7 +138,6 @@ func TestUsersGet(t *testing.T) {
 			"nationality": "",
 			"role":        "Player",
 			"score":       0,
-			"team_id":     nil,
 		},
 		{
 			"email":       "c@c",
@@ -157,7 +146,6 @@ func TestUsersGet(t *testing.T) {
 			"nationality": "",
 			"role":        "Player",
 			"score":       998,
-			"team_id":     nil,
 		},
 		{
 			"email":       "d@d",
@@ -166,7 +154,6 @@ func TestUsersGet(t *testing.T) {
 			"nationality": "",
 			"role":        "Player",
 			"score":       0,
-			"team_id":     nil,
 		},
 		{
 			"email":       "e@e",
@@ -175,7 +162,6 @@ func TestUsersGet(t *testing.T) {
 			"nationality": "",
 			"role":        "Admin",
 			"score":       0,
-			"team_id":     nil,
 		},
 		{
 			"email":       "f@f",
@@ -184,7 +170,6 @@ func TestUsersGet(t *testing.T) {
 			"nationality": "",
 			"role":        "Author",
 			"score":       0,
-			"team_id":     nil,
 		},
 		{
 			"email":       "test@test.test",
@@ -193,7 +178,6 @@ func TestUsersGet(t *testing.T) {
 			"nationality": "",
 			"role":        "Player",
 			"score":       0,
-			"team_id":     nil,
 		},
 		{
 			"email":       "admin@test.com",
@@ -202,11 +186,10 @@ func TestUsersGet(t *testing.T) {
 			"nationality": "",
 			"role":        "Admin",
 			"score":       0,
-			"team_id":     nil,
 		},
 	}
 
-	admin, err := user_register.RegisterUser(context.Background(), "admin", "admin@test.com", "testpass", db.UserRoleAdmin)
+	admin, err := user_register.RegisterUser(context.Background(), "admin", "admin@test.com", "testpass", sqlc.UserRoleAdmin)
 	if err != nil {
 		t.Fatalf("Failed to register admin user: %v", err)
 	}

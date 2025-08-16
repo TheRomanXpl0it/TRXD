@@ -3,9 +3,22 @@ package db
 import (
 	"context"
 	"database/sql"
+	"trxd/db/sqlc"
 )
 
-func GetTeamFromUser(ctx context.Context, userID int32) (*Team, error) {
+func GetTeamByID(ctx context.Context, teamID int32) (*sqlc.Team, error) {
+	team, err := Sql.GetTeamByID(ctx, teamID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &team, nil
+}
+
+func GetTeamFromUser(ctx context.Context, userID int32) (*sqlc.Team, error) {
 	team, err := Sql.GetTeamFromUser(ctx, userID)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -17,7 +30,7 @@ func GetTeamFromUser(ctx context.Context, userID int32) (*Team, error) {
 	return &team, nil
 }
 
-func GetTeamByName(ctx context.Context, name string) (*Team, error) {
+func GetTeamByName(ctx context.Context, name string) (*sqlc.Team, error) {
 	team, err := Sql.GetTeamByName(ctx, name)
 	if err != nil {
 		if err == sql.ErrNoRows {

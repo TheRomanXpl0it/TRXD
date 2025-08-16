@@ -1,7 +1,6 @@
 package category_delete
 
 import (
-	"trxd/db"
 	"trxd/utils"
 	"trxd/utils/consts"
 
@@ -23,7 +22,7 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusBadRequest, consts.LongCategory)
 	}
 
-	err := db.Sql.DeleteCategory(c.Context(), data.Category)
+	err := DeleteCategory(c.Context(), data.Category)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorDeletingCategory, err)
 	}

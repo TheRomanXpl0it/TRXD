@@ -7,7 +7,7 @@ import (
 	"testing"
 	"trxd/api"
 	"trxd/api/routes/user_register"
-	"trxd/db"
+	"trxd/db/sqlc"
 	"trxd/utils"
 	"trxd/utils/test_utils"
 )
@@ -22,7 +22,7 @@ func TestUserGet(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	admin, err := user_register.RegisterUser(context.Background(), "admin", "admin@test.com", "testpass", db.UserRoleAdmin)
+	admin, err := user_register.RegisterUser(context.Background(), "admin", "admin@test.com", "testpass", sqlc.UserRoleAdmin)
 	if err != nil {
 		t.Fatalf("Failed to register admin user: %v", err)
 	}

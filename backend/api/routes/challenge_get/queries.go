@@ -4,45 +4,37 @@ import (
 	"context"
 	"strings"
 	"trxd/db"
+	"trxd/db/sqlc"
 )
 
 type Chall struct {
-	ID          int32                       `json:"id"`
-	Name        string                      `json:"name"`
-	Category    string                      `json:"category"`
-	Description string                      `json:"description"`
-	Difficulty  string                      `json:"difficulty"`
-	Authors     []string                    `json:"authors"`
-	Instance    bool                        `json:"instance"`
-	Hidden      bool                        `json:"hidden"`
-	Points      int32                       `json:"points"`
-	Solves      int32                       `json:"solves"`
-	Host        string                      `json:"host"`
-	Port        int32                       `json:"port"`
-	Attachments []string                    `json:"attachments"`
-	Tags        []string                    `json:"tags"`
-	Flags       []db.GetFlagsByChallengeRow `json:"flags"`
-	Timeout     int32                       `json:"timeout"`
-	Solved      bool                        `json:"solved"`
-	SolvesList  []db.GetChallengeSolvesRow  `json:"solves_list"`
+	ID          int32                         `json:"id"`
+	Name        string                        `json:"name"`
+	Category    string                        `json:"category"`
+	Description string                        `json:"description"`
+	Difficulty  string                        `json:"difficulty"`
+	Authors     []string                      `json:"authors"`
+	Instance    bool                          `json:"instance"`
+	Hidden      bool                          `json:"hidden"`
+	Points      int32                         `json:"points"`
+	Solves      int32                         `json:"solves"`
+	Host        string                        `json:"host"`
+	Port        int32                         `json:"port"`
+	Attachments []string                      `json:"attachments"`
+	Tags        []string                      `json:"tags"`
+	Flags       []sqlc.GetFlagsByChallengeRow `json:"flags"`
+	Timeout     int32                         `json:"timeout"`
+	Solved      bool                          `json:"solved"`
+	SolvesList  []sqlc.GetChallengeSolvesRow  `json:"solves_list"`
 }
 
-func GetFlagsByChallenge(ctx context.Context, challengeID int32) ([]db.GetFlagsByChallengeRow, error) {
+func GetFlagsByChallenge(ctx context.Context, challengeID int32) ([]sqlc.GetFlagsByChallengeRow, error) {
 	flags, err := db.Sql.GetFlagsByChallenge(ctx, challengeID)
 	if err != nil {
 		return nil, err
 	}
 
 	return flags, nil
-}
-
-func GetTagsByChallenge(ctx context.Context, challengeID int32) ([]string, error) {
-	tags, err := db.Sql.GetTagsByChallenge(ctx, challengeID)
-	if err != nil {
-		return nil, err
-	}
-
-	return tags, nil
 }
 
 func GetChallenge(ctx context.Context, id int32, uid int32, author bool) (*Chall, error) {
@@ -64,15 +56,12 @@ func GetChallenge(ctx context.Context, id int32, uid int32, author bool) (*Chall
 		return nil, err
 	}
 
-	tags, err := GetTagsByChallenge(ctx, challenge.ID)
+	tags, err := db.GetTagsByChallenge(ctx, challenge.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	solved, err := db.Sql.IsChallengeSolved(ctx, db.IsChallengeSolvedParams{
-		ChallID: id,
-		ID:      uid,
-	})
+	solved, err := db.IsChallengeSolved(ctx, id, uid)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +77,7 @@ func GetChallenge(ctx context.Context, id int32, uid int32, author bool) (*Chall
 	if challenge.Authors.Valid {
 		chall.Authors = strings.Split(challenge.Authors.String, ",") // TODO: change char
 	}
-	chall.Instance = challenge.Type != db.DeployTypeNormal
+	chall.Instance = challenge.Type != sqlc.DeployTypeNormal
 	chall.Hidden = challenge.Hidden
 	chall.Points = challenge.Points
 	chall.Solves = challenge.Solves
@@ -106,7 +95,7 @@ func GetChallenge(ctx context.Context, id int32, uid int32, author bool) (*Chall
 		if flags != nil {
 			chall.Flags = flags
 		} else {
-			chall.Flags = []db.GetFlagsByChallengeRow{}
+			chall.Flags = []sqlc.GetFlagsByChallengeRow{}
 		}
 	}
 	chall.Tags = []string{}
@@ -120,7 +109,7 @@ func GetChallenge(ctx context.Context, id int32, uid int32, author bool) (*Chall
 		return nil, err
 	}
 	if solves == nil {
-		solves = []db.GetChallengeSolvesRow{}
+		solves = []sqlc.GetChallengeSolvesRow{}
 	}
 	chall.SolvesList = solves
 

@@ -1,7 +1,7 @@
 package teams_get
 
 import (
-	"trxd/db"
+	"trxd/db/sqlc"
 	"trxd/utils"
 	"trxd/utils/consts"
 
@@ -13,7 +13,7 @@ func Route(c *fiber.Ctx) error {
 
 	allData := false
 	if role != nil {
-		allData = utils.In(role.(db.UserRole), []db.UserRole{db.UserRoleAuthor, db.UserRoleAdmin})
+		allData = utils.In(role.(sqlc.UserRole), []sqlc.UserRole{sqlc.UserRoleAuthor, sqlc.UserRoleAdmin})
 	}
 	teamsData, err := GetTeams(c.Context(), allData)
 	if err != nil {

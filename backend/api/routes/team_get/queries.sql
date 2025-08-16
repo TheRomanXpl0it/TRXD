@@ -1,7 +1,3 @@
--- name: GetTeamByID :one
--- Retrieve a team by its ID
-SELECT * FROM teams WHERE id = $1;
-
 -- name: GetTeamMembers :many
 -- Retrieve all members of a team by team ID
 SELECT id, name, role, score FROM users WHERE team_id = $1 ORDER BY id;

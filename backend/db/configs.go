@@ -4,12 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"trxd/db/sqlc"
 
 	"github.com/lib/pq"
 )
 
-func CreateConfig(ctx context.Context, key string, value any) (*Config, error) {
-	err := Sql.CreateConfig(ctx, CreateConfigParams{
+func CreateConfig(ctx context.Context, key string, value any) (*sqlc.Config, error) {
+	err := Sql.CreateConfig(ctx, sqlc.CreateConfigParams{
 		Key:   key,
 		Type:  fmt.Sprintf("%T", value),
 		Value: fmt.Sprint(value),
@@ -23,7 +24,7 @@ func CreateConfig(ctx context.Context, key string, value any) (*Config, error) {
 		return nil, err
 	}
 
-	return &Config{
+	return &sqlc.Config{
 		Key:   key,
 		Type:  fmt.Sprintf("%T", value),
 		Value: fmt.Sprint(value),
@@ -31,7 +32,7 @@ func CreateConfig(ctx context.Context, key string, value any) (*Config, error) {
 }
 
 func UpdateConfig(ctx context.Context, key string, value any) error {
-	err := Sql.UpdateConfig(ctx, UpdateConfigParams{
+	err := Sql.UpdateConfig(ctx, sqlc.UpdateConfigParams{
 		Key:   key,
 		Value: fmt.Sprint(value),
 	})
@@ -42,7 +43,7 @@ func UpdateConfig(ctx context.Context, key string, value any) error {
 	return nil
 }
 
-func GetConfig(ctx context.Context, key string) (*Config, error) {
+func GetConfig(ctx context.Context, key string) (*sqlc.Config, error) {
 	config, err := Sql.GetConfig(ctx, key)
 	if err != nil {
 		if err = sql.ErrNoRows; err != nil {

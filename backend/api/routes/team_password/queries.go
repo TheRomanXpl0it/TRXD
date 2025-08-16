@@ -3,6 +3,7 @@ package team_password
 import (
 	"context"
 	"trxd/db"
+	"trxd/db/sqlc"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -13,7 +14,7 @@ func ResetTeamPassword(ctx context.Context, teamID int32, newPassword string) er
 		return err
 	}
 
-	err = db.Sql.ResetTeamPassword(ctx, db.ResetTeamPasswordParams{
+	err = db.Sql.ResetTeamPassword(ctx, sqlc.ResetTeamPasswordParams{
 		ID:           teamID,
 		PasswordHash: string(passwordHash),
 	})

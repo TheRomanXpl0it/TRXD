@@ -7,7 +7,7 @@ import (
 	"testing"
 	"trxd/api"
 	"trxd/api/routes/user_register"
-	"trxd/db"
+	"trxd/db/sqlc"
 	"trxd/utils"
 	"trxd/utils/test_utils"
 )
@@ -119,7 +119,7 @@ func TestChallengeGet(t *testing.T) {
 		"timeout": 0,
 	}
 
-	user, err := user_register.RegisterUser(context.Background(), "test2", "test3@test.test", "testpass", db.UserRoleAuthor)
+	user, err := user_register.RegisterUser(context.Background(), "test2", "test3@test.test", "testpass", sqlc.UserRoleAuthor)
 	if err != nil {
 		t.Fatalf("Failed to register author user: %v", err)
 	}

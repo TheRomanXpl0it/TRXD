@@ -6,7 +6,7 @@ import (
 	"testing"
 	"trxd/api"
 	"trxd/api/routes/user_register"
-	"trxd/db"
+	"trxd/db/sqlc"
 	"trxd/utils/consts"
 	"trxd/utils/test_utils"
 )
@@ -64,7 +64,7 @@ func TestConfigUpdate(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	user, err := user_register.RegisterUser(context.Background(), "test", "test@test.test", "testpass", db.UserRoleAdmin)
+	user, err := user_register.RegisterUser(context.Background(), "test", "test@test.test", "testpass", sqlc.UserRoleAdmin)
 	if err != nil {
 		t.Fatalf("Failed to register test user: %v", err)
 	}

@@ -3,6 +3,8 @@
 - nationality -> country
 - change all test contexes from todos to t.context
 
+- verify races on submit
+
 - resolve TODOs left into the code
 - when finished endpoints, review needed data and revome `RETURNIN *;` and similar when not needed
 - sort constants alphabetically
@@ -12,8 +14,9 @@
 - redis
 - rate limiter middleware
 
+- webhook to discord for first bloods
 - link to join team
-- kick user fron team
+- kick user from team
 - maybe set default starting points for challenges as config
 - endpoint + cli cmd to parse a category/challenge file with all infos
 - flag submit that checks for all challenges and mark solved the one of the correct flag (credits to: midnightsun)

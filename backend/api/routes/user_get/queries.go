@@ -5,23 +5,24 @@ import (
 	"database/sql"
 	"time"
 	"trxd/db"
+	"trxd/db/sqlc"
 	"trxd/utils"
 )
 
 type UserData struct {
-	ID          int32                 `json:"id"`
-	Name        string                `json:"name"`
-	Email       string                `json:"email"`
-	Role        string                `json:"role"`
-	Score       int32                 `json:"score"`
-	Nationality string                `json:"nationality"`
-	Image       string                `json:"image"`
-	TeamID      *int32                `json:"team_id"`
-	JoinedAt    *time.Time            `json:"joined_at,omitempty"`
-	Solves      []db.GetUserSolvesRow `json:"solves,omitempty"`
+	ID          int32                   `json:"id"`
+	Name        string                  `json:"name"`
+	Email       string                  `json:"email"`
+	Role        string                  `json:"role"`
+	Score       int32                   `json:"score"`
+	Nationality string                  `json:"nationality"`
+	Image       string                  `json:"image"`
+	TeamID      *int32                  `json:"team_id"`
+	JoinedAt    *time.Time              `json:"joined_at,omitempty"`
+	Solves      []sqlc.GetUserSolvesRow `json:"solves,omitempty"`
 }
 
-func GetUser(ctx context.Context, id int32, admin bool, minimal bool) (*UserData, error) {
+func GetUser(ctx context.Context, id int32, admin bool) (*UserData, error) {
 	data := UserData{}
 
 	user, err := db.GetUserByID(ctx, id)
@@ -32,7 +33,7 @@ func GetUser(ctx context.Context, id int32, admin bool, minimal bool) (*UserData
 		return nil, nil
 	}
 
-	if !admin && utils.In(user.Role, []db.UserRole{db.UserRoleAuthor, db.UserRoleAdmin}) {
+	if !admin && utils.In(user.Role, []sqlc.UserRole{sqlc.UserRoleAuthor, sqlc.UserRoleAdmin}) {
 		return nil, nil
 	}
 
@@ -50,10 +51,6 @@ func GetUser(ctx context.Context, id int32, admin bool, minimal bool) (*UserData
 		data.Image = user.Image.String
 	}
 
-	if minimal {
-		return &data, nil
-	}
-
 	data.JoinedAt = &user.CreatedAt
 
 	data.TeamID = nil
@@ -65,7 +62,7 @@ func GetUser(ctx context.Context, id int32, admin bool, minimal bool) (*UserData
 	if err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
-	data.Solves = []db.GetUserSolvesRow{}
+	data.Solves = []sqlc.GetUserSolvesRow{}
 	if solves != nil {
 		data.Solves = solves
 	}

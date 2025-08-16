@@ -3,7 +3,7 @@
 //   sqlc v1.29.0
 // source: queries.sql
 
-package db
+package sqlc
 
 import (
 	"context"
@@ -87,22 +87,6 @@ func (q *Queries) CreateChallenge(ctx context.Context, arg CreateChallengeParams
 	return id, err
 }
 
-const createConfig = `-- name: CreateConfig :exec
-INSERT INTO configs (key, type, value) VALUES ($1, $2, $3)
-`
-
-type CreateConfigParams struct {
-	Key   string `json:"key"`
-	Type  string `json:"type"`
-	Value string `json:"value"`
-}
-
-// Insert a new configuration setting
-func (q *Queries) CreateConfig(ctx context.Context, arg CreateConfigParams) error {
-	_, err := q.exec(ctx, q.createConfigStmt, createConfig, arg.Key, arg.Type, arg.Value)
-	return err
-}
-
 const createFlag = `-- name: CreateFlag :exec
 INSERT INTO flags (flag, chall_id, regex) VALUES ($1, $2, $3)
 `
@@ -152,34 +136,6 @@ type DeleteFlagParams struct {
 func (q *Queries) DeleteFlag(ctx context.Context, arg DeleteFlagParams) error {
 	_, err := q.exec(ctx, q.deleteFlagStmt, deleteFlag, arg.ChallID, arg.Flag)
 	return err
-}
-
-const getChallengeByID = `-- name: GetChallengeByID :one
-SELECT id, name, category, description, difficulty, authors, type, hidden, max_points, score_type, points, solves, host, port, attachments FROM challenges WHERE id = $1
-`
-
-// Retrieve a challenge by its ID
-func (q *Queries) GetChallengeByID(ctx context.Context, id int32) (Challenge, error) {
-	row := q.queryRow(ctx, q.getChallengeByIDStmt, getChallengeByID, id)
-	var i Challenge
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Category,
-		&i.Description,
-		&i.Difficulty,
-		&i.Authors,
-		&i.Type,
-		&i.Hidden,
-		&i.MaxPoints,
-		&i.ScoreType,
-		&i.Points,
-		&i.Solves,
-		&i.Host,
-		&i.Port,
-		&i.Attachments,
-	)
-	return i, err
 }
 
 const getChallengeSolves = `-- name: GetChallengeSolves :many
@@ -251,23 +207,6 @@ func (q *Queries) GetChallenges(ctx context.Context) ([]int32, error) {
 	return items, nil
 }
 
-const getConfig = `-- name: GetConfig :one
-SELECT key, type, value, description FROM configs WHERE key = $1
-`
-
-// Retrieve a configuration setting by key
-func (q *Queries) GetConfig(ctx context.Context, key string) (Config, error) {
-	row := q.queryRow(ctx, q.getConfigStmt, getConfig, key)
-	var i Config
-	err := row.Scan(
-		&i.Key,
-		&i.Type,
-		&i.Value,
-		&i.Description,
-	)
-	return i, err
-}
-
 const getFlagsByChallenge = `-- name: GetFlagsByChallenge :many
 SELECT flag, regex FROM flags WHERE chall_id = $1
 `
@@ -299,96 +238,6 @@ func (q *Queries) GetFlagsByChallenge(ctx context.Context, challID int32) ([]Get
 		return nil, err
 	}
 	return items, nil
-}
-
-const getTagsByChallenge = `-- name: GetTagsByChallenge :many
-SELECT name FROM tags WHERE chall_id = $1
-`
-
-// Retrieve all tags associated with a challenge
-func (q *Queries) GetTagsByChallenge(ctx context.Context, challID int32) ([]string, error) {
-	rows, err := q.query(ctx, q.getTagsByChallengeStmt, getTagsByChallenge, challID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []string
-	for rows.Next() {
-		var name string
-		if err := rows.Scan(&name); err != nil {
-			return nil, err
-		}
-		items = append(items, name)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getTeamByID = `-- name: GetTeamByID :one
-SELECT id, name, password_hash, score, nationality, image, bio FROM teams WHERE id = $1
-`
-
-// Retrieve a team by its ID
-func (q *Queries) GetTeamByID(ctx context.Context, id int32) (Team, error) {
-	row := q.queryRow(ctx, q.getTeamByIDStmt, getTeamByID, id)
-	var i Team
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.PasswordHash,
-		&i.Score,
-		&i.Nationality,
-		&i.Image,
-		&i.Bio,
-	)
-	return i, err
-}
-
-const getTeamByName = `-- name: GetTeamByName :one
-SELECT id, name, password_hash, score, nationality, image, bio FROM teams WHERE name = $1
-`
-
-// Retrieve a team by its name
-func (q *Queries) GetTeamByName(ctx context.Context, name string) (Team, error) {
-	row := q.queryRow(ctx, q.getTeamByNameStmt, getTeamByName, name)
-	var i Team
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.PasswordHash,
-		&i.Score,
-		&i.Nationality,
-		&i.Image,
-		&i.Bio,
-	)
-	return i, err
-}
-
-const getTeamFromUser = `-- name: GetTeamFromUser :one
-SELECT t.id, t.name, t.password_hash, t.score, t.nationality, t.image, t.bio FROM teams t
-  JOIN users u ON u.team_id = t.id
-  WHERE u.id = $1
-`
-
-// Retrieve the team associated with a user
-func (q *Queries) GetTeamFromUser(ctx context.Context, id int32) (Team, error) {
-	row := q.queryRow(ctx, q.getTeamFromUserStmt, getTeamFromUser, id)
-	var i Team
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.PasswordHash,
-		&i.Score,
-		&i.Nationality,
-		&i.Image,
-		&i.Bio,
-	)
-	return i, err
 }
 
 const getTeamMembers = `-- name: GetTeamMembers :many
@@ -530,52 +379,6 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 	return i, err
 }
 
-const getUserByID = `-- name: GetUserByID :one
-SELECT id, name, email, password_hash, created_at, score, role, team_id, nationality, image FROM users WHERE id = $1
-`
-
-// Retrieve a user by their ID
-func (q *Queries) GetUserByID(ctx context.Context, id int32) (User, error) {
-	row := q.queryRow(ctx, q.getUserByIDStmt, getUserByID, id)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Email,
-		&i.PasswordHash,
-		&i.CreatedAt,
-		&i.Score,
-		&i.Role,
-		&i.TeamID,
-		&i.Nationality,
-		&i.Image,
-	)
-	return i, err
-}
-
-const getUserByName = `-- name: GetUserByName :one
-SELECT id, name, email, password_hash, created_at, score, role, team_id, nationality, image FROM users WHERE name = $1
-`
-
-// Retrieve a user by their name
-func (q *Queries) GetUserByName(ctx context.Context, name string) (User, error) {
-	row := q.queryRow(ctx, q.getUserByNameStmt, getUserByName, name)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Email,
-		&i.PasswordHash,
-		&i.CreatedAt,
-		&i.Score,
-		&i.Role,
-		&i.TeamID,
-		&i.Nationality,
-		&i.Image,
-	)
-	return i, err
-}
-
 const getUserSolves = `-- name: GetUserSolves :many
 SELECT s.chall_id, s.timestamp FROM submissions s
     WHERE s.user_id = $1
@@ -637,32 +440,6 @@ func (q *Queries) GetUsers(ctx context.Context) ([]int32, error) {
 		return nil, err
 	}
 	return items, nil
-}
-
-const isChallengeSolved = `-- name: IsChallengeSolved :one
-SELECT EXISTS(
-  SELECT 1
-    FROM submissions
-    JOIN users ON users.id = submissions.user_id
-    JOIN teams ON users.team_id = teams.id
-      AND teams.id = (SELECT team_id FROM users WHERE users.id = $2)
-    WHERE users.role = 'Player'
-      AND submissions.status = 'Correct'
-      AND submissions.chall_id = $1
-)
-`
-
-type IsChallengeSolvedParams struct {
-	ChallID int32 `json:"chall_id"`
-	ID      int32 `json:"id"`
-}
-
-// Check if a challenge is solved by a user's team
-func (q *Queries) IsChallengeSolved(ctx context.Context, arg IsChallengeSolvedParams) (bool, error) {
-	row := q.queryRow(ctx, q.isChallengeSolvedStmt, isChallengeSolved, arg.ChallID, arg.ID)
-	var exists bool
-	err := row.Scan(&exists)
-	return exists, err
 }
 
 const registerTeam = `-- name: RegisterTeam :exec
@@ -782,21 +559,6 @@ func (q *Queries) Submit(ctx context.Context, arg SubmitParams) (SubmissionStatu
 	var status SubmissionStatus
 	err := row.Scan(&status)
 	return status, err
-}
-
-const updateConfig = `-- name: UpdateConfig :exec
-UPDATE configs SET value = $2 WHERE key = $1
-`
-
-type UpdateConfigParams struct {
-	Key   string `json:"key"`
-	Value string `json:"value"`
-}
-
-// Update an existing configuration setting
-func (q *Queries) UpdateConfig(ctx context.Context, arg UpdateConfigParams) error {
-	_, err := q.exec(ctx, q.updateConfigStmt, updateConfig, arg.Key, arg.Value)
-	return err
 }
 
 const updateTeam = `-- name: UpdateTeam :exec

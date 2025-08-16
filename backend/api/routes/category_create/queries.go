@@ -3,12 +3,13 @@ package category_create
 import (
 	"context"
 	"trxd/db"
+	"trxd/db/sqlc"
 
 	"github.com/lib/pq"
 )
 
-func CreateCategory(ctx context.Context, name string, icon string) (*db.Category, error) {
-	err := db.Sql.CreateCategory(ctx, db.CreateCategoryParams{
+func CreateCategory(ctx context.Context, name string, icon string) (*sqlc.Category, error) {
+	err := db.Sql.CreateCategory(ctx, sqlc.CreateCategoryParams{
 		Name: name,
 		Icon: icon,
 	})
@@ -20,5 +21,5 @@ func CreateCategory(ctx context.Context, name string, icon string) (*db.Category
 		}
 		return nil, err
 	}
-	return &db.Category{Name: name, Icon: icon}, nil
+	return &sqlc.Category{Name: name, Icon: icon}, nil
 }

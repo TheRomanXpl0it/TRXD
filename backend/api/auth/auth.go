@@ -3,6 +3,7 @@ package auth
 import (
 	"time"
 	"trxd/db"
+	"trxd/db/sqlc"
 	"trxd/utils"
 	"trxd/utils/consts"
 
@@ -74,9 +75,9 @@ func Spectator(c *fiber.Ctx) error {
 // TODO: tests
 func Team(c *fiber.Ctx) error {
 	tid := c.Locals("tid").(int32)
-	role := c.Locals("role").(db.UserRole)
+	role := c.Locals("role").(sqlc.UserRole)
 
-	if role == db.UserRolePlayer && tid == -1 {
+	if role == sqlc.UserRolePlayer && tid == -1 {
 		return utils.Error(c, fiber.StatusForbidden, consts.Forbidden)
 	}
 
@@ -98,8 +99,8 @@ func Player(c *fiber.Ctx) error {
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
 	}
-	if user == nil || (user.Role != db.UserRolePlayer &&
-		user.Role != db.UserRoleAuthor && user.Role != db.UserRoleAdmin) {
+	if user == nil || (user.Role != sqlc.UserRolePlayer &&
+		user.Role != sqlc.UserRoleAuthor && user.Role != sqlc.UserRoleAdmin) {
 		return utils.Error(c, fiber.StatusForbidden, consts.Forbidden)
 	}
 
@@ -129,7 +130,7 @@ func Author(c *fiber.Ctx) error {
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
 	}
-	if user == nil || (user.Role != db.UserRoleAuthor && user.Role != db.UserRoleAdmin) {
+	if user == nil || (user.Role != sqlc.UserRoleAuthor && user.Role != sqlc.UserRoleAdmin) {
 		return utils.Error(c, fiber.StatusForbidden, consts.Forbidden)
 	}
 
@@ -158,7 +159,7 @@ func Admin(c *fiber.Ctx) error {
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
 	}
-	if user == nil || user.Role != db.UserRoleAdmin {
+	if user == nil || user.Role != sqlc.UserRoleAdmin {
 		return utils.Error(c, fiber.StatusForbidden, consts.Forbidden)
 	}
 
