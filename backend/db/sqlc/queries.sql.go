@@ -238,6 +238,31 @@ func (q *Queries) GetChallengesPreview(ctx context.Context, id int32) ([]GetChal
 	return items, nil
 }
 
+const getFirstBlood = `-- name: GetFirstBlood :one
+SELECT teams.id, teams.name
+  FROM submissions
+  JOIN users ON users.id = submissions.user_id
+  JOIN teams ON users.team_id = teams.id
+  WHERE users.role = 'Player'
+    AND submissions.chall_id = $1
+    AND submissions.status = 'Correct'
+  ORDER BY submissions.timestamp ASC
+  LIMIT 1
+`
+
+type GetFirstBloodRow struct {
+	ID   int32  `json:"id"`
+	Name string `json:"name"`
+}
+
+// Retrieve the team that achieved the first blood on a challenge
+func (q *Queries) GetFirstBlood(ctx context.Context, challID int32) (GetFirstBloodRow, error) {
+	row := q.queryRow(ctx, q.getFirstBloodStmt, getFirstBlood, challID)
+	var i GetFirstBloodRow
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
+}
+
 const getFlagsByChallenge = `-- name: GetFlagsByChallenge :many
 SELECT flag, regex FROM flags WHERE chall_id = $1
 `

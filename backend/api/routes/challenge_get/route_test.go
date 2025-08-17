@@ -40,16 +40,20 @@ func TestChallengeGet(t *testing.T) {
 		"category":    "cat-1",
 		"description": "TEST chall-1 DESC",
 		"difficulty":  "Easy",
-		"flags":       nil,
-		"hidden":      false,
-		"host":        "http://theromanxpl0.it",
-		"instance":    false,
-		"name":        "chall-1",
-		"points":      500,
-		"port":        1337,
-		"solved":      false,
-		"solves":      1,
-		"solves_list": []map[string]interface{}{
+		"first_blood": JSON{
+			"id":   1,
+			"name": "A",
+		},
+		"flags":    nil,
+		"hidden":   false,
+		"host":     "http://theromanxpl0.it",
+		"instance": false,
+		"name":     "chall-1",
+		"points":   500,
+		"port":     1337,
+		"solved":   false,
+		"solves":   1,
+		"solves_list": []JSON{
 			{
 				"name": "A",
 			},
@@ -84,7 +88,11 @@ func TestChallengeGet(t *testing.T) {
 		"category":    "cat-1",
 		"description": "TEST chall-1 DESC",
 		"difficulty":  "Easy",
-		"flags": []map[string]interface{}{
+		"first_blood": JSON{
+			"id":   1,
+			"name": "A",
+		},
+		"flags": []JSON{
 			{
 				"flag":  "flag{test-1}",
 				"regex": false,
@@ -102,7 +110,7 @@ func TestChallengeGet(t *testing.T) {
 		"port":     1337,
 		"solved":   false,
 		"solves":   1,
-		"solves_list": []map[string]interface{}{
+		"solves_list": []JSON{
 			{
 				"name": "A",
 			},
@@ -144,7 +152,8 @@ func TestChallengeGet(t *testing.T) {
 		"category":    "cat-2",
 		"description": "TEST chall-5 DESC",
 		"difficulty":  "Easy",
-		"flags": []map[string]interface{}{
+		"first_blood": nil,
+		"flags": []JSON{
 			{
 				"flag":  "flag{test-5}",
 				"regex": false,
@@ -158,7 +167,7 @@ func TestChallengeGet(t *testing.T) {
 		"port":        0,
 		"solved":      false,
 		"solves":      0,
-		"solves_list": []map[string]interface{}{},
+		"solves_list": []JSON{},
 		"tags": []interface{}{
 			"tag-5",
 		},

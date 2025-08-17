@@ -42,9 +42,9 @@ func TestTeamsGet(t *testing.T) {
 		t.Fatal("Team C not found")
 	}
 
-	expected := []map[string]interface{}{
+	expected := []JSON{
 		{
-			"badges": []map[string]interface{}{
+			"badges": []JSON{
 				{
 					"description": "Completed all cat-1 challenges",
 					"name":        "cat-1",
@@ -56,7 +56,7 @@ func TestTeamsGet(t *testing.T) {
 			"score":   1498,
 		},
 		{
-			"badges": []map[string]interface{}{
+			"badges": []JSON{
 				{
 					"description": "Completed all cat-2 challenges",
 					"name":        "cat-2",

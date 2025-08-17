@@ -30,8 +30,8 @@ func TestTeamGet(t *testing.T) {
 		t.Fatal("Team A not found")
 	}
 
-	expectedPlayer := map[string]interface{}{
-		"badges": []map[string]interface{}{
+	expectedPlayer := JSON{
+		"badges": []JSON{
 			{
 				"description": "Completed all cat-1 challenges",
 				"name":        "cat-1",
@@ -39,7 +39,7 @@ func TestTeamGet(t *testing.T) {
 		},
 		"country": "",
 		"id":      A.ID,
-		"members": []map[string]interface{}{
+		"members": []JSON{
 			{
 				"name":  "a",
 				"role":  "Player",
@@ -53,7 +53,7 @@ func TestTeamGet(t *testing.T) {
 		},
 		"name":  "A",
 		"score": 1498,
-		"solves": []map[string]interface{}{
+		"solves": []JSON{
 			{
 				"category": "cat-1",
 				"name":     "chall-1",
@@ -100,8 +100,8 @@ func TestTeamGet(t *testing.T) {
 		t.Fatalf("Compare Error: %v", err)
 	}
 
-	expectedAdmin := map[string]interface{}{
-		"badges": []map[string]interface{}{
+	expectedAdmin := JSON{
+		"badges": []JSON{
 			{
 				"description": "Completed all cat-1 challenges",
 				"name":        "cat-1",
@@ -109,7 +109,7 @@ func TestTeamGet(t *testing.T) {
 		},
 		"country": "",
 		"id":      A.ID,
-		"members": []map[string]interface{}{
+		"members": []JSON{
 			{
 				"name":  "a",
 				"role":  "Player",
@@ -128,7 +128,7 @@ func TestTeamGet(t *testing.T) {
 		},
 		"name":  "A",
 		"score": 1498,
-		"solves": []map[string]interface{}{
+		"solves": []JSON{
 			{
 				"category": "cat-1",
 				"name":     "chall-1",

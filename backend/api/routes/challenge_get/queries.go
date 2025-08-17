@@ -2,6 +2,7 @@ package challenge_get
 
 import (
 	"context"
+	"database/sql"
 	"strings"
 	"trxd/db"
 	"trxd/db/sqlc"
@@ -18,6 +19,7 @@ type Chall struct {
 	Hidden      bool                          `json:"hidden"`
 	Points      int32                         `json:"points"`
 	Solves      int32                         `json:"solves"`
+	FirstBlood  *sqlc.GetFirstBloodRow        `json:"first_blood"`
 	Host        string                        `json:"host"`
 	Port        int32                         `json:"port"`
 	Attachments []string                      `json:"attachments"`
@@ -47,6 +49,18 @@ func IsChallengeSolved(ctx context.Context, id int32, uid int32) (bool, error) {
 	}
 
 	return solved, nil
+}
+
+func GetFirstBlood(ctx context.Context, id int32) (*sqlc.GetFirstBloodRow, error) {
+	firstBlood, err := db.Sql.GetFirstBlood(ctx, id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &firstBlood, nil
 }
 
 func GetChallenge(ctx context.Context, id int32, uid int32, author bool) (*Chall, error) {
@@ -124,6 +138,12 @@ func GetChallenge(ctx context.Context, id int32, uid int32, author bool) (*Chall
 		solves = []sqlc.GetChallengeSolvesRow{}
 	}
 	chall.SolvesList = solves
+
+	firstBlood, err := GetFirstBlood(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	chall.FirstBlood = firstBlood
 
 	return &chall, nil
 }
