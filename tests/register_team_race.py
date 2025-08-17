@@ -1,6 +1,4 @@
 import sys
-import random
-import string
 import requests
 import threading
 
@@ -10,10 +8,16 @@ except:
 	N = 50
 print(f"Running with {N} threads")
 
-def rand_name():
-	return ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
+COUNTER = 0
+COUNTER_LOCK = threading.Lock()
+def gen_name():
+	global COUNTER
+	with COUNTER_LOCK:
+		num = COUNTER
+		COUNTER += 1
+	return f"test-user-{num}"
 
-user = rand_name()
+user = gen_name()
 email = user + "@test.test"
 # print(user, email)
 
@@ -68,7 +72,7 @@ def register_team(name):
 
 threads = []
 for _ in range(N):
-	thread = threading.Thread(target=register_team, args=(rand_name(),))
+	thread = threading.Thread(target=register_team, args=(gen_name(),))
 	threads.append(thread)
 for thread in threads:
 	thread.start()

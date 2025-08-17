@@ -22,11 +22,13 @@ func Flags() {
 		h                   bool
 		user                string
 		toggleRegisterAllow bool
+		testData            bool
 	)
 	flag.BoolVar(&help, "help", false, "Show help")
 	flag.BoolVar(&h, "h", false, "Show help")
 	flag.BoolVar(&toggleRegisterAllow, "t", false, "Toggle the allow-register config")
 	flag.StringVar(&user, "r", "", "Register a new admin user with 'username:email:password'")
+	flag.BoolVar(&testData, "test-data-WARNING-DO-NOT-USE-IN-PRODUCTION", false, "Inserts mocks data into the db")
 	flag.Parse()
 
 	if help || h {
@@ -35,10 +37,27 @@ func Flags() {
 	}
 
 	if toggleRegisterAllow {
-		err := db.UpdateConfig(context.Background(), "allow-register", "true")
+		conf, err := db.GetConfig(context.Background(), "allow-register")
+		if err != nil {
+			log.Fatal("Error getting allow-register config", "err", err)
+		}
+		if conf == nil {
+			log.Fatal("allow-register config not found")
+		}
+
+		var toggle string
+		if conf.Value == "false" {
+			toggle = "true"
+		} else {
+			toggle = "false"
+		}
+
+		err = db.UpdateConfig(context.Background(), "allow-register", toggle)
 		if err != nil {
 			log.Fatal("Error updating allow-register config", "err", err)
 		}
+
+		log.Notice("allow-register set to:", "value", toggle)
 		os.Exit(0)
 	}
 
@@ -83,6 +102,30 @@ func Flags() {
 			log.Fatal("Failed to register admin user: user already exists")
 		}
 		log.Info("Admin user registered successfully")
+		os.Exit(0)
+	}
+
+	if testData {
+		log.Warn("Inserting mock data into the database. This will delete all existing data!")
+
+		_, err := db.ExecSQLFile("sql/tests.sql")
+		if err != nil {
+			log.Fatal("Error executing SQL file", "err", err)
+		}
+
+		err = db.DeleteAll()
+		if err != nil {
+			log.Fatal("Error deleting existing data", "err", err)
+		}
+		err = db.InitConfigs()
+		if err != nil {
+			log.Fatal("Error initializing configs", "err", err)
+		}
+		err = db.InsertMockData()
+		if err != nil {
+			log.Fatal("Error inserting mock data", "err", err)
+		}
+
 		os.Exit(0)
 	}
 }

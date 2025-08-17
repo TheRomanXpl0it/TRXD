@@ -104,10 +104,19 @@ jobs:
           exit 1
         fi
 
+
+        ./trxd -test-data-WARNING-DO-NOT-USE-IN-PRODUCTION
         ./trxd -t
 
         cd ../tests/
         python3 register_team_race.py 500
+
+        cd ../backend
+        ./trxd -test-data-WARNING-DO-NOT-USE-IN-PRODUCTION
+        ./trxd -t
+
+        cd ../tests/
+        python3 submit_race.py 500
 
         cd -
         kill $(cat ./server.pid)

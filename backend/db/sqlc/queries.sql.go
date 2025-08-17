@@ -656,21 +656,30 @@ func (q *Queries) ResetUserPassword(ctx context.Context, arg ResetUserPasswordPa
 }
 
 const submit = `-- name: Submit :one
-INSERT INTO submissions (user_id, chall_id, status, flag) VALUES ($1, $2, $3, $4) RETURNING status
+WITH challenge AS (
+    SELECT challenges.id FROM challenges
+    WHERE challenges.id = $2 FOR UPDATE
+  ),
+  inserted AS (
+    INSERT INTO submissions (user_id, chall_id, status, flag)
+    VALUES ($1, $2, $3, $4)
+    RETURNING status
+  )
+SELECT status FROM inserted
 `
 
 type SubmitParams struct {
-	UserID  int32            `json:"user_id"`
-	ChallID int32            `json:"chall_id"`
-	Status  SubmissionStatus `json:"status"`
-	Flag    string           `json:"flag"`
+	UserID int32            `json:"user_id"`
+	ID     int32            `json:"id"`
+	Status SubmissionStatus `json:"status"`
+	Flag   string           `json:"flag"`
 }
 
 // Insert a new submission
 func (q *Queries) Submit(ctx context.Context, arg SubmitParams) (SubmissionStatus, error) {
 	row := q.queryRow(ctx, q.submitStmt, submit,
 		arg.UserID,
-		arg.ChallID,
+		arg.ID,
 		arg.Status,
 		arg.Flag,
 	)

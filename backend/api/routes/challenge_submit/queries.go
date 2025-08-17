@@ -21,10 +21,10 @@ func SubmitFlag(ctx context.Context, userID int32, challengeID int32, flag strin
 	}
 
 	status, err = db.Sql.Submit(ctx, sqlc.SubmitParams{
-		UserID:  userID,
-		ChallID: challengeID,
-		Status:  status,
-		Flag:    flag,
+		UserID: userID,
+		ID:     challengeID,
+		Status: status,
+		Flag:   flag,
 	})
 	if err != nil {
 		return sqlc.SubmissionStatusInvalid, err
