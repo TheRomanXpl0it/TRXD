@@ -37,6 +37,18 @@ func GetFlagsByChallenge(ctx context.Context, challengeID int32) ([]sqlc.GetFlag
 	return flags, nil
 }
 
+func IsChallengeSolved(ctx context.Context, id int32, uid int32) (bool, error) {
+	solved, err := db.Sql.IsChallengeSolved(ctx, sqlc.IsChallengeSolvedParams{
+		ChallID: id,
+		ID:      uid,
+	})
+	if err != nil {
+		return false, err
+	}
+
+	return solved, nil
+}
+
 func GetChallenge(ctx context.Context, id int32, uid int32, author bool) (*Chall, error) {
 	var chall Chall
 
@@ -61,7 +73,7 @@ func GetChallenge(ctx context.Context, id int32, uid int32, author bool) (*Chall
 		return nil, err
 	}
 
-	solved, err := db.IsChallengeSolved(ctx, id, uid)
+	solved, err := IsChallengeSolved(ctx, id, uid)
 	if err != nil {
 		return nil, err
 	}

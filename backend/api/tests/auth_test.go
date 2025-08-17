@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"context"
 	"net/http"
 	"testing"
 	"trxd/api"
@@ -48,19 +47,19 @@ func TestAuthMiddlewares(t *testing.T) {
 
 	var err error
 	users := [5]*sqlc.User{}
-	users[1], err = user_register.RegisterUser(context.Background(), "spectator", "spectator@test.test", "testpass", sqlc.UserRoleSpectator)
+	users[1], err = user_register.RegisterUser(t.Context(), "spectator", "spectator@test.test", "testpass", sqlc.UserRoleSpectator)
 	if err != nil {
 		t.Fatalf("Failed to register spectator user: %v", err)
 	}
-	users[2], err = user_register.RegisterUser(context.Background(), "player", "player@test.test", "testpass", sqlc.UserRolePlayer)
+	users[2], err = user_register.RegisterUser(t.Context(), "player", "player@test.test", "testpass", sqlc.UserRolePlayer)
 	if err != nil {
 		t.Fatalf("Failed to register player user: %v", err)
 	}
-	users[3], err = user_register.RegisterUser(context.Background(), "author", "author@test.test", "testpass", sqlc.UserRoleAuthor)
+	users[3], err = user_register.RegisterUser(t.Context(), "author", "author@test.test", "testpass", sqlc.UserRoleAuthor)
 	if err != nil {
 		t.Fatalf("Failed to register author user: %v", err)
 	}
-	users[4], err = user_register.RegisterUser(context.Background(), "admin", "admin@test.test", "testpass", sqlc.UserRoleAdmin)
+	users[4], err = user_register.RegisterUser(t.Context(), "admin", "admin@test.test", "testpass", sqlc.UserRoleAdmin)
 	if err != nil {
 		t.Fatalf("Failed to register admin user: %v", err)
 	}

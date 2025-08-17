@@ -19,14 +19,27 @@ func Main(m *testing.M, path string, name string) {
 		fatalf("Failed to change directory: %v\n", err)
 	}
 
-	if err := db.OpenTestDB("test_api_" + name); err != nil {
+	err = db.OpenTestDB("test_" + name)
+	if err != nil {
 		fatalf("Failed to open test database: %v\n", err)
 	}
 	defer db.CloseTestDB()
 
-	db.DeleteAll()
-	db.InitConfigs()
-	db.InsertMockData()
+	err = db.DeleteAll()
+	if err != nil {
+		fatalf("Failed to delete all data: %v\n", err)
+	}
+
+	err = db.InitConfigs()
+	if err != nil {
+		fatalf("Failed to initialize configs: %v\n", err)
+	}
+
+	err = db.InsertMockData()
+	if err != nil {
+		fatalf("Failed to insert mock data: %v\n", err)
+	}
+
 	err = db.UpdateConfig(context.Background(), "allow-register", "true")
 	if err != nil {
 		fatalf("Failed to update config: %v\n", err)

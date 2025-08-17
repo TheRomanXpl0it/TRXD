@@ -1,7 +1,6 @@
 package user_password_test
 
 import (
-	"context"
 	"net/http"
 	"testing"
 	"trxd/api"
@@ -55,7 +54,7 @@ func TestUserPassword(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	admin, err := user_register.RegisterUser(context.Background(), "admin", "admin@test.test", "adminpass", sqlc.UserRoleAdmin)
+	admin, err := user_register.RegisterUser(t.Context(), "admin", "admin@test.test", "adminpass", sqlc.UserRoleAdmin)
 	if err != nil {
 		t.Fatalf("Failed to register admin user: %v", err)
 	}
@@ -63,7 +62,7 @@ func TestUserPassword(t *testing.T) {
 		t.Fatal("User registration returned nil")
 	}
 
-	user, err := user_register.RegisterUser(context.Background(), "test", "test@test.test", "testpass")
+	user, err := user_register.RegisterUser(t.Context(), "test", "test@test.test", "testpass")
 	if err != nil {
 		t.Fatalf("Failed to register test user: %v", err)
 	}

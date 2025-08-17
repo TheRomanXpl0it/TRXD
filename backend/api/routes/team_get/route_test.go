@@ -1,7 +1,6 @@
 package team_get_test
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -15,10 +14,6 @@ import (
 
 type JSON map[string]interface{}
 
-func errorf(val interface{}) JSON {
-	return JSON{"error": val}
-}
-
 func TestMain(m *testing.M) {
 	test_utils.Main(m, "../../../", "team_get")
 }
@@ -27,7 +22,7 @@ func TestTeamGet(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	A, err := db.GetTeamByName(context.Background(), "A")
+	A, err := db.GetTeamByName(t.Context(), "A")
 	if err != nil {
 		t.Fatalf("Failed to get team A: %v", err)
 	}
@@ -36,7 +31,14 @@ func TestTeamGet(t *testing.T) {
 	}
 
 	expectedPlayer := map[string]interface{}{
-		"id": A.ID,
+		"badges": []map[string]interface{}{
+			{
+				"description": "Completed all cat-1 challenges",
+				"name":        "cat-1",
+			},
+		},
+		"country": "",
+		"id":      A.ID,
 		"members": []map[string]interface{}{
 			{
 				"name":  "a",
@@ -49,9 +51,8 @@ func TestTeamGet(t *testing.T) {
 				"score": 0,
 			},
 		},
-		"name":        "A",
-		"nationality": "",
-		"score":       1498,
+		"name":  "A",
+		"score": 1498,
 		"solves": []map[string]interface{}{
 			{
 				"category": "cat-1",
@@ -100,7 +101,14 @@ func TestTeamGet(t *testing.T) {
 	}
 
 	expectedAdmin := map[string]interface{}{
-		"id": A.ID,
+		"badges": []map[string]interface{}{
+			{
+				"description": "Completed all cat-1 challenges",
+				"name":        "cat-1",
+			},
+		},
+		"country": "",
+		"id":      A.ID,
 		"members": []map[string]interface{}{
 			{
 				"name":  "a",
@@ -118,9 +126,8 @@ func TestTeamGet(t *testing.T) {
 				"score": 0,
 			},
 		},
-		"name":        "A",
-		"nationality": "",
-		"score":       1498,
+		"name":  "A",
+		"score": 1498,
 		"solves": []map[string]interface{}{
 			{
 				"category": "cat-1",
@@ -137,7 +144,7 @@ func TestTeamGet(t *testing.T) {
 		},
 	}
 
-	user, err := user_register.RegisterUser(context.Background(), "admin", "admin@admin.com", "adminpass", sqlc.UserRoleAdmin)
+	user, err := user_register.RegisterUser(t.Context(), "admin", "admin@admin.com", "adminpass", sqlc.UserRoleAdmin)
 	if err != nil {
 		t.Fatalf("Failed to register admin user: %v", err)
 	}

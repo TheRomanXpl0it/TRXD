@@ -26,15 +26,3 @@ func GetTagsByChallenge(ctx context.Context, challengeID int32) ([]string, error
 
 	return tags, nil
 }
-
-func IsChallengeSolved(ctx context.Context, id int32, uid int32) (bool, error) {
-	solved, err := Sql.IsChallengeSolved(ctx, sqlc.IsChallengeSolvedParams{
-		ChallID: id,
-		ID:      uid,
-	})
-	if err != nil {
-		return false, err
-	}
-
-	return solved, nil
-}

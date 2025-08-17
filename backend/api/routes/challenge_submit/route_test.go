@@ -1,7 +1,6 @@
 package challenge_submit_test
 
 import (
-	"context"
 	"net/http"
 	"strings"
 	"testing"
@@ -82,7 +81,7 @@ func TestChallengeSubmit(t *testing.T) {
 	session.Post("/submit", JSON{"chall_id": 0, "flag": "flag{test}"}, http.StatusForbidden)
 	session.CheckResponse(errorf(consts.Forbidden))
 
-	user3, err := user_register.RegisterUser(context.Background(), "test3", "test3@test.test", "testpass", sqlc.UserRoleAdmin)
+	user3, err := user_register.RegisterUser(t.Context(), "test3", "test3@test.test", "testpass", sqlc.UserRoleAdmin)
 	if err != nil {
 		t.Fatalf("Failed to register test user: %v", err)
 	}
@@ -94,14 +93,14 @@ func TestChallengeSubmit(t *testing.T) {
 	session.Post("/submit", JSON{"chall_id": 0, "flag": "flag{test}"}, http.StatusNotFound)
 	session.CheckResponse(errorf(consts.ChallengeNotFound))
 
-	user, err := user_register.RegisterUser(context.Background(), "test", "test@test.test", "testpass")
+	user, err := user_register.RegisterUser(t.Context(), "test", "test@test.test", "testpass")
 	if err != nil {
 		t.Fatalf("Failed to register test user: %v", err)
 	}
 	if user == nil {
 		t.Fatal("User registration returned nil")
 	}
-	team, err := team_register.RegisterTeam(context.Background(), "test-team", "teampasswd", user.ID)
+	team, err := team_register.RegisterTeam(t.Context(), "test-team", "teampasswd", user.ID)
 	if err != nil {
 		t.Fatalf("Failed to register test team: %v", err)
 	}
@@ -109,21 +108,21 @@ func TestChallengeSubmit(t *testing.T) {
 		t.Fatal("Team registration returned nil")
 	}
 
-	cat, err := category_create.CreateCategory(context.Background(), "cat", "icon")
+	cat, err := category_create.CreateCategory(t.Context(), "cat", "icon")
 	if err != nil {
 		t.Fatalf("Failed to create category: %v", err)
 	}
 	if cat == nil {
 		t.Fatal("Category creation returned nil")
 	}
-	chall, err := challenge_create.CreateChallenge(context.Background(), "chall", cat.Name, "test-desc", sqlc.DeployTypeNormal, 1, sqlc.ScoreTypeDynamic)
+	chall, err := challenge_create.CreateChallenge(t.Context(), "chall", cat.Name, "test-desc", sqlc.DeployTypeNormal, 1, sqlc.ScoreTypeDynamic)
 	if err != nil {
 		t.Fatalf("Failed to create challenge: %v", err)
 	}
 	if chall == nil {
 		t.Fatal("Challenge creation returned nil")
 	}
-	flag, err := challenge_flag_create.CreateFlag(context.Background(), chall.ID, "flag{test}", false)
+	flag, err := challenge_flag_create.CreateFlag(t.Context(), chall.ID, "flag{test}", false)
 	if err != nil {
 		t.Fatalf("Failed to create flag: %v", err)
 	}

@@ -1,7 +1,6 @@
 package category_create_test
 
 import (
-	"context"
 	"net/http"
 	"strings"
 	"testing"
@@ -73,7 +72,7 @@ func TestCategoryCreate(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	_, err := user_register.RegisterUser(context.Background(), "author", "author@test.test", "authorpass", sqlc.UserRoleAuthor)
+	_, err := user_register.RegisterUser(t.Context(), "author", "author@test.test", "authorpass", sqlc.UserRoleAuthor)
 	if err != nil {
 		t.Fatalf("Failed to register author user: %v", err)
 	}

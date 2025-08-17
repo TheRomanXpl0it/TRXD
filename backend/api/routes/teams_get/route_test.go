@@ -1,7 +1,6 @@
 package teams_get_test
 
 import (
-	"context"
 	"net/http"
 	"testing"
 	"trxd/api"
@@ -13,10 +12,6 @@ import (
 
 type JSON map[string]interface{}
 
-func errorf(val interface{}) JSON {
-	return JSON{"error": val}
-}
-
 func TestMain(m *testing.M) {
 	test_utils.Main(m, "../../../", "teams_get")
 }
@@ -25,21 +20,21 @@ func TestTeamsGet(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	A, err := db.GetTeamByName(context.Background(), "A")
+	A, err := db.GetTeamByName(t.Context(), "A")
 	if err != nil {
 		t.Fatalf("Failed to get team A: %v", err)
 	}
 	if A == nil {
 		t.Fatal("Team A not found")
 	}
-	B, err := db.GetTeamByName(context.Background(), "B")
+	B, err := db.GetTeamByName(t.Context(), "B")
 	if err != nil {
 		t.Fatalf("Failed to get team B: %v", err)
 	}
 	if B == nil {
 		t.Fatal("Team B not found")
 	}
-	C, err := db.GetTeamByName(context.Background(), "C")
+	C, err := db.GetTeamByName(t.Context(), "C")
 	if err != nil {
 		t.Fatalf("Failed to get team C: %v", err)
 	}
@@ -49,22 +44,34 @@ func TestTeamsGet(t *testing.T) {
 
 	expected := []map[string]interface{}{
 		{
-			"id":          A.ID,
-			"name":        "A",
-			"nationality": "",
-			"score":       1498,
+			"badges": []map[string]interface{}{
+				{
+					"description": "Completed all cat-1 challenges",
+					"name":        "cat-1",
+				},
+			},
+			"country": "",
+			"id":      A.ID,
+			"name":    "A",
+			"score":   1498,
 		},
 		{
-			"id":          B.ID,
-			"name":        "B",
-			"nationality": "",
-			"score":       998,
+			"badges": []map[string]interface{}{
+				{
+					"description": "Completed all cat-2 challenges",
+					"name":        "cat-2",
+				},
+			},
+			"country": "",
+			"id":      B.ID,
+			"name":    "B",
+			"score":   998,
 		},
 		{
-			"id":          C.ID,
-			"name":        "C",
-			"nationality": "",
-			"score":       0,
+			"country": "",
+			"id":      C.ID,
+			"name":    "C",
+			"score":   0,
 		},
 	}
 
@@ -77,7 +84,7 @@ func TestTeamsGet(t *testing.T) {
 	session.Get("/teams", nil, http.StatusOK)
 	session.CheckResponse(expected)
 
-	user, err := user_register.RegisterUser(context.Background(), "admin", "admin@admin.com", "adminpass", sqlc.UserRoleAdmin)
+	user, err := user_register.RegisterUser(t.Context(), "admin", "admin@admin.com", "adminpass", sqlc.UserRoleAdmin)
 	if err != nil {
 		t.Fatalf("Failed to register admin user: %v", err)
 	}

@@ -11,3 +11,9 @@ SELECT t.* FROM teams t
 -- name: GetTeamByName :one
 -- Retrieve a team by its name
 SELECT * FROM teams WHERE name = $1;
+
+-- name: GetBadgesFromTeam :many
+-- Retrieve all badges associated with a team
+SELECT badges.name, badges.description FROM badges
+  JOIN teams ON teams.id = badges.team_id
+  WHERE teams.id = $1;

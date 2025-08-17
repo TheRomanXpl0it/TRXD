@@ -1,7 +1,6 @@
 package challenge_flag_create_test
 
 import (
-	"context"
 	"net/http"
 	"strings"
 	"testing"
@@ -73,7 +72,7 @@ func TestFlagCreate(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	user, err := user_register.RegisterUser(context.Background(), "test", "test@test.test", "testpass", sqlc.UserRoleAuthor)
+	user, err := user_register.RegisterUser(t.Context(), "test", "test@test.test", "testpass", sqlc.UserRoleAuthor)
 	if err != nil {
 		t.Fatalf("Failed to register author user: %v", err)
 	}
@@ -81,14 +80,14 @@ func TestFlagCreate(t *testing.T) {
 		t.Fatal("User registration returned nil")
 	}
 
-	cat, err := category_create.CreateCategory(context.Background(), "cat", "icon")
+	cat, err := category_create.CreateCategory(t.Context(), "cat", "icon")
 	if err != nil {
 		t.Fatalf("Failed to create category: %v", err)
 	}
 	if cat == nil {
 		t.Fatal("Category creation returned nil")
 	}
-	chall, err := challenge_create.CreateChallenge(context.Background(), "chall", cat.Name, "test-desc", sqlc.DeployTypeNormal, 1, sqlc.ScoreTypeStatic)
+	chall, err := challenge_create.CreateChallenge(t.Context(), "chall", cat.Name, "test-desc", sqlc.DeployTypeNormal, 1, sqlc.ScoreTypeStatic)
 	if err != nil {
 		t.Fatalf("Failed to create challenge: %v", err)
 	}

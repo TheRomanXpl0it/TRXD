@@ -1,7 +1,6 @@
 package challenges_get_test
 
 import (
-	"context"
 	"net/http"
 	"testing"
 	"trxd/api"
@@ -159,7 +158,7 @@ func TestGetChallenges(t *testing.T) {
 		},
 	}
 
-	user, err := user_register.RegisterUser(context.Background(), "test2", "test3@test.test", "testpass", sqlc.UserRoleAuthor)
+	user, err := user_register.RegisterUser(t.Context(), "test2", "test3@test.test", "testpass", sqlc.UserRoleAuthor)
 	if err != nil {
 		t.Fatalf("Failed to register author user: %v", err)
 	}

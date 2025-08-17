@@ -3,16 +3,16 @@ package consts
 import "regexp"
 
 const (
-	MinPasswordLength    = 8
-	MaxPasswordLength    = 64
-	MaxNameLength        = 64
-	MaxEmailLength       = 256
-	MaxFlagLength        = 128
-	MaxCategoryLength    = 32
-	MaxIconLength        = 32
-	MaxChallNameLength   = 128
-	MaxChallDescLength   = 1024
-	MaxNationalityLength = 3
+	MinPasswordLength  = 8
+	MaxPasswordLength  = 64
+	MaxNameLength      = 64
+	MaxEmailLength     = 256
+	MaxFlagLength      = 128
+	MaxCategoryLength  = 32
+	MaxIconLength      = 32
+	MaxChallNameLength = 128
+	MaxChallDescLength = 1024
+	MaxCountryLength   = 3
 )
 
 const (
@@ -59,7 +59,7 @@ const (
 	ErrorUpdatingConfig        = "Error updating configuration"
 	ConfigNotFound             = "Configuration not found"
 	ErrorUpdatingUser          = "Error updating user"
-	LongNationality            = "Nationality must not exceed 3 characters"
+	LongCountry                = "Country must not exceed 3 characters"
 	ErrorDeletingCategory      = "Error deleting category"
 	ErrorDeletingChallenge     = "Error deleting challenge"
 	InvalidChallengeID         = "Invalid challenge ID, must be greater than 0"

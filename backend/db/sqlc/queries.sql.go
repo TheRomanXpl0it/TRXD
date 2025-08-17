@@ -179,24 +179,55 @@ func (q *Queries) GetChallengeSolves(ctx context.Context, challID int32) ([]GetC
 	return items, nil
 }
 
-const getChallenges = `-- name: GetChallenges :many
-SELECT id FROM challenges
+const getChallengesPreview = `-- name: GetChallengesPreview :many
+SELECT id, name, category, difficulty, type, hidden, points, solves, EXISTS(
+  SELECT 1
+    FROM submissions
+    JOIN users ON users.id = submissions.user_id
+    JOIN teams ON users.team_id = teams.id
+      AND teams.id = (SELECT team_id FROM users WHERE users.id = $1)
+    WHERE users.role = 'Player'
+      AND submissions.status = 'Correct'
+      AND submissions.chall_id = challenges.id) AS solved
+  FROM challenges
 `
 
+type GetChallengesPreviewRow struct {
+	ID         int32          `json:"id"`
+	Name       string         `json:"name"`
+	Category   string         `json:"category"`
+	Difficulty sql.NullString `json:"difficulty"`
+	Type       DeployType     `json:"type"`
+	Hidden     bool           `json:"hidden"`
+	Points     int32          `json:"points"`
+	Solves     int32          `json:"solves"`
+	Solved     bool           `json:"solved"`
+}
+
 // Retrieve all challenges
-func (q *Queries) GetChallenges(ctx context.Context) ([]int32, error) {
-	rows, err := q.query(ctx, q.getChallengesStmt, getChallenges)
+func (q *Queries) GetChallengesPreview(ctx context.Context, id int32) ([]GetChallengesPreviewRow, error) {
+	rows, err := q.query(ctx, q.getChallengesPreviewStmt, getChallengesPreview, id)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []int32
+	var items []GetChallengesPreviewRow
 	for rows.Next() {
-		var id int32
-		if err := rows.Scan(&id); err != nil {
+		var i GetChallengesPreviewRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Category,
+			&i.Difficulty,
+			&i.Type,
+			&i.Hidden,
+			&i.Points,
+			&i.Solves,
+			&i.Solved,
+		); err != nil {
 			return nil, err
 		}
-		items = append(items, id)
+		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -328,24 +359,40 @@ func (q *Queries) GetTeamSolves(ctx context.Context, id int32) ([]GetTeamSolvesR
 	return items, nil
 }
 
-const getTeams = `-- name: GetTeams :many
-SELECT id FROM teams ORDER BY id
+const getTeamsPreview = `-- name: GetTeamsPreview :many
+SELECT id, name, score, country, image
+  FROM teams
+  ORDER BY id
 `
 
+type GetTeamsPreviewRow struct {
+	ID      int32          `json:"id"`
+	Name    string         `json:"name"`
+	Score   int32          `json:"score"`
+	Country sql.NullString `json:"country"`
+	Image   sql.NullString `json:"image"`
+}
+
 // Retrieve all teams
-func (q *Queries) GetTeams(ctx context.Context) ([]int32, error) {
-	rows, err := q.query(ctx, q.getTeamsStmt, getTeams)
+func (q *Queries) GetTeamsPreview(ctx context.Context) ([]GetTeamsPreviewRow, error) {
+	rows, err := q.query(ctx, q.getTeamsPreviewStmt, getTeamsPreview)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []int32
+	var items []GetTeamsPreviewRow
 	for rows.Next() {
-		var id int32
-		if err := rows.Scan(&id); err != nil {
+		var i GetTeamsPreviewRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Score,
+			&i.Country,
+			&i.Image,
+		); err != nil {
 			return nil, err
 		}
-		items = append(items, id)
+		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -357,7 +404,7 @@ func (q *Queries) GetTeams(ctx context.Context) ([]int32, error) {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, name, email, password_hash, created_at, score, role, team_id, nationality, image FROM users WHERE email = $1
+SELECT id, name, email, password_hash, created_at, score, role, team_id, country, image FROM users WHERE email = $1
 `
 
 // Retrieve a user by their email address
@@ -373,7 +420,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Score,
 		&i.Role,
 		&i.TeamID,
-		&i.Nationality,
+		&i.Country,
 		&i.Image,
 	)
 	return i, err
@@ -414,24 +461,44 @@ func (q *Queries) GetUserSolves(ctx context.Context, userID int32) ([]GetUserSol
 	return items, nil
 }
 
-const getUsers = `-- name: GetUsers :many
-SELECT id FROM users ORDER BY id ASC
+const getUsersPreview = `-- name: GetUsersPreview :many
+SELECT id, name, email, role, score, country, image
+  FROM users
+  ORDER BY id ASC
 `
 
+type GetUsersPreviewRow struct {
+	ID      int32          `json:"id"`
+	Name    string         `json:"name"`
+	Email   string         `json:"email"`
+	Role    UserRole       `json:"role"`
+	Score   int32          `json:"score"`
+	Country sql.NullString `json:"country"`
+	Image   sql.NullString `json:"image"`
+}
+
 // Retrieve all users
-func (q *Queries) GetUsers(ctx context.Context) ([]int32, error) {
-	rows, err := q.query(ctx, q.getUsersStmt, getUsers)
+func (q *Queries) GetUsersPreview(ctx context.Context) ([]GetUsersPreviewRow, error) {
+	rows, err := q.query(ctx, q.getUsersPreviewStmt, getUsersPreview)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []int32
+	var items []GetUsersPreviewRow
 	for rows.Next() {
-		var id int32
-		if err := rows.Scan(&id); err != nil {
+		var i GetUsersPreviewRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Email,
+			&i.Role,
+			&i.Score,
+			&i.Country,
+			&i.Image,
+		); err != nil {
 			return nil, err
 		}
-		items = append(items, id)
+		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -440,6 +507,32 @@ func (q *Queries) GetUsers(ctx context.Context) ([]int32, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const isChallengeSolved = `-- name: IsChallengeSolved :one
+SELECT EXISTS(
+  SELECT 1
+    FROM submissions
+    JOIN users ON users.id = submissions.user_id
+    JOIN teams ON users.team_id = teams.id
+      AND teams.id = (SELECT team_id FROM users WHERE users.id = $2)
+    WHERE users.role = 'Player'
+      AND submissions.status = 'Correct'
+      AND submissions.chall_id = $1
+)
+`
+
+type IsChallengeSolvedParams struct {
+	ChallID int32 `json:"chall_id"`
+	ID      int32 `json:"id"`
+}
+
+// Check if a challenge is solved by a user's team
+func (q *Queries) IsChallengeSolved(ctx context.Context, arg IsChallengeSolvedParams) (bool, error) {
+	row := q.queryRow(ctx, q.isChallengeSolvedStmt, isChallengeSolved, arg.ChallID, arg.ID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
 
 const registerTeam = `-- name: RegisterTeam :exec
@@ -452,7 +545,7 @@ WITH locked_user AS (
     INSERT INTO teams (name, password_hash)
     SELECT $2, $3
     FROM locked_user
-    RETURNING id, name, password_hash, score, nationality, image, bio
+    RETURNING id, name, password_hash, score, country, image, bio
   )
 UPDATE users
   SET team_id = new_team.id
@@ -473,7 +566,7 @@ func (q *Queries) RegisterTeam(ctx context.Context, arg RegisterTeamParams) erro
 }
 
 const registerUser = `-- name: RegisterUser :one
-INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, password_hash, created_at, score, role, team_id, nationality, image
+INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, password_hash, created_at, score, role, team_id, country, image
 `
 
 type RegisterUserParams struct {
@@ -501,7 +594,7 @@ func (q *Queries) RegisterUser(ctx context.Context, arg RegisterUserParams) (Use
 		&i.Score,
 		&i.Role,
 		&i.TeamID,
-		&i.Nationality,
+		&i.Country,
 		&i.Image,
 	)
 	return i, err
@@ -564,24 +657,24 @@ func (q *Queries) Submit(ctx context.Context, arg SubmitParams) (SubmissionStatu
 const updateTeam = `-- name: UpdateTeam :exec
 UPDATE teams
 SET
-  nationality = COALESCE($2, nationality),
+  country = COALESCE($2, country),
   image = COALESCE($3, image),
   bio = COALESCE($4, bio)
 WHERE id = $1
 `
 
 type UpdateTeamParams struct {
-	ID          int32          `json:"id"`
-	Nationality sql.NullString `json:"nationality"`
-	Image       sql.NullString `json:"image"`
-	Bio         sql.NullString `json:"bio"`
+	ID      int32          `json:"id"`
+	Country sql.NullString `json:"country"`
+	Image   sql.NullString `json:"image"`
+	Bio     sql.NullString `json:"bio"`
 }
 
 // Update team details
 func (q *Queries) UpdateTeam(ctx context.Context, arg UpdateTeamParams) error {
 	_, err := q.exec(ctx, q.updateTeamStmt, updateTeam,
 		arg.ID,
-		arg.Nationality,
+		arg.Country,
 		arg.Image,
 		arg.Bio,
 	)
@@ -592,16 +685,16 @@ const updateUser = `-- name: UpdateUser :exec
 UPDATE users
 SET
   name = COALESCE($2, name),
-  nationality = COALESCE($3, nationality),
+  country = COALESCE($3, country),
   image = COALESCE($4, image)
 WHERE id = $1
 `
 
 type UpdateUserParams struct {
-	ID          int32          `json:"id"`
-	Name        sql.NullString `json:"name"`
-	Nationality sql.NullString `json:"nationality"`
-	Image       sql.NullString `json:"image"`
+	ID      int32          `json:"id"`
+	Name    sql.NullString `json:"name"`
+	Country sql.NullString `json:"country"`
+	Image   sql.NullString `json:"image"`
 }
 
 // Update user details
@@ -609,7 +702,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
 	_, err := q.exec(ctx, q.updateUserStmt, updateUser,
 		arg.ID,
 		arg.Name,
-		arg.Nationality,
+		arg.Country,
 		arg.Image,
 	)
 	return err

@@ -1,7 +1,6 @@
 package challenge_delete_test
 
 import (
-	"context"
 	"net/http"
 	"testing"
 	"trxd/api"
@@ -57,18 +56,18 @@ func TestChallengeDelete(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	_, err := user_register.RegisterUser(context.Background(), "author", "author@test.test", "authorpass", sqlc.UserRoleAuthor)
+	_, err := user_register.RegisterUser(t.Context(), "author", "author@test.test", "authorpass", sqlc.UserRoleAuthor)
 	if err != nil {
 		t.Fatalf("Failed to register author user: %v", err)
 	}
 
 	var challID int32
 	for _, test := range testChallengeDelete {
-		_, err := category_create.CreateCategory(context.Background(), "cat", "icon")
+		_, err := category_create.CreateCategory(t.Context(), "cat", "icon")
 		if err != nil {
 			t.Fatalf("Failed to create category: %v", err)
 		}
-		chall, err := challenge_create.CreateChallenge(context.Background(), "chall", "cat", "test-desc", sqlc.DeployTypeNormal, 1, sqlc.ScoreTypeStatic)
+		chall, err := challenge_create.CreateChallenge(t.Context(), "chall", "cat", "test-desc", sqlc.DeployTypeNormal, 1, sqlc.ScoreTypeStatic)
 		if err != nil {
 			t.Fatalf("Failed to create challenge: %v", err)
 		}

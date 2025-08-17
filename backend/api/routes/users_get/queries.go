@@ -8,62 +8,43 @@ import (
 )
 
 type UserData struct {
-	ID          int32  `json:"id"`
-	Name        string `json:"name"`
-	Email       string `json:"email"`
-	Role        string `json:"role"`
-	Score       int32  `json:"score"`
-	Nationality string `json:"nationality"`
-	Image       string `json:"image"`
-}
-
-func GetUser(ctx context.Context, id int32, admin bool) (*UserData, error) {
-	data := UserData{}
-
-	user, err := db.GetUserByID(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	if user == nil {
-		return nil, nil
-	}
-
-	if !admin && utils.In(user.Role, []sqlc.UserRole{sqlc.UserRoleAuthor, sqlc.UserRoleAdmin}) {
-		return nil, nil
-	}
-
-	data.ID = user.ID
-	data.Name = user.Name
-	if admin {
-		data.Email = user.Email
-		data.Role = string(user.Role)
-	}
-	data.Score = user.Score
-	if user.Nationality.Valid {
-		data.Nationality = user.Nationality.String
-	}
-	if user.Image.Valid {
-		data.Image = user.Image.String
-	}
-
-	return &data, nil
+	ID      int32  `json:"id"`
+	Name    string `json:"name"`
+	Email   string `json:"email"`
+	Role    string `json:"role"`
+	Score   int32  `json:"score"`
+	Country string `json:"country"`
+	Image   string `json:"image"`
 }
 
 func GetUsers(ctx context.Context, admin bool) ([]*UserData, error) {
-	userIDs, err := db.Sql.GetUsers(ctx)
+	userPreviews, err := db.Sql.GetUsersPreview(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	usersData := make([]*UserData, 0)
-	for _, userID := range userIDs {
-		userData, err := GetUser(ctx, userID, admin)
-		if err != nil {
-			return nil, err
-		}
-		if userData == nil {
+	for _, user := range userPreviews {
+		if !admin && utils.In(user.Role, []sqlc.UserRole{sqlc.UserRoleAuthor, sqlc.UserRoleAdmin}) {
 			continue
 		}
+
+		userData := &UserData{
+			ID:    user.ID,
+			Name:  user.Name,
+			Score: user.Score,
+		}
+		if admin {
+			userData.Email = user.Email
+			userData.Role = string(user.Role)
+		}
+		if user.Country.Valid {
+			userData.Country = user.Country.String
+		}
+		if user.Image.Valid {
+			userData.Image = user.Image.String
+		}
+
 		usersData = append(usersData, userData)
 	}
 

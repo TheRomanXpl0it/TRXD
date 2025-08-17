@@ -1,7 +1,6 @@
 package team_password_test
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -58,12 +57,12 @@ func TestResetTeamPassword(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	err := db.UpdateConfig(context.Background(), "allow-register", "true")
+	err := db.UpdateConfig(t.Context(), "allow-register", "true")
 	if err != nil {
 		t.Fatalf("Failed to update config: %v", err)
 	}
 
-	admin, err := user_register.RegisterUser(context.Background(), "admin", "admin@test.test", "adminpass", sqlc.UserRoleAdmin)
+	admin, err := user_register.RegisterUser(t.Context(), "admin", "admin@test.test", "adminpass", sqlc.UserRoleAdmin)
 	if err != nil {
 		t.Fatalf("Failed to register admin user: %v", err)
 	}
@@ -71,14 +70,14 @@ func TestResetTeamPassword(t *testing.T) {
 		t.Fatal("User registration returned nil")
 	}
 
-	user, err := user_register.RegisterUser(context.Background(), "test", "test@test.test", "testpass")
+	user, err := user_register.RegisterUser(t.Context(), "test", "test@test.test", "testpass")
 	if err != nil {
 		t.Fatalf("Failed to register test user: %v", err)
 	}
 	if user == nil {
 		t.Fatal("User registration returned nil")
 	}
-	team, err := team_register.RegisterTeam(context.Background(), "test", "testpass", user.ID)
+	team, err := team_register.RegisterTeam(t.Context(), "test", "testpass", user.ID)
 	if err != nil {
 		t.Fatalf("Failed to register test team: %v", err)
 	}

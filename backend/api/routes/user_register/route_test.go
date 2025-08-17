@@ -1,7 +1,6 @@
 package user_register_test
 
 import (
-	"context"
 	"net/http"
 	"strings"
 	"testing"
@@ -105,7 +104,7 @@ func TestUserRegister(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	err := db.UpdateConfig(context.Background(), "allow-register", "false")
+	err := db.UpdateConfig(t.Context(), "allow-register", "false")
 	if err != nil {
 		t.Fatalf("Failed to update config: %v", err)
 	}
@@ -113,7 +112,7 @@ func TestUserRegister(t *testing.T) {
 	session.Post("/register", JSON{"username": "test", "email": "allow@test.test", "password": "testpass"}, http.StatusForbidden)
 	session.CheckResponse(errorf(consts.DisabledRegistration))
 
-	err = db.UpdateConfig(context.Background(), "allow-register", "true")
+	err = db.UpdateConfig(t.Context(), "allow-register", "true")
 	if err != nil {
 		t.Fatalf("Failed to update config: %v", err)
 	}

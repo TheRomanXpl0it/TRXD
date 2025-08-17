@@ -35,20 +35,20 @@ var testUpdateTeam = []struct {
 		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
 	{
-		testBody:         JSON{"nationality": strings.Repeat("a", consts.MaxNationalityLength+1)},
+		testBody:         JSON{"country": strings.Repeat("a", consts.MaxCountryLength+1)},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.LongNationality),
+		expectedResponse: errorf(consts.LongCountry),
 	},
 	{
-		testBody:       JSON{"nationality": "a", "image": "a", "bio": "a"},
+		testBody:       JSON{"country": "a", "image": "a", "bio": "a"},
 		expectedStatus: http.StatusOK,
 	},
 	{
-		testBody:       JSON{"nationality": "b", "image": "b"},
+		testBody:       JSON{"country": "b", "image": "b"},
 		expectedStatus: http.StatusOK,
 	},
 	{
-		testBody:       JSON{"nationality": "c"},
+		testBody:       JSON{"country": "c"},
 		expectedStatus: http.StatusOK,
 	},
 }

@@ -9,15 +9,15 @@ import (
 )
 
 type TeamData struct {
-	ID          int32                    `json:"id"`
-	Name        string                   `json:"name"`
-	Score       int32                    `json:"score"`
-	Nationality string                   `json:"nationality"`
-	Image       string                   `json:"image,omitempty"`
-	Bio         string                   `json:"bio,omitempty"`
-	Members     []sqlc.GetTeamMembersRow `json:"members,omitempty"`
-	Solves      []sqlc.GetTeamSolvesRow  `json:"solves,omitempty"`
-	// TODO: add badges
+	ID      int32                       `json:"id"`
+	Name    string                      `json:"name"`
+	Score   int32                       `json:"score"`
+	Country string                      `json:"country"`
+	Image   string                      `json:"image,omitempty"`
+	Bio     string                      `json:"bio,omitempty"`
+	Members []sqlc.GetTeamMembersRow    `json:"members,omitempty"`
+	Solves  []sqlc.GetTeamSolvesRow     `json:"solves,omitempty"`
+	Badges  []sqlc.GetBadgesFromTeamRow `json:"badges,omitempty"`
 }
 
 func GetTeam(ctx context.Context, teamID int32, admin bool) (*TeamData, error) {
@@ -34,8 +34,8 @@ func GetTeam(ctx context.Context, teamID int32, admin bool) (*TeamData, error) {
 	teamData.ID = team.ID
 	teamData.Name = team.Name
 	teamData.Score = team.Score
-	if team.Nationality.Valid {
-		teamData.Nationality = team.Nationality.String
+	if team.Country.Valid {
+		teamData.Country = team.Country.String
 	}
 	if team.Image.Valid {
 		teamData.Image = team.Image.String
@@ -62,6 +62,12 @@ func GetTeam(ctx context.Context, teamID int32, admin bool) (*TeamData, error) {
 		return nil, err
 	}
 	teamData.Solves = solves
+
+	badges, err := db.GetBadgesFromTeam(ctx, teamID)
+	if err != nil {
+		return nil, err
+	}
+	teamData.Badges = badges
 
 	return &teamData, nil
 }

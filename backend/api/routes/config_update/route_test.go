@@ -1,7 +1,6 @@
 package config_update_test
 
 import (
-	"context"
 	"net/http"
 	"testing"
 	"trxd/api"
@@ -64,7 +63,7 @@ func TestConfigUpdate(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	user, err := user_register.RegisterUser(context.Background(), "test", "test@test.test", "testpass", sqlc.UserRoleAdmin)
+	user, err := user_register.RegisterUser(t.Context(), "test", "test@test.test", "testpass", sqlc.UserRoleAdmin)
 	if err != nil {
 		t.Fatalf("Failed to register test user: %v", err)
 	}

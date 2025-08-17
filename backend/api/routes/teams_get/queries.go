@@ -2,59 +2,47 @@ package teams_get
 
 import (
 	"context"
-	"database/sql"
 	"trxd/db"
+	"trxd/db/sqlc"
 )
 
 type TeamData struct {
-	ID          int32  `json:"id"`
-	Name        string `json:"name"`
-	Score       int32  `json:"score"`
-	Nationality string `json:"nationality"`
-	Image       string `json:"image,omitempty"`
-}
-
-func GetTeam(ctx context.Context, teamID int32, admin bool) (*TeamData, error) {
-	teamData := TeamData{}
-
-	team, err := db.GetTeamByID(ctx, teamID)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
-		}
-		return nil, err
-	}
-
-	teamData.ID = team.ID
-	teamData.Name = team.Name
-	teamData.Score = team.Score
-	if team.Nationality.Valid {
-		teamData.Nationality = team.Nationality.String
-	}
-	if team.Image.Valid {
-		teamData.Image = team.Image.String
-	}
-
-	return &teamData, nil
+	ID      int32                       `json:"id"`
+	Name    string                      `json:"name"`
+	Score   int32                       `json:"score"`
+	Country string                      `json:"country"`
+	Image   string                      `json:"image,omitempty"`
+	Badges  []sqlc.GetBadgesFromTeamRow `json:"badges,omitempty"`
 }
 
 func GetTeams(ctx context.Context, admin bool) ([]*TeamData, error) {
-	teamIDs, err := db.Sql.GetTeams(ctx)
+	teamPreviews, err := db.Sql.GetTeamsPreview(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var teams []*TeamData
-	for _, teamID := range teamIDs {
-		team, err := GetTeam(ctx, teamID, admin)
+	var teamsData []*TeamData
+	for _, team := range teamPreviews {
+		teamData := &TeamData{
+			ID:    team.ID,
+			Name:  team.Name,
+			Score: team.Score,
+		}
+		if team.Country.Valid {
+			teamData.Country = team.Country.String
+		}
+		if team.Image.Valid {
+			teamData.Image = team.Image.String
+		}
+
+		badges, err := db.GetBadgesFromTeam(ctx, team.ID)
 		if err != nil {
 			return nil, err
 		}
-		if team == nil {
-			continue
-		}
-		teams = append(teams, team)
+		teamData.Badges = badges
+
+		teamsData = append(teamsData, teamData)
 	}
 
-	return teams, nil
+	return teamsData, nil
 }

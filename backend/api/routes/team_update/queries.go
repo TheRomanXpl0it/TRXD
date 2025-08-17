@@ -7,12 +7,12 @@ import (
 	"trxd/db/sqlc"
 )
 
-func UpdateTeam(ctx context.Context, teamID int32, nationality, image, bio string) error {
+func UpdateTeam(ctx context.Context, teamID int32, country, image, bio string) error {
 	err := db.Sql.UpdateTeam(ctx, sqlc.UpdateTeamParams{
-		ID:          teamID,
-		Nationality: sql.NullString{String: nationality, Valid: nationality != ""},
-		Image:       sql.NullString{String: image, Valid: image != ""},
-		Bio:         sql.NullString{String: bio, Valid: bio != ""},
+		ID:      teamID,
+		Country: sql.NullString{String: country, Valid: country != ""},
+		Image:   sql.NullString{String: image, Valid: image != ""},
+		Bio:     sql.NullString{String: bio, Valid: bio != ""},
 	})
 	if err != nil {
 		return err

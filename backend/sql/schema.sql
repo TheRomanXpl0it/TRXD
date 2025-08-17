@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS teams (
   name VARCHAR(64) UNIQUE NOT NULL,
   password_hash CHAR(60) NOT NULL,
   score INTEGER NOT NULL DEFAULT 0,
-  nationality VARCHAR(3),
+  country VARCHAR(3),
   image TEXT,
   bio TEXT,
   PRIMARY KEY(id)
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS users (
   role user_role NOT NULL,
 
   team_id INTEGER,
-  nationality VARCHAR(3),
+  country VARCHAR(3),
   image TEXT,
 
   FOREIGN KEY(team_id) REFERENCES teams(id),

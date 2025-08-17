@@ -1,7 +1,6 @@
 package challenge_create_test
 
 import (
-	"context"
 	"net/http"
 	"strings"
 	"testing"
@@ -119,11 +118,11 @@ func TestChallengeCreate(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	_, err := user_register.RegisterUser(context.Background(), "author", "author@test.test", "authorpass", sqlc.UserRoleAuthor)
+	_, err := user_register.RegisterUser(t.Context(), "author", "author@test.test", "authorpass", sqlc.UserRoleAuthor)
 	if err != nil {
 		t.Fatalf("Failed to register author user: %v", err)
 	}
-	_, err = category_create.CreateCategory(context.Background(), "cat", "icon")
+	_, err = category_create.CreateCategory(t.Context(), "cat", "icon")
 	if err != nil {
 		t.Fatalf("Failed to create category: %v", err)
 	}

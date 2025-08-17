@@ -64,29 +64,3 @@ func (q *Queries) GetTagsByChallenge(ctx context.Context, challID int32) ([]stri
 	}
 	return items, nil
 }
-
-const isChallengeSolved = `-- name: IsChallengeSolved :one
-SELECT EXISTS(
-  SELECT 1
-    FROM submissions
-    JOIN users ON users.id = submissions.user_id
-    JOIN teams ON users.team_id = teams.id
-      AND teams.id = (SELECT team_id FROM users WHERE users.id = $2)
-    WHERE users.role = 'Player'
-      AND submissions.status = 'Correct'
-      AND submissions.chall_id = $1
-)
-`
-
-type IsChallengeSolvedParams struct {
-	ChallID int32 `json:"chall_id"`
-	ID      int32 `json:"id"`
-}
-
-// Check if a challenge is solved by a user's team
-func (q *Queries) IsChallengeSolved(ctx context.Context, arg IsChallengeSolvedParams) (bool, error) {
-	row := q.queryRow(ctx, q.isChallengeSolvedStmt, isChallengeSolved, arg.ChallID, arg.ID)
-	var exists bool
-	err := row.Scan(&exists)
-	return exists, err
-}

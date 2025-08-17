@@ -1,7 +1,4 @@
 - rename routes
-- rename queries
-- nationality -> country
-- change all test contexes from todos to t.context
 
 - verify races on submit
 

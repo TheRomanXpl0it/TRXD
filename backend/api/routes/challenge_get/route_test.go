@@ -1,7 +1,6 @@
 package challenge_get_test
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -13,10 +12,6 @@ import (
 )
 
 type JSON map[string]interface{}
-
-func errorf(val interface{}) JSON {
-	return JSON{"error": val}
-}
 
 func TestMain(m *testing.M) {
 	test_utils.Main(m, "../../../", "challenge_get")
@@ -119,7 +114,7 @@ func TestChallengeGet(t *testing.T) {
 		"timeout": 0,
 	}
 
-	user, err := user_register.RegisterUser(context.Background(), "test2", "test3@test.test", "testpass", sqlc.UserRoleAuthor)
+	user, err := user_register.RegisterUser(t.Context(), "test2", "test3@test.test", "testpass", sqlc.UserRoleAuthor)
 	if err != nil {
 		t.Fatalf("Failed to register author user: %v", err)
 	}

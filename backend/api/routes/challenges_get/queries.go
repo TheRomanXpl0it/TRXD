@@ -19,68 +19,43 @@ type Chall struct {
 	Solved     bool     `json:"solved"`
 }
 
-func GetChallengePreview(ctx context.Context, id int32, uid int32, author bool) (*Chall, error) {
-	var chall Chall
-
-	challenge, err := db.GetChallengeByID(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	if challenge == nil {
-		return nil, nil
-	}
-	if !author && challenge.Hidden {
-		return nil, nil
-	}
-
-	tags, err := db.GetTagsByChallenge(ctx, challenge.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	solved, err := db.IsChallengeSolved(ctx, id, uid)
-	if err != nil {
-		return nil, err
-	}
-
-	chall.ID = challenge.ID
-	chall.Name = challenge.Name
-	chall.Category = challenge.Category
-	if challenge.Difficulty.Valid {
-		chall.Difficulty = challenge.Difficulty.String
-	}
-	chall.Instance = challenge.Type != sqlc.DeployTypeNormal
-	chall.Hidden = challenge.Hidden
-	chall.Points = challenge.Points
-	chall.Solves = challenge.Solves
-	chall.Tags = []string{}
-	if tags != nil {
-		chall.Tags = tags
-	}
-	chall.Solved = solved
-
-	return &chall, nil
-}
-
 func GetChallenges(ctx context.Context, uid int32, author bool) ([]*Chall, error) {
-	var challIDs []int32
-	var err error
-	challIDs, err = db.Sql.GetChallenges(ctx)
+	challPreviews, err := db.Sql.GetChallengesPreview(ctx, uid)
 	if err != nil {
 		return nil, err
 	}
 
-	challs := make([]*Chall, 0)
-	for _, id := range challIDs {
-		chall, err := GetChallengePreview(ctx, id, uid, author)
+	challsData := make([]*Chall, 0)
+	for _, challenge := range challPreviews {
+		if !author && challenge.Hidden {
+			continue
+		}
+
+		tags, err := db.GetTagsByChallenge(ctx, challenge.ID)
 		if err != nil {
 			return nil, err
 		}
-		if chall == nil {
-			continue
+
+		chall := &Chall{
+			ID:       challenge.ID,
+			Name:     challenge.Name,
+			Category: challenge.Category,
+			Instance: challenge.Type != sqlc.DeployTypeNormal,
+			Hidden:   challenge.Hidden,
+			Points:   challenge.Points,
+			Solves:   challenge.Solves,
+			Tags:     []string{},
+			Solved:   challenge.Solved,
 		}
-		challs = append(challs, chall)
+		if challenge.Difficulty.Valid {
+			chall.Difficulty = challenge.Difficulty.String
+		}
+		if tags != nil {
+			chall.Tags = tags
+		}
+
+		challsData = append(challsData, chall)
 	}
 
-	return challs, nil
+	return challsData, nil
 }

@@ -41,3 +41,15 @@ func GetTeamByName(ctx context.Context, name string) (*sqlc.Team, error) {
 
 	return &team, nil
 }
+
+func GetBadgesFromTeam(ctx context.Context, teamID int32) ([]sqlc.GetBadgesFromTeamRow, error) {
+	badges, err := Sql.GetBadgesFromTeam(ctx, teamID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return badges, nil
+}

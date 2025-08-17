@@ -10,7 +10,7 @@ import (
 )
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, name, email, password_hash, created_at, score, role, team_id, nationality, image FROM users WHERE id = $1
+SELECT id, name, email, password_hash, created_at, score, role, team_id, country, image FROM users WHERE id = $1
 `
 
 // Retrieve a user by their ID
@@ -26,14 +26,14 @@ func (q *Queries) GetUserByID(ctx context.Context, id int32) (User, error) {
 		&i.Score,
 		&i.Role,
 		&i.TeamID,
-		&i.Nationality,
+		&i.Country,
 		&i.Image,
 	)
 	return i, err
 }
 
 const getUserByName = `-- name: GetUserByName :one
-SELECT id, name, email, password_hash, created_at, score, role, team_id, nationality, image FROM users WHERE name = $1
+SELECT id, name, email, password_hash, created_at, score, role, team_id, country, image FROM users WHERE name = $1
 `
 
 // Retrieve a user by their name
@@ -49,7 +49,7 @@ func (q *Queries) GetUserByName(ctx context.Context, name string) (User, error) 
 		&i.Score,
 		&i.Role,
 		&i.TeamID,
-		&i.Nationality,
+		&i.Country,
 		&i.Image,
 	)
 	return i, err

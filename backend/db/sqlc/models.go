@@ -265,7 +265,7 @@ type Team struct {
 	Name         string         `json:"name"`
 	PasswordHash string         `json:"password_hash"`
 	Score        int32          `json:"score"`
-	Nationality  sql.NullString `json:"nationality"`
+	Country      sql.NullString `json:"country"`
 	Image        sql.NullString `json:"image"`
 	Bio          sql.NullString `json:"bio"`
 }
@@ -285,6 +285,6 @@ type User struct {
 	Score        int32          `json:"score"`
 	Role         UserRole       `json:"role"`
 	TeamID       sql.NullInt32  `json:"team_id"`
-	Nationality  sql.NullString `json:"nationality"`
+	Country      sql.NullString `json:"country"`
 	Image        sql.NullString `json:"image"`
 }

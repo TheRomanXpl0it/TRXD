@@ -9,8 +9,43 @@ import (
 	"context"
 )
 
+const getBadgesFromTeam = `-- name: GetBadgesFromTeam :many
+SELECT badges.name, badges.description FROM badges
+  JOIN teams ON teams.id = badges.team_id
+  WHERE teams.id = $1
+`
+
+type GetBadgesFromTeamRow struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+// Retrieve all badges associated with a team
+func (q *Queries) GetBadgesFromTeam(ctx context.Context, id int32) ([]GetBadgesFromTeamRow, error) {
+	rows, err := q.query(ctx, q.getBadgesFromTeamStmt, getBadgesFromTeam, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetBadgesFromTeamRow
+	for rows.Next() {
+		var i GetBadgesFromTeamRow
+		if err := rows.Scan(&i.Name, &i.Description); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getTeamByID = `-- name: GetTeamByID :one
-SELECT id, name, password_hash, score, nationality, image, bio FROM teams WHERE id = $1
+SELECT id, name, password_hash, score, country, image, bio FROM teams WHERE id = $1
 `
 
 // Retrieve a team by its ID
@@ -22,7 +57,7 @@ func (q *Queries) GetTeamByID(ctx context.Context, id int32) (Team, error) {
 		&i.Name,
 		&i.PasswordHash,
 		&i.Score,
-		&i.Nationality,
+		&i.Country,
 		&i.Image,
 		&i.Bio,
 	)
@@ -30,7 +65,7 @@ func (q *Queries) GetTeamByID(ctx context.Context, id int32) (Team, error) {
 }
 
 const getTeamByName = `-- name: GetTeamByName :one
-SELECT id, name, password_hash, score, nationality, image, bio FROM teams WHERE name = $1
+SELECT id, name, password_hash, score, country, image, bio FROM teams WHERE name = $1
 `
 
 // Retrieve a team by its name
@@ -42,7 +77,7 @@ func (q *Queries) GetTeamByName(ctx context.Context, name string) (Team, error) 
 		&i.Name,
 		&i.PasswordHash,
 		&i.Score,
-		&i.Nationality,
+		&i.Country,
 		&i.Image,
 		&i.Bio,
 	)
@@ -50,7 +85,7 @@ func (q *Queries) GetTeamByName(ctx context.Context, name string) (Team, error) 
 }
 
 const getTeamFromUser = `-- name: GetTeamFromUser :one
-SELECT t.id, t.name, t.password_hash, t.score, t.nationality, t.image, t.bio FROM teams t
+SELECT t.id, t.name, t.password_hash, t.score, t.country, t.image, t.bio FROM teams t
   JOIN users u ON u.team_id = t.id
   WHERE u.id = $1
 `
@@ -64,7 +99,7 @@ func (q *Queries) GetTeamFromUser(ctx context.Context, id int32) (Team, error) {
 		&i.Name,
 		&i.PasswordHash,
 		&i.Score,
-		&i.Nationality,
+		&i.Country,
 		&i.Image,
 		&i.Bio,
 	)

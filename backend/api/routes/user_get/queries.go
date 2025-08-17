@@ -10,16 +10,16 @@ import (
 )
 
 type UserData struct {
-	ID          int32                   `json:"id"`
-	Name        string                  `json:"name"`
-	Email       string                  `json:"email"`
-	Role        string                  `json:"role"`
-	Score       int32                   `json:"score"`
-	Nationality string                  `json:"nationality"`
-	Image       string                  `json:"image"`
-	TeamID      *int32                  `json:"team_id"`
-	JoinedAt    *time.Time              `json:"joined_at,omitempty"`
-	Solves      []sqlc.GetUserSolvesRow `json:"solves,omitempty"`
+	ID       int32                   `json:"id"`
+	Name     string                  `json:"name"`
+	Email    string                  `json:"email"`
+	Role     string                  `json:"role"`
+	Score    int32                   `json:"score"`
+	Country  string                  `json:"country"`
+	Image    string                  `json:"image"`
+	TeamID   *int32                  `json:"team_id"`
+	JoinedAt *time.Time              `json:"joined_at,omitempty"`
+	Solves   []sqlc.GetUserSolvesRow `json:"solves,omitempty"`
 }
 
 func GetUser(ctx context.Context, id int32, admin bool) (*UserData, error) {
@@ -44,8 +44,8 @@ func GetUser(ctx context.Context, id int32, admin bool) (*UserData, error) {
 		data.Role = string(user.Role)
 	}
 	data.Score = user.Score
-	if user.Nationality.Valid {
-		data.Nationality = user.Nationality.String
+	if user.Country.Valid {
+		data.Country = user.Country.String
 	}
 	if user.Image.Valid {
 		data.Image = user.Image.String

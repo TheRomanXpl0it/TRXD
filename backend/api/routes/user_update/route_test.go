@@ -40,16 +40,16 @@ var testUserUpdate = []struct {
 		expectedResponse: errorf(consts.LongName),
 	},
 	{
-		testBody:         JSON{"nationality": strings.Repeat("a", consts.MaxNationalityLength+1)},
+		testBody:         JSON{"country": strings.Repeat("a", consts.MaxCountryLength+1)},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.LongNationality),
+		expectedResponse: errorf(consts.LongCountry),
 	},
 	{
-		testBody:       JSON{"name": "a", "nationality": "a", "image": "a"},
+		testBody:       JSON{"name": "a", "country": "a", "image": "a"},
 		expectedStatus: http.StatusOK,
 	},
 	{
-		testBody:       JSON{"name": "b", "nationality": "b"},
+		testBody:       JSON{"name": "b", "country": "b"},
 		expectedStatus: http.StatusOK,
 	},
 	{

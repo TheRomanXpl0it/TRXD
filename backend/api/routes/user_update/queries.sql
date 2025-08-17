@@ -3,6 +3,6 @@
 UPDATE users
 SET
   name = COALESCE(sqlc.narg('name'), name),
-  nationality = COALESCE(sqlc.narg('nationality'), nationality),
+  country = COALESCE(sqlc.narg('country'), country),
   image = COALESCE(sqlc.narg('image'), image)
 WHERE id = $1;

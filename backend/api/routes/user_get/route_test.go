@@ -1,7 +1,6 @@
 package user_get_test
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -22,7 +21,7 @@ func TestUserGet(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	admin, err := user_register.RegisterUser(context.Background(), "admin", "admin@test.com", "testpass", sqlc.UserRoleAdmin)
+	admin, err := user_register.RegisterUser(t.Context(), "admin", "admin@test.com", "testpass", sqlc.UserRoleAdmin)
 	if err != nil {
 		t.Fatalf("Failed to register admin user: %v", err)
 	}
@@ -44,12 +43,12 @@ func TestUserGet(t *testing.T) {
 	idSelf := int32(body.(map[string]interface{})["id"].(float64))
 
 	expectedNoAuth := JSON{
-		"email":       "",
-		"image":       "",
-		"name":        "a",
-		"nationality": "",
-		"role":        "",
-		"score":       1498,
+		"country": "",
+		"email":   "",
+		"image":   "",
+		"name":    "a",
+		"role":    "",
+		"score":   1498,
 	}
 
 	session = test_utils.NewApiTestSession(t, app)
@@ -68,20 +67,20 @@ func TestUserGet(t *testing.T) {
 	}
 
 	expectedPlayer := JSON{
-		"email":       "",
-		"image":       "",
-		"name":        "a",
-		"nationality": "",
-		"role":        "",
-		"score":       1498,
+		"country": "",
+		"email":   "",
+		"image":   "",
+		"name":    "a",
+		"role":    "",
+		"score":   1498,
 	}
 	expectedSelf := JSON{
-		"email":       "self@test.com",
-		"image":       "",
-		"name":        "self",
-		"nationality": "",
-		"role":        "Player",
-		"score":       0,
+		"country": "",
+		"email":   "self@test.com",
+		"image":   "",
+		"name":    "self",
+		"role":    "Player",
+		"score":   0,
 	}
 
 	session = test_utils.NewApiTestSession(t, app)
@@ -115,21 +114,21 @@ func TestUserGet(t *testing.T) {
 	}
 
 	expectedPlayerAdmin := JSON{
-		"email":       "a@a",
-		"image":       "",
-		"name":        "a",
-		"nationality": "",
-		"role":        "Player",
-		"score":       1498,
+		"country": "",
+		"email":   "a@a",
+		"image":   "",
+		"name":    "a",
+		"role":    "Player",
+		"score":   1498,
 	}
 	expectedAdmin := JSON{
-		"email":       "admin@test.com",
-		"image":       "",
-		"name":        "admin",
-		"nationality": "",
-		"role":        "Admin",
-		"score":       0,
-		"team_id":     nil,
+		"country": "",
+		"email":   "admin@test.com",
+		"image":   "",
+		"name":    "admin",
+		"role":    "Admin",
+		"score":   0,
+		"team_id": nil,
 	}
 
 	session = test_utils.NewApiTestSession(t, app)

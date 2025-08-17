@@ -1,3 +1,5 @@
--- name: GetUsers :many
+-- name: GetUsersPreview :many
 -- Retrieve all users
-SELECT id FROM users ORDER BY id ASC;
+SELECT id, name, email, role, score, country, image
+  FROM users
+  ORDER BY id ASC;
