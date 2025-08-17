@@ -1,12 +1,9 @@
-package tests
+package api_test
 
 import (
-	"fmt"
 	"net/http"
-	"os"
 	"testing"
 	"trxd/api"
-	"trxd/db"
 	"trxd/utils/consts"
 	"trxd/utils/test_utils"
 )
@@ -18,20 +15,7 @@ func errorf(val interface{}) JSON {
 }
 
 func TestMain(m *testing.M) {
-	err := os.Chdir("../../")
-	if err != nil {
-		fmt.Printf("Failed to change directory: %v\n", err)
-		os.Exit(1)
-	}
-
-	if err := db.OpenTestDB("test_api"); err != nil {
-		fmt.Printf("Failed to open test database: %v\n", err)
-		os.Exit(1)
-	}
-	defer db.CloseTestDB()
-
-	exitCode := m.Run()
-	os.Exit(exitCode)
+	test_utils.Main(m, "../", "api")
 }
 
 func Test404(t *testing.T) {

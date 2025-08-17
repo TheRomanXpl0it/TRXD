@@ -1,22 +1,13 @@
-package auth
+package middlewares
 
 import (
-	"time"
 	"trxd/db"
 	"trxd/db/sqlc"
 	"trxd/utils"
 	"trxd/utils/consts"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/session"
 )
-
-// TODO: set store as redis
-var Store = session.New(session.Config{
-	Expiration:     30 * 24 * time.Hour,
-	CookiePath:     "/",
-	CookieSameSite: fiber.CookieSameSiteLaxMode,
-})
 
 func NoAuth(c *fiber.Ctx) error {
 	sess, err := Store.Get(c)
@@ -72,7 +63,6 @@ func Spectator(c *fiber.Ctx) error {
 	return c.Next()
 }
 
-// TODO: tests
 func Team(c *fiber.Ctx) error {
 	tid := c.Locals("tid").(int32)
 	role := c.Locals("role").(sqlc.UserRole)

@@ -1,7 +1,7 @@
 package user_logout
 
 import (
-	"trxd/api/auth"
+	"trxd/api/middlewares"
 	"trxd/utils"
 	"trxd/utils/consts"
 
@@ -14,7 +14,7 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusUnauthorized, consts.NotLoggedIn)
 	}
 
-	sess, err := auth.Store.Get(c)
+	sess, err := middlewares.Store.Get(c)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingSession, err)
 	}
