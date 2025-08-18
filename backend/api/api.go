@@ -5,6 +5,7 @@ import (
 	"trxd/api/middlewares"
 	"trxd/api/routes/category_create"
 	"trxd/api/routes/category_delete"
+	"trxd/api/routes/category_update"
 	"trxd/api/routes/challenge_create"
 	"trxd/api/routes/challenge_delete"
 	"trxd/api/routes/challenge_flag_create"
@@ -19,6 +20,7 @@ import (
 	"trxd/api/routes/team_register"
 	"trxd/api/routes/team_update"
 	"trxd/api/routes/teams_get"
+	"trxd/api/routes/teams_scoreboard"
 	"trxd/api/routes/user_get"
 	"trxd/api/routes/user_info"
 	"trxd/api/routes/user_login"
@@ -63,13 +65,12 @@ func SetupApp() *fiber.App {
 	api.Get("/challenges", middlewares.Spectator, middlewares.Team, challenges_get.Route)
 	api.Get("/challenges/:id", middlewares.Spectator, middlewares.Team, challenge_get.Route)
 
-	// api.Get("/scoreboard", middlewares.NoAuth)
-
 	api.Get("/users", middlewares.NoAuth, users_get.Route)
 	api.Get("/users/:id", middlewares.NoAuth, user_get.Route)
 	api.Patch("/users", middlewares.Player, user_update.Route)
 	api.Patch("/users/password", middlewares.Admin, user_password.Route)
 
+	api.Get("/scoreboard", middlewares.NoAuth, teams_scoreboard.Route)
 	api.Get("/teams", middlewares.NoAuth, teams_get.Route)
 	api.Get("/teams/:id", middlewares.NoAuth, team_get.Route)
 	api.Post("/teams", middlewares.Player, team_register.Route)
@@ -85,7 +86,7 @@ func SetupApp() *fiber.App {
 	// api.Delete("/instance", middlewares.Player, routes.DeleteInstance)
 
 	api.Post("/category", middlewares.Author, category_create.Route)
-	// api.Patch("/category", middlewares.Author, routes.UpdateCategory)
+	api.Patch("/category", middlewares.Author, category_update.Route)
 	api.Delete("/category", middlewares.Author, category_delete.Route)
 
 	api.Post("/challenges", middlewares.Author, challenge_create.Route)
