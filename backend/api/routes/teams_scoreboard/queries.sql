@@ -1,0 +1,5 @@
+-- name: GetTeamsScoreboard :many
+-- Retrieve all teams
+SELECT id, name, score, country, image
+  FROM teams
+  ORDER BY score DESC;

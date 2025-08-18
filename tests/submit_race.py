@@ -93,7 +93,7 @@ for key, value in counter.items():
 	print(f"{key}: {value}")
 
 if counter["correct"] != 1:
-	print("Test failed: Expected exactly one valid team registration.")
+	print("Test failed: Expected exactly one valid submission.")
 	sys.exit(1)
 else:
-	print("Test passed: Exactly one valid team registration.")
+	print("Test passed: Exactly one valid submission.")

@@ -1,4 +1,4 @@
-package teams_get
+package teams_scoreboard
 
 import (
 	"trxd/utils"
@@ -8,7 +8,7 @@ import (
 )
 
 func Route(c *fiber.Ctx) error {
-	teamsData, err := GetTeams(c.Context())
+	teamsData, err := GetTeamScoreboard(c.Context())
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
 	}

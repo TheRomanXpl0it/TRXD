@@ -54,6 +54,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getBadgesFromTeamStmt, err = db.PrepareContext(ctx, getBadgesFromTeam); err != nil {
 		return nil, fmt.Errorf("error preparing query GetBadgesFromTeam: %w", err)
 	}
+	if q.getCategoryStmt, err = db.PrepareContext(ctx, getCategory); err != nil {
+		return nil, fmt.Errorf("error preparing query GetCategory: %w", err)
+	}
 	if q.getChallengeByIDStmt, err = db.PrepareContext(ctx, getChallengeByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetChallengeByID: %w", err)
 	}
@@ -93,6 +96,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getTeamsPreviewStmt, err = db.PrepareContext(ctx, getTeamsPreview); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTeamsPreview: %w", err)
 	}
+	if q.getTeamsScoreboardStmt, err = db.PrepareContext(ctx, getTeamsScoreboard); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTeamsScoreboard: %w", err)
+	}
 	if q.getUserByEmailStmt, err = db.PrepareContext(ctx, getUserByEmail); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserByEmail: %w", err)
 	}
@@ -125,6 +131,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.submitStmt, err = db.PrepareContext(ctx, submit); err != nil {
 		return nil, fmt.Errorf("error preparing query Submit: %w", err)
+	}
+	if q.updateCategoryIconStmt, err = db.PrepareContext(ctx, updateCategoryIcon); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateCategoryIcon: %w", err)
+	}
+	if q.updateChallengesCategoryStmt, err = db.PrepareContext(ctx, updateChallengesCategory); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateChallengesCategory: %w", err)
 	}
 	if q.updateConfigStmt, err = db.PrepareContext(ctx, updateConfig); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateConfig: %w", err)
@@ -188,6 +200,11 @@ func (q *Queries) Close() error {
 	if q.getBadgesFromTeamStmt != nil {
 		if cerr := q.getBadgesFromTeamStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getBadgesFromTeamStmt: %w", cerr)
+		}
+	}
+	if q.getCategoryStmt != nil {
+		if cerr := q.getCategoryStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getCategoryStmt: %w", cerr)
 		}
 	}
 	if q.getChallengeByIDStmt != nil {
@@ -255,6 +272,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getTeamsPreviewStmt: %w", cerr)
 		}
 	}
+	if q.getTeamsScoreboardStmt != nil {
+		if cerr := q.getTeamsScoreboardStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTeamsScoreboardStmt: %w", cerr)
+		}
+	}
 	if q.getUserByEmailStmt != nil {
 		if cerr := q.getUserByEmailStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getUserByEmailStmt: %w", cerr)
@@ -310,6 +332,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing submitStmt: %w", cerr)
 		}
 	}
+	if q.updateCategoryIconStmt != nil {
+		if cerr := q.updateCategoryIconStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateCategoryIconStmt: %w", cerr)
+		}
+	}
+	if q.updateChallengesCategoryStmt != nil {
+		if cerr := q.updateChallengesCategoryStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateChallengesCategoryStmt: %w", cerr)
+		}
+	}
 	if q.updateConfigStmt != nil {
 		if cerr := q.updateConfigStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateConfigStmt: %w", cerr)
@@ -362,87 +394,95 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db                       DBTX
-	tx                       *sql.Tx
-	addTeamMemberStmt        *sql.Stmt
-	checkFlagsStmt           *sql.Stmt
-	createCategoryStmt       *sql.Stmt
-	createChallengeStmt      *sql.Stmt
-	createConfigStmt         *sql.Stmt
-	createFlagStmt           *sql.Stmt
-	deleteCategoryStmt       *sql.Stmt
-	deleteChallengeStmt      *sql.Stmt
-	deleteFlagStmt           *sql.Stmt
-	getBadgesFromTeamStmt    *sql.Stmt
-	getChallengeByIDStmt     *sql.Stmt
-	getChallengeSolvesStmt   *sql.Stmt
-	getChallengesPreviewStmt *sql.Stmt
-	getConfigStmt            *sql.Stmt
-	getFirstBloodStmt        *sql.Stmt
-	getFlagsByChallengeStmt  *sql.Stmt
-	getTagsByChallengeStmt   *sql.Stmt
-	getTeamByIDStmt          *sql.Stmt
-	getTeamByNameStmt        *sql.Stmt
-	getTeamFromUserStmt      *sql.Stmt
-	getTeamMembersStmt       *sql.Stmt
-	getTeamSolvesStmt        *sql.Stmt
-	getTeamsPreviewStmt      *sql.Stmt
-	getUserByEmailStmt       *sql.Stmt
-	getUserByIDStmt          *sql.Stmt
-	getUserByNameStmt        *sql.Stmt
-	getUserSolvesStmt        *sql.Stmt
-	getUsersPreviewStmt      *sql.Stmt
-	isChallengeSolvedStmt    *sql.Stmt
-	registerTeamStmt         *sql.Stmt
-	registerUserStmt         *sql.Stmt
-	resetTeamPasswordStmt    *sql.Stmt
-	resetUserPasswordStmt    *sql.Stmt
-	submitStmt               *sql.Stmt
-	updateConfigStmt         *sql.Stmt
-	updateTeamStmt           *sql.Stmt
-	updateUserStmt           *sql.Stmt
+	db                           DBTX
+	tx                           *sql.Tx
+	addTeamMemberStmt            *sql.Stmt
+	checkFlagsStmt               *sql.Stmt
+	createCategoryStmt           *sql.Stmt
+	createChallengeStmt          *sql.Stmt
+	createConfigStmt             *sql.Stmt
+	createFlagStmt               *sql.Stmt
+	deleteCategoryStmt           *sql.Stmt
+	deleteChallengeStmt          *sql.Stmt
+	deleteFlagStmt               *sql.Stmt
+	getBadgesFromTeamStmt        *sql.Stmt
+	getCategoryStmt              *sql.Stmt
+	getChallengeByIDStmt         *sql.Stmt
+	getChallengeSolvesStmt       *sql.Stmt
+	getChallengesPreviewStmt     *sql.Stmt
+	getConfigStmt                *sql.Stmt
+	getFirstBloodStmt            *sql.Stmt
+	getFlagsByChallengeStmt      *sql.Stmt
+	getTagsByChallengeStmt       *sql.Stmt
+	getTeamByIDStmt              *sql.Stmt
+	getTeamByNameStmt            *sql.Stmt
+	getTeamFromUserStmt          *sql.Stmt
+	getTeamMembersStmt           *sql.Stmt
+	getTeamSolvesStmt            *sql.Stmt
+	getTeamsPreviewStmt          *sql.Stmt
+	getTeamsScoreboardStmt       *sql.Stmt
+	getUserByEmailStmt           *sql.Stmt
+	getUserByIDStmt              *sql.Stmt
+	getUserByNameStmt            *sql.Stmt
+	getUserSolvesStmt            *sql.Stmt
+	getUsersPreviewStmt          *sql.Stmt
+	isChallengeSolvedStmt        *sql.Stmt
+	registerTeamStmt             *sql.Stmt
+	registerUserStmt             *sql.Stmt
+	resetTeamPasswordStmt        *sql.Stmt
+	resetUserPasswordStmt        *sql.Stmt
+	submitStmt                   *sql.Stmt
+	updateCategoryIconStmt       *sql.Stmt
+	updateChallengesCategoryStmt *sql.Stmt
+	updateConfigStmt             *sql.Stmt
+	updateTeamStmt               *sql.Stmt
+	updateUserStmt               *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:                       tx,
-		tx:                       tx,
-		addTeamMemberStmt:        q.addTeamMemberStmt,
-		checkFlagsStmt:           q.checkFlagsStmt,
-		createCategoryStmt:       q.createCategoryStmt,
-		createChallengeStmt:      q.createChallengeStmt,
-		createConfigStmt:         q.createConfigStmt,
-		createFlagStmt:           q.createFlagStmt,
-		deleteCategoryStmt:       q.deleteCategoryStmt,
-		deleteChallengeStmt:      q.deleteChallengeStmt,
-		deleteFlagStmt:           q.deleteFlagStmt,
-		getBadgesFromTeamStmt:    q.getBadgesFromTeamStmt,
-		getChallengeByIDStmt:     q.getChallengeByIDStmt,
-		getChallengeSolvesStmt:   q.getChallengeSolvesStmt,
-		getChallengesPreviewStmt: q.getChallengesPreviewStmt,
-		getConfigStmt:            q.getConfigStmt,
-		getFirstBloodStmt:        q.getFirstBloodStmt,
-		getFlagsByChallengeStmt:  q.getFlagsByChallengeStmt,
-		getTagsByChallengeStmt:   q.getTagsByChallengeStmt,
-		getTeamByIDStmt:          q.getTeamByIDStmt,
-		getTeamByNameStmt:        q.getTeamByNameStmt,
-		getTeamFromUserStmt:      q.getTeamFromUserStmt,
-		getTeamMembersStmt:       q.getTeamMembersStmt,
-		getTeamSolvesStmt:        q.getTeamSolvesStmt,
-		getTeamsPreviewStmt:      q.getTeamsPreviewStmt,
-		getUserByEmailStmt:       q.getUserByEmailStmt,
-		getUserByIDStmt:          q.getUserByIDStmt,
-		getUserByNameStmt:        q.getUserByNameStmt,
-		getUserSolvesStmt:        q.getUserSolvesStmt,
-		getUsersPreviewStmt:      q.getUsersPreviewStmt,
-		isChallengeSolvedStmt:    q.isChallengeSolvedStmt,
-		registerTeamStmt:         q.registerTeamStmt,
-		registerUserStmt:         q.registerUserStmt,
-		resetTeamPasswordStmt:    q.resetTeamPasswordStmt,
-		resetUserPasswordStmt:    q.resetUserPasswordStmt,
-		submitStmt:               q.submitStmt,
-		updateConfigStmt:         q.updateConfigStmt,
-		updateTeamStmt:           q.updateTeamStmt,
-		updateUserStmt:           q.updateUserStmt,
+		db:                           tx,
+		tx:                           tx,
+		addTeamMemberStmt:            q.addTeamMemberStmt,
+		checkFlagsStmt:               q.checkFlagsStmt,
+		createCategoryStmt:           q.createCategoryStmt,
+		createChallengeStmt:          q.createChallengeStmt,
+		createConfigStmt:             q.createConfigStmt,
+		createFlagStmt:               q.createFlagStmt,
+		deleteCategoryStmt:           q.deleteCategoryStmt,
+		deleteChallengeStmt:          q.deleteChallengeStmt,
+		deleteFlagStmt:               q.deleteFlagStmt,
+		getBadgesFromTeamStmt:        q.getBadgesFromTeamStmt,
+		getCategoryStmt:              q.getCategoryStmt,
+		getChallengeByIDStmt:         q.getChallengeByIDStmt,
+		getChallengeSolvesStmt:       q.getChallengeSolvesStmt,
+		getChallengesPreviewStmt:     q.getChallengesPreviewStmt,
+		getConfigStmt:                q.getConfigStmt,
+		getFirstBloodStmt:            q.getFirstBloodStmt,
+		getFlagsByChallengeStmt:      q.getFlagsByChallengeStmt,
+		getTagsByChallengeStmt:       q.getTagsByChallengeStmt,
+		getTeamByIDStmt:              q.getTeamByIDStmt,
+		getTeamByNameStmt:            q.getTeamByNameStmt,
+		getTeamFromUserStmt:          q.getTeamFromUserStmt,
+		getTeamMembersStmt:           q.getTeamMembersStmt,
+		getTeamSolvesStmt:            q.getTeamSolvesStmt,
+		getTeamsPreviewStmt:          q.getTeamsPreviewStmt,
+		getTeamsScoreboardStmt:       q.getTeamsScoreboardStmt,
+		getUserByEmailStmt:           q.getUserByEmailStmt,
+		getUserByIDStmt:              q.getUserByIDStmt,
+		getUserByNameStmt:            q.getUserByNameStmt,
+		getUserSolvesStmt:            q.getUserSolvesStmt,
+		getUsersPreviewStmt:          q.getUsersPreviewStmt,
+		isChallengeSolvedStmt:        q.isChallengeSolvedStmt,
+		registerTeamStmt:             q.registerTeamStmt,
+		registerUserStmt:             q.registerUserStmt,
+		resetTeamPasswordStmt:        q.resetTeamPasswordStmt,
+		resetUserPasswordStmt:        q.resetUserPasswordStmt,
+		submitStmt:                   q.submitStmt,
+		updateCategoryIconStmt:       q.updateCategoryIconStmt,
+		updateChallengesCategoryStmt: q.updateChallengesCategoryStmt,
+		updateConfigStmt:             q.updateConfigStmt,
+		updateTeamStmt:               q.updateTeamStmt,
+		updateUserStmt:               q.updateUserStmt,
 	}
 }

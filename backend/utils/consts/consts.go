@@ -78,6 +78,8 @@ const (
 	AlreadyLoggedIn            = "Already logged in"
 	NotLoggedIn                = "Not logged in"
 	Forbidden                  = "Forbidden"
+	ErrorFetchingCategory      = "Error fetching category"
+	ErrorUpdatingCategory      = "Error updating category"
 )
 
 var UserRegex = regexp.MustCompile(`(^[^@\s]+@[^@\s]+\.[^@\s]+$)`)

@@ -138,6 +138,18 @@ func (q *Queries) DeleteFlag(ctx context.Context, arg DeleteFlagParams) error {
 	return err
 }
 
+const getCategory = `-- name: GetCategory :one
+SELECT name, visible_challs, icon FROM categories WHERE name = $1
+`
+
+// fetch category by name
+func (q *Queries) GetCategory(ctx context.Context, name string) (Category, error) {
+	row := q.queryRow(ctx, q.getCategoryStmt, getCategory, name)
+	var i Category
+	err := row.Scan(&i.Name, &i.VisibleChalls, &i.Icon)
+	return i, err
+}
+
 const getChallengeSolves = `-- name: GetChallengeSolves :many
 SELECT teams.id, teams.name, submissions.timestamp
   FROM submissions
@@ -428,6 +440,50 @@ func (q *Queries) GetTeamsPreview(ctx context.Context) ([]GetTeamsPreviewRow, er
 	return items, nil
 }
 
+const getTeamsScoreboard = `-- name: GetTeamsScoreboard :many
+SELECT id, name, score, country, image
+  FROM teams
+  ORDER BY score DESC
+`
+
+type GetTeamsScoreboardRow struct {
+	ID      int32          `json:"id"`
+	Name    string         `json:"name"`
+	Score   int32          `json:"score"`
+	Country sql.NullString `json:"country"`
+	Image   sql.NullString `json:"image"`
+}
+
+// Retrieve all teams
+func (q *Queries) GetTeamsScoreboard(ctx context.Context) ([]GetTeamsScoreboardRow, error) {
+	rows, err := q.query(ctx, q.getTeamsScoreboardStmt, getTeamsScoreboard)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTeamsScoreboardRow
+	for rows.Next() {
+		var i GetTeamsScoreboardRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Score,
+			&i.Country,
+			&i.Image,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT id, name, email, password_hash, created_at, score, role, team_id, country, image FROM users WHERE email = $1
 `
@@ -686,6 +742,36 @@ func (q *Queries) Submit(ctx context.Context, arg SubmitParams) (SubmissionStatu
 	var status SubmissionStatus
 	err := row.Scan(&status)
 	return status, err
+}
+
+const updateCategoryIcon = `-- name: UpdateCategoryIcon :exec
+UPDATE categories SET icon = $2 WHERE name = $1
+`
+
+type UpdateCategoryIconParams struct {
+	Name string `json:"name"`
+	Icon string `json:"icon"`
+}
+
+// update category icon by name
+func (q *Queries) UpdateCategoryIcon(ctx context.Context, arg UpdateCategoryIconParams) error {
+	_, err := q.exec(ctx, q.updateCategoryIconStmt, updateCategoryIcon, arg.Name, arg.Icon)
+	return err
+}
+
+const updateChallengesCategory = `-- name: UpdateChallengesCategory :exec
+UPDATE challenges SET category = $1 WHERE category = $2
+`
+
+type UpdateChallengesCategoryParams struct {
+	NewCategory string `json:"new_category"`
+	OldCategory string `json:"old_category"`
+}
+
+// update category name in challenges table
+func (q *Queries) UpdateChallengesCategory(ctx context.Context, arg UpdateChallengesCategoryParams) error {
+	_, err := q.exec(ctx, q.updateChallengesCategoryStmt, updateChallengesCategory, arg.NewCategory, arg.OldCategory)
+	return err
 }
 
 const updateTeam = `-- name: UpdateTeam :exec

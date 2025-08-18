@@ -1,4 +1,4 @@
-package teams_get
+package teams_scoreboard
 
 import (
 	"context"
@@ -15,8 +15,8 @@ type TeamData struct {
 	Badges  []sqlc.GetBadgesFromTeamRow `json:"badges,omitempty"`
 }
 
-func GetTeams(ctx context.Context) ([]*TeamData, error) {
-	teamPreviews, err := db.Sql.GetTeamsPreview(ctx)
+func GetTeamScoreboard(ctx context.Context) ([]*TeamData, error) {
+	teamPreviews, err := db.Sql.GetTeamsScoreboard(ctx)
 	if err != nil {
 		return nil, err
 	}
