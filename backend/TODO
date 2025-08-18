@@ -14,6 +14,7 @@
 
 - webhook to discord for first bloods
 - deletable instances (from admin)
+- auto cleaner thread of dead instances
 - deletable submissions (from admin)
 - endpoint + cli cmd to parse a category/challenge file with all infos
 - link to join team

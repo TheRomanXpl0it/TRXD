@@ -34,12 +34,13 @@ func Route(c *fiber.Ctx) error {
 
 	uid := c.Locals("uid").(int32)
 
-	status, err := SubmitFlag(c.Context(), uid, *data.ChallID, data.Flag)
+	status, first_blood, err := SubmitFlag(c.Context(), uid, *data.ChallID, data.Flag)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorSubmittingFlag, err)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"status": status,
+		"status":      status,
+		"first_blood": first_blood,
 	})
 }

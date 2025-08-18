@@ -718,30 +718,39 @@ WITH challenge AS (
   ),
   inserted AS (
     INSERT INTO submissions (user_id, chall_id, status, flag)
-    VALUES ($1, $2, $3, $4)
+    VALUES ($1, (SELECT id FROM challenge), $4, $3)
     RETURNING status
+  ),
+  blood_check AS (
+    SELECT COUNT(*)=0 AS first_blood FROM submissions
+    WHERE chall_id = (SELECT id FROM challenge) AND status = 'Correct'
   )
-SELECT status FROM inserted
+SELECT inserted.status, (blood_check.first_blood AND ($4 = 'Correct')) AS first_blood FROM inserted, blood_check
 `
 
 type SubmitParams struct {
-	UserID int32            `json:"user_id"`
-	ID     int32            `json:"id"`
-	Status SubmissionStatus `json:"status"`
-	Flag   string           `json:"flag"`
+	UserID int32       `json:"user_id"`
+	ID     int32       `json:"id"`
+	Flag   string      `json:"flag"`
+	Status interface{} `json:"status"`
+}
+
+type SubmitRow struct {
+	Status     SubmissionStatus `json:"status"`
+	FirstBlood sql.NullBool     `json:"first_blood"`
 }
 
 // Insert a new submission
-func (q *Queries) Submit(ctx context.Context, arg SubmitParams) (SubmissionStatus, error) {
+func (q *Queries) Submit(ctx context.Context, arg SubmitParams) (SubmitRow, error) {
 	row := q.queryRow(ctx, q.submitStmt, submit,
 		arg.UserID,
 		arg.ID,
-		arg.Status,
 		arg.Flag,
+		arg.Status,
 	)
-	var status SubmissionStatus
-	err := row.Scan(&status)
-	return status, err
+	var i SubmitRow
+	err := row.Scan(&i.Status, &i.FirstBlood)
+	return i, err
 }
 
 const updateCategoryIcon = `-- name: UpdateCategoryIcon :exec

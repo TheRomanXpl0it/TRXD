@@ -10,7 +10,11 @@ WITH challenge AS (
   ),
   inserted AS (
     INSERT INTO submissions (user_id, chall_id, status, flag)
-    VALUES ($1, $2, $3, $4)
+    VALUES ($1, (SELECT id FROM challenge), sqlc.arg(status), $3)
     RETURNING status
+  ),
+  blood_check AS (
+    SELECT COUNT(*)=0 AS first_blood FROM submissions
+    WHERE chall_id = (SELECT id FROM challenge) AND status = 'Correct'
   )
-SELECT status FROM inserted;
+SELECT inserted.status, (blood_check.first_blood AND (sqlc.arg(status) = 'Correct')) AS first_blood FROM inserted, blood_check;

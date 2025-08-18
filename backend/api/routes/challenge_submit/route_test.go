@@ -29,6 +29,7 @@ var testChallengeSubmit = []struct {
 	testBody         interface{}
 	expectedStatus   int
 	expectedResponse JSON
+	secondUser       bool
 }{
 	{
 		testBody:         nil,
@@ -58,17 +59,35 @@ var testChallengeSubmit = []struct {
 	{
 		testBody:         JSON{"chall_id": "", "flag": "test"},
 		expectedStatus:   http.StatusOK,
-		expectedResponse: JSON{"status": sqlc.SubmissionStatusWrong},
+		expectedResponse: JSON{"status": sqlc.SubmissionStatusWrong, "first_blood": false},
 	},
 	{
 		testBody:         JSON{"chall_id": "", "flag": "flag{test}"},
 		expectedStatus:   http.StatusOK,
-		expectedResponse: JSON{"status": sqlc.SubmissionStatusCorrect},
+		expectedResponse: JSON{"status": sqlc.SubmissionStatusCorrect, "first_blood": true},
 	},
 	{
 		testBody:         JSON{"chall_id": "", "flag": "flag{test}"},
 		expectedStatus:   http.StatusOK,
-		expectedResponse: JSON{"status": sqlc.SubmissionStatusRepeated},
+		expectedResponse: JSON{"status": sqlc.SubmissionStatusRepeated, "first_blood": false},
+	},
+	{
+		testBody:         JSON{"chall_id": "", "flag": "test"},
+		expectedStatus:   http.StatusOK,
+		expectedResponse: JSON{"status": sqlc.SubmissionStatusWrong, "first_blood": false},
+		secondUser:       true,
+	},
+	{
+		testBody:         JSON{"chall_id": "", "flag": "flag{test}"},
+		expectedStatus:   http.StatusOK,
+		expectedResponse: JSON{"status": sqlc.SubmissionStatusCorrect, "first_blood": false},
+		secondUser:       true,
+	},
+	{
+		testBody:         JSON{"chall_id": "", "flag": "flag{test}"},
+		expectedStatus:   http.StatusOK,
+		expectedResponse: JSON{"status": sqlc.SubmissionStatusRepeated, "first_blood": false},
+		secondUser:       true,
 	},
 }
 
@@ -107,6 +126,20 @@ func TestChallengeSubmit(t *testing.T) {
 	if team == nil {
 		t.Fatal("Team registration returned nil")
 	}
+	user2, err := user_register.RegisterUser(t.Context(), "test-2", "test-2@test.test", "testpass")
+	if err != nil {
+		t.Fatalf("Failed to register test user 2: %v", err)
+	}
+	if user2 == nil {
+		t.Fatal("User2 registration returned nil")
+	}
+	team2, err := team_register.RegisterTeam(t.Context(), "test-team-2", "teampasswd", user2.ID)
+	if err != nil {
+		t.Fatalf("Failed to register test team 2: %v", err)
+	}
+	if team2 == nil {
+		t.Fatal("Team2 registration returned nil")
+	}
 
 	cat, err := category_create.CreateCategory(t.Context(), "cat", "icon")
 	if err != nil {
@@ -132,7 +165,11 @@ func TestChallengeSubmit(t *testing.T) {
 
 	for _, test := range testChallengeSubmit {
 		session := test_utils.NewApiTestSession(t, app)
-		session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+		if test.secondUser {
+			session.Post("/login", JSON{"email": "test-2@test.test", "password": "testpass"}, http.StatusOK)
+		} else {
+			session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+		}
 		if body, ok := test.testBody.(JSON); ok && body != nil {
 			if content, ok := body["chall_id"]; ok && content == "" {
 				test.testBody.(JSON)["chall_id"] = chall.ID
