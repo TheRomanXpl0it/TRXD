@@ -10,6 +10,7 @@ import (
 	"trxd/api/routes/challenge_delete"
 	"trxd/api/routes/challenge_flag_create"
 	"trxd/api/routes/challenge_flag_delete"
+	"trxd/api/routes/challenge_flag_update"
 	"trxd/api/routes/challenge_get"
 	"trxd/api/routes/challenge_submit"
 	"trxd/api/routes/challenges_get"
@@ -55,6 +56,7 @@ func SetupApp() *fiber.App {
 		api = app.Group("/api")
 	}
 
+	// TODO: make this resource static: countries.json
 	api.Get("/countries", func(c *fiber.Ctx) error { return c.JSON(consts.Countries) })
 
 	api.Post("/register", middlewares.NoAuth, user_register.Route)
@@ -94,7 +96,7 @@ func SetupApp() *fiber.App {
 	api.Delete("/challenges", middlewares.Author, challenge_delete.Route)
 
 	api.Post("/flag", middlewares.Author, challenge_flag_create.Route)
-	// api.Patch("/flag", middlewares.Author, routes.UpdateFlag)
+	api.Patch("/flag", middlewares.Author, challenge_flag_update.Route)
 	api.Delete("/flag", middlewares.Author, challenge_flag_delete.Route)
 
 	api.Patch("/config", middlewares.Admin, config_update.Route)

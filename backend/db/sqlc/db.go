@@ -141,6 +141,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateConfigStmt, err = db.PrepareContext(ctx, updateConfig); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateConfig: %w", err)
 	}
+	if q.updateFlagStmt, err = db.PrepareContext(ctx, updateFlag); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateFlag: %w", err)
+	}
 	if q.updateTeamStmt, err = db.PrepareContext(ctx, updateTeam); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateTeam: %w", err)
 	}
@@ -347,6 +350,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateConfigStmt: %w", cerr)
 		}
 	}
+	if q.updateFlagStmt != nil {
+		if cerr := q.updateFlagStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateFlagStmt: %w", cerr)
+		}
+	}
 	if q.updateTeamStmt != nil {
 		if cerr := q.updateTeamStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateTeamStmt: %w", cerr)
@@ -435,6 +443,7 @@ type Queries struct {
 	updateCategoryIconStmt       *sql.Stmt
 	updateChallengesCategoryStmt *sql.Stmt
 	updateConfigStmt             *sql.Stmt
+	updateFlagStmt               *sql.Stmt
 	updateTeamStmt               *sql.Stmt
 	updateUserStmt               *sql.Stmt
 }
@@ -482,6 +491,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		updateCategoryIconStmt:       q.updateCategoryIconStmt,
 		updateChallengesCategoryStmt: q.updateChallengesCategoryStmt,
 		updateConfigStmt:             q.updateConfigStmt,
+		updateFlagStmt:               q.updateFlagStmt,
 		updateTeamStmt:               q.updateTeamStmt,
 		updateUserStmt:               q.updateUserStmt,
 	}

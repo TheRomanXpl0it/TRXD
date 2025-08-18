@@ -774,6 +774,32 @@ func (q *Queries) UpdateChallengesCategory(ctx context.Context, arg UpdateChalle
 	return err
 }
 
+const updateFlag = `-- name: UpdateFlag :exec
+UPDATE flags
+  SET
+    flag = COALESCE($3, flag),
+    regex = COALESCE($4, regex)
+  WHERE chall_id = $1
+    AND flag = $2
+`
+
+type UpdateFlagParams struct {
+	ChallID int32          `json:"chall_id"`
+	Flag    string         `json:"flag"`
+	NewFlag sql.NullString `json:"new_flag"`
+	Regex   sql.NullBool   `json:"regex"`
+}
+
+func (q *Queries) UpdateFlag(ctx context.Context, arg UpdateFlagParams) error {
+	_, err := q.exec(ctx, q.updateFlagStmt, updateFlag,
+		arg.ChallID,
+		arg.Flag,
+		arg.NewFlag,
+		arg.Regex,
+	)
+	return err
+}
+
 const updateTeam = `-- name: UpdateTeam :exec
 UPDATE teams
 SET
