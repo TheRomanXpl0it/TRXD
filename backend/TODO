@@ -1,7 +1,3 @@
-- rename routes
-
-- join checks (eg: /flag it checks the chall then operates, can be joined and handle the error)
-
 - move countries from api to frontend or /static
 
 - resolve TODOs left into the code

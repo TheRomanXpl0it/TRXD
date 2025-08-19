@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"testing"
 	"trxd/api"
-	"trxd/api/routes/team_register"
-	"trxd/api/routes/user_register"
+	"trxd/api/routes/teams_register"
+	"trxd/api/routes/users_register"
 	"trxd/db/sqlc"
 	"trxd/utils/test_utils"
 )
@@ -23,12 +23,12 @@ var testAuthMiddlewares = []struct {
 }{
 	{
 		method:           "POST",
-		endpoint:         "/login",
+		endpoint:         "/users/login",
 		expectedStatuses: []int{http.StatusBadRequest, http.StatusForbidden, http.StatusForbidden, http.StatusForbidden, http.StatusForbidden, http.StatusForbidden},
 	},
 	{
 		method:           "GET",
-		endpoint:         "/info",
+		endpoint:         "/users/info",
 		expectedStatuses: []int{http.StatusUnauthorized, http.StatusOK, http.StatusOK, http.StatusOK, http.StatusOK, http.StatusOK},
 	},
 	{
@@ -38,17 +38,17 @@ var testAuthMiddlewares = []struct {
 	},
 	{
 		method:           "POST",
-		endpoint:         "/teams",
+		endpoint:         "/teams/register",
 		expectedStatuses: []int{http.StatusUnauthorized, http.StatusForbidden, http.StatusBadRequest, http.StatusBadRequest, http.StatusBadRequest, http.StatusBadRequest},
 	},
 	{
 		method:           "POST",
-		endpoint:         "/category",
+		endpoint:         "/categories/create",
 		expectedStatuses: []int{http.StatusUnauthorized, http.StatusForbidden, http.StatusForbidden, http.StatusForbidden, http.StatusBadRequest, http.StatusBadRequest},
 	},
 	{
 		method:           "PATCH",
-		endpoint:         "/config",
+		endpoint:         "/configs/update",
 		expectedStatuses: []int{http.StatusUnauthorized, http.StatusForbidden, http.StatusForbidden, http.StatusForbidden, http.StatusForbidden, http.StatusBadRequest},
 	},
 }
@@ -59,27 +59,27 @@ func TestAuthMiddlewares(t *testing.T) {
 
 	var err error
 	users := [6]*sqlc.User{}
-	users[1], err = user_register.RegisterUser(t.Context(), "spectator", "spectator@test.test", "testpass", sqlc.UserRoleSpectator)
+	users[1], err = users_register.RegisterUser(t.Context(), "spectator", "spectator@test.test", "testpass", sqlc.UserRoleSpectator)
 	if err != nil {
 		t.Fatalf("Failed to register spectator user: %v", err)
 	}
-	users[2], err = user_register.RegisterUser(t.Context(), "player", "player@test.test", "testpass", sqlc.UserRolePlayer)
+	users[2], err = users_register.RegisterUser(t.Context(), "player", "player@test.test", "testpass", sqlc.UserRolePlayer)
 	if err != nil {
 		t.Fatalf("Failed to register player user: %v", err)
 	}
-	users[3], err = user_register.RegisterUser(t.Context(), "team_player", "team@test.test", "testpass", sqlc.UserRolePlayer)
+	users[3], err = users_register.RegisterUser(t.Context(), "team_player", "team@test.test", "testpass", sqlc.UserRolePlayer)
 	if err != nil {
 		t.Fatalf("Failed to register player user: %v", err)
 	}
-	_, err = team_register.RegisterTeam(t.Context(), "team1", "teampass", users[3].ID)
+	_, err = teams_register.RegisterTeam(t.Context(), "team1", "teampass", users[3].ID)
 	if err != nil {
 		t.Fatalf("Failed to register team: %v", err)
 	}
-	users[4], err = user_register.RegisterUser(t.Context(), "author", "author@test.test", "testpass", sqlc.UserRoleAuthor)
+	users[4], err = users_register.RegisterUser(t.Context(), "author", "author@test.test", "testpass", sqlc.UserRoleAuthor)
 	if err != nil {
 		t.Fatalf("Failed to register author user: %v", err)
 	}
-	users[5], err = user_register.RegisterUser(t.Context(), "admin", "admin@test.test", "testpass", sqlc.UserRoleAdmin)
+	users[5], err = users_register.RegisterUser(t.Context(), "admin", "admin@test.test", "testpass", sqlc.UserRoleAdmin)
 	if err != nil {
 		t.Fatalf("Failed to register admin user: %v", err)
 	}
@@ -88,7 +88,7 @@ func TestAuthMiddlewares(t *testing.T) {
 		for j, user := range users {
 			session := test_utils.NewApiTestSession(t, app)
 			if user != nil {
-				session.Post("/login", JSON{"email": user.Email, "password": "testpass"}, http.StatusOK)
+				session.Post("/users/login", JSON{"email": user.Email, "password": "testpass"}, http.StatusOK)
 			}
 			session.Request(test.method, test.endpoint, nil, test.expectedStatuses[j])
 		}

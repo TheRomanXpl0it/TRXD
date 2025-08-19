@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 	"trxd/api"
-	"trxd/api/routes/user_register"
+	"trxd/api/routes/users_register"
 	"trxd/db"
 	"trxd/db/sqlc"
 	"trxd/utils"
@@ -94,7 +94,7 @@ func Flags() {
 			log.Fatal(consts.LongPassword)
 		}
 
-		user, err := user_register.RegisterUser(context.Background(), name, email, password, sqlc.UserRoleAdmin)
+		user, err := users_register.RegisterUser(context.Background(), name, email, password, sqlc.UserRoleAdmin)
 		if err != nil {
 			log.Fatal("Error registering admin user", "err", err)
 		}

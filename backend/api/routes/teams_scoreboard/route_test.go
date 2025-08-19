@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 	"trxd/api"
-	"trxd/api/routes/user_register"
+	"trxd/api/routes/users_register"
 	"trxd/db"
 	"trxd/db/sqlc"
 	"trxd/utils/test_utils"
@@ -76,15 +76,15 @@ func TestTeamsScoreboard(t *testing.T) {
 	}
 
 	session := test_utils.NewApiTestSession(t, app)
-	session.Get("/scoreboard", nil, http.StatusOK)
+	session.Get("/teams/scoreboard", nil, http.StatusOK)
 	session.CheckResponse(expected)
 
 	session = test_utils.NewApiTestSession(t, app)
-	session.Post("/register", JSON{"username": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
-	session.Get("/scoreboard", nil, http.StatusOK)
+	session.Post("/users/register", JSON{"username": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
+	session.Get("/teams/scoreboard", nil, http.StatusOK)
 	session.CheckResponse(expected)
 
-	user, err := user_register.RegisterUser(t.Context(), "admin", "admin@admin.com", "adminpass", sqlc.UserRoleAdmin)
+	user, err := users_register.RegisterUser(t.Context(), "admin", "admin@admin.com", "adminpass", sqlc.UserRoleAdmin)
 	if err != nil {
 		t.Fatalf("Failed to register admin user: %v", err)
 	}
@@ -92,7 +92,7 @@ func TestTeamsScoreboard(t *testing.T) {
 		t.Fatal("User registration returned nil")
 	}
 	session = test_utils.NewApiTestSession(t, app)
-	session.Post("/login", JSON{"email": "admin@admin.com", "password": "adminpass"}, http.StatusOK)
-	session.Get("/scoreboard", nil, http.StatusOK)
+	session.Post("/users/login", JSON{"email": "admin@admin.com", "password": "adminpass"}, http.StatusOK)
+	session.Get("/teams/scoreboard", nil, http.StatusOK)
 	session.CheckResponse(expected)
 }

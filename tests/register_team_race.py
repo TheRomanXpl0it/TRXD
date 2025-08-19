@@ -22,7 +22,7 @@ email = user + "@test.test"
 # print(user, email)
 
 s = requests.Session()
-r = s.post('http://localhost:1337/api/register', json={
+r = s.post('http://localhost:1337/api/users/register', json={
 	"username": user,
 	"email": email,
 	"password": "test1234",
@@ -30,7 +30,7 @@ r = s.post('http://localhost:1337/api/register', json={
 
 if r.status_code == 409:
 	print("User already exists, logging in with existing user.")
-	r = s.post('http://localhost:1337/api/login', json={
+	r = s.post('http://localhost:1337/api/users/login', json={
 		"email": email,
 		"password": "test1234",
 	})
@@ -47,7 +47,7 @@ counter = {
 lock = threading.Lock()
 
 def register_team(name):
-	r = s.post('http://localhost:1337/api/teams', json={
+	r = s.post('http://localhost:1337/api/teams/register', json={
 		"name": name,
 		"password": "testpass",
 	})
