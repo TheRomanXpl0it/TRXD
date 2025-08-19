@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"testing"
 	"trxd/api"
-	"trxd/api/routes/users_register"
 	"trxd/db/sqlc"
 	"trxd/utils/consts"
 	"trxd/utils/test_utils"
@@ -17,10 +16,10 @@ func errorf(val interface{}) JSON {
 }
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "config_update")
+	test_utils.Main(m, "../../../", "configs_update")
 }
 
-var testConfigUpdate = []struct {
+var testData = []struct {
 	testBody         interface{}
 	expectedStatus   int
 	expectedResponse JSON
@@ -59,19 +58,13 @@ var testConfigUpdate = []struct {
 	},
 }
 
-func TestConfigUpdate(t *testing.T) {
+func TestRoute(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	user, err := users_register.RegisterUser(t.Context(), "test", "test@test.test", "testpass", sqlc.UserRoleAdmin)
-	if err != nil {
-		t.Fatalf("Failed to register test user: %v", err)
-	}
-	if user == nil {
-		t.Fatal("User registration returned nil")
-	}
+	test_utils.RegisterUser(t, "test", "test@test.test", "testpass", sqlc.UserRoleAdmin)
 
-	for _, test := range testConfigUpdate {
+	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
 		session.Post("/users/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
 		session.Patch("/configs/update", test.testBody, test.expectedStatus)

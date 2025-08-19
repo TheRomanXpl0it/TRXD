@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"testing"
 	"trxd/api"
-	"trxd/api/routes/users_register"
 	"trxd/db/sqlc"
 	"trxd/utils"
 	"trxd/utils/test_utils"
@@ -13,10 +12,10 @@ import (
 type JSON map[string]interface{}
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "users_get")
+	test_utils.Main(m, "../../../", "users_all_get")
 }
 
-func TestUsersGet(t *testing.T) {
+func TestRoute(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
@@ -188,13 +187,7 @@ func TestUsersGet(t *testing.T) {
 		},
 	}
 
-	admin, err := users_register.RegisterUser(t.Context(), "admin", "admin@test.com", "testpass", sqlc.UserRoleAdmin)
-	if err != nil {
-		t.Fatalf("Failed to register admin user: %v", err)
-	}
-	if admin == nil {
-		t.Fatal("Admin registration returned nil")
-	}
+	test_utils.RegisterUser(t, "admin", "admin@test.com", "testpass", sqlc.UserRoleAdmin)
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/users/login", JSON{"email": "admin@test.com", "password": "testpass"}, http.StatusOK)

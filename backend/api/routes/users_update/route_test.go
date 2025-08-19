@@ -16,10 +16,10 @@ func errorf(val interface{}) JSON {
 }
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "user_update")
+	test_utils.Main(m, "../../../", "users_update")
 }
 
-var testUserUpdate = []struct {
+var testData = []struct {
 	testBody         interface{}
 	expectedStatus   int
 	expectedResponse JSON
@@ -58,14 +58,14 @@ var testUserUpdate = []struct {
 	},
 }
 
-func TestUserUpdate(t *testing.T) {
+func TestRoute(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
 	session := test_utils.NewApiTestSession(t, app)
 	session.Post("/users/register", JSON{"username": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
 
-	for _, test := range testUserUpdate {
+	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
 		session.Post("/users/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
 		session.Patch("/users/update", test.testBody, test.expectedStatus)

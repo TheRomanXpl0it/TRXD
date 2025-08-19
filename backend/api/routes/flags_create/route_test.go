@@ -7,7 +7,6 @@ import (
 	"trxd/api"
 	"trxd/api/routes/categories_create"
 	"trxd/api/routes/challenges_create"
-	"trxd/api/routes/users_register"
 	"trxd/db/sqlc"
 	"trxd/utils/consts"
 	"trxd/utils/test_utils"
@@ -20,10 +19,10 @@ func errorf(val interface{}) JSON {
 }
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "flag_create")
+	test_utils.Main(m, "../../../", "flags_create")
 }
 
-var testFlagCreate = []struct {
+var testData = []struct {
 	testBody         interface{}
 	expectedStatus   int
 	expectedResponse JSON
@@ -68,17 +67,11 @@ var testFlagCreate = []struct {
 	},
 }
 
-func TestFlagCreate(t *testing.T) {
+func TestRoute(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	user, err := users_register.RegisterUser(t.Context(), "test", "test@test.test", "testpass", sqlc.UserRoleAuthor)
-	if err != nil {
-		t.Fatalf("Failed to register author user: %v", err)
-	}
-	if user == nil {
-		t.Fatal("User registration returned nil")
-	}
+	test_utils.RegisterUser(t, "test", "test@test.test", "testpass", sqlc.UserRoleAuthor)
 
 	cat, err := categories_create.CreateCategory(t.Context(), "cat", "icon")
 	if err != nil {
@@ -95,7 +88,7 @@ func TestFlagCreate(t *testing.T) {
 		t.Fatal("Challenge creation returned nil")
 	}
 
-	for _, test := range testFlagCreate {
+	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
 		session.Post("/users/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
 		if body, ok := test.testBody.(JSON); ok && body != nil {

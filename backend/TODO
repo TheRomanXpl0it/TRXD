@@ -1,3 +1,8 @@
+- rename tests
+- make function user register in tests
+- replace db interacitions with requests in tests
+- 8872
+
 - move countries from api to frontend or /static
 
 - resolve TODOs left into the code

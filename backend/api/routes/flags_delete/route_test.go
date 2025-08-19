@@ -8,7 +8,6 @@ import (
 	"trxd/api/routes/categories_create"
 	"trxd/api/routes/challenges_create"
 	"trxd/api/routes/flags_create"
-	"trxd/api/routes/users_register"
 	"trxd/db/sqlc"
 	"trxd/utils/consts"
 	"trxd/utils/test_utils"
@@ -21,10 +20,10 @@ func errorf(val interface{}) JSON {
 }
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "flag_delete")
+	test_utils.Main(m, "../../../", "flags_delete")
 }
 
-var testFlagDelete = []struct {
+var testData = []struct {
 	testBody         interface{}
 	expectedStatus   int
 	expectedResponse JSON
@@ -64,17 +63,11 @@ var testFlagDelete = []struct {
 	},
 }
 
-func TestFlagDelete(t *testing.T) {
+func TestRoute(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	user, err := users_register.RegisterUser(t.Context(), "test", "test@test.test", "testpass", sqlc.UserRoleAuthor)
-	if err != nil {
-		t.Fatalf("Failed to register author user: %v", err)
-	}
-	if user == nil {
-		t.Fatal("User registration returned nil")
-	}
+	test_utils.RegisterUser(t, "test", "test@test.test", "testpass", sqlc.UserRoleAuthor)
 
 	cat, err := categories_create.CreateCategory(t.Context(), "cat", "icon")
 	if err != nil {
@@ -91,7 +84,7 @@ func TestFlagDelete(t *testing.T) {
 		t.Fatal("Challenge creation returned nil")
 	}
 
-	for _, test := range testFlagDelete {
+	for _, test := range testData {
 		_, err := flags_create.CreateFlag(t.Context(), chall.ID, "test", false)
 		if err != nil {
 			t.Fatalf("Failed to create flag: %v", err)

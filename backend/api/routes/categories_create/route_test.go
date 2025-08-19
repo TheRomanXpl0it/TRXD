@@ -5,7 +5,6 @@ import (
 	"strings"
 	"testing"
 	"trxd/api"
-	"trxd/api/routes/users_register"
 	"trxd/db/sqlc"
 	"trxd/utils/consts"
 	"trxd/utils/test_utils"
@@ -18,10 +17,10 @@ func errorf(val interface{}) JSON {
 }
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "category_create")
+	test_utils.Main(m, "../../../", "categories_create")
 }
 
-var testCategoryCreate = []struct {
+var testData = []struct {
 	testBody         interface{}
 	expectedStatus   int
 	expectedResponse JSON
@@ -68,16 +67,13 @@ var testCategoryCreate = []struct {
 	},
 }
 
-func TestCategoryCreate(t *testing.T) {
+func TestRoute(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	_, err := users_register.RegisterUser(t.Context(), "author", "author@test.test", "authorpass", sqlc.UserRoleAuthor)
-	if err != nil {
-		t.Fatalf("Failed to register author user: %v", err)
-	}
+	test_utils.RegisterUser(t, "author", "author@test.test", "authorpass", sqlc.UserRoleAuthor)
 
-	for _, test := range testCategoryCreate {
+	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
 		session.Post("/users/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
 		session.Post("/categories/create", test.testBody, test.expectedStatus)

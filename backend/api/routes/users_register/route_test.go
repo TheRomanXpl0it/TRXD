@@ -17,10 +17,10 @@ func errorf(val interface{}) JSON {
 }
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "user_register")
+	test_utils.Main(m, "../../../", "users_register")
 }
 
-var testUserRegister = []struct {
+var testData = []struct {
 	testBody         interface{}
 	expectedStatus   int
 	expectedResponse JSON
@@ -100,7 +100,7 @@ var testUserRegister = []struct {
 	},
 }
 
-func TestUserRegister(t *testing.T) {
+func TestRoute(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
@@ -122,7 +122,7 @@ func TestUserRegister(t *testing.T) {
 	session.Post("/users/register", JSON{"username": "test", "email": "allow+1@test.test", "password": "testpass"}, http.StatusForbidden)
 	session.CheckResponse(errorf(consts.AlreadyRegistered))
 
-	for _, test := range testUserRegister {
+	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
 		session.Post("/users/register", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)

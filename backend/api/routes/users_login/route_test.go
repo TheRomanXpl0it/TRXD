@@ -16,10 +16,10 @@ func errorf(val interface{}) JSON {
 }
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "user_login")
+	test_utils.Main(m, "../../../", "users_login")
 }
 
-var testUserLogin = []struct {
+var testData = []struct {
 	testBody         interface{}
 	register         bool
 	expectedStatus   int
@@ -62,11 +62,11 @@ var testUserLogin = []struct {
 	},
 }
 
-func TestUserLogin(t *testing.T) {
+func TestRoute(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	for _, test := range testUserLogin {
+	for _, test := range testData {
 		if test.register {
 			session := test_utils.NewApiTestSession(t, app)
 			session.Post("/users/register", test.testBody, http.StatusOK)
@@ -78,8 +78,8 @@ func TestUserLogin(t *testing.T) {
 	}
 
 	session := test_utils.NewApiTestSession(t, app)
-	session.Post("/users/login", testUserLogin[len(testUserLogin)-1].testBody, http.StatusOK)
-	session.CheckResponse(testUserLogin[len(testUserLogin)-1].expectedResponse)
-	session.Post("/users/login", testUserLogin[len(testUserLogin)-1].testBody, http.StatusForbidden)
+	session.Post("/users/login", testData[len(testData)-1].testBody, http.StatusOK)
+	session.CheckResponse(testData[len(testData)-1].expectedResponse)
+	session.Post("/users/login", testData[len(testData)-1].testBody, http.StatusForbidden)
 	session.CheckResponse(errorf(consts.AlreadyLoggedIn))
 }

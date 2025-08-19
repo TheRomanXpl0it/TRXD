@@ -16,10 +16,10 @@ func errorf(val interface{}) JSON {
 }
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "team_update")
+	test_utils.Main(m, "../../../", "teams_update")
 }
 
-var testUpdateTeam = []struct {
+var testData = []struct {
 	testBody         interface{}
 	expectedStatus   int
 	expectedResponse JSON
@@ -53,7 +53,7 @@ var testUpdateTeam = []struct {
 	},
 }
 
-func TestUpdateTeam(t *testing.T) {
+func TestRoute(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
@@ -61,7 +61,7 @@ func TestUpdateTeam(t *testing.T) {
 	session.Post("/users/register", JSON{"username": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
 	session.Post("/teams/register", JSON{"name": "test-team", "password": "testpass"}, http.StatusOK)
 
-	for _, test := range testUpdateTeam {
+	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
 		session.Post("/users/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
 		session.Patch("/teams/update", test.testBody, test.expectedStatus)

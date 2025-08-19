@@ -10,10 +10,10 @@ import (
 type JSON map[string]interface{}
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "user_logout")
+	test_utils.Main(m, "../../../", "users_logout")
 }
 
-var testUserLogout = []struct {
+var testData = []struct {
 	testBody       interface{}
 	register       bool
 	login          bool
@@ -34,11 +34,11 @@ var testUserLogout = []struct {
 	},
 }
 
-func TestUserLogout(t *testing.T) {
+func TestRoute(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	for _, test := range testUserLogout {
+	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
 
 		if test.register {

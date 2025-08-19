@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"trxd/api/routes/users_register"
 	"trxd/db"
+	"trxd/db/sqlc"
 )
 
 func fatalf(format string, a ...any) {
@@ -47,4 +49,16 @@ func Main(m *testing.M, path string, name string) {
 
 	exitCode := m.Run()
 	os.Exit(exitCode)
+}
+
+func RegisterUser(t *testing.T, name, email, password string, role sqlc.UserRole) *sqlc.User {
+	user, err := users_register.RegisterUser(t.Context(), name, email, password, role)
+	if err != nil {
+		t.Fatalf("Failed to register author user: %v", err)
+	}
+	if user == nil {
+		t.Fatal("Registered user is nil")
+	}
+
+	return user
 }

@@ -6,7 +6,6 @@ import (
 	"trxd/api"
 	"trxd/api/routes/categories_create"
 	"trxd/api/routes/challenges_create"
-	"trxd/api/routes/users_register"
 	"trxd/db/sqlc"
 	"trxd/utils/consts"
 	"trxd/utils/test_utils"
@@ -19,10 +18,10 @@ func errorf(val interface{}) JSON {
 }
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "challenge_delete")
+	test_utils.Main(m, "../../../", "challenges_delete")
 }
 
-var testChallengeDelete = []struct {
+var testData = []struct {
 	testBody         interface{}
 	expectedStatus   int
 	expectedResponse JSON
@@ -52,17 +51,14 @@ var testChallengeDelete = []struct {
 	},
 }
 
-func TestChallengeDelete(t *testing.T) {
+func TestRoute(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	_, err := users_register.RegisterUser(t.Context(), "author", "author@test.test", "authorpass", sqlc.UserRoleAuthor)
-	if err != nil {
-		t.Fatalf("Failed to register author user: %v", err)
-	}
+	test_utils.RegisterUser(t, "author", "author@test.test", "authorpass", sqlc.UserRoleAuthor)
 
 	var challID int32
-	for _, test := range testChallengeDelete {
+	for _, test := range testData {
 		_, err := categories_create.CreateCategory(t.Context(), "cat", "icon")
 		if err != nil {
 			t.Fatalf("Failed to create category: %v", err)

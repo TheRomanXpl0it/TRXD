@@ -17,10 +17,10 @@ func errorf(val interface{}) JSON {
 }
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "user_info")
+	test_utils.Main(m, "../../../", "users_info")
 }
 
-func TestUserInfo(t *testing.T) {
+func TestRoute(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 

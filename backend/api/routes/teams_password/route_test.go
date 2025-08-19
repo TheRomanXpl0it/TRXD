@@ -6,7 +6,6 @@ import (
 	"testing"
 	"trxd/api"
 	"trxd/api/routes/teams_register"
-	"trxd/api/routes/users_register"
 	"trxd/db"
 	"trxd/db/sqlc"
 	"trxd/utils/consts"
@@ -20,10 +19,10 @@ func errorf(val interface{}) JSON {
 }
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "team_password")
+	test_utils.Main(m, "../../../", "teams_password")
 }
 
-var testResetTeamPassword = []struct {
+var testData = []struct {
 	testBody         interface{}
 	expectedStatus   int
 	expectedResponse JSON
@@ -53,7 +52,7 @@ var testResetTeamPassword = []struct {
 	},
 }
 
-func TestResetTeamPassword(t *testing.T) {
+func TestRoute(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
@@ -62,21 +61,8 @@ func TestResetTeamPassword(t *testing.T) {
 		t.Fatalf("Failed to update config: %v", err)
 	}
 
-	admin, err := users_register.RegisterUser(t.Context(), "admin", "admin@test.test", "adminpass", sqlc.UserRoleAdmin)
-	if err != nil {
-		t.Fatalf("Failed to register admin user: %v", err)
-	}
-	if admin == nil {
-		t.Fatal("User registration returned nil")
-	}
-
-	user, err := users_register.RegisterUser(t.Context(), "test", "test@test.test", "testpass")
-	if err != nil {
-		t.Fatalf("Failed to register test user: %v", err)
-	}
-	if user == nil {
-		t.Fatal("User registration returned nil")
-	}
+	test_utils.RegisterUser(t, "admin", "admin@test.test", "adminpass", sqlc.UserRoleAdmin)
+	user := test_utils.RegisterUser(t, "test", "test@test.test", "testpass", sqlc.UserRolePlayer)
 	team, err := teams_register.RegisterTeam(t.Context(), "test", "testpass", user.ID)
 	if err != nil {
 		t.Fatalf("Failed to register test team: %v", err)
@@ -86,7 +72,7 @@ func TestResetTeamPassword(t *testing.T) {
 	}
 	password := "testpass"
 
-	for i, test := range testResetTeamPassword {
+	for i, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
 		session.Post("/users/login", JSON{"email": "admin@test.test", "password": "adminpass"}, http.StatusOK)
 		if body, ok := test.testBody.(JSON); ok && body != nil {

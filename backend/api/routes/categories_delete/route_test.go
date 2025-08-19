@@ -6,7 +6,6 @@ import (
 	"testing"
 	"trxd/api"
 	"trxd/api/routes/categories_create"
-	"trxd/api/routes/users_register"
 	"trxd/db/sqlc"
 	"trxd/utils/consts"
 	"trxd/utils/test_utils"
@@ -19,10 +18,10 @@ func errorf(val interface{}) JSON {
 }
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "category_delete")
+	test_utils.Main(m, "../../../", "categories_delete")
 }
 
-var testCategoryDelete = []struct {
+var testData = []struct {
 	testBody         interface{}
 	expectedStatus   int
 	expectedResponse JSON
@@ -52,16 +51,13 @@ var testCategoryDelete = []struct {
 	},
 }
 
-func TestDeleteCategoryDelete(t *testing.T) {
+func TestRoute(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	_, err := users_register.RegisterUser(t.Context(), "author", "author@test.test", "authorpass", sqlc.UserRoleAuthor)
-	if err != nil {
-		t.Fatalf("Failed to register author user: %v", err)
-	}
+	test_utils.RegisterUser(t, "author", "author@test.test", "authorpass", sqlc.UserRoleAuthor)
 
-	for _, test := range testCategoryDelete {
+	for _, test := range testData {
 		_, err := categories_create.CreateCategory(t.Context(), "cat", "icon")
 		if err != nil {
 			t.Fatalf("Failed to create category: %v", err)

@@ -5,7 +5,6 @@ import (
 	"strings"
 	"testing"
 	"trxd/api"
-	"trxd/api/routes/users_register"
 	"trxd/db/sqlc"
 	"trxd/utils/consts"
 	"trxd/utils/test_utils"
@@ -18,10 +17,10 @@ func errorf(val interface{}) JSON {
 }
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "flag_update")
+	test_utils.Main(m, "../../../", "flags_update")
 }
 
-var testFlagUpdate = []struct {
+var testData = []struct {
 	testBody         interface{}
 	expectedStatus   int
 	expectedResponse JSON
@@ -84,17 +83,11 @@ var testFlagUpdate = []struct {
 	},
 }
 
-func TestFlagUpdate(t *testing.T) {
+func TestRoute(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	user, err := users_register.RegisterUser(t.Context(), "test", "test@test.test", "testpass", sqlc.UserRoleAuthor)
-	if err != nil {
-		t.Fatalf("Failed to register author user: %v", err)
-	}
-	if user == nil {
-		t.Fatal("User registration returned nil")
-	}
+	test_utils.RegisterUser(t, "test", "test@test.test", "testpass", sqlc.UserRoleAuthor)
 
 	session := test_utils.NewApiTestSession(t, app)
 	session.Post("/users/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
@@ -109,7 +102,7 @@ func TestFlagUpdate(t *testing.T) {
 		}
 	}
 
-	for _, test := range testFlagUpdate {
+	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
 		session.Post("/users/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
 		if body, ok := test.testBody.(JSON); ok && body != nil {

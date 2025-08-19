@@ -9,7 +9,6 @@ import (
 	"trxd/api/routes/challenges_create"
 	"trxd/api/routes/flags_create"
 	"trxd/api/routes/teams_register"
-	"trxd/api/routes/users_register"
 	"trxd/db/sqlc"
 	"trxd/utils/consts"
 	"trxd/utils/test_utils"
@@ -22,10 +21,10 @@ func errorf(val interface{}) JSON {
 }
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "challenge_submit")
+	test_utils.Main(m, "../../../", "flags_submit")
 }
 
-var testChallengeSubmit = []struct {
+var testData = []struct {
 	testBody         interface{}
 	expectedStatus   int
 	expectedResponse JSON
@@ -91,7 +90,7 @@ var testChallengeSubmit = []struct {
 	},
 }
 
-func TestChallengeSubmit(t *testing.T) {
+func TestRoute(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
@@ -100,25 +99,13 @@ func TestChallengeSubmit(t *testing.T) {
 	session.Post("/flags/submit", JSON{"chall_id": 0, "flag": "flag{test}"}, http.StatusForbidden)
 	session.CheckResponse(errorf(consts.Forbidden))
 
-	user3, err := users_register.RegisterUser(t.Context(), "test3", "test3@test.test", "testpass", sqlc.UserRoleAdmin)
-	if err != nil {
-		t.Fatalf("Failed to register test user: %v", err)
-	}
-	if user3 == nil {
-		t.Fatal("User registration returned nil")
-	}
+	test_utils.RegisterUser(t, "test3", "test3@test.test", "testpass", sqlc.UserRoleAdmin)
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/users/login", JSON{"email": "test3@test.test", "password": "testpass"}, http.StatusOK)
 	session.Post("/flags/submit", JSON{"chall_id": 0, "flag": "flag{test}"}, http.StatusNotFound)
 	session.CheckResponse(errorf(consts.ChallengeNotFound))
 
-	user, err := users_register.RegisterUser(t.Context(), "test", "test@test.test", "testpass")
-	if err != nil {
-		t.Fatalf("Failed to register test user: %v", err)
-	}
-	if user == nil {
-		t.Fatal("User registration returned nil")
-	}
+	user := test_utils.RegisterUser(t, "test", "test@test.test", "testpass", sqlc.UserRolePlayer)
 	team, err := teams_register.RegisterTeam(t.Context(), "test-team", "teampasswd", user.ID)
 	if err != nil {
 		t.Fatalf("Failed to register test team: %v", err)
@@ -126,13 +113,7 @@ func TestChallengeSubmit(t *testing.T) {
 	if team == nil {
 		t.Fatal("Team registration returned nil")
 	}
-	user2, err := users_register.RegisterUser(t.Context(), "test-2", "test-2@test.test", "testpass")
-	if err != nil {
-		t.Fatalf("Failed to register test user 2: %v", err)
-	}
-	if user2 == nil {
-		t.Fatal("User2 registration returned nil")
-	}
+	user2 := test_utils.RegisterUser(t, "test-2", "test-2@test.test", "testpass", sqlc.UserRolePlayer)
 	team2, err := teams_register.RegisterTeam(t.Context(), "test-team-2", "teampasswd", user2.ID)
 	if err != nil {
 		t.Fatalf("Failed to register test team 2: %v", err)
@@ -163,7 +144,7 @@ func TestChallengeSubmit(t *testing.T) {
 		t.Fatal("Flag creation returned nil")
 	}
 
-	for _, test := range testChallengeSubmit {
+	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
 		if test.secondUser {
 			session.Post("/users/login", JSON{"email": "test-2@test.test", "password": "testpass"}, http.StatusOK)
