@@ -4,8 +4,6 @@ import (
 	"net/http"
 	"testing"
 	"trxd/api"
-	"trxd/api/routes/categories_create"
-	"trxd/api/routes/challenges_create"
 	"trxd/db/sqlc"
 	"trxd/utils/consts"
 	"trxd/utils/test_utils"
@@ -18,7 +16,7 @@ func errorf(val interface{}) JSON {
 }
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "challenges_delete")
+	test_utils.Main(m)
 }
 
 var testData = []struct {
@@ -59,20 +57,15 @@ func TestRoute(t *testing.T) {
 
 	var challID int32
 	for _, test := range testData {
-		_, err := categories_create.CreateCategory(t.Context(), "cat", "icon")
-		if err != nil {
-			t.Fatalf("Failed to create category: %v", err)
-		}
-		chall, err := challenges_create.CreateChallenge(t.Context(), "chall", "cat", "test-desc", sqlc.DeployTypeNormal, 1, sqlc.ScoreTypeStatic)
-		if err != nil {
-			t.Fatalf("Failed to create challenge: %v", err)
-		}
+		session := test_utils.NewApiTestSession(t, app)
+		session.Post("/users/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
+		session.Post("/categories/create", JSON{"name": "cat", "icon": "icon"}, -1)
+
+		chall := test_utils.TryCreateChallenge(t, "chall", "cat", "test-desc", sqlc.DeployTypeNormal, 1, sqlc.ScoreTypeStatic)
 		if chall != nil {
 			challID = chall.ID
 		}
 
-		session := test_utils.NewApiTestSession(t, app)
-		session.Post("/users/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
 		if body, ok := test.testBody.(JSON); ok && body != nil {
 			if content, ok := body["chall_id"]; ok && content == "" {
 				test.testBody.(JSON)["chall_id"] = challID

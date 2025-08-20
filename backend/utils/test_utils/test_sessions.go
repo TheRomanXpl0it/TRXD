@@ -16,6 +16,7 @@ type apiTestSession struct {
 	app      *fiber.App
 	Cookies  []*http.Cookie
 	lastResp *http.Response
+	UserID   *int32
 }
 
 func NewApiTestSession(t *testing.T, app *fiber.App) *apiTestSession {
@@ -71,7 +72,7 @@ func (s *apiTestSession) Request(method string, url string, body interface{}, ex
 		s.t.Fatalf("Failed to perform request: %v", err)
 	}
 
-	if resp.StatusCode != expectedStatus {
+	if expectedStatus != -1 && resp.StatusCode != expectedStatus {
 		s.t.Errorf("%s %s: Expected status %d, got %d", method, url, expectedStatus, resp.StatusCode)
 	}
 

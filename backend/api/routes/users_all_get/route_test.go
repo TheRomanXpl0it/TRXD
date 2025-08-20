@@ -5,14 +5,13 @@ import (
 	"testing"
 	"trxd/api"
 	"trxd/db/sqlc"
-	"trxd/utils"
 	"trxd/utils/test_utils"
 )
 
 type JSON map[string]interface{}
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "users_all_get")
+	test_utils.Main(m)
 }
 
 func TestRoute(t *testing.T) {
@@ -57,13 +56,8 @@ func TestRoute(t *testing.T) {
 	session := test_utils.NewApiTestSession(t, app)
 	session.Get("/users", nil, http.StatusOK)
 	body := session.Body()
-	for _, user := range body.([]interface{}) {
-		delete(user.(map[string]interface{}), "id")
-	}
-	err := utils.Compare(expectedNoAuth, body)
-	if err != nil {
-		t.Fatalf("Compare Error: %v", err)
-	}
+	test_utils.DeleteKeys(body, "id")
+	test_utils.Compare(t, expectedNoAuth, body)
 
 	expectedPlayer := []JSON{
 		{
@@ -112,13 +106,8 @@ func TestRoute(t *testing.T) {
 	session.Post("/users/register", JSON{"username": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
 	session.Get("/users", nil, http.StatusOK)
 	body = session.Body()
-	for _, user := range body.([]interface{}) {
-		delete(user.(map[string]interface{}), "id")
-	}
-	err = utils.Compare(expectedPlayer, body)
-	if err != nil {
-		t.Fatalf("Compare Error: %v", err)
-	}
+	test_utils.DeleteKeys(body, "id")
+	test_utils.Compare(t, expectedPlayer, body)
 
 	expectedAdmin := []JSON{
 		{
@@ -193,11 +182,6 @@ func TestRoute(t *testing.T) {
 	session.Post("/users/login", JSON{"email": "admin@test.com", "password": "testpass"}, http.StatusOK)
 	session.Get("/users", nil, http.StatusOK)
 	body = session.Body()
-	for _, user := range body.([]interface{}) {
-		delete(user.(map[string]interface{}), "id")
-	}
-	err = utils.Compare(expectedAdmin, body)
-	if err != nil {
-		t.Fatalf("Compare Error: %v", err)
-	}
+	test_utils.DeleteKeys(body, "id")
+	test_utils.Compare(t, expectedAdmin, body)
 }

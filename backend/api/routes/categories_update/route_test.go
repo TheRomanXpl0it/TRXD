@@ -17,7 +17,7 @@ func errorf(val interface{}) JSON {
 }
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "categories_update")
+	test_utils.Main(m)
 }
 
 var testData = []struct {

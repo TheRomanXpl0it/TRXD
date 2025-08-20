@@ -16,7 +16,7 @@ func errorf(val interface{}) JSON {
 }
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "teams_register")
+	test_utils.Main(m)
 }
 
 var testData = []struct {
@@ -82,17 +82,9 @@ func TestRoute(t *testing.T) {
 	defer app.Shutdown()
 
 	session := test_utils.NewApiTestSession(t, app)
-	session.Post("/users/register", JSON{
-		"username": "test",
-		"email":    "test@test.test",
-		"password": "testpass",
-	}, http.StatusOK)
+	session.Post("/users/register", JSON{"username": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
 	session = test_utils.NewApiTestSession(t, app)
-	session.Post("/users/register", JSON{
-		"username": "test2",
-		"email":    "test2@test.test",
-		"password": "testpass",
-	}, http.StatusOK)
+	session.Post("/users/register", JSON{"username": "test2", "email": "test2@test.test", "password": "testpass"}, http.StatusOK)
 
 	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)

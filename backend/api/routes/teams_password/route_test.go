@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"testing"
 	"trxd/api"
-	"trxd/api/routes/teams_register"
-	"trxd/db"
 	"trxd/db/sqlc"
 	"trxd/utils/consts"
 	"trxd/utils/test_utils"
@@ -19,7 +17,7 @@ func errorf(val interface{}) JSON {
 }
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "teams_password")
+	test_utils.Main(m)
 }
 
 var testData = []struct {
@@ -56,20 +54,9 @@ func TestRoute(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	err := db.UpdateConfig(t.Context(), "allow-register", "true")
-	if err != nil {
-		t.Fatalf("Failed to update config: %v", err)
-	}
-
 	test_utils.RegisterUser(t, "admin", "admin@test.test", "adminpass", sqlc.UserRoleAdmin)
 	user := test_utils.RegisterUser(t, "test", "test@test.test", "testpass", sqlc.UserRolePlayer)
-	team, err := teams_register.RegisterTeam(t.Context(), "test", "testpass", user.ID)
-	if err != nil {
-		t.Fatalf("Failed to register test team: %v", err)
-	}
-	if team == nil {
-		t.Fatal("Team registration returned nil")
-	}
+	team := test_utils.RegisterTeam(t, "test", "testpass", user.ID)
 	password := "testpass"
 
 	for i, test := range testData {

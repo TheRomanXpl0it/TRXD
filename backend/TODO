@@ -1,6 +1,4 @@
-- rename tests
-- make function user register in tests
-- replace db interacitions with requests in tests
+- function to get chall_id
 - 8872
 
 - move countries from api to frontend or /static

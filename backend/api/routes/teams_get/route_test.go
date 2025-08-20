@@ -5,29 +5,21 @@ import (
 	"net/http"
 	"testing"
 	"trxd/api"
-	"trxd/db"
 	"trxd/db/sqlc"
-	"trxd/utils"
 	"trxd/utils/test_utils"
 )
 
 type JSON map[string]interface{}
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "teams_get")
+	test_utils.Main(m)
 }
 
 func TestRoute(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	A, err := db.GetTeamByName(t.Context(), "A")
-	if err != nil {
-		t.Fatalf("Failed to get team A: %v", err)
-	}
-	if A == nil {
-		t.Fatal("Team A not found")
-	}
+	A := test_utils.GetTeamByName(t, "A")
 
 	expectedPlayer := JSON{
 		"badges": []JSON{
@@ -37,7 +29,6 @@ func TestRoute(t *testing.T) {
 			},
 		},
 		"country": "",
-		"id":      A.ID,
 		"members": []JSON{
 			{
 				"name":  "a",
@@ -71,33 +62,15 @@ func TestRoute(t *testing.T) {
 	session := test_utils.NewApiTestSession(t, app)
 	session.Get(fmt.Sprintf("/teams/%d", A.ID), nil, http.StatusOK)
 	body := session.Body()
-	for _, member := range body.(map[string]interface{})["members"].([]interface{}) {
-		delete(member.(map[string]interface{}), "id")
-	}
-	for _, solve := range body.(map[string]interface{})["solves"].([]interface{}) {
-		delete(solve.(map[string]interface{}), "id")
-		delete(solve.(map[string]interface{}), "timestamp")
-	}
-	err = utils.Compare(expectedPlayer, body)
-	if err != nil {
-		t.Fatalf("Compare Error: %v", err)
-	}
+	test_utils.DeleteKeys(body, "id", "timestamp")
+	test_utils.Compare(t, expectedPlayer, body)
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/users/register", JSON{"username": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
 	session.Get(fmt.Sprintf("/teams/%d", A.ID), nil, http.StatusOK)
 	body = session.Body()
-	for _, member := range body.(map[string]interface{})["members"].([]interface{}) {
-		delete(member.(map[string]interface{}), "id")
-	}
-	for _, solve := range body.(map[string]interface{})["solves"].([]interface{}) {
-		delete(solve.(map[string]interface{}), "id")
-		delete(solve.(map[string]interface{}), "timestamp")
-	}
-	err = utils.Compare(expectedPlayer, body)
-	if err != nil {
-		t.Fatalf("Compare Error: %v", err)
-	}
+	test_utils.DeleteKeys(body, "id", "timestamp")
+	test_utils.Compare(t, expectedPlayer, body)
 
 	expectedAdmin := JSON{
 		"badges": []JSON{
@@ -107,7 +80,6 @@ func TestRoute(t *testing.T) {
 			},
 		},
 		"country": "",
-		"id":      A.ID,
 		"members": []JSON{
 			{
 				"name":  "a",
@@ -148,15 +120,6 @@ func TestRoute(t *testing.T) {
 	session.Post("/users/login", JSON{"email": "admin@admin.com", "password": "adminpass"}, http.StatusOK)
 	session.Get(fmt.Sprintf("/teams/%d", A.ID), nil, http.StatusOK)
 	body = session.Body()
-	for _, member := range body.(map[string]interface{})["members"].([]interface{}) {
-		delete(member.(map[string]interface{}), "id")
-	}
-	for _, solve := range body.(map[string]interface{})["solves"].([]interface{}) {
-		delete(solve.(map[string]interface{}), "id")
-		delete(solve.(map[string]interface{}), "timestamp")
-	}
-	err = utils.Compare(expectedAdmin, body)
-	if err != nil {
-		t.Fatalf("Compare Error: %v", err)
-	}
+	test_utils.DeleteKeys(body, "id", "timestamp")
+	test_utils.Compare(t, expectedAdmin, body)
 }

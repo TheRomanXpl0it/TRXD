@@ -15,7 +15,7 @@ func errorf(val interface{}) JSON {
 }
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../", "api")
+	test_utils.Main(m)
 }
 
 func Test404(t *testing.T) {

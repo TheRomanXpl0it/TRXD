@@ -6,14 +6,13 @@ import (
 	"testing"
 	"trxd/api"
 	"trxd/db/sqlc"
-	"trxd/utils"
 	"trxd/utils/test_utils"
 )
 
 type JSON map[string]interface{}
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "challenges_get")
+	test_utils.Main(m)
 }
 
 func TestRoute(t *testing.T) {
@@ -40,7 +39,6 @@ func TestRoute(t *testing.T) {
 		"description": "TEST chall-1 DESC",
 		"difficulty":  "Easy",
 		"first_blood": JSON{
-			"id":   1,
 			"name": "A",
 		},
 		"flags":    nil,
@@ -68,15 +66,8 @@ func TestRoute(t *testing.T) {
 	session.Post("/users/login", JSON{"email": "test2@test.test", "password": "testpass"}, http.StatusOK)
 	session.Get(fmt.Sprintf("/challenges/%d", id), nil, http.StatusOK)
 	body = session.Body()
-	delete(body.(map[string]interface{}), "id")
-	for _, solve := range body.(map[string]interface{})["solves_list"].([]interface{}) {
-		delete(solve.(map[string]interface{}), "id")
-		delete(solve.(map[string]interface{}), "timestamp")
-	}
-	err := utils.Compare(expectedPlayer, body)
-	if err != nil {
-		t.Fatalf("Compare Error: %v", err)
-	}
+	test_utils.DeleteKeys(body, "id", "timestamp")
+	test_utils.Compare(t, expectedPlayer, body)
 
 	expectedAuthor := JSON{
 		"attachments": []interface{}{},
@@ -88,7 +79,6 @@ func TestRoute(t *testing.T) {
 		"description": "TEST chall-1 DESC",
 		"difficulty":  "Easy",
 		"first_blood": JSON{
-			"id":   1,
 			"name": "A",
 		},
 		"flags": []JSON{
@@ -127,15 +117,8 @@ func TestRoute(t *testing.T) {
 	session.Post("/users/login", JSON{"email": "test3@test.test", "password": "testpass"}, http.StatusOK)
 	session.Get(fmt.Sprintf("/challenges/%d", id), nil, http.StatusOK)
 	body = session.Body()
-	delete(body.(map[string]interface{}), "id")
-	for _, solve := range body.(map[string]interface{})["solves_list"].([]interface{}) {
-		delete(solve.(map[string]interface{}), "id")
-		delete(solve.(map[string]interface{}), "timestamp")
-	}
-	err = utils.Compare(expectedAuthor, body)
-	if err != nil {
-		t.Fatalf("Compare Error: %v", err)
-	}
+	test_utils.DeleteKeys(body, "id", "timestamp")
+	test_utils.Compare(t, expectedAuthor, body)
 
 	expectedAuthorHidden := JSON{
 		"attachments": []interface{}{},
@@ -176,13 +159,6 @@ func TestRoute(t *testing.T) {
 
 	session.Get(fmt.Sprintf("/challenges/%d", id), nil, http.StatusOK)
 	body = session.Body()
-	delete(body.(map[string]interface{}), "id")
-	for _, solve := range body.(map[string]interface{})["solves_list"].([]interface{}) {
-		delete(solve.(map[string]interface{}), "id")
-		delete(solve.(map[string]interface{}), "timestamp")
-	}
-	err = utils.Compare(expectedAuthorHidden, body)
-	if err != nil {
-		t.Fatalf("Compare Error: %v", err)
-	}
+	test_utils.DeleteKeys(body, "id", "timestamp")
+	test_utils.Compare(t, expectedAuthorHidden, body)
 }

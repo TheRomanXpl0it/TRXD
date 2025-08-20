@@ -12,7 +12,7 @@ import (
 type JSON map[string]interface{}
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../", "auth")
+	test_utils.Main(m)
 }
 
 var testAuthMiddlewares = []struct {

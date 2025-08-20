@@ -10,7 +10,7 @@ import (
 type JSON map[string]interface{}
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "users_logout")
+	test_utils.Main(m)
 }
 
 var testData = []struct {

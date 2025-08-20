@@ -17,7 +17,7 @@ func errorf(val interface{}) JSON {
 }
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "flags_update")
+	test_utils.Main(m)
 }
 
 var testData = []struct {
@@ -88,7 +88,6 @@ func TestRoute(t *testing.T) {
 	defer app.Shutdown()
 
 	test_utils.RegisterUser(t, "test", "test@test.test", "testpass", sqlc.UserRoleAuthor)
-
 	session := test_utils.NewApiTestSession(t, app)
 	session.Post("/users/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
 	session.Get("/challenges", nil, http.StatusOK)

@@ -5,7 +5,6 @@ import (
 	"strings"
 	"testing"
 	"trxd/api"
-	"trxd/api/routes/categories_create"
 	"trxd/db/sqlc"
 	"trxd/utils/consts"
 	"trxd/utils/test_utils"
@@ -18,7 +17,7 @@ func errorf(val interface{}) JSON {
 }
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "challenges_create")
+	test_utils.Main(m)
 }
 
 var testData = []struct {
@@ -118,10 +117,9 @@ func TestRoute(t *testing.T) {
 	defer app.Shutdown()
 
 	test_utils.RegisterUser(t, "author", "author@test.test", "authorpass", sqlc.UserRoleAuthor)
-	_, err := categories_create.CreateCategory(t.Context(), "cat", "icon")
-	if err != nil {
-		t.Fatalf("Failed to create category: %v", err)
-	}
+	session := test_utils.NewApiTestSession(t, app)
+	session.Post("/users/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
+	session.Post("/categories/create", JSON{"name": "cat", "icon": "icon"}, http.StatusOK)
 
 	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)

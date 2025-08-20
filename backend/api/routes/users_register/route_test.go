@@ -5,7 +5,6 @@ import (
 	"strings"
 	"testing"
 	"trxd/api"
-	"trxd/db"
 	"trxd/utils/consts"
 	"trxd/utils/test_utils"
 )
@@ -17,7 +16,7 @@ func errorf(val interface{}) JSON {
 }
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "users_register")
+	test_utils.Main(m)
 }
 
 var testData = []struct {
@@ -104,18 +103,12 @@ func TestRoute(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	err := db.UpdateConfig(t.Context(), "allow-register", "false")
-	if err != nil {
-		t.Fatalf("Failed to update config: %v", err)
-	}
+	test_utils.UpdateConfig(t, "allow-register", "false")
 	session := test_utils.NewApiTestSession(t, app)
 	session.Post("/users/register", JSON{"username": "test", "email": "allow@test.test", "password": "testpass"}, http.StatusForbidden)
 	session.CheckResponse(errorf(consts.DisabledRegistration))
 
-	err = db.UpdateConfig(t.Context(), "allow-register", "true")
-	if err != nil {
-		t.Fatalf("Failed to update config: %v", err)
-	}
+	test_utils.UpdateConfig(t, "allow-register", "true")
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/users/register", JSON{"username": "test", "email": "allow@test.test", "password": "testpass"}, http.StatusOK)
 	session.CheckResponse(nil)

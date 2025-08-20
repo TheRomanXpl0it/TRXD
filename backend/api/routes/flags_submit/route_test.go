@@ -5,10 +5,6 @@ import (
 	"strings"
 	"testing"
 	"trxd/api"
-	"trxd/api/routes/categories_create"
-	"trxd/api/routes/challenges_create"
-	"trxd/api/routes/flags_create"
-	"trxd/api/routes/teams_register"
 	"trxd/db/sqlc"
 	"trxd/utils/consts"
 	"trxd/utils/test_utils"
@@ -21,7 +17,7 @@ func errorf(val interface{}) JSON {
 }
 
 func TestMain(m *testing.M) {
-	test_utils.Main(m, "../../../", "flags_submit")
+	test_utils.Main(m)
 }
 
 var testData = []struct {
@@ -105,44 +101,21 @@ func TestRoute(t *testing.T) {
 	session.Post("/flags/submit", JSON{"chall_id": 0, "flag": "flag{test}"}, http.StatusNotFound)
 	session.CheckResponse(errorf(consts.ChallengeNotFound))
 
-	user := test_utils.RegisterUser(t, "test", "test@test.test", "testpass", sqlc.UserRolePlayer)
-	team, err := teams_register.RegisterTeam(t.Context(), "test-team", "teampasswd", user.ID)
-	if err != nil {
-		t.Fatalf("Failed to register test team: %v", err)
-	}
-	if team == nil {
-		t.Fatal("Team registration returned nil")
-	}
-	user2 := test_utils.RegisterUser(t, "test-2", "test-2@test.test", "testpass", sqlc.UserRolePlayer)
-	team2, err := teams_register.RegisterTeam(t.Context(), "test-team-2", "teampasswd", user2.ID)
-	if err != nil {
-		t.Fatalf("Failed to register test team 2: %v", err)
-	}
-	if team2 == nil {
-		t.Fatal("Team2 registration returned nil")
-	}
+	test_utils.RegisterUser(t, "test", "test@test.test", "testpass", sqlc.UserRolePlayer)
+	session = test_utils.NewApiTestSession(t, app)
+	session.Post("/users/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/teams/register", JSON{"name": "test-team", "password": "teampasswd"}, http.StatusOK)
 
-	cat, err := categories_create.CreateCategory(t.Context(), "cat", "icon")
-	if err != nil {
-		t.Fatalf("Failed to create category: %v", err)
-	}
-	if cat == nil {
-		t.Fatal("Category creation returned nil")
-	}
-	chall, err := challenges_create.CreateChallenge(t.Context(), "chall", cat.Name, "test-desc", sqlc.DeployTypeNormal, 1, sqlc.ScoreTypeDynamic)
-	if err != nil {
-		t.Fatalf("Failed to create challenge: %v", err)
-	}
-	if chall == nil {
-		t.Fatal("Challenge creation returned nil")
-	}
-	flag, err := flags_create.CreateFlag(t.Context(), chall.ID, "flag{test}", false)
-	if err != nil {
-		t.Fatalf("Failed to create flag: %v", err)
-	}
-	if flag == nil {
-		t.Fatal("Flag creation returned nil")
-	}
+	test_utils.RegisterUser(t, "test-2", "test-2@test.test", "testpass", sqlc.UserRolePlayer)
+	session = test_utils.NewApiTestSession(t, app)
+	session.Post("/users/login", JSON{"email": "test-2@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/teams/register", JSON{"name": "test-team-2", "password": "teampasswd"}, http.StatusOK)
+
+	session = test_utils.NewApiTestSession(t, app)
+	session.Post("/users/login", JSON{"email": "test3@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/categories/create", JSON{"name": "cat", "icon": "icon"}, http.StatusOK)
+	chall := test_utils.CreateChallenge(t, "chall", "cat", "test-desc", sqlc.DeployTypeNormal, 1, sqlc.ScoreTypeDynamic)
+	session.Post("/flags/create", JSON{"chall_id": chall.ID, "flag": "flag{test}", "regex": false}, http.StatusOK)
 
 	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
