@@ -1,11 +1,9 @@
+import os
 import sys
 import requests
 import threading
 
-try:
-	N = int(sys.argv[1])
-except:
-	N = 50
+N = int(os.getenv("TEST_WORKERS", 50))
 print(f"Running with {N} threads")
 
 COUNTER = 0

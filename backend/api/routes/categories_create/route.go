@@ -34,8 +34,5 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusConflict, consts.CategoryAlreadyExists)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"name": category.Name,
-		"icon": category.Icon,
-	})
+	return c.SendStatus(fiber.StatusOK)
 }

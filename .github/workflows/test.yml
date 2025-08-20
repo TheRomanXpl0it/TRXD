@@ -6,6 +6,14 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  POSTGRES_DB: testdb
+  POSTGRES_USER: testuser
+  POSTGRES_PASSWORD: testpass
+  POSTGRES_PORT: 2345
+  CLICOLOR_FORCE: 1
+  TEST_WORKERS: 500
+
 defaults:
   run:
     working-directory: ./backend
@@ -70,21 +78,13 @@ jobs:
           sleep 2
         done
 
-    - name: Set environment variables
-      run: |
-        echo "POSTGRES_DB=testdb" >> $GITHUB_ENV
-        echo "POSTGRES_USER=testuser" >> $GITHUB_ENV
-        echo "POSTGRES_PASSWORD=testpass" >> $GITHUB_ENV
-        echo "POSTGRES_PORT=2345" >> $GITHUB_ENV
-        echo "CLICOLOR_FORCE=1" >> $GITHUB_ENV
-
     - name: Build main binary
       run: |
         go build .
 
     - name: Run Go Unit tests
       run: |
-        go test -v ./...
+        go test -p=8 -v ./...
 
     - name: Run Python Integration tests
       run: |
@@ -103,20 +103,18 @@ jobs:
           cat server.pid | xargs kill
           exit 1
         fi
-
-
-        ./trxd -test-data-WARNING-DO-NOT-USE-IN-PRODUCTION
-        ./trxd -t
-
         cd ../tests/
-        python3 register_team_race.py 500
 
-        cd ../backend
-        ./trxd -test-data-WARNING-DO-NOT-USE-IN-PRODUCTION
-        ./trxd -t
+        for file in *.py; do
+          echo "Running Test: $file"
+          
+          cd ../backend
+          ./trxd -test-data-WARNING-DO-NOT-USE-IN-PRODUCTION
+          ./trxd -t
 
-        cd ../tests/
-        python3 submit_race.py 500
+          cd ../tests/
+          python3 $file
+        done
 
         cd -
         kill $(cat ./server.pid)

@@ -51,9 +51,8 @@ var testData = []struct {
 		expectedResponse: errorf(consts.LongIcon),
 	},
 	{
-		testBody:         JSON{"name": "test", "icon": "test"},
-		expectedStatus:   http.StatusOK,
-		expectedResponse: JSON{"name": "test", "icon": "test"},
+		testBody:       JSON{"name": "test", "icon": "test"},
+		expectedStatus: http.StatusOK,
 	},
 	{
 		testBody:         JSON{"name": "test", "icon": "test"},
@@ -61,9 +60,8 @@ var testData = []struct {
 		expectedResponse: errorf(consts.CategoryAlreadyExists),
 	},
 	{
-		testBody:         JSON{"name": "test2", "icon": "test"},
-		expectedStatus:   http.StatusOK,
-		expectedResponse: JSON{"name": "test2", "icon": "test"},
+		testBody:       JSON{"name": "test2", "icon": "test"},
+		expectedStatus: http.StatusOK,
 	},
 }
 

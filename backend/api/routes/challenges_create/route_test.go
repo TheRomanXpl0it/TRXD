@@ -96,9 +96,8 @@ var testData = []struct {
 		expectedResponse: errorf(consts.CategoryNotFound),
 	},
 	{
-		testBody:         JSON{"name": "test", "category": "cat", "description": "test-desc", "type": "Normal", "max_points": 1, "score_type": "Static"},
-		expectedStatus:   http.StatusOK,
-		expectedResponse: JSON{"name": "test", "category": "cat"},
+		testBody:       JSON{"name": "test", "category": "cat", "description": "test-desc", "type": "Normal", "max_points": 1, "score_type": "Static"},
+		expectedStatus: http.StatusOK,
 	},
 	{
 		testBody:         JSON{"name": "test", "category": "cat", "description": "test-desc", "type": "Normal", "max_points": 1, "score_type": "Static"},
@@ -106,9 +105,8 @@ var testData = []struct {
 		expectedResponse: errorf(consts.ChallengeAlreadyExists),
 	},
 	{
-		testBody:         JSON{"name": "test2", "category": "cat", "description": "test-desc", "type": "Normal", "max_points": 1, "score_type": "Static"},
-		expectedStatus:   http.StatusOK,
-		expectedResponse: JSON{"name": "test2", "category": "cat"},
+		testBody:       JSON{"name": "test2", "category": "cat", "description": "test-desc", "type": "Normal", "max_points": 1, "score_type": "Static"},
+		expectedStatus: http.StatusOK,
 	},
 }
 
