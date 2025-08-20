@@ -768,6 +768,60 @@ func (q *Queries) UpdateCategoryIcon(ctx context.Context, arg UpdateCategoryIcon
 	return err
 }
 
+const updateChallenge = `-- name: UpdateChallenge :exec
+UPDATE challenges
+SET
+  name = COALESCE($1, name),
+  category = COALESCE($2, category),
+  description = COALESCE($3, description),
+  difficulty = COALESCE($4, difficulty),
+  authors = COALESCE($5, authors),
+  type = COALESCE($6, type),
+  hidden = COALESCE($7, hidden),
+  max_points = COALESCE($8, max_points),
+  score_type = COALESCE($9, score_type),
+  host = COALESCE($10, host),
+  port = COALESCE($11, port),
+  attachments = COALESCE($12, attachments)
+WHERE id = $13
+`
+
+type UpdateChallengeParams struct {
+	Name        sql.NullString `json:"name"`
+	Category    sql.NullString `json:"category"`
+	Description sql.NullString `json:"description"`
+	Difficulty  sql.NullString `json:"difficulty"`
+	Authors     sql.NullString `json:"authors"`
+	Type        NullDeployType `json:"type"`
+	Hidden      sql.NullBool   `json:"hidden"`
+	MaxPoints   sql.NullInt32  `json:"max_points"`
+	ScoreType   NullScoreType  `json:"score_type"`
+	Host        sql.NullString `json:"host"`
+	Port        sql.NullInt32  `json:"port"`
+	Attachments sql.NullString `json:"attachments"`
+	ChallID     int32          `json:"chall_id"`
+}
+
+// Updates the challenge with the given ID
+func (q *Queries) UpdateChallenge(ctx context.Context, arg UpdateChallengeParams) error {
+	_, err := q.exec(ctx, q.updateChallengeStmt, updateChallenge,
+		arg.Name,
+		arg.Category,
+		arg.Description,
+		arg.Difficulty,
+		arg.Authors,
+		arg.Type,
+		arg.Hidden,
+		arg.MaxPoints,
+		arg.ScoreType,
+		arg.Host,
+		arg.Port,
+		arg.Attachments,
+		arg.ChallID,
+	)
+	return err
+}
+
 const updateChallengesCategory = `-- name: UpdateChallengesCategory :exec
 UPDATE challenges SET category = $1 WHERE category = $2
 `
@@ -780,6 +834,45 @@ type UpdateChallengesCategoryParams struct {
 // update category name in challenges table
 func (q *Queries) UpdateChallengesCategory(ctx context.Context, arg UpdateChallengesCategoryParams) error {
 	_, err := q.exec(ctx, q.updateChallengesCategoryStmt, updateChallengesCategory, arg.NewCategory, arg.OldCategory)
+	return err
+}
+
+const updateDockerConfigs = `-- name: UpdateDockerConfigs :exec
+UPDATE docker_configs
+SET
+  image = COALESCE($1, image),
+  compose = COALESCE($2, compose),
+  hash_domain = COALESCE($3, hash_domain),
+  lifetime = COALESCE($4, lifetime),
+  envs = COALESCE($5, envs),
+  max_memory = COALESCE($6, max_memory),
+  max_cpu = COALESCE($7, max_cpu)
+WHERE chall_id = $8
+`
+
+type UpdateDockerConfigsParams struct {
+	Image      sql.NullString `json:"image"`
+	Compose    sql.NullString `json:"compose"`
+	HashDomain sql.NullBool   `json:"hash_domain"`
+	Lifetime   sql.NullInt32  `json:"lifetime"`
+	Envs       sql.NullString `json:"envs"`
+	MaxMemory  sql.NullInt32  `json:"max_memory"`
+	MaxCpu     sql.NullString `json:"max_cpu"`
+	ChallID    int32          `json:"chall_id"`
+}
+
+// Updates the Docker configurations for the challenge with the given ID
+func (q *Queries) UpdateDockerConfigs(ctx context.Context, arg UpdateDockerConfigsParams) error {
+	_, err := q.exec(ctx, q.updateDockerConfigsStmt, updateDockerConfigs,
+		arg.Image,
+		arg.Compose,
+		arg.HashDomain,
+		arg.Lifetime,
+		arg.Envs,
+		arg.MaxMemory,
+		arg.MaxCpu,
+		arg.ChallID,
+	)
 	return err
 }
 

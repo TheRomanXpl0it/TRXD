@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"mime/multipart"
 	"net/http"
+	"os"
 	"testing"
 	"trxd/utils"
 
@@ -16,7 +18,6 @@ type apiTestSession struct {
 	app      *fiber.App
 	Cookies  []*http.Cookie
 	lastResp *http.Response
-	UserID   *int32
 }
 
 func NewApiTestSession(t *testing.T, app *fiber.App) *apiTestSession {
@@ -42,6 +43,26 @@ func (s *apiTestSession) updateCookies(newCookies []*http.Cookie) {
 	}
 }
 
+func (s *apiTestSession) SendRequest(req *http.Request, expectedStatus int) *http.Response {
+	for _, cookie := range s.Cookies {
+		req.AddCookie(cookie)
+	}
+
+	resp, err := s.app.Test(req)
+	if err != nil {
+		s.t.Fatalf("Failed to perform request: %v", err)
+	}
+
+	if expectedStatus != -1 && resp.StatusCode != expectedStatus {
+		s.t.Errorf("%s %s: Expected status %d, got %d", req.Method, req.URL.Path, expectedStatus, resp.StatusCode)
+	}
+
+	s.updateCookies(resp.Cookies())
+
+	s.lastResp = resp
+	return resp
+}
+
 func (s *apiTestSession) Request(method string, url string, body interface{}, expectedStatus int) *http.Response {
 	var reqBody []byte
 	var err error
@@ -56,30 +77,55 @@ func (s *apiTestSession) Request(method string, url string, body interface{}, ex
 	if url[0] != '/' {
 		url = "/" + url
 	}
+	url = "/api" + url
 
-	req, err := http.NewRequest(method, "/api"+url, bytes.NewReader(reqBody))
+	req, err := http.NewRequest(method, url, bytes.NewReader(reqBody))
 	if err != nil {
 		s.t.Fatalf("Failed to create request: %v", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	for _, cookie := range s.Cookies {
-		req.AddCookie(cookie)
+	return s.SendRequest(req, expectedStatus)
+}
+
+func (s *apiTestSession) UploadFiles(method string, url string, files []string, expectedStatus int) *http.Response {
+	var requestBody bytes.Buffer
+	writer := multipart.NewWriter(&requestBody)
+
+	for _, fileName := range files {
+		file, err := os.Open(fileName)
+		if err != nil {
+			s.t.Fatalf("Failed to open file %s: %v", fileName, err)
+		}
+		defer file.Close()
+
+		part, err := writer.CreateFormFile(fileName, fileName)
+		if err != nil {
+			s.t.Fatalf("Failed to create form file for %s: %v", fileName, err)
+		}
+		_, err = io.Copy(part, file)
+		if err != nil {
+			s.t.Fatalf("Failed to copy file content for %s: %v", fileName, err)
+		}
 	}
 
-	resp, err := s.app.Test(req)
+	err := writer.Close()
 	if err != nil {
-		s.t.Fatalf("Failed to perform request: %v", err)
+		s.t.Fatalf("Failed to close multipart writer: %v", err)
 	}
 
-	if expectedStatus != -1 && resp.StatusCode != expectedStatus {
-		s.t.Errorf("%s %s: Expected status %d, got %d", method, url, expectedStatus, resp.StatusCode)
+	if url[0] != '/' {
+		url = "/" + url
 	}
+	url = "/api" + url
 
-	s.updateCookies(resp.Cookies())
+	req, err := http.NewRequest(method, url, &requestBody)
+	if err != nil {
+		s.t.Fatalf("Failed to create request: %v", err)
+	}
+	req.Header.Set("Content-Type", writer.FormDataContentType())
 
-	s.lastResp = resp
-	return resp
+	return s.SendRequest(req, expectedStatus)
 }
 
 func (s *apiTestSession) Get(url string, body interface{}, expectedStatus int) *http.Response {

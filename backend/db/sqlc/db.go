@@ -135,11 +135,17 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateCategoryIconStmt, err = db.PrepareContext(ctx, updateCategoryIcon); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateCategoryIcon: %w", err)
 	}
+	if q.updateChallengeStmt, err = db.PrepareContext(ctx, updateChallenge); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateChallenge: %w", err)
+	}
 	if q.updateChallengesCategoryStmt, err = db.PrepareContext(ctx, updateChallengesCategory); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateChallengesCategory: %w", err)
 	}
 	if q.updateConfigStmt, err = db.PrepareContext(ctx, updateConfig); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateConfig: %w", err)
+	}
+	if q.updateDockerConfigsStmt, err = db.PrepareContext(ctx, updateDockerConfigs); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateDockerConfigs: %w", err)
 	}
 	if q.updateFlagStmt, err = db.PrepareContext(ctx, updateFlag); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateFlag: %w", err)
@@ -340,6 +346,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateCategoryIconStmt: %w", cerr)
 		}
 	}
+	if q.updateChallengeStmt != nil {
+		if cerr := q.updateChallengeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateChallengeStmt: %w", cerr)
+		}
+	}
 	if q.updateChallengesCategoryStmt != nil {
 		if cerr := q.updateChallengesCategoryStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateChallengesCategoryStmt: %w", cerr)
@@ -348,6 +359,11 @@ func (q *Queries) Close() error {
 	if q.updateConfigStmt != nil {
 		if cerr := q.updateConfigStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateConfigStmt: %w", cerr)
+		}
+	}
+	if q.updateDockerConfigsStmt != nil {
+		if cerr := q.updateDockerConfigsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateDockerConfigsStmt: %w", cerr)
 		}
 	}
 	if q.updateFlagStmt != nil {
@@ -441,8 +457,10 @@ type Queries struct {
 	resetUserPasswordStmt        *sql.Stmt
 	submitStmt                   *sql.Stmt
 	updateCategoryIconStmt       *sql.Stmt
+	updateChallengeStmt          *sql.Stmt
 	updateChallengesCategoryStmt *sql.Stmt
 	updateConfigStmt             *sql.Stmt
+	updateDockerConfigsStmt      *sql.Stmt
 	updateFlagStmt               *sql.Stmt
 	updateTeamStmt               *sql.Stmt
 	updateUserStmt               *sql.Stmt
@@ -489,8 +507,10 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		resetUserPasswordStmt:        q.resetUserPasswordStmt,
 		submitStmt:                   q.submitStmt,
 		updateCategoryIconStmt:       q.updateCategoryIconStmt,
+		updateChallengeStmt:          q.updateChallengeStmt,
 		updateChallengesCategoryStmt: q.updateChallengesCategoryStmt,
 		updateConfigStmt:             q.updateConfigStmt,
+		updateDockerConfigsStmt:      q.updateDockerConfigsStmt,
 		updateFlagStmt:               q.updateFlagStmt,
 		updateTeamStmt:               q.updateTeamStmt,
 		updateUserStmt:               q.updateUserStmt,

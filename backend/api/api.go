@@ -10,6 +10,7 @@ import (
 	"trxd/api/routes/challenges_create"
 	"trxd/api/routes/challenges_delete"
 	"trxd/api/routes/challenges_get"
+	"trxd/api/routes/challenges_update"
 	"trxd/api/routes/configs_update"
 	"trxd/api/routes/flags_create"
 	"trxd/api/routes/flags_delete"
@@ -82,7 +83,7 @@ func SetupApp() *fiber.App {
 	api.Delete("/categories/delete", middlewares.Author, categories_delete.Route)
 
 	api.Post("/challenges/create", middlewares.Author, challenges_create.Route)
-	// api.Patch("/challenges/update", middlewares.Author, challenges_update.Route)
+	api.Patch("/challenges/update", middlewares.Author, challenges_update.Route)
 	api.Delete("/challenges/delete", middlewares.Author, challenges_delete.Route)
 	api.Get("/challenges", middlewares.Spectator, middlewares.Team, challenges_all_get.Route)
 	api.Get("/challenges/:id", middlewares.Spectator, middlewares.Team, challenges_get.Route)

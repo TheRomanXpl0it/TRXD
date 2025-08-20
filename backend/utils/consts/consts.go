@@ -80,6 +80,11 @@ const (
 	Forbidden                  = "Forbidden"
 	ErrorFetchingCategory      = "Error fetching category"
 	ErrorUpdatingCategory      = "Error updating category"
+	InvalidMultipartForm       = "Invalid multipart form"
+	InvalidFormData            = "Invalid form data"
+	ErrorUpdatingChallenge     = "Error updating challenge"
+	ErrorUpdatingDockerConfigs = "Error updating docker configurations"
+	InvalidFilePath            = "Invalid file path"
 )
 
 var UserRegex = regexp.MustCompile(`(^[^@\s]+@[^@\s]+\.[^@\s]+$)`)

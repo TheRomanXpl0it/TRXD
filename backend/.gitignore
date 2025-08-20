@@ -1,6 +1,7 @@
 pgdata/
 .pgdata/
 tmp/
+attachments/
 
 .env
 trxd
