@@ -25,7 +25,7 @@ func fatalf(format string, a ...any) {
 func Main(m *testing.M) {
 	dir, err := os.Getwd()
 	if err != nil {
-		panic(err)
+		fatalf("Failed to get current directory: %v\n", err)
 	}
 
 	parts := strings.Split(dir, string(os.PathSeparator))
@@ -169,5 +169,34 @@ func DeleteKeys(data interface{}, keys ...string) interface{} {
 
 	default:
 		return val
+	}
+}
+
+func GetModuleName(t *testing.T) string {
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Failed to get current directory: %v", err)
+	}
+
+	return filepath.Base(dir)
+}
+
+func CreateDir(t *testing.T, dir string) {
+	err := os.MkdirAll(dir, 0755)
+	if err != nil {
+		t.Fatalf("Failed to create directory %s: %v", dir, err)
+	}
+}
+
+func CreateFile(t *testing.T, file string, content string) {
+	f, err := os.Create(file)
+	if err != nil {
+		t.Fatalf("Failed to create file %s: %v", file, err)
+	}
+	defer f.Close()
+
+	_, err = f.WriteString(content)
+	if err != nil {
+		t.Fatalf("Failed to write content to file %s: %v", file, err)
 	}
 }

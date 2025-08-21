@@ -9,25 +9,38 @@ import (
 )
 
 type Chall struct {
-	ID          int32                         `json:"id"`
-	Name        string                        `json:"name"`
-	Category    string                        `json:"category"`
-	Description string                        `json:"description"`
-	Difficulty  string                        `json:"difficulty"`
-	Authors     []string                      `json:"authors"`
-	Instance    bool                          `json:"instance"`
-	Hidden      bool                          `json:"hidden"`
-	Points      int32                         `json:"points"`
-	Solves      int32                         `json:"solves"`
+	ID          int32    `json:"id"`
+	Name        string   `json:"name"`
+	Category    string   `json:"category"`
+	Description string   `json:"description"`
+	Difficulty  string   `json:"difficulty"`
+	Authors     []string `json:"authors"`
+	Instance    bool     `json:"instance"`
+	// TODO: deploy_type
+	Hidden bool `json:"hidden"`
+	// TODO: max_points
+	// TODO: score_type
+	Points      int                           `json:"points"`
+	Solves      int                           `json:"solves"`
 	FirstBlood  *sqlc.GetFirstBloodRow        `json:"first_blood"`
 	Host        string                        `json:"host"`
-	Port        int32                         `json:"port"`
+	Port        int                           `json:"port"`
 	Attachments []string                      `json:"attachments"`
 	Tags        []string                      `json:"tags"`
 	Flags       []sqlc.GetFlagsByChallengeRow `json:"flags"`
-	Timeout     int32                         `json:"timeout"`
+	Timeout     int                           `json:"timeout"`
 	Solved      bool                          `json:"solved"`
 	SolvesList  []sqlc.GetChallengeSolvesRow  `json:"solves_list"`
+
+	/* // TODO
+	image
+	compose
+	hash_domain
+	lifetime
+	envs
+	max_memory
+	max_cpu
+	*/
 }
 
 func GetFlagsByChallenge(ctx context.Context, challengeID int32) ([]sqlc.GetFlagsByChallengeRow, error) {
@@ -105,13 +118,13 @@ func GetChallenge(ctx context.Context, id int32, uid int32, author bool) (*Chall
 	}
 	chall.Instance = challenge.Type != sqlc.DeployTypeNormal
 	chall.Hidden = challenge.Hidden
-	chall.Points = challenge.Points
-	chall.Solves = challenge.Solves
+	chall.Points = int(challenge.Points)
+	chall.Solves = int(challenge.Solves)
 	if challenge.Host.Valid {
 		chall.Host = challenge.Host.String
 	}
 	if challenge.Port.Valid {
-		chall.Port = challenge.Port.Int32
+		chall.Port = int(challenge.Port.Int32)
 	}
 	chall.Attachments = []string{}
 	if challenge.Attachments.Valid {

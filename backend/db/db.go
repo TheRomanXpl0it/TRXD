@@ -160,3 +160,12 @@ func initDB(test ...bool) (bool, error) {
 
 	return true, nil
 }
+
+func BeginTx(ctx context.Context) (*sql.Tx, error) {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return tx, nil
+}

@@ -37,7 +37,7 @@ func Route(c *fiber.Ctx) error {
 	if !utils.In(data.Type, []sqlc.DeployType{sqlc.DeployTypeNormal, sqlc.DeployTypeContainer, sqlc.DeployTypeCompose}) {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidChallType)
 	}
-	if data.MaxPoints <= 0 {
+	if data.MaxPoints < 0 {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidChallMaxPoints)
 	}
 	if !utils.In(data.ScoreType, []sqlc.ScoreType{sqlc.ScoreTypeStatic, sqlc.ScoreTypeDynamic}) {

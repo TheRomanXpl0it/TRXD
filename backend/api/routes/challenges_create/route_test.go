@@ -81,7 +81,7 @@ var testData = []struct {
 		expectedResponse: errorf(consts.InvalidChallType),
 	},
 	{
-		testBody:         JSON{"name": "test", "category": "cat", "description": "test-desc", "type": "Normal", "max_points": 0, "score_type": "Static"},
+		testBody:         JSON{"name": "test", "category": "cat", "description": "test-desc", "type": "Normal", "max_points": -1, "score_type": "Static"},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(consts.InvalidChallMaxPoints),
 	},

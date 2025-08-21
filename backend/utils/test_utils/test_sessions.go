@@ -3,10 +3,12 @@ package test_utils
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"os"
+	"path/filepath"
 	"testing"
 	"trxd/utils"
 
@@ -88,22 +90,51 @@ func (s *apiTestSession) Request(method string, url string, body interface{}, ex
 	return s.SendRequest(req, expectedStatus)
 }
 
-func (s *apiTestSession) UploadFiles(method string, url string, files []string, expectedStatus int) *http.Response {
+func (s *apiTestSession) RequestMultipart(method string, url string, body map[string]interface{}, files []string, fileNames []string, expectedStatus int) *http.Response {
 	var requestBody bytes.Buffer
 	writer := multipart.NewWriter(&requestBody)
 
-	for _, fileName := range files {
-		file, err := os.Open(fileName)
+	for field, content := range body {
+		switch content := content.(type) {
+		case []string:
+			for _, item := range content {
+				fieldWriter, err := writer.CreateFormField(field)
+				if err != nil {
+					s.t.Fatalf("Failed to create form field %s: %v", field, err)
+				}
+				_, err = fieldWriter.Write([]byte(item))
+				if err != nil {
+					s.t.Fatalf("Failed to write form field %s: %v", field, err)
+				}
+			}
+		default:
+			fieldWriter, err := writer.CreateFormField(field)
+			if err != nil {
+				s.t.Fatalf("Failed to create form field %s: %v", field, err)
+			}
+			_, err = fieldWriter.Write([]byte(fmt.Sprintf("%v", content)))
+			if err != nil {
+				s.t.Fatalf("Failed to write form field %s: %v", field, err)
+			}
+		}
+	}
+
+	for i, filePath := range files {
+		file, err := os.Open(filePath)
 		if err != nil {
-			s.t.Fatalf("Failed to open file %s: %v", fileName, err)
+			s.t.Fatalf("Failed to open file %s: %v", filePath, err)
 		}
 		defer file.Close()
 
-		part, err := writer.CreateFormFile(fileName, fileName)
+		fileName := filepath.Base(filePath)
+		if i < len(fileNames) {
+			fileName = fileNames[i]
+		}
+		fileWriter, err := writer.CreateFormFile("files", fileName)
 		if err != nil {
 			s.t.Fatalf("Failed to create form file for %s: %v", fileName, err)
 		}
-		_, err = io.Copy(part, file)
+		_, err = io.Copy(fileWriter, file)
 		if err != nil {
 			s.t.Fatalf("Failed to copy file content for %s: %v", fileName, err)
 		}
@@ -146,6 +177,26 @@ func (s *apiTestSession) Patch(url string, body interface{}, expectedStatus int)
 
 func (s *apiTestSession) Delete(url string, body interface{}, expectedStatus int) *http.Response {
 	return s.Request(http.MethodDelete, url, body, expectedStatus)
+}
+
+func (s *apiTestSession) GetMultipart(url string, body map[string]interface{}, files []string, expectedStatus int) *http.Response {
+	return s.RequestMultipart(http.MethodGet, url, body, files, nil, expectedStatus)
+}
+
+func (s *apiTestSession) PostMultipart(url string, body map[string]interface{}, files []string, expectedStatus int) *http.Response {
+	return s.RequestMultipart(http.MethodPost, url, body, files, nil, expectedStatus)
+}
+
+func (s *apiTestSession) PutMultipart(url string, body map[string]interface{}, files []string, expectedStatus int) *http.Response {
+	return s.RequestMultipart(http.MethodPut, url, body, files, nil, expectedStatus)
+}
+
+func (s *apiTestSession) PatchMultipart(url string, body map[string]interface{}, files []string, expectedStatus int) *http.Response {
+	return s.RequestMultipart(http.MethodPatch, url, body, files, nil, expectedStatus)
+}
+
+func (s *apiTestSession) DeleteMultipart(url string, body map[string]interface{}, files []string, expectedStatus int) *http.Response {
+	return s.RequestMultipart(http.MethodDelete, url, body, files, nil, expectedStatus)
 }
 
 func (s *apiTestSession) Body() interface{} {

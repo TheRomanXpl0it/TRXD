@@ -1,4 +1,6 @@
 - move countries from api to frontend or /static
+- make /challenge/:id as author return all data
+- tags endpointss
 
 - resolve TODOs left into the code
 - when finished endpoints, review needed data and revome `RETURNIN *;` and similar when not needed
