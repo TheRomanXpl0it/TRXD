@@ -97,7 +97,16 @@ var testData = []struct {
 		expectedStatus:   http.StatusNotFound,
 		expectedResponse: errorf(consts.ChallengeNotFound),
 	},
-	// TODO: missing tests (invalid category, name)
+	{
+		testBody:         JSON{"chall_id": "", "name": "chall-2"},
+		expectedStatus:   http.StatusConflict,
+		expectedResponse: errorf(consts.ChallNameExists),
+	},
+	{
+		testBody:         JSON{"chall_id": "", "category": "<invalid-category>"},
+		expectedStatus:   http.StatusNotFound,
+		expectedResponse: errorf(consts.CategoryNotFound),
+	},
 	{
 		testBody: JSON{
 			"chall_id":    "",
@@ -185,20 +194,31 @@ func TestRoute(t *testing.T) {
 				"category":    test.testBody["category"],
 				"description": test.testBody["description"],
 				"difficulty":  test.testBody["difficulty"],
+				"docker_config": JSON{
+					"envs":        test.testBody["envs"],
+					"hash_domain": test.testBody["hash_domain"],
+					"image":       test.testBody["image"],
+					"lifetime":    test.testBody["lifetime"],
+					"max_cpu":     test.testBody["max_cpu"],
+					"max_memory":  test.testBody["max_memory"],
+				},
 				"first_blood": nil,
 				"flags":       []string{},
 				"hidden":      test.testBody["hidden"],
 				"host":        test.testBody["host"],
 				"id":          challID,
 				"instance":    test.testBody["type"] != "Normal",
+				"max_points":  test.testBody["max_points"],
 				"name":        test.testBody["name"],
 				"points":      test.testBody["max_points"],
 				"port":        test.testBody["port"],
+				"score_type":  test.testBody["score_type"],
 				"solved":      false,
 				"solves":      0,
 				"solves_list": []string{},
 				"tags":        []string{},
 				"timeout":     0,
+				"type":        test.testBody["type"],
 			}
 			test_utils.Compare(t, expected, body)
 		}

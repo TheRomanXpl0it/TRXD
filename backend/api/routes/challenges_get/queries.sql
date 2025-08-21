@@ -37,3 +37,6 @@ SELECT teams.id, teams.name
     AND submissions.status = 'Correct'
   ORDER BY submissions.timestamp ASC
   LIMIT 1;
+
+-- name: GetChallDockerConfig :one
+SELECT * FROM docker_configs WHERE chall_id = $1;

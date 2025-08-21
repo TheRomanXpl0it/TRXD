@@ -97,6 +97,7 @@ const (
 	NoDataToUpdate              = "No data provided to update"
 	ErrorCreatingAttachmentsDir = "Error creating attachments directory"
 	ErrorSavingFile             = "Error saving file"
+	ChallNameExists             = "Challenge name already exists"
 )
 
 var UserRegex = regexp.MustCompile(`(^[^@\s]+@[^@\s]+\.[^@\s]+$)`)

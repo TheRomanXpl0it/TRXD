@@ -150,6 +150,26 @@ func (q *Queries) GetCategory(ctx context.Context, name string) (Category, error
 	return i, err
 }
 
+const getChallDockerConfig = `-- name: GetChallDockerConfig :one
+SELECT chall_id, image, compose, hash_domain, lifetime, envs, max_memory, max_cpu FROM docker_configs WHERE chall_id = $1
+`
+
+func (q *Queries) GetChallDockerConfig(ctx context.Context, challID int32) (DockerConfig, error) {
+	row := q.queryRow(ctx, q.getChallDockerConfigStmt, getChallDockerConfig, challID)
+	var i DockerConfig
+	err := row.Scan(
+		&i.ChallID,
+		&i.Image,
+		&i.Compose,
+		&i.HashDomain,
+		&i.Lifetime,
+		&i.Envs,
+		&i.MaxMemory,
+		&i.MaxCpu,
+	)
+	return i, err
+}
+
 const getChallengeSolves = `-- name: GetChallengeSolves :many
 SELECT teams.id, teams.name, submissions.timestamp
   FROM submissions

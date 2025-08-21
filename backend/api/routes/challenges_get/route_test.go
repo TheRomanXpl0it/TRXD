@@ -41,8 +41,6 @@ func TestRoute(t *testing.T) {
 		"first_blood": JSON{
 			"name": "A",
 		},
-		"flags":    nil,
-		"hidden":   false,
 		"host":     "http://theromanxpl0.it",
 		"instance": false,
 		"name":     "chall-1",
@@ -91,14 +89,16 @@ func TestRoute(t *testing.T) {
 				"regex": true,
 			},
 		},
-		"hidden":   false,
-		"host":     "http://theromanxpl0.it",
-		"instance": false,
-		"name":     "chall-1",
-		"points":   500,
-		"port":     1337,
-		"solved":   false,
-		"solves":   1,
+		"hidden":     false,
+		"host":       "http://theromanxpl0.it",
+		"instance":   false,
+		"max_points": 500,
+		"name":       "chall-1",
+		"points":     500,
+		"port":       1337,
+		"score_type": "Dynamic",
+		"solved":     false,
+		"solves":     1,
 		"solves_list": []JSON{
 			{
 				"name": "A",
@@ -109,6 +109,7 @@ func TestRoute(t *testing.T) {
 			"test-tag",
 		},
 		"timeout": 0,
+		"type":    "Normal",
 	}
 
 	test_utils.RegisterUser(t, "test2", "test3@test.test", "testpass", sqlc.UserRoleAuthor)
@@ -138,9 +139,11 @@ func TestRoute(t *testing.T) {
 		"hidden":      true,
 		"host":        "",
 		"instance":    false,
+		"max_points":  500,
 		"name":        "chall-5",
 		"points":      500,
 		"port":        0,
+		"score_type":  "Static",
 		"solved":      false,
 		"solves":      0,
 		"solves_list": []JSON{},
@@ -148,6 +151,7 @@ func TestRoute(t *testing.T) {
 			"tag-5",
 		},
 		"timeout": 0,
+		"type":    "Normal",
 	}
 
 	session.Get("/challenges", nil, http.StatusOK)
@@ -161,4 +165,7 @@ func TestRoute(t *testing.T) {
 	body = session.Body()
 	test_utils.DeleteKeys(body, "id", "timestamp")
 	test_utils.Compare(t, expectedAuthorHidden, body)
+
+	// TODO: add test with dockeconfig
+	// TODO: add test with instances
 }

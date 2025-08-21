@@ -15,6 +15,7 @@ import (
 
 	"github.com/go-playground/form/v4"
 	"github.com/gofiber/fiber/v2"
+	"github.com/lib/pq"
 )
 
 type UpdateChallParams struct {
@@ -131,6 +132,14 @@ func Route(c *fiber.Ctx) error {
 
 	err = UpdateChallenge(c.Context(), data)
 	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			if pqErr.Code == "23505" { // Unique violation error code
+				return utils.Error(c, fiber.StatusConflict, consts.ChallNameExists)
+			}
+			if pqErr.Code == "23503" { // Foreign key violation error code
+				return utils.Error(c, fiber.StatusNotFound, consts.CategoryNotFound)
+			}
+		}
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorUpdatingChallenge, err)
 	}
 

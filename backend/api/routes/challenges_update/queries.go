@@ -86,10 +86,6 @@ func UpdateChallenge(ctx context.Context, data *UpdateChallParams) error {
 	if !IsChallEmpty(data) {
 		err = queries.UpdateChallenge(ctx, challParams)
 		if err != nil {
-			// TODO: handle errors:
-			//		- challenge does not exist
-			//		- category does not exist
-			//		- name collision
 			return err
 		}
 	}
@@ -97,8 +93,6 @@ func UpdateChallenge(ctx context.Context, data *UpdateChallParams) error {
 	if !IsDockerConfigsEmpty(data) {
 		err = queries.UpdateDockerConfigs(ctx, dockerParams)
 		if err != nil {
-			// TODO: handle errors:
-			//		- challenge does not exist
 			return err
 		}
 	}
