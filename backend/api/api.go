@@ -16,6 +16,9 @@ import (
 	"trxd/api/routes/flags_delete"
 	"trxd/api/routes/flags_submit"
 	"trxd/api/routes/flags_update"
+	"trxd/api/routes/tags_create"
+	"trxd/api/routes/tags_delete"
+	"trxd/api/routes/tags_update"
 	"trxd/api/routes/teams_all_get"
 	"trxd/api/routes/teams_get"
 	"trxd/api/routes/teams_join"
@@ -91,6 +94,10 @@ func SetupApp() *fiber.App {
 	// api.Post("/instances/create", middlewares.Player, instances_create.Route)
 	// api.Patch("/instances/update", middlewares.Player, instances_update.Route)
 	// api.Delete("/instances/delete", middlewares.Player, instances_delete.Route)
+
+	api.Post("/tags/create", middlewares.Author, tags_create.Route)   // TODO: complete
+	api.Patch("/tags/update", middlewares.Author, tags_update.Route)  // TODO: complete
+	api.Delete("/tags/delete", middlewares.Author, tags_delete.Route) // TODO: complete
 
 	api.Post("/flags/create", middlewares.Author, flags_create.Route)
 	api.Patch("/flags/update", middlewares.Author, flags_update.Route)

@@ -7,6 +7,7 @@ import (
 	"strings"
 	"trxd/db"
 	"trxd/db/sqlc"
+	"trxd/utils/consts"
 )
 
 func IsChallEmpty(data *UpdateChallParams) bool {
@@ -37,9 +38,9 @@ func UpdateChallenge(ctx context.Context, data *UpdateChallParams) error {
 		Category:    sql.NullString{String: data.Category, Valid: data.Category != ""},
 		Description: sql.NullString{String: data.Description, Valid: data.Description != ""},
 		Difficulty:  sql.NullString{String: data.Difficulty, Valid: data.Difficulty != ""},
-		Authors:     sql.NullString{String: strings.Join(data.Authors, ","), Valid: data.Authors != nil}, // TODO: change separator
+		Authors:     sql.NullString{String: strings.Join(data.Authors, consts.Separator), Valid: data.Authors != nil},
 		Host:        sql.NullString{String: data.Host, Valid: data.Host != ""},
-		Attachments: sql.NullString{String: strings.Join(data.Attachments, ","), Valid: data.Attachments != nil}, // TODO: change separator
+		Attachments: sql.NullString{String: strings.Join(data.Attachments, consts.Separator), Valid: data.Attachments != nil},
 	}
 
 	if data.Type != nil {

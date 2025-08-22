@@ -6,6 +6,7 @@ import (
 	"strings"
 	"trxd/db"
 	"trxd/db/sqlc"
+	"trxd/utils/consts"
 )
 
 type DockerConfig struct {
@@ -110,7 +111,7 @@ func GetChallenge(ctx context.Context, id int32, uid int32, author bool) (*Chall
 	}
 	chall.Authors = []string{}
 	if challenge.Authors.Valid {
-		chall.Authors = strings.Split(challenge.Authors.String, ",") // TODO: change char
+		chall.Authors = strings.Split(challenge.Authors.String, consts.Separator)
 	}
 	chall.Instance = challenge.Type != sqlc.DeployTypeNormal
 	chall.Points = int(challenge.Points)
@@ -123,7 +124,7 @@ func GetChallenge(ctx context.Context, id int32, uid int32, author bool) (*Chall
 	}
 	chall.Attachments = []string{}
 	if challenge.Attachments.Valid {
-		chall.Attachments = strings.Split(challenge.Attachments.String, ",") // TODO: change char
+		chall.Attachments = strings.Split(challenge.Attachments.String, consts.Separator)
 	}
 	chall.Tags = []string{}
 	if tags != nil {

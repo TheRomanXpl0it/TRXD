@@ -140,10 +140,10 @@ CREATE TABLE IF NOT EXISTS instances (
 );
 
 CREATE TABLE IF NOT EXISTS tags (
-  name VARCHAR(32) NOT NULL,
   chall_id INTEGER NOT NULL,
+  name VARCHAR(32) NOT NULL,
   FOREIGN KEY(chall_id) REFERENCES challenges(id) ON DELETE CASCADE,
-  PRIMARY KEY(name, chall_id)
+  PRIMARY KEY(chall_id, name)
 );
 
 CREATE TABLE IF NOT EXISTS submissions (

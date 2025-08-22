@@ -16,6 +16,7 @@ const (
 	MaxCountryLength         = 3
 	MinPort                  = 1
 	MaxPort                  = 65535
+	MaxTagNameLength         = 32
 )
 
 const (
@@ -98,6 +99,13 @@ const (
 	ErrorCreatingAttachmentsDir = "Error creating attachments directory"
 	ErrorSavingFile             = "Error saving file"
 	ChallNameExists             = "Challenge name already exists"
+	LongTagName                 = "Tag name must not exceed 32 characters"
+	TagAlreadyExists            = "Tag already exists"
+	ErrorCreatingTag            = "Error creating tag"
+	ErrorDeletingTag            = "Error deleting tag"
+	ErrorUpdatingTag            = "Error updating tag"
 )
 
 var UserRegex = regexp.MustCompile(`(^[^@\s]+@[^@\s]+\.[^@\s]+$)`)
+
+const Separator = "," // TODO: change separator

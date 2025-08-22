@@ -103,6 +103,21 @@ func (q *Queries) CreateFlag(ctx context.Context, arg CreateFlagParams) error {
 	return err
 }
 
+const createTag = `-- name: CreateTag :exec
+INSERT INTO tags (chall_id, name) VALUES ($1, $2)
+`
+
+type CreateTagParams struct {
+	ChallID int32  `json:"chall_id"`
+	Name    string `json:"name"`
+}
+
+// Creates a named tag for a challenge
+func (q *Queries) CreateTag(ctx context.Context, arg CreateTagParams) error {
+	_, err := q.exec(ctx, q.createTagStmt, createTag, arg.ChallID, arg.Name)
+	return err
+}
+
 const deleteCategory = `-- name: DeleteCategory :exec
 DELETE FROM categories WHERE name = $1
 `
@@ -135,6 +150,21 @@ type DeleteFlagParams struct {
 // Delete a flag from a challenge
 func (q *Queries) DeleteFlag(ctx context.Context, arg DeleteFlagParams) error {
 	_, err := q.exec(ctx, q.deleteFlagStmt, deleteFlag, arg.ChallID, arg.Flag)
+	return err
+}
+
+const deleteTag = `-- name: DeleteTag :exec
+DELETE FROM tags WHERE chall_id = $1 AND name = $2
+`
+
+type DeleteTagParams struct {
+	ChallID int32  `json:"chall_id"`
+	Name    string `json:"name"`
+}
+
+// Deletes a challenge tag by name
+func (q *Queries) DeleteTag(ctx context.Context, arg DeleteTagParams) error {
+	_, err := q.exec(ctx, q.deleteTagStmt, deleteTag, arg.ChallID, arg.Name)
 	return err
 }
 
@@ -919,6 +949,22 @@ func (q *Queries) UpdateFlag(ctx context.Context, arg UpdateFlagParams) error {
 		arg.NewFlag,
 		arg.Regex,
 	)
+	return err
+}
+
+const updateTag = `-- name: UpdateTag :exec
+UPDATE tags SET name = $2 WHERE chall_id = $1 AND name = $3
+`
+
+type UpdateTagParams struct {
+	ChallID int32  `json:"chall_id"`
+	NewName string `json:"new_name"`
+	OldName string `json:"old_name"`
+}
+
+// Updates the name of a challenge tag
+func (q *Queries) UpdateTag(ctx context.Context, arg UpdateTagParams) error {
+	_, err := q.exec(ctx, q.updateTagStmt, updateTag, arg.ChallID, arg.NewName, arg.OldName)
 	return err
 }
 

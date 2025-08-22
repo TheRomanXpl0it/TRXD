@@ -256,8 +256,8 @@ type Submission struct {
 }
 
 type Tag struct {
-	Name    string `json:"name"`
 	ChallID int32  `json:"chall_id"`
+	Name    string `json:"name"`
 }
 
 type Team struct {
