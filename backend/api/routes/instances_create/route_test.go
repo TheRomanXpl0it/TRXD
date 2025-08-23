@@ -2,6 +2,7 @@ package instances_create_test
 
 import (
 	"net/http"
+	"strings"
 	"testing"
 	"trxd/api"
 	"trxd/db/sqlc"
@@ -76,10 +77,25 @@ func TestRoute(t *testing.T) {
 	if _, ok := body.(map[string]interface{})["expires_at"]; !ok {
 		t.Fatalf("Expected expires_at to be present in response: %+v", body)
 	}
-	if _, ok := body.(map[string]interface{})["host"]; !ok {
+	if host, ok := body.(map[string]interface{})["host"]; !ok {
 		t.Fatalf("Expected host to be present in response: %+v", body)
+	} else {
+		if !strings.HasSuffix(host.(string), "chall-3.test.com") {
+			t.Fatalf("Expected host to end with chall-3.test.com: %s", host)
+		}
 	}
 	if _, ok := body.(map[string]interface{})["port"]; !ok {
 		t.Fatalf("Expected port to be present in response: %+v", body)
 	}
+
+	session.Post("/instances", JSON{"chall_id": challID3}, http.StatusConflict)
+	session.CheckResponse(errorf(consts.AlreadyAnActiveInstance))
+
+	session = test_utils.NewApiTestSession(t, app)
+	session.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
+	session.PatchMultipart("/challenges", JSON{"chall_id": challID3, "host": ""}, []string{}, http.StatusOK)
+	session.CheckResponse(nil)
+	// TODO: test global domain
+
+	// TODO: test compose instance
 }

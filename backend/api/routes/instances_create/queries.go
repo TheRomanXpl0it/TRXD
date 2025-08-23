@@ -12,7 +12,7 @@ import (
 
 type Chall struct {
 	Info         *sqlc.Challenge
-	DockerConfig *sqlc.DockerConfig
+	DockerConfig *sqlc.GetDockerConfigsByIDRow
 }
 
 func GetChallenge(ctx context.Context, challID int32) (*Chall, error) {

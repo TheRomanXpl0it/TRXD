@@ -72,7 +72,7 @@ BEGIN
   port := get_random_available_port();
   host := (SELECT challenges.host FROM challenges WHERE id = chall_id);
 
-  IF host IS NULL THEN
+  IF host IS NULL OR host = '' THEN
     host := (SELECT value FROM configs WHERE key = 'domain');
   END IF;
 

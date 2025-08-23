@@ -1,6 +1,7 @@
 package instances_create
 
 import (
+	"fmt"
 	"time"
 	"trxd/db/sqlc"
 	"trxd/utils"
@@ -33,7 +34,7 @@ func Route(c *fiber.Ctx) error {
 
 	chall, err := GetChallenge(c.Context(), *data.ChallID)
 	if err != nil {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingChallenge)
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingChallenge, err)
 	}
 	if chall == nil {
 		return utils.Error(c, fiber.StatusNotFound, consts.ChallengeNotFound)
@@ -51,7 +52,7 @@ func Route(c *fiber.Ctx) error {
 
 	instance, err := GetInstance(c.Context(), *data.ChallID, tid)
 	if err != nil {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingInstance)
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingInstance, err)
 	}
 	if instance != nil {
 		return utils.Error(c, fiber.StatusConflict, consts.AlreadyAnActiveInstance)
@@ -59,9 +60,9 @@ func Route(c *fiber.Ctx) error {
 
 	if !chall.DockerConfig.Lifetime.Valid {
 		// TODO: global lifetime in configs
-		chall.DockerConfig.Lifetime.Int32 = 60
-		chall.DockerConfig.HashDomain = true
-		// return utils.Error(c, fiber.StatusInternalServerError, "DockerConfig lifetime should be valid", fmt.Errorf("DockerConfig lifetime should be valid"))
+		// chall.DockerConfig.Lifetime.Int32 = 60
+		// chall.DockerConfig.HashDomain = true
+		return utils.Error(c, fiber.StatusInternalServerError, "DockerConfig lifetime should be valid", fmt.Errorf("DockerConfig lifetime should be valid"))
 	}
 	lifetime := time.Second * time.Duration(chall.DockerConfig.Lifetime.Int32)
 	expires_at := time.Now().Add(lifetime)

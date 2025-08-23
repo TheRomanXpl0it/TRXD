@@ -1,8 +1,5 @@
-- extra tests on "ID < 0: 'Invalid ID'"
-- config lower and upper bound for instances ports
-- configs for all defaults for instances
-- config to enable instances
 - config to start and end ctf
+- put err in every internal server error
 
 - move countries from api to frontend or /static
 - make /challenge/:id as author return all data

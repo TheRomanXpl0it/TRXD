@@ -45,7 +45,7 @@ func TestRoute(t *testing.T) {
 			"description": "",
 			"key":         "domain",
 			"type":        "string",
-			"value":       "",
+			"value":       "test.com",
 		},
 		{
 			"description": "",
@@ -67,7 +67,7 @@ func TestRoute(t *testing.T) {
 		},
 		{
 			"description": "",
-			"key":         "instance-max-mem",
+			"key":         "instance-max-memory",
 			"type":        "int",
 			"value":       "512",
 		},
@@ -87,7 +87,7 @@ func TestRoute(t *testing.T) {
 			"description": "",
 			"key":         "secret",
 			"type":        "string",
-			"value":       "",
+			"value":       "test-secret",
 		},
 	})
 }

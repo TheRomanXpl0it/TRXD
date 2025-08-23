@@ -7,6 +7,7 @@ package sqlc
 
 import (
 	"context"
+	"database/sql"
 )
 
 const getChallengeByID = `-- name: GetChallengeByID :one
@@ -38,20 +39,38 @@ func (q *Queries) GetChallengeByID(ctx context.Context, id int32) (Challenge, er
 }
 
 const getDockerConfigsByID = `-- name: GetDockerConfigsByID :one
-SELECT chall_id, image, compose, hash_domain, lifetime, envs, max_memory, max_cpu FROM docker_configs WHERE chall_id = $1
+SELECT
+  image,
+  compose,
+  hash_domain,
+  envs,
+  COALESCE(lifetime, (SELECT value::INTEGER FROM configs WHERE key='instance-lifetime')) AS lifetime,
+  COALESCE(max_memory, (SELECT value::INTEGER FROM configs WHERE key='instance-max-memory')) AS max_memory,
+  COALESCE(max_cpu, (SELECT value FROM configs WHERE key='instance-max-cpu')) AS max_cpu
+FROM docker_configs
+WHERE chall_id = $1
 `
 
+type GetDockerConfigsByIDRow struct {
+	Image      sql.NullString `json:"image"`
+	Compose    sql.NullString `json:"compose"`
+	HashDomain bool           `json:"hash_domain"`
+	Envs       sql.NullString `json:"envs"`
+	Lifetime   sql.NullInt32  `json:"lifetime"`
+	MaxMemory  sql.NullInt32  `json:"max_memory"`
+	MaxCpu     sql.NullString `json:"max_cpu"`
+}
+
 // Retrieve Docker configurations by challenge ID
-func (q *Queries) GetDockerConfigsByID(ctx context.Context, challID int32) (DockerConfig, error) {
+func (q *Queries) GetDockerConfigsByID(ctx context.Context, challID int32) (GetDockerConfigsByIDRow, error) {
 	row := q.queryRow(ctx, q.getDockerConfigsByIDStmt, getDockerConfigsByID, challID)
-	var i DockerConfig
+	var i GetDockerConfigsByIDRow
 	err := row.Scan(
-		&i.ChallID,
 		&i.Image,
 		&i.Compose,
 		&i.HashDomain,
-		&i.Lifetime,
 		&i.Envs,
+		&i.Lifetime,
 		&i.MaxMemory,
 		&i.MaxCpu,
 	)

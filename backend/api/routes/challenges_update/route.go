@@ -22,14 +22,14 @@ type UpdateChallParams struct {
 	ChallID     *int32           `form:"chall_id"`
 	Name        string           `form:"name"`
 	Category    string           `form:"category"`
-	Description string           `form:"description"`
-	Difficulty  string           `form:"difficulty"`
+	Description *string          `form:"description"`
+	Difficulty  *string          `form:"difficulty"`
 	Authors     []string         `form:"authors"`
 	Type        *sqlc.DeployType `form:"type"`
 	Hidden      *bool            `form:"hidden"`
 	MaxPoints   *int             `form:"max_points"`
 	ScoreType   *sqlc.ScoreType  `form:"score_type"`
-	Host        string           `form:"host"`
+	Host        *string          `form:"host"`
 	Port        *int             `form:"port"`
 	Attachments []string
 
@@ -71,10 +71,10 @@ func Route(c *fiber.Ctx) error {
 	if len(data.Category) > consts.MaxCategoryLength {
 		return utils.Error(c, fiber.StatusBadRequest, consts.LongCategory)
 	}
-	if len(data.Description) > consts.MaxChallDescLength {
+	if data.Description != nil && len(*data.Description) > consts.MaxChallDescLength {
 		return utils.Error(c, fiber.StatusBadRequest, consts.LongChallDesc)
 	}
-	if len(data.Difficulty) > consts.MaxChallDifficultyLength {
+	if data.Difficulty != nil && len(*data.Difficulty) > consts.MaxChallDifficultyLength {
 		return utils.Error(c, fiber.StatusBadRequest, consts.LongChallDifficulty)
 	}
 	if data.MaxPoints != nil && *data.MaxPoints < 0 {

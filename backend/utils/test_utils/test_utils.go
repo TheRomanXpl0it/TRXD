@@ -72,6 +72,14 @@ func Main(m *testing.M) {
 	if err != nil {
 		fatalf("Failed to update config: %v\n", err)
 	}
+	err = db.UpdateConfig(context.Background(), "secret", "test-secret")
+	if err != nil {
+		fatalf("Failed to update config: %v\n", err)
+	}
+	err = db.UpdateConfig(context.Background(), "domain", "test.com")
+	if err != nil {
+		fatalf("Failed to update config: %v\n", err)
+	}
 
 	exitCode := m.Run()
 	os.Exit(exitCode)

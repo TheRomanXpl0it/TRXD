@@ -11,9 +11,9 @@ import (
 )
 
 func IsChallEmpty(data *UpdateChallParams) bool {
-	if data.Name == "" && data.Category == "" && data.Description == "" && data.Difficulty == "" &&
+	if data.Name == "" && data.Category == "" && data.Description == nil && data.Difficulty == nil &&
 		len(data.Authors) == 0 && data.Type == nil && data.Hidden == nil && data.MaxPoints == nil &&
-		data.ScoreType == nil && data.Host == "" && data.Port == nil && len(data.Attachments) == 0 {
+		data.ScoreType == nil && data.Host == nil && data.Port == nil && len(data.Attachments) == 0 {
 		return true
 	}
 	return false
@@ -36,13 +36,16 @@ func UpdateChallenge(ctx context.Context, data *UpdateChallParams) error {
 		ChallID:     *data.ChallID,
 		Name:        sql.NullString{String: data.Name, Valid: data.Name != ""},
 		Category:    sql.NullString{String: data.Category, Valid: data.Category != ""},
-		Description: sql.NullString{String: data.Description, Valid: data.Description != ""},
-		Difficulty:  sql.NullString{String: data.Difficulty, Valid: data.Difficulty != ""},
 		Authors:     sql.NullString{String: strings.Join(data.Authors, consts.Separator), Valid: data.Authors != nil},
-		Host:        sql.NullString{String: data.Host, Valid: data.Host != ""},
 		Attachments: sql.NullString{String: strings.Join(data.Attachments, consts.Separator), Valid: data.Attachments != nil},
 	}
 
+	if data.Description != nil {
+		challParams.Description = sql.NullString{String: *data.Description, Valid: true}
+	}
+	if data.Difficulty != nil {
+		challParams.Difficulty = sql.NullString{String: *data.Difficulty, Valid: true}
+	}
 	if data.Type != nil {
 		challParams.Type = sqlc.NullDeployType{DeployType: *data.Type, Valid: true}
 	}
@@ -54,6 +57,9 @@ func UpdateChallenge(ctx context.Context, data *UpdateChallParams) error {
 	}
 	if data.ScoreType != nil {
 		challParams.ScoreType = sqlc.NullScoreType{ScoreType: *data.ScoreType, Valid: true}
+	}
+	if data.Host != nil {
+		challParams.Host = sql.NullString{String: *data.Host, Valid: true}
 	}
 	if data.Port != nil {
 		challParams.Port = sql.NullInt32{Int32: int32(*data.Port), Valid: true}

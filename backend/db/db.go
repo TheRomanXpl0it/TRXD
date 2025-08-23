@@ -92,20 +92,28 @@ func ExecSQLFile(path string) (bool, error) {
 }
 
 var defaultConfigs = map[string]any{
-	"allow-register":     false,
-	"chall-min-points":   50,
-	"chall-points-decay": 15,
-	"instance-lifetime":  30 * 60, // 30 minutes
-	"instance-max-cpu":   "1.0",
-	"instance-max-mem":   512,
-	"min-port":           20000,
-	"max-port":           30000,
-	"hash-len":           12,
-	"secret":             "", // TODO: gen random if none
-	"domain":             "",
+	"allow-register":      false,
+	"chall-min-points":    50,
+	"chall-points-decay":  15,
+	"instance-lifetime":   30 * 60, // 30 minutes
+	"instance-max-memory": 512,
+	"instance-max-cpu":    "1.0",
+	"min-port":            20000,
+	"max-port":            30000,
+	"hash-len":            12,
+	"secret":              "",
+	"domain":              "",
 }
 
 func InitConfigs() error {
+	if secret, ok := defaultConfigs["secret"]; ok && secret == "" {
+		randSecret, err := utils.GenerateRandPass()
+		if err != nil {
+			return fmt.Errorf("failed to generate random secret: %v", err)
+		}
+		defaultConfigs["secret"] = randSecret
+	}
+
 	for key, value := range defaultConfigs {
 		conf, err := CreateConfig(context.Background(), key, value)
 		if err != nil {

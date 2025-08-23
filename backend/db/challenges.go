@@ -18,7 +18,7 @@ func GetChallengeByID(ctx context.Context, challengeID int32) (*sqlc.Challenge, 
 	return &challenge, nil
 }
 
-func GetDockerConfigsByID(ctx context.Context, challengeID int32) (*sqlc.DockerConfig, error) {
+func GetDockerConfigsByID(ctx context.Context, challengeID int32) (*sqlc.GetDockerConfigsByIDRow, error) {
 	dockerConfig, err := Sql.GetDockerConfigsByID(ctx, challengeID)
 	if err != nil {
 		if err == sql.ErrNoRows {
