@@ -16,6 +16,9 @@ func Route(c *fiber.Ctx) error {
 	if err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidChallengeID)
 	}
+	if challengeID < 0 {
+		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidChallengeID)
+	}
 
 	all := utils.In(role, []sqlc.UserRole{sqlc.UserRoleAuthor, sqlc.UserRoleAdmin})
 	challenge, err := GetChallenge(c.Context(), int32(challengeID), uid, all)

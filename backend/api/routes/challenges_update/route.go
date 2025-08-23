@@ -58,6 +58,9 @@ func Route(c *fiber.Ctx) error {
 	if data.ChallID == nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.ChallIDRequired)
 	}
+	if *data.ChallID < 0 {
+		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidChallengeID)
+	}
 	if IsChallEmpty(data) && IsDockerConfigsEmpty(data) && len(multipartForm.File) == 0 {
 		return utils.Error(c, fiber.StatusBadRequest, consts.NoDataToUpdate)
 	}

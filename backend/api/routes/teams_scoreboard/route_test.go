@@ -56,17 +56,17 @@ func TestRoute(t *testing.T) {
 	}
 
 	session := test_utils.NewApiTestSession(t, app)
-	session.Get("/teams/scoreboard", nil, http.StatusOK)
+	session.Get("/scoreboard", nil, http.StatusOK)
 	session.CheckResponse(expected)
 
 	session = test_utils.NewApiTestSession(t, app)
-	session.Post("/users/register", JSON{"username": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
-	session.Get("/teams/scoreboard", nil, http.StatusOK)
+	session.Post("/register", JSON{"username": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
+	session.Get("/scoreboard", nil, http.StatusOK)
 	session.CheckResponse(expected)
 
 	test_utils.RegisterUser(t, "admin", "admin@test.test", "adminpass", sqlc.UserRoleAdmin)
 	session = test_utils.NewApiTestSession(t, app)
-	session.Post("/users/login", JSON{"email": "admin@test.test", "password": "adminpass"}, http.StatusOK)
-	session.Get("/teams/scoreboard", nil, http.StatusOK)
+	session.Post("/login", JSON{"email": "admin@test.test", "password": "adminpass"}, http.StatusOK)
+	session.Get("/scoreboard", nil, http.StatusOK)
 	session.CheckResponse(expected)
 }

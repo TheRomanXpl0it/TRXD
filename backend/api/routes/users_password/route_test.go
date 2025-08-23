@@ -59,7 +59,7 @@ func TestRoute(t *testing.T) {
 
 	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
-		session.Post("/users/login", JSON{"email": "admin@test.test", "password": "adminpass"}, http.StatusOK)
+		session.Post("/login", JSON{"email": "admin@test.test", "password": "adminpass"}, http.StatusOK)
 		if body, ok := test.testBody.(JSON); ok && body != nil {
 			if content, ok := body["user_id"]; ok && content == 0 {
 				test.testBody.(JSON)["user_id"] = user.ID
@@ -67,7 +67,11 @@ func TestRoute(t *testing.T) {
 		}
 		session.Patch("/users/password", test.testBody, test.expectedStatus)
 		if test.expectedStatus == http.StatusOK {
-			body := session.Body().(map[string]interface{})
+			sessionBody := session.Body()
+			if sessionBody == nil {
+				t.Fatal("Expected body to not be nil")
+			}
+			body := sessionBody.(map[string]interface{})
 			newPasswordInterface, ok := body["new_password"]
 			if !ok {
 				t.Fatalf("Expected 'new_password' in response, got: %v", body)
@@ -79,7 +83,7 @@ func TestRoute(t *testing.T) {
 		}
 
 		session = test_utils.NewApiTestSession(t, app)
-		session.Post("/users/login", JSON{"email": "test@test.test", "password": password}, http.StatusOK)
+		session.Post("/login", JSON{"email": "test@test.test", "password": password}, http.StatusOK)
 		session.CheckResponse(nil)
 	}
 }

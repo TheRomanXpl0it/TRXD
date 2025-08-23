@@ -22,12 +22,12 @@ var testAuthMiddlewares = []struct {
 }{
 	{
 		method:           "POST",
-		endpoint:         "/users/login",
+		endpoint:         "/login",
 		expectedStatuses: []int{http.StatusBadRequest, http.StatusForbidden, http.StatusForbidden, http.StatusForbidden, http.StatusForbidden, http.StatusForbidden},
 	},
 	{
 		method:           "GET",
-		endpoint:         "/users/info",
+		endpoint:         "/info",
 		expectedStatuses: []int{http.StatusUnauthorized, http.StatusOK, http.StatusOK, http.StatusOK, http.StatusOK, http.StatusOK},
 	},
 	{
@@ -42,12 +42,12 @@ var testAuthMiddlewares = []struct {
 	},
 	{
 		method:           "POST",
-		endpoint:         "/categories/create",
+		endpoint:         "/categories",
 		expectedStatuses: []int{http.StatusUnauthorized, http.StatusForbidden, http.StatusForbidden, http.StatusForbidden, http.StatusBadRequest, http.StatusBadRequest},
 	},
 	{
 		method:           "PATCH",
-		endpoint:         "/configs/update",
+		endpoint:         "/configs",
 		expectedStatuses: []int{http.StatusUnauthorized, http.StatusForbidden, http.StatusForbidden, http.StatusForbidden, http.StatusForbidden, http.StatusBadRequest},
 	},
 }
@@ -72,7 +72,7 @@ func TestAuthMiddlewares(t *testing.T) {
 		for j, user := range users {
 			session := test_utils.NewApiTestSession(t, app)
 			if user != nil {
-				session.Post("/users/login", JSON{"email": user.Email, "password": "testpass"}, http.StatusOK)
+				session.Post("/login", JSON{"email": user.Email, "password": "testpass"}, http.StatusOK)
 			}
 			session.Request(test.method, test.endpoint, nil, test.expectedStatuses[j])
 		}

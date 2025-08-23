@@ -66,8 +66,8 @@ func TestRoute(t *testing.T) {
 
 	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
-		session.Post("/users/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
-		session.Patch("/configs/update", test.testBody, test.expectedStatus)
+		session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+		session.Patch("/configs", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }

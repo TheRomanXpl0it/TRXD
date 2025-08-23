@@ -42,12 +42,12 @@ func TestRoute(t *testing.T) {
 		session := test_utils.NewApiTestSession(t, app)
 
 		if test.register {
-			session.Post("/users/register", test.testBody, http.StatusOK)
+			session.Post("/register", test.testBody, http.StatusOK)
 			session.Post("/teams/register", JSON{"name": "test-team", "password": "testpass"}, http.StatusOK)
 		} else if test.login {
-			session.Post("/users/login", test.testBody, http.StatusOK)
+			session.Post("/login", test.testBody, http.StatusOK)
 		}
-		session.Post("/users/logout", test.testBody, test.expectedStatus)
+		session.Post("/logout", test.testBody, test.expectedStatus)
 
 		for _, cookie := range session.Cookies {
 			if cookie.Name == "session_id" && cookie.Value != "" {

@@ -20,6 +20,9 @@ func Route(c *fiber.Ctx) error {
 	if data.ChallID == nil || data.Flag == "" {
 		return utils.Error(c, fiber.StatusBadRequest, consts.MissingRequiredFields)
 	}
+	if *data.ChallID < 0 {
+		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidChallengeID)
+	}
 	if len(data.Flag) > consts.MaxFlagLength {
 		return utils.Error(c, fiber.StatusBadRequest, consts.LongFlag)
 	}

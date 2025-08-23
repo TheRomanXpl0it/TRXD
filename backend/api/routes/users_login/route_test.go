@@ -69,17 +69,17 @@ func TestRoute(t *testing.T) {
 	for _, test := range testData {
 		if test.register {
 			session := test_utils.NewApiTestSession(t, app)
-			session.Post("/users/register", test.testBody, http.StatusOK)
+			session.Post("/register", test.testBody, http.StatusOK)
 		}
 
 		session := test_utils.NewApiTestSession(t, app)
-		session.Post("/users/login", test.testBody, test.expectedStatus)
+		session.Post("/login", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 
 	session := test_utils.NewApiTestSession(t, app)
-	session.Post("/users/login", testData[len(testData)-1].testBody, http.StatusOK)
+	session.Post("/login", testData[len(testData)-1].testBody, http.StatusOK)
 	session.CheckResponse(testData[len(testData)-1].expectedResponse)
-	session.Post("/users/login", testData[len(testData)-1].testBody, http.StatusForbidden)
+	session.Post("/login", testData[len(testData)-1].testBody, http.StatusForbidden)
 	session.CheckResponse(errorf(consts.AlreadyLoggedIn))
 }

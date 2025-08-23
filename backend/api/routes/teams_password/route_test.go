@@ -38,7 +38,7 @@ var testData = []struct {
 	{
 		testBody:         JSON{"team_id": -1},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.InvalidUserID),
+		expectedResponse: errorf(consts.InvalidTeamID),
 	},
 	{
 		testBody:       JSON{"team_id": 0},
@@ -61,7 +61,7 @@ func TestRoute(t *testing.T) {
 
 	for i, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
-		session.Post("/users/login", JSON{"email": "admin@test.test", "password": "adminpass"}, http.StatusOK)
+		session.Post("/login", JSON{"email": "admin@test.test", "password": "adminpass"}, http.StatusOK)
 		if body, ok := test.testBody.(JSON); ok && body != nil {
 			if content, ok := body["team_id"]; ok && content == 0 {
 				test.testBody.(JSON)["team_id"] = team.ID
@@ -69,7 +69,11 @@ func TestRoute(t *testing.T) {
 		}
 		session.Patch("/teams/password", test.testBody, test.expectedStatus)
 		if test.expectedStatus == http.StatusOK {
-			body := session.Body().(map[string]interface{})
+			sessionBody := session.Body()
+			if sessionBody == nil {
+				t.Fatal("Expected body to not be nil")
+			}
+			body := sessionBody.(map[string]interface{})
 			newPasswordInterface, ok := body["new_password"]
 			if !ok {
 				t.Fatalf("Expected 'new_password' in response, got: %v", body)
@@ -81,8 +85,8 @@ func TestRoute(t *testing.T) {
 		}
 
 		session = test_utils.NewApiTestSession(t, app)
-		session.Post("/users/register", JSON{"username": "test", "email": fmt.Sprintf("test%d@test.test", i), "password": "testpass"}, http.StatusOK)
+		session.Post("/register", JSON{"username": "test", "email": fmt.Sprintf("test%d@test.test", i), "password": "testpass"}, http.StatusOK)
 		session.Post("/teams/join", JSON{"name": "test", "password": password}, http.StatusOK)
-		session.Post("/flags/submit", JSON{}, http.StatusBadRequest)
+		session.Post("/submissions", JSON{}, http.StatusBadRequest)
 	}
 }

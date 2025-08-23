@@ -1,4 +1,4 @@
-package flags_submit_test
+package submissions_create_test
 
 import (
 	"net/http"
@@ -47,6 +47,11 @@ var testData = []struct {
 		expectedResponse: errorf(consts.LongFlag),
 	},
 	{
+		testBody:         JSON{"chall_id": -1, "flag": "flag{test}"},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.InvalidChallengeID),
+	},
+	{
 		testBody:         JSON{"chall_id": 99999, "flag": "flag{test}"},
 		expectedStatus:   http.StatusNotFound,
 		expectedResponse: errorf(consts.ChallengeNotFound),
@@ -91,45 +96,45 @@ func TestRoute(t *testing.T) {
 	defer app.Shutdown()
 
 	session := test_utils.NewApiTestSession(t, app)
-	session.Post("/users/register", JSON{"username": "test2", "email": "test2@test.test", "password": "testpass"}, http.StatusOK)
-	session.Post("/flags/submit", JSON{"chall_id": 0, "flag": "flag{test}"}, http.StatusForbidden)
+	session.Post("/register", JSON{"username": "test2", "email": "test2@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/submissions", JSON{"chall_id": 0, "flag": "flag{test}"}, http.StatusForbidden)
 	session.CheckResponse(errorf(consts.Forbidden))
 
 	test_utils.RegisterUser(t, "test3", "test3@test.test", "testpass", sqlc.UserRoleAdmin)
 	session = test_utils.NewApiTestSession(t, app)
-	session.Post("/users/login", JSON{"email": "test3@test.test", "password": "testpass"}, http.StatusOK)
-	session.Post("/flags/submit", JSON{"chall_id": 0, "flag": "flag{test}"}, http.StatusNotFound)
+	session.Post("/login", JSON{"email": "test3@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/submissions", JSON{"chall_id": 0, "flag": "flag{test}"}, http.StatusNotFound)
 	session.CheckResponse(errorf(consts.ChallengeNotFound))
 
 	test_utils.RegisterUser(t, "test", "test@test.test", "testpass", sqlc.UserRolePlayer)
 	session = test_utils.NewApiTestSession(t, app)
-	session.Post("/users/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
 	session.Post("/teams/register", JSON{"name": "test-team", "password": "teampasswd"}, http.StatusOK)
 
 	test_utils.RegisterUser(t, "test-2", "test-2@test.test", "testpass", sqlc.UserRolePlayer)
 	session = test_utils.NewApiTestSession(t, app)
-	session.Post("/users/login", JSON{"email": "test-2@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/login", JSON{"email": "test-2@test.test", "password": "testpass"}, http.StatusOK)
 	session.Post("/teams/register", JSON{"name": "test-team-2", "password": "teampasswd"}, http.StatusOK)
 
 	session = test_utils.NewApiTestSession(t, app)
-	session.Post("/users/login", JSON{"email": "test3@test.test", "password": "testpass"}, http.StatusOK)
-	session.Post("/categories/create", JSON{"name": "cat", "icon": "icon"}, http.StatusOK)
+	session.Post("/login", JSON{"email": "test3@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/categories", JSON{"name": "cat", "icon": "icon"}, http.StatusOK)
 	chall := test_utils.CreateChallenge(t, "chall", "cat", "test-desc", sqlc.DeployTypeNormal, 1, sqlc.ScoreTypeDynamic)
-	session.Post("/flags/create", JSON{"chall_id": chall.ID, "flag": "flag{test}", "regex": false}, http.StatusOK)
+	session.Post("/flags", JSON{"chall_id": chall.ID, "flag": "flag{test}", "regex": false}, http.StatusOK)
 
 	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
 		if test.secondUser {
-			session.Post("/users/login", JSON{"email": "test-2@test.test", "password": "testpass"}, http.StatusOK)
+			session.Post("/login", JSON{"email": "test-2@test.test", "password": "testpass"}, http.StatusOK)
 		} else {
-			session.Post("/users/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+			session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
 		}
 		if body, ok := test.testBody.(JSON); ok && body != nil {
 			if content, ok := body["chall_id"]; ok && content == "" {
 				test.testBody.(JSON)["chall_id"] = chall.ID
 			}
 		}
-		session.Post("/flags/submit", test.testBody, test.expectedStatus)
+		session.Post("/submissions", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }

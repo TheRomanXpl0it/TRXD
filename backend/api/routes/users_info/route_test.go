@@ -26,21 +26,27 @@ func TestRoute(t *testing.T) {
 
 	session := test_utils.NewApiTestSession(t, app)
 
-	session.Get("/users/info", nil, http.StatusUnauthorized)
+	session.Get("/info", nil, http.StatusUnauthorized)
 	session.CheckResponse(errorf(consts.Unauthorized))
 
-	session.Post("/users/register", JSON{"username": "test", "email": "allow@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/register", JSON{"username": "test", "email": "allow@test.test", "password": "testpass"}, http.StatusOK)
 	session.CheckResponse(nil)
 
-	session.Get("/users/info", nil, http.StatusOK)
+	session.Get("/info", nil, http.StatusOK)
 	body := session.Body()
+	if body == nil {
+		t.Fatal("Expected body to not be nil")
+	}
 	test_utils.DeleteKeys(body, "id")
 	utils.Compare(body, JSON{"username": "test", "role": sqlc.UserRolePlayer, "team_id": nil})
 
 	session.Post("/teams/register", JSON{"name": "test", "password": "testpass"}, http.StatusOK)
 
-	session.Get("/users/info", nil, http.StatusOK)
+	session.Get("/info", nil, http.StatusOK)
 	body = session.Body()
+	if body == nil {
+		t.Fatal("Expected body to not be nil")
+	}
 	test_utils.DeleteKeys(body, "id")
 	if body.(map[string]interface{})["team_id"] == nil {
 		t.Errorf("Expected team_id to be set, got nil")

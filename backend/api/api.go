@@ -15,8 +15,8 @@ import (
 	"trxd/api/routes/configs_update"
 	"trxd/api/routes/flags_create"
 	"trxd/api/routes/flags_delete"
-	"trxd/api/routes/flags_submit"
 	"trxd/api/routes/flags_update"
+	"trxd/api/routes/submissions_create"
 	"trxd/api/routes/tags_create"
 	"trxd/api/routes/tags_delete"
 	"trxd/api/routes/tags_update"
@@ -60,53 +60,64 @@ func SetupApp() *fiber.App {
 	} else {
 		api = app.Group("/api")
 	}
+	noAuth := middlewares.NoAuth
+	spectator := middlewares.Spectator
+	player := middlewares.Player
+	team := middlewares.Team
+	author := middlewares.Author
+	admin := middlewares.Admin
 
 	// TODO: make this resource static: countries.json
 	api.Get("/countries", func(c *fiber.Ctx) error { return c.JSON(consts.Countries) })
 
-	api.Post("/users/register", middlewares.NoAuth, users_register.Route)
-	api.Post("/users/login", middlewares.NoAuth, users_login.Route)
-	api.Post("/users/logout", middlewares.NoAuth, users_logout.Route)
-	api.Patch("/users/update", middlewares.Player, users_update.Route)
-	api.Patch("/users/password", middlewares.Admin, users_password.Route)
-	api.Get("/users/info", middlewares.Spectator, users_info.Route)
-	api.Get("/users", middlewares.NoAuth, users_all_get.Route)
-	api.Get("/users/:id", middlewares.NoAuth, users_get.Route)
+	api.Post("/register", noAuth, users_register.Route)
+	api.Post("/login", noAuth, users_login.Route)
+	api.Post("/logout", noAuth, users_logout.Route)
+	api.Get("/info", spectator, users_info.Route)
+	api.Get("/scoreboard", noAuth, teams_scoreboard.Route)
 
-	api.Post("/teams/register", middlewares.Player, teams_register.Route)
-	api.Post("/teams/join", middlewares.Player, teams_join.Route)
-	// api.Get("/teams/join/:token", middlewares.Player, teams_join_token.Route)
-	api.Patch("/teams/update", middlewares.Player, middlewares.Team, teams_update.Route)
-	api.Patch("/teams/password", middlewares.Admin, teams_password.Route)
-	api.Get("/teams/scoreboard", middlewares.NoAuth, teams_scoreboard.Route)
-	api.Get("/teams", middlewares.NoAuth, teams_all_get.Route)
-	api.Get("/teams/:id", middlewares.NoAuth, teams_get.Route)
+	api.Patch("/users", player, users_update.Route)
+	api.Patch("/users/password", admin, users_password.Route)
+	api.Get("/users", noAuth, users_all_get.Route)
+	api.Get("/users/:id", noAuth, users_get.Route)
 
-	api.Post("/categories/create", middlewares.Author, categories_create.Route)
-	api.Patch("/categories/update", middlewares.Author, categories_update.Route)
-	api.Delete("/categories/delete", middlewares.Author, categories_delete.Route)
+	api.Post("/teams/register", player, teams_register.Route)
+	api.Post("/teams/join", player, teams_join.Route)
+	// api.Get("/teams/join/:token", player, teams_join_token.Route)
+	api.Patch("/teams", player, team, teams_update.Route)
+	api.Patch("/teams/password", admin, teams_password.Route)
+	api.Get("/teams", noAuth, teams_all_get.Route)
+	api.Get("/teams/:id", noAuth, teams_get.Route)
 
-	api.Post("/challenges/create", middlewares.Author, challenges_create.Route)
-	api.Patch("/challenges/update", middlewares.Author, challenges_update.Route)
-	api.Delete("/challenges/delete", middlewares.Author, challenges_delete.Route)
-	api.Get("/challenges", middlewares.Spectator, middlewares.Team, challenges_all_get.Route)
-	api.Get("/challenges/:id", middlewares.Spectator, middlewares.Team, challenges_get.Route)
+	api.Post("/categories", author, categories_create.Route)
+	api.Patch("/categories", author, categories_update.Route)
+	api.Delete("/categories", author, categories_delete.Route)
 
-	// api.Post("/instances/create", middlewares.Player, instances_create.Route)
-	// api.Patch("/instances/update", middlewares.Player, instances_update.Route)
-	// api.Delete("/instances/delete", middlewares.Player, instances_delete.Route)
+	api.Post("/challenges", author, challenges_create.Route)
+	api.Patch("/challenges", author, challenges_update.Route)
+	api.Delete("/challenges", author, challenges_delete.Route)
+	api.Get("/challenges", spectator, team, challenges_all_get.Route)
+	api.Get("/challenges/:id", spectator, team, challenges_get.Route)
 
-	api.Post("/tags/create", middlewares.Author, tags_create.Route)
-	api.Patch("/tags/update", middlewares.Author, tags_update.Route)
-	api.Delete("/tags/delete", middlewares.Author, tags_delete.Route)
+	// api.Post("/instances", player, team, instances_create.Route)
+	// api.Patch("/instances", player, team, instances_update.Route)
+	// api.Delete("/instances", player, team, instances_delete.Route)
+	// api.Get("/instances", admin, instances_get.Route)
 
-	api.Post("/flags/create", middlewares.Author, flags_create.Route)
-	api.Patch("/flags/update", middlewares.Author, flags_update.Route)
-	api.Delete("/flags/delete", middlewares.Author, flags_delete.Route)
-	api.Post("/flags/submit", middlewares.Player, middlewares.Team, flags_submit.Route)
+	api.Post("/submissions", player, team, submissions_create.Route) // TODO: maybe set spectator instead of player
+	// api.Get("/submissions", admin, submissions_get.Route)
+	// api.Delete("/submissions", admin, submissions_delete.Route)
 
-	api.Get("/configs", middlewares.Admin, configs_get.Route)
-	api.Patch("/configs/update", middlewares.Admin, configs_update.Route)
+	api.Post("/tags", author, tags_create.Route)
+	api.Patch("/tags", author, tags_update.Route)
+	api.Delete("/tags", author, tags_delete.Route)
+
+	api.Post("/flags", author, flags_create.Route)
+	api.Patch("/flags", author, flags_update.Route)
+	api.Delete("/flags", author, flags_delete.Route)
+
+	api.Get("/configs", admin, configs_get.Route)
+	api.Patch("/configs", admin, configs_update.Route)
 
 	if log.GetLevel() == log.DebugLevel {
 		// Serve frontend in development mode

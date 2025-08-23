@@ -46,6 +46,11 @@ var testData = []struct {
 		expectedResponse: errorf(consts.LongFlag),
 	},
 	{
+		testBody:         JSON{"chall_id": -1, "flag": "flag{test}"},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.InvalidChallengeID),
+	},
+	{
 		testBody:         JSON{"chall_id": 99999, "flag": "flag{test}"},
 		expectedStatus:   http.StatusNotFound,
 		expectedResponse: errorf(consts.ChallengeNotFound),
@@ -66,20 +71,20 @@ func TestRoute(t *testing.T) {
 
 	test_utils.RegisterUser(t, "test", "test@test.test", "testpass", sqlc.UserRoleAuthor)
 	session := test_utils.NewApiTestSession(t, app)
-	session.Post("/users/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
-	session.Post("/categories/create", JSON{"name": "cat", "icon": "icon"}, http.StatusOK)
+	session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/categories", JSON{"name": "cat", "icon": "icon"}, http.StatusOK)
 	chall := test_utils.CreateChallenge(t, "chall", "cat", "test-desc", sqlc.DeployTypeNormal, 1, sqlc.ScoreTypeStatic)
 
 	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
-		session.Post("/users/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
-		session.Post("/flags/create", JSON{"chall_id": chall.ID, "flag": "test", "regex": true}, -1)
+		session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+		session.Post("/flags", JSON{"chall_id": chall.ID, "flag": "test", "regex": true}, -1)
 		if body, ok := test.testBody.(JSON); ok && body != nil {
 			if content, ok := body["chall_id"]; ok && content == "" {
 				test.testBody.(JSON)["chall_id"] = chall.ID
 			}
 		}
-		session.Delete("/flags/delete", test.testBody, test.expectedStatus)
+		session.Delete("/flags", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }

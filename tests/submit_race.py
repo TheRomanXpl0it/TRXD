@@ -19,7 +19,7 @@ def gen_name():
 user = gen_name()
 email = user + "@test.test"
 s = requests.Session()
-r = s.post('http://localhost:1337/api/users/register', json={
+r = s.post('http://localhost:1337/api/register', json={
 	"username": user,
 	"email": email,
 	"password": "test1234",
@@ -48,7 +48,7 @@ def submit(user):
 	email = user + "@test.test"
 	s = requests.Session()
 
-	r = s.post('http://localhost:1337/api/users/register', json={
+	r = s.post('http://localhost:1337/api/register', json={
 		"username": user,
 		"email": email,
 		"password": "test1234",
@@ -59,7 +59,7 @@ def submit(user):
 		"password": "test1234",
 	})
 
-	r = s.post('http://localhost:1337/api/flags/submit', json={
+	r = s.post('http://localhost:1337/api/submissions', json={
 		"chall_id": chall_id,
 		"flag": "flag{test-1}",
 	})

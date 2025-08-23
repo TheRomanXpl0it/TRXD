@@ -47,6 +47,11 @@ var testData = []struct {
 		expectedResponse: errorf(consts.LongTagName),
 	},
 	{
+		testBody:         JSON{"chall_id": -1, "name": "test"},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.InvalidChallengeID),
+	},
+	{
 		testBody:       JSON{"chall_id": "", "name": "test-2"},
 		expectedStatus: http.StatusOK,
 	},
@@ -62,27 +67,30 @@ func TestRoute(t *testing.T) {
 
 	test_utils.RegisterUser(t, "author", "author@test.test", "testpass", sqlc.UserRoleAuthor)
 	session := test_utils.NewApiTestSession(t, app)
-	session.Post("/users/login", JSON{"email": "author@test.test", "password": "testpass"}, http.StatusOK)
-	session.Post("/categories/create", JSON{"name": "cat", "icon": "icon"}, http.StatusOK)
+	session.Post("/login", JSON{"email": "author@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/categories", JSON{"name": "cat", "icon": "icon"}, http.StatusOK)
 	chall := test_utils.CreateChallenge(t, "chall", "cat", "test-desc", sqlc.DeployTypeNormal, 1, sqlc.ScoreTypeStatic)
 
 	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
-		session.Post("/users/login", JSON{"email": "author@test.test", "password": "testpass"}, http.StatusOK)
+		session.Post("/login", JSON{"email": "author@test.test", "password": "testpass"}, http.StatusOK)
 		if body, ok := test.testBody.(JSON); ok && body != nil {
 			if content, ok := body["chall_id"]; ok && content == "" {
 				test.testBody.(JSON)["chall_id"] = chall.ID
 			}
 		}
-		session.Post("/tags/create", JSON{"chall_id": chall.ID, "name": "test"}, -1)
-		session.Delete("/tags/delete", test.testBody, test.expectedStatus)
+		session.Post("/tags", JSON{"chall_id": chall.ID, "name": "test"}, -1)
+		session.Delete("/tags", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 
 	session = test_utils.NewApiTestSession(t, app)
-	session.Post("/users/login", JSON{"email": "author@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/login", JSON{"email": "author@test.test", "password": "testpass"}, http.StatusOK)
 	session.Get(fmt.Sprintf("/challenges/%d", chall.ID), nil, http.StatusOK)
 	body := session.Body()
+	if body == nil {
+		t.Fatal("Expected body to not be nil")
+	}
 	tags := body.(map[string]interface{})["tags"].([]interface{})
 	if len(tags) != 0 {
 		t.Fatalf("Expected no tags, but got: %v", tags)

@@ -1,4 +1,4 @@
-package flags_submit
+package submissions_create
 
 import (
 	"context"

@@ -116,13 +116,13 @@ func TestRoute(t *testing.T) {
 
 	test_utils.RegisterUser(t, "author", "author@test.test", "authorpass", sqlc.UserRoleAuthor)
 	session := test_utils.NewApiTestSession(t, app)
-	session.Post("/users/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
-	session.Post("/categories/create", JSON{"name": "cat", "icon": "icon"}, http.StatusOK)
+	session.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
+	session.Post("/categories", JSON{"name": "cat", "icon": "icon"}, http.StatusOK)
 
 	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
-		session.Post("/users/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
-		session.Post("/challenges/create", test.testBody, test.expectedStatus)
+		session.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
+		session.Post("/challenges", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }

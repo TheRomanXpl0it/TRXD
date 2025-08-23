@@ -75,10 +75,13 @@ func TestRoute(t *testing.T) {
 	}
 
 	session := test_utils.NewApiTestSession(t, app)
-	session.Post("/users/register", JSON{"username": "test", "email": "test2@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/register", JSON{"username": "test", "email": "test2@test.test", "password": "testpass"}, http.StatusOK)
 	session.Post("/teams/register", JSON{"name": "test-team", "password": "testpass"}, http.StatusOK)
 	session.Get("/challenges", nil, http.StatusOK)
 	body := session.Body()
+	if body == nil {
+		t.Fatal("Expected body to not be nil")
+	}
 	test_utils.DeleteKeys(body, "id")
 	test_utils.Compare(t, expectedPlayer, body)
 
@@ -154,9 +157,12 @@ func TestRoute(t *testing.T) {
 	test_utils.RegisterUser(t, "test2", "test3@test.test", "testpass", sqlc.UserRoleAuthor)
 
 	session = test_utils.NewApiTestSession(t, app)
-	session.Post("/users/login", JSON{"email": "test3@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/login", JSON{"email": "test3@test.test", "password": "testpass"}, http.StatusOK)
 	session.Get("/challenges", nil, http.StatusOK)
 	body = session.Body()
+	if body == nil {
+		t.Fatal("Expected body to not be nil")
+	}
 	test_utils.DeleteKeys(body, "id")
 	test_utils.Compare(t, expectedAuthor, body)
 }

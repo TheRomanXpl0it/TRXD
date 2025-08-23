@@ -20,7 +20,7 @@ func TestRoute(t *testing.T) {
 
 	test_utils.RegisterUser(t, "test", "test@test.test", "testpass", sqlc.UserRoleAdmin)
 	session := test_utils.NewApiTestSession(t, app)
-	session.Post("/users/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
 	session.Get("/configs", nil, http.StatusOK)
 	session.CheckResponse([]JSON{
 		{

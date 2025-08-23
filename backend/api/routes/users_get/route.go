@@ -16,6 +16,9 @@ func Route(c *fiber.Ctx) error {
 	if err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidUserID)
 	}
+	if userID < 0 {
+		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidUserID)
+	}
 
 	allData := false
 	if uid != nil {

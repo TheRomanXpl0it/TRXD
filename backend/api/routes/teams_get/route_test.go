@@ -6,10 +6,15 @@ import (
 	"testing"
 	"trxd/api"
 	"trxd/db/sqlc"
+	"trxd/utils/consts"
 	"trxd/utils/test_utils"
 )
 
 type JSON map[string]interface{}
+
+func errorf(val interface{}) JSON {
+	return JSON{"error": val}
+}
 
 func TestMain(m *testing.M) {
 	test_utils.Main(m)
@@ -60,15 +65,33 @@ func TestRoute(t *testing.T) {
 	}
 
 	session := test_utils.NewApiTestSession(t, app)
+	session.Get("/teams/AAAA", nil, http.StatusBadRequest)
+	session.CheckResponse(errorf(consts.InvalidTeamID))
+
+	session = test_utils.NewApiTestSession(t, app)
+	session.Get(fmt.Sprintf("/teams/%d", -1), nil, http.StatusBadRequest)
+	session.CheckResponse(errorf(consts.InvalidTeamID))
+
+	session = test_utils.NewApiTestSession(t, app)
+	session.Get(fmt.Sprintf("/teams/%d", 99999), nil, http.StatusNotFound)
+	session.CheckResponse(errorf(consts.TeamNotFound))
+
+	session = test_utils.NewApiTestSession(t, app)
 	session.Get(fmt.Sprintf("/teams/%d", A.ID), nil, http.StatusOK)
 	body := session.Body()
+	if body == nil {
+		t.Fatal("Expected body to not be nil")
+	}
 	test_utils.DeleteKeys(body, "id", "timestamp")
 	test_utils.Compare(t, expectedPlayer, body)
 
 	session = test_utils.NewApiTestSession(t, app)
-	session.Post("/users/register", JSON{"username": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/register", JSON{"username": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
 	session.Get(fmt.Sprintf("/teams/%d", A.ID), nil, http.StatusOK)
 	body = session.Body()
+	if body == nil {
+		t.Fatal("Expected body to not be nil")
+	}
 	test_utils.DeleteKeys(body, "id", "timestamp")
 	test_utils.Compare(t, expectedPlayer, body)
 
@@ -117,9 +140,12 @@ func TestRoute(t *testing.T) {
 
 	test_utils.RegisterUser(t, "admin", "admin@admin.com", "adminpass", sqlc.UserRoleAdmin)
 	session = test_utils.NewApiTestSession(t, app)
-	session.Post("/users/login", JSON{"email": "admin@admin.com", "password": "adminpass"}, http.StatusOK)
+	session.Post("/login", JSON{"email": "admin@admin.com", "password": "adminpass"}, http.StatusOK)
 	session.Get(fmt.Sprintf("/teams/%d", A.ID), nil, http.StatusOK)
 	body = session.Body()
+	if body == nil {
+		t.Fatal("Expected body to not be nil")
+	}
 	test_utils.DeleteKeys(body, "id", "timestamp")
 	test_utils.Compare(t, expectedAdmin, body)
 }

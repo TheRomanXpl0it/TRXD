@@ -58,9 +58,9 @@ func TestRoute(t *testing.T) {
 
 	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
-		session.Post("/users/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
-		session.Post("/categories/create", JSON{"name": "cat", "icon": "icon"}, -1)
-		session.Delete("/categories/delete", test.testBody, test.expectedStatus)
+		session.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
+		session.Post("/categories", JSON{"name": "cat", "icon": "icon"}, -1)
+		session.Delete("/categories", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }

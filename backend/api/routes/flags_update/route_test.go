@@ -46,6 +46,11 @@ var testData = []struct {
 		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
 	{
+		testBody:         JSON{"chall_id": -1, "flag": "flag{test}", "new_flag": "test"},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.InvalidChallengeID),
+	},
+	{
 		testBody:         JSON{"chall_id": 99999, "flag": "flag{test}", "new_flag": "test"},
 		expectedStatus:   http.StatusNotFound,
 		expectedResponse: errorf(consts.ChallengeNotFound),
@@ -89,9 +94,12 @@ func TestRoute(t *testing.T) {
 
 	test_utils.RegisterUser(t, "test", "test@test.test", "testpass", sqlc.UserRoleAuthor)
 	session := test_utils.NewApiTestSession(t, app)
-	session.Post("/users/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
 	session.Get("/challenges", nil, http.StatusOK)
 	body := session.Body()
+	if body == nil {
+		t.Fatal("Expected body to not be nil")
+	}
 
 	challID := 0
 	for _, chall := range body.([]interface{}) {
@@ -103,13 +111,13 @@ func TestRoute(t *testing.T) {
 
 	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
-		session.Post("/users/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+		session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
 		if body, ok := test.testBody.(JSON); ok && body != nil {
 			if content, ok := body["chall_id"]; ok && content == "" {
 				test.testBody.(JSON)["chall_id"] = challID
 			}
 		}
-		session.Patch("/flags/update", test.testBody, test.expectedStatus)
+		session.Patch("/flags", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }

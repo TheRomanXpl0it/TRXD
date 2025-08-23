@@ -47,6 +47,11 @@ var testData = []struct {
 	},
 	{
 		testBody:         JSON{"chall_id": -1, "name": "test"},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.InvalidChallengeID),
+	},
+	{
+		testBody:         JSON{"chall_id": 99999, "name": "test"},
 		expectedStatus:   http.StatusNotFound,
 		expectedResponse: errorf(consts.ChallengeNotFound),
 	},
@@ -71,19 +76,19 @@ func TestRoute(t *testing.T) {
 
 	test_utils.RegisterUser(t, "author", "author@test.test", "testpass", sqlc.UserRoleAuthor)
 	session := test_utils.NewApiTestSession(t, app)
-	session.Post("/users/login", JSON{"email": "author@test.test", "password": "testpass"}, http.StatusOK)
-	session.Post("/categories/create", JSON{"name": "cat", "icon": "icon"}, http.StatusOK)
+	session.Post("/login", JSON{"email": "author@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/categories", JSON{"name": "cat", "icon": "icon"}, http.StatusOK)
 	chall := test_utils.CreateChallenge(t, "chall", "cat", "test-desc", sqlc.DeployTypeNormal, 1, sqlc.ScoreTypeStatic)
 
 	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
-		session.Post("/users/login", JSON{"email": "author@test.test", "password": "testpass"}, http.StatusOK)
+		session.Post("/login", JSON{"email": "author@test.test", "password": "testpass"}, http.StatusOK)
 		if body, ok := test.testBody.(JSON); ok && body != nil {
 			if content, ok := body["chall_id"]; ok && content == "" {
 				test.testBody.(JSON)["chall_id"] = chall.ID
 			}
 		}
-		session.Post("/tags/create", test.testBody, test.expectedStatus)
+		session.Post("/tags", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }

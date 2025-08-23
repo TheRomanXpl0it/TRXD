@@ -94,6 +94,11 @@ var testData = []struct {
 	},
 	{
 		testBody:         JSON{"chall_id": -1, "name": "test"},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.InvalidChallengeID),
+	},
+	{
+		testBody:         JSON{"chall_id": 9999, "name": "test"},
 		expectedStatus:   http.StatusNotFound,
 		expectedResponse: errorf(consts.ChallengeNotFound),
 	},
@@ -150,23 +155,23 @@ func TestRoute(t *testing.T) {
 
 	var challID int32
 	session := test_utils.NewApiTestSession(t, app)
-	session.Post("/users/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
-	session.Post("/categories/create", JSON{"name": "cat", "icon": "icon"}, -1)
+	session.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
+	session.Post("/categories", JSON{"name": "cat", "icon": "icon"}, -1)
 
 	chall := test_utils.TryCreateChallenge(t, "chall", "cat", "test-desc", sqlc.DeployTypeNormal, 1, sqlc.ScoreTypeStatic)
 	if chall != nil {
 		challID = chall.ID
 	}
 
-	session.Patch("/challenges/update", nil, http.StatusBadRequest)
+	session.Patch("/challenges", nil, http.StatusBadRequest)
 	session.CheckResponse(errorf(consts.InvalidMultipartForm))
 
-	session.RequestMultipart(http.MethodPatch, "/challenges/update", JSON{"chall_id": challID}, []string{dir + "f1.txt"}, []string{"/"}, http.StatusBadRequest)
+	session.RequestMultipart(http.MethodPatch, "/challenges", JSON{"chall_id": challID}, []string{dir + "f1.txt"}, []string{"/"}, http.StatusBadRequest)
 	session.CheckResponse(errorf(consts.InvalidFilePath))
 
 	for i, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
-		session.Post("/users/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
+		session.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
 
 		if test.testBody != nil {
 			if content, ok := test.testBody["chall_id"]; ok && content == "" {
@@ -178,12 +183,15 @@ func TestRoute(t *testing.T) {
 			test.testFiles[i] = dir + test.testFiles[i]
 		}
 
-		session.PatchMultipart("/challenges/update", test.testBody, test.testFiles, test.expectedStatus)
+		session.PatchMultipart("/challenges", test.testBody, test.testFiles, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 
 		if i == len(testData)-1 {
 			session.Get(fmt.Sprintf("/challenges/%d", challID), nil, http.StatusOK)
 			body := session.Body()
+			if body == nil {
+				t.Fatal("Expected body to not be nil")
+			}
 			expected := JSON{
 				"attachments": []string{
 					fmt.Sprintf("attachments/%d/%s", challID, "f1.txt"),

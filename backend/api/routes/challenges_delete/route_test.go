@@ -58,8 +58,8 @@ func TestRoute(t *testing.T) {
 	var challID int32
 	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
-		session.Post("/users/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
-		session.Post("/categories/create", JSON{"name": "cat", "icon": "icon"}, -1)
+		session.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
+		session.Post("/categories", JSON{"name": "cat", "icon": "icon"}, -1)
 
 		chall := test_utils.TryCreateChallenge(t, "chall", "cat", "test-desc", sqlc.DeployTypeNormal, 1, sqlc.ScoreTypeStatic)
 		if chall != nil {
@@ -71,7 +71,7 @@ func TestRoute(t *testing.T) {
 				test.testBody.(JSON)["chall_id"] = challID
 			}
 		}
-		session.Delete("/challenges/delete", test.testBody, test.expectedStatus)
+		session.Delete("/challenges", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
 }
