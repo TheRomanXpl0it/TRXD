@@ -54,22 +54,21 @@ func GetInstance(ctx context.Context, challID, teamID int32) (*sqlc.Instance, er
 	return &instance, nil
 }
 
-func CreateInstance(ctx context.Context, teamID, challID int32, expiresAt time.Time, host string, port int) (bool, error) {
-	err := db.Sql.CreateInstance(ctx, sqlc.CreateInstanceParams{
-		TeamID:    teamID,
-		ChallID:   challID,
-		ExpiresAt: expiresAt,
-		Host:      sql.NullString{String: host, Valid: host != ""},
-		Port:      int32(port),
+func CreateInstance(ctx context.Context, teamID, challID int32, expiresAt time.Time, hashDomain bool) (*sqlc.CreateInstanceRow, error) {
+	info, err := db.Sql.CreateInstance(ctx, sqlc.CreateInstanceParams{
+		TeamID:     teamID,
+		ChallID:    challID,
+		ExpiresAt:  expiresAt,
+		HashDomain: hashDomain,
 	})
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
 			if pqErr.Code == "23505" { // Unique violation error code
-				return true, nil
+				return nil, nil
 			}
 		}
-		return false, err
+		return nil, err
 	}
 
-	return false, nil
+	return &info, nil
 }

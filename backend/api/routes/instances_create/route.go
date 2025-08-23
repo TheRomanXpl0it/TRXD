@@ -47,6 +47,8 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusBadRequest, consts.ChallengeNotInstanciable)
 	}
 
+	// TODO: if configs.secret == "" then return "instances disabled"
+
 	instance, err := GetInstance(c.Context(), *data.ChallID, tid)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingInstance)
@@ -55,33 +57,31 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusConflict, consts.AlreadyAnActiveInstance)
 	}
 
-	// TODO: GenPort
-	port := 1337
-	// TODO: GenDomain
-	domain := "127.0.0.1"
 	if !chall.DockerConfig.Lifetime.Valid {
 		// TODO: global lifetime in configs
 		chall.DockerConfig.Lifetime.Int32 = 60
+		chall.DockerConfig.HashDomain = true
 		// return utils.Error(c, fiber.StatusInternalServerError, "DockerConfig lifetime should be valid", fmt.Errorf("DockerConfig lifetime should be valid"))
 	}
 	lifetime := time.Second * time.Duration(chall.DockerConfig.Lifetime.Int32)
 	expires_at := time.Now().Add(lifetime)
 
-	raceCondition, err := CreateInstance(c.Context(), tid, *data.ChallID, expires_at, domain, port)
+	info, err := CreateInstance(c.Context(), tid, *data.ChallID, expires_at, chall.DockerConfig.HashDomain)
 	if err != nil {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorCreatingInstance)
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorCreatingInstance, err)
 	}
-	if raceCondition { // TODO: tests
+	// TODO: integration tests
+	if info == nil { // race condition
 		return utils.Error(c, fiber.StatusConflict, consts.AlreadyAnActiveInstance)
 	}
 
 	// TODO: call the instancer
 	log.Info("Creating Instance:", "tid", tid, "challID", *data.ChallID, "expiresAt", expires_at,
-		"domain", domain, "port", port, "docker-conf", chall.DockerConfig)
+		"host", info.Host, "port", info.Port, "docker-conf", chall.DockerConfig)
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"expires_at": expires_at,
-		"domain":     domain,
-		"port":       port,
+		"host":       info.Host,
+		"port":       info.Port,
 	})
 }

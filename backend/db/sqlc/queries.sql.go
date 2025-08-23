@@ -103,29 +103,49 @@ func (q *Queries) CreateFlag(ctx context.Context, arg CreateFlagParams) error {
 	return err
 }
 
-const createInstance = `-- name: CreateInstance :exec
+const createInstance = `-- name: CreateInstance :one
+WITH conf_secret AS (
+    SELECT value AS secret
+    FROM configs
+    WHERE key='secret'
+    FOR UPDATE
+  ),
+  info AS (
+    SELECT generate_instance_remote(
+      (SELECT secret FROM conf_secret),
+      $1,
+      $2,
+      $4::BOOLEAN
+    ) AS tuple
+  )
 INSERT INTO instances (team_id, chall_id, expires_at, host, port)
-	VALUES ($1, $2, $3, $5, $4)
+  VALUES ($1, $2, $3, (SELECT (tuple).host FROM info), (SELECT (tuple).port FROM info))
+RETURNING host, port
 `
 
 type CreateInstanceParams struct {
-	TeamID    int32          `json:"team_id"`
-	ChallID   int32          `json:"chall_id"`
-	ExpiresAt time.Time      `json:"expires_at"`
-	Port      int32          `json:"port"`
-	Host      sql.NullString `json:"host"`
+	TeamID     int32     `json:"team_id"`
+	ChallID    int32     `json:"chall_id"`
+	ExpiresAt  time.Time `json:"expires_at"`
+	HashDomain bool      `json:"hash_domain"`
+}
+
+type CreateInstanceRow struct {
+	Host string `json:"host"`
+	Port int32  `json:"port"`
 }
 
 // Creates a new instance for a team
-func (q *Queries) CreateInstance(ctx context.Context, arg CreateInstanceParams) error {
-	_, err := q.exec(ctx, q.createInstanceStmt, createInstance,
+func (q *Queries) CreateInstance(ctx context.Context, arg CreateInstanceParams) (CreateInstanceRow, error) {
+	row := q.queryRow(ctx, q.createInstanceStmt, createInstance,
 		arg.TeamID,
 		arg.ChallID,
 		arg.ExpiresAt,
-		arg.Port,
-		arg.Host,
+		arg.HashDomain,
 	)
-	return err
+	var i CreateInstanceRow
+	err := row.Scan(&i.Host, &i.Port)
+	return i, err
 }
 
 const createTag = `-- name: CreateTag :exec

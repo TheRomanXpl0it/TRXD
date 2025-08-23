@@ -1,7 +1,6 @@
 package instances_create_test
 
 import (
-	"fmt"
 	"net/http"
 	"testing"
 	"trxd/api"
@@ -48,7 +47,6 @@ func TestRoute(t *testing.T) {
 			challID3 = int32(chall.(map[string]interface{})["id"].(float64))
 		}
 	}
-	fmt.Printf("%v %v\n", challID1, challID3)
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
@@ -75,13 +73,13 @@ func TestRoute(t *testing.T) {
 	if body == nil {
 		t.Fatal("Expected body to not be nil")
 	}
-	if _, ok := body.(map[string]interface{})["domain"]; !ok {
-		t.Error("Expected domain to be present in response")
-	}
 	if _, ok := body.(map[string]interface{})["expires_at"]; !ok {
-		t.Error("Expected expires_at to be present in response")
+		t.Fatalf("Expected expires_at to be present in response: %+v", body)
+	}
+	if _, ok := body.(map[string]interface{})["host"]; !ok {
+		t.Fatalf("Expected host to be present in response: %+v", body)
 	}
 	if _, ok := body.(map[string]interface{})["port"]; !ok {
-		t.Error("Expected port to be present in response")
+		t.Fatalf("Expected port to be present in response: %+v", body)
 	}
 }

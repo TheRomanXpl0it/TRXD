@@ -43,6 +43,18 @@ func TestRoute(t *testing.T) {
 		},
 		{
 			"description": "",
+			"key":         "domain",
+			"type":        "string",
+			"value":       "",
+		},
+		{
+			"description": "",
+			"key":         "hash-len",
+			"type":        "int",
+			"value":       "12",
+		},
+		{
+			"description": "",
 			"key":         "instance-lifetime",
 			"type":        "int",
 			"value":       "1800",
@@ -58,6 +70,24 @@ func TestRoute(t *testing.T) {
 			"key":         "instance-max-mem",
 			"type":        "int",
 			"value":       "512",
+		},
+		{
+			"description": "",
+			"key":         "max-port",
+			"type":        "int",
+			"value":       "30000",
+		},
+		{
+			"description": "",
+			"key":         "min-port",
+			"type":        "int",
+			"value":       "20000",
+		},
+		{
+			"description": "",
+			"key":         "secret",
+			"type":        "string",
+			"value":       "",
 		},
 	})
 }

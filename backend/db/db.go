@@ -98,6 +98,11 @@ var defaultConfigs = map[string]any{
 	"instance-lifetime":  30 * 60, // 30 minutes
 	"instance-max-cpu":   "1.0",
 	"instance-max-mem":   512,
+	"min-port":           20000,
+	"max-port":           30000,
+	"hash-len":           12,
+	"secret":             "", // TODO: gen random if none
+	"domain":             "",
 }
 
 func InitConfigs() error {
@@ -146,6 +151,14 @@ func initDB(test ...bool) (bool, error) {
 		if !success {
 			return false, nil
 		}
+	}
+
+	success, err = ExecSQLFile("sql/functions.sql")
+	if err != nil {
+		return false, err
+	}
+	if !success {
+		return false, nil
 	}
 
 	if len(test) > 0 && test[0] {
