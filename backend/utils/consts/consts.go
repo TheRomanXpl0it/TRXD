@@ -104,6 +104,7 @@ const (
 	ErrorCreatingTag            = "Error creating tag"
 	ErrorDeletingTag            = "Error deleting tag"
 	ErrorUpdatingTag            = "Error updating tag"
+	ErrorFetchingConfigs        = "Error fetching configurations"
 )
 
 var UserRegex = regexp.MustCompile(`(^[^@\s]+@[^@\s]+\.[^@\s]+$)`)

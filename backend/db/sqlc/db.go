@@ -78,6 +78,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getConfigStmt, err = db.PrepareContext(ctx, getConfig); err != nil {
 		return nil, fmt.Errorf("error preparing query GetConfig: %w", err)
 	}
+	if q.getConfigsStmt, err = db.PrepareContext(ctx, getConfigs); err != nil {
+		return nil, fmt.Errorf("error preparing query GetConfigs: %w", err)
+	}
 	if q.getFirstBloodStmt, err = db.PrepareContext(ctx, getFirstBlood); err != nil {
 		return nil, fmt.Errorf("error preparing query GetFirstBlood: %w", err)
 	}
@@ -261,6 +264,11 @@ func (q *Queries) Close() error {
 	if q.getConfigStmt != nil {
 		if cerr := q.getConfigStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getConfigStmt: %w", cerr)
+		}
+	}
+	if q.getConfigsStmt != nil {
+		if cerr := q.getConfigsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getConfigsStmt: %w", cerr)
 		}
 	}
 	if q.getFirstBloodStmt != nil {
@@ -470,6 +478,7 @@ type Queries struct {
 	getChallengeSolvesStmt       *sql.Stmt
 	getChallengesPreviewStmt     *sql.Stmt
 	getConfigStmt                *sql.Stmt
+	getConfigsStmt               *sql.Stmt
 	getFirstBloodStmt            *sql.Stmt
 	getFlagsByChallengeStmt      *sql.Stmt
 	getTagsByChallengeStmt       *sql.Stmt
@@ -524,6 +533,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getChallengeSolvesStmt:       q.getChallengeSolvesStmt,
 		getChallengesPreviewStmt:     q.getChallengesPreviewStmt,
 		getConfigStmt:                q.getConfigStmt,
+		getConfigsStmt:               q.getConfigsStmt,
 		getFirstBloodStmt:            q.getFirstBloodStmt,
 		getFlagsByChallengeStmt:      q.getFlagsByChallengeStmt,
 		getTagsByChallengeStmt:       q.getTagsByChallengeStmt,

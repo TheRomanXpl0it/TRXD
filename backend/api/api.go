@@ -11,6 +11,7 @@ import (
 	"trxd/api/routes/challenges_delete"
 	"trxd/api/routes/challenges_get"
 	"trxd/api/routes/challenges_update"
+	"trxd/api/routes/configs_get"
 	"trxd/api/routes/configs_update"
 	"trxd/api/routes/flags_create"
 	"trxd/api/routes/flags_delete"
@@ -95,15 +96,16 @@ func SetupApp() *fiber.App {
 	// api.Patch("/instances/update", middlewares.Player, instances_update.Route)
 	// api.Delete("/instances/delete", middlewares.Player, instances_delete.Route)
 
-	api.Post("/tags/create", middlewares.Author, tags_create.Route)   // TODO: complete
-	api.Patch("/tags/update", middlewares.Author, tags_update.Route)  // TODO: complete
-	api.Delete("/tags/delete", middlewares.Author, tags_delete.Route) // TODO: complete
+	api.Post("/tags/create", middlewares.Author, tags_create.Route)
+	api.Patch("/tags/update", middlewares.Author, tags_update.Route)
+	api.Delete("/tags/delete", middlewares.Author, tags_delete.Route)
 
 	api.Post("/flags/create", middlewares.Author, flags_create.Route)
 	api.Patch("/flags/update", middlewares.Author, flags_update.Route)
 	api.Delete("/flags/delete", middlewares.Author, flags_delete.Route)
 	api.Post("/flags/submit", middlewares.Player, middlewares.Team, flags_submit.Route)
 
+	api.Get("/configs", middlewares.Admin, configs_get.Route)
 	api.Patch("/configs/update", middlewares.Admin, configs_update.Route)
 
 	if log.GetLevel() == log.DebugLevel {

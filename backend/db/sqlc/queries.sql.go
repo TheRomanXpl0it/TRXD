@@ -300,6 +300,39 @@ func (q *Queries) GetChallengesPreview(ctx context.Context, id int32) ([]GetChal
 	return items, nil
 }
 
+const getConfigs = `-- name: GetConfigs :many
+SELECT key, type, value, description FROM configs ORDER BY key
+`
+
+// Fetches all configuration settings
+func (q *Queries) GetConfigs(ctx context.Context) ([]Config, error) {
+	rows, err := q.query(ctx, q.getConfigsStmt, getConfigs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Config
+	for rows.Next() {
+		var i Config
+		if err := rows.Scan(
+			&i.Key,
+			&i.Type,
+			&i.Value,
+			&i.Description,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getFirstBlood = `-- name: GetFirstBlood :one
 SELECT teams.id, teams.name
   FROM submissions
