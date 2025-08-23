@@ -37,6 +37,27 @@ func (q *Queries) GetChallengeByID(ctx context.Context, id int32) (Challenge, er
 	return i, err
 }
 
+const getDockerConfigsByID = `-- name: GetDockerConfigsByID :one
+SELECT chall_id, image, compose, hash_domain, lifetime, envs, max_memory, max_cpu FROM docker_configs WHERE chall_id = $1
+`
+
+// Retrieve Docker configurations by challenge ID
+func (q *Queries) GetDockerConfigsByID(ctx context.Context, challID int32) (DockerConfig, error) {
+	row := q.queryRow(ctx, q.getDockerConfigsByIDStmt, getDockerConfigsByID, challID)
+	var i DockerConfig
+	err := row.Scan(
+		&i.ChallID,
+		&i.Image,
+		&i.Compose,
+		&i.HashDomain,
+		&i.Lifetime,
+		&i.Envs,
+		&i.MaxMemory,
+		&i.MaxCpu,
+	)
+	return i, err
+}
+
 const getTagsByChallenge = `-- name: GetTagsByChallenge :many
 SELECT name FROM tags WHERE chall_id = $1
 `

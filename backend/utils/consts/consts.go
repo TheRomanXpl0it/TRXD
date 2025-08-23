@@ -66,11 +66,11 @@ const (
 	LongCountry                 = "Country must not exceed 3 characters"
 	ErrorDeletingCategory       = "Error deleting category"
 	ErrorDeletingChallenge      = "Error deleting challenge"
-	InvalidChallengeID          = "Invalid challenge ID, must be greater than 0"
+	InvalidChallengeID          = "Invalid challenge ID, must be non negative"
 	ErrorGeneratingPassword     = "Error generating random password"
-	InvalidTeamID               = "Invalid team ID, must be greater than 0"
+	InvalidTeamID               = "Invalid team ID, must be non negative"
 	ErrorResettingTeamPassword  = "Error resetting team password"
-	InvalidUserID               = "Invalid user ID, must be greater than 0"
+	InvalidUserID               = "Invalid user ID, must be non negative"
 	ErrorResettingUserPassword  = "Error resetting user password"
 	ErrorDeletingFlag           = "Error deleting flag"
 	ErrorFetchingConfig         = "Error fetching configuration"
@@ -105,6 +105,10 @@ const (
 	ErrorDeletingTag            = "Error deleting tag"
 	ErrorUpdatingTag            = "Error updating tag"
 	ErrorFetchingConfigs        = "Error fetching configurations"
+	ChallengeNotInstanciable    = "Challenge is not instanciable"
+	ErrorFetchingInstance       = "Error fetching instance"
+	AlreadyAnActiveInstance     = "Already an active instance"
+	ErrorCreatingInstance       = "Error creating instance"
 )
 
 var UserRegex = regexp.MustCompile(`(^[^@\s]+@[^@\s]+\.[^@\s]+$)`)

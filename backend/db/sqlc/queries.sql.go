@@ -103,6 +103,31 @@ func (q *Queries) CreateFlag(ctx context.Context, arg CreateFlagParams) error {
 	return err
 }
 
+const createInstance = `-- name: CreateInstance :exec
+INSERT INTO instances (team_id, chall_id, expires_at, host, port)
+	VALUES ($1, $2, $3, $5, $4)
+`
+
+type CreateInstanceParams struct {
+	TeamID    int32          `json:"team_id"`
+	ChallID   int32          `json:"chall_id"`
+	ExpiresAt time.Time      `json:"expires_at"`
+	Port      int32          `json:"port"`
+	Host      sql.NullString `json:"host"`
+}
+
+// Creates a new instance for a team
+func (q *Queries) CreateInstance(ctx context.Context, arg CreateInstanceParams) error {
+	_, err := q.exec(ctx, q.createInstanceStmt, createInstance,
+		arg.TeamID,
+		arg.ChallID,
+		arg.ExpiresAt,
+		arg.Port,
+		arg.Host,
+	)
+	return err
+}
+
 const createTag = `-- name: CreateTag :exec
 INSERT INTO tags (chall_id, name) VALUES ($1, $2)
 `
@@ -389,6 +414,29 @@ func (q *Queries) GetFlagsByChallenge(ctx context.Context, challID int32) ([]Get
 		return nil, err
 	}
 	return items, nil
+}
+
+const getInstance = `-- name: GetInstance :one
+SELECT team_id, chall_id, expires_at, host, port FROM instances WHERE chall_id = $1 AND team_id = $2
+`
+
+type GetInstanceParams struct {
+	ChallID int32 `json:"chall_id"`
+	TeamID  int32 `json:"team_id"`
+}
+
+// Gets an instance by ID
+func (q *Queries) GetInstance(ctx context.Context, arg GetInstanceParams) (Instance, error) {
+	row := q.queryRow(ctx, q.getInstanceStmt, getInstance, arg.ChallID, arg.TeamID)
+	var i Instance
+	err := row.Scan(
+		&i.TeamID,
+		&i.ChallID,
+		&i.ExpiresAt,
+		&i.Host,
+		&i.Port,
+	)
+	return i, err
 }
 
 const getTeamMembers = `-- name: GetTeamMembers :many

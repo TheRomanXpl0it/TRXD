@@ -1,5 +1,13 @@
+- extra tests on "ID < 0: 'Invalid ID'"
+- config lower and upper bound for instances ports
+- configs for all defaults for instances
+- config to enable instances
+- config to start and end ctf
+
 - move countries from api to frontend or /static
 - make /challenge/:id as author return all data
+
+- change "username" into "name"
 
 - resolve TODOs left into the code
 - when finished endpoints, review needed data and revome `RETURNIN *;` and similar when not needed
