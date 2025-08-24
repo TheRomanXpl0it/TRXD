@@ -80,8 +80,8 @@ func TestRoute(t *testing.T) {
 	if host, ok := body.(map[string]interface{})["host"]; !ok {
 		t.Fatalf("Expected host to be present in response: %+v", body)
 	} else {
-		if !strings.HasSuffix(host.(string), "chall-3.test.com") {
-			t.Fatalf("Expected host to end with chall-3.test.com: %s", host)
+		if !strings.HasSuffix(host.(string), ".chall-3.test.com") {
+			t.Fatalf("Expected host to end with .chall-3.test.com: %s", host)
 		}
 	}
 	if _, ok := body.(map[string]interface{})["port"]; !ok {
@@ -95,7 +95,29 @@ func TestRoute(t *testing.T) {
 	session.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
 	session.PatchMultipart("/challenges", JSON{"chall_id": challID3, "host": ""}, []string{}, http.StatusOK)
 	session.CheckResponse(nil)
-	// TODO: test global domain
 
-	// TODO: test compose instance
+	session = test_utils.NewApiTestSession(t, app)
+	session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+	session.Delete("/instances", JSON{"chall_id": challID3}, http.StatusOK)
+	session.Delete("/instances", JSON{"chall_id": challID3}, http.StatusNotFound)
+	session.CheckResponse(errorf(consts.InstanceNotFound))
+
+	session.Post("/instances", JSON{"chall_id": challID3}, http.StatusOK)
+	body = session.Body()
+	if body == nil {
+		t.Fatal("Expected body to not be nil")
+	}
+	if _, ok := body.(map[string]interface{})["expires_at"]; !ok {
+		t.Fatalf("Expected expires_at to be present in response: %+v", body)
+	}
+	if host, ok := body.(map[string]interface{})["host"]; !ok {
+		t.Fatalf("Expected host to be present in response: %+v", body)
+	} else {
+		if !strings.HasSuffix(host.(string), ".test.com") || strings.HasSuffix(host.(string), ".chall-3.test.com") {
+			t.Fatalf("Expected host to end with .test.com: %s", host)
+		}
+	}
+	if _, ok := body.(map[string]interface{})["port"]; !ok {
+		t.Fatalf("Expected port to be present in response: %+v", body)
+	}
 }

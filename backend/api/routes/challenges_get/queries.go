@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"strings"
+	"time"
 	"trxd/db"
 	"trxd/db/sqlc"
 	"trxd/utils/consts"
@@ -78,9 +79,22 @@ func GetFirstBlood(ctx context.Context, id int32) (*sqlc.GetFirstBloodRow, error
 	return &firstBlood, nil
 }
 
-func GetChallenge(ctx context.Context, id int32, uid int32, author bool) (*Chall, error) {
-	var chall Chall
+func GetInstanceInfo(ctx context.Context, challID int32, teamID int32) (*sqlc.GetInstanceInfoRow, error) {
+	instance, err := db.Sql.GetInstanceInfo(ctx, sqlc.GetInstanceInfoParams{
+		TeamID:  teamID,
+		ChallID: challID,
+	})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
 
+	return &instance, nil
+}
+
+func GetChallenge(ctx context.Context, id int32, uid int32, tid int32, author bool) (*Chall, error) {
 	challenge, err := db.GetChallengeByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -102,51 +116,68 @@ func GetChallenge(ctx context.Context, id int32, uid int32, author bool) (*Chall
 		return nil, err
 	}
 
-	chall.ID = challenge.ID
-	chall.Name = challenge.Name
-	chall.Category = challenge.Category
-	chall.Description = challenge.Description
-	if challenge.Difficulty.Valid {
-		chall.Difficulty = challenge.Difficulty.String
+	firstBlood, err := GetFirstBlood(ctx, id)
+	if err != nil {
+		return nil, err
 	}
-	chall.Authors = []string{}
-	if challenge.Authors.Valid {
-		chall.Authors = strings.Split(challenge.Authors.String, consts.Separator)
-	}
-	chall.Instance = challenge.Type != sqlc.DeployTypeNormal
-	chall.Points = int(challenge.Points)
-	chall.Solves = int(challenge.Solves)
-	if challenge.Host.Valid {
-		chall.Host = challenge.Host.String // TODO: override with instance
-	}
-	if challenge.Port.Valid {
-		chall.Port = int(challenge.Port.Int32) // TODO: override with instance
-	}
-	chall.Attachments = []string{}
-	if challenge.Attachments.Valid {
-		chall.Attachments = strings.Split(challenge.Attachments.String, consts.Separator)
-	}
-	chall.Tags = []string{}
-	if tags != nil {
-		chall.Tags = tags
-	}
-	chall.Solved = solved
-	// TODO: add chall.Timeout from the instance
 
 	solves, err := db.Sql.GetChallengeSolves(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	chall.SolvesList = []sqlc.GetChallengeSolvesRow{}
-	if solves != nil {
-		chall.SolvesList = solves
-	}
 
-	firstBlood, err := GetFirstBlood(ctx, id)
+	instance, err := GetInstanceInfo(ctx, id, tid)
 	if err != nil {
 		return nil, err
 	}
-	chall.FirstBlood = firstBlood
+
+	chall := Chall{
+		ID:          challenge.ID,
+		Name:        challenge.Name,
+		Category:    challenge.Category,
+		Description: challenge.Description,
+		Authors:     []string{},
+		Instance:    challenge.Type != sqlc.DeployTypeNormal,
+		Points:      int(challenge.Points),
+		Solves:      int(challenge.Solves),
+		Attachments: []string{},
+		Tags:        []string{},
+		Solved:      solved,
+		SolvesList:  []sqlc.GetChallengeSolvesRow{},
+		FirstBlood:  firstBlood,
+	}
+
+	if challenge.Difficulty.Valid {
+		chall.Difficulty = challenge.Difficulty.String
+	}
+	if challenge.Authors.Valid {
+		chall.Authors = strings.Split(challenge.Authors.String, consts.Separator)
+	}
+	if instance != nil {
+		chall.Host = instance.Host
+	} else if challenge.Host.Valid {
+		chall.Host = challenge.Host.String
+	}
+	if instance != nil {
+		chall.Port = int(instance.Port)
+	} else if challenge.Port.Valid {
+		chall.Port = int(challenge.Port.Int32)
+	}
+	if challenge.Attachments.Valid {
+		chall.Attachments = strings.Split(challenge.Attachments.String, consts.Separator)
+	}
+	if tags != nil {
+		chall.Tags = tags
+	}
+	if instance != nil {
+		chall.Timeout = int(time.Until(instance.ExpiresAt).Seconds())
+		if chall.Timeout < 0 {
+			chall.Timeout = 0
+		}
+	}
+	if solves != nil {
+		chall.SolvesList = solves
+	}
 
 	if !author {
 		return &chall, nil

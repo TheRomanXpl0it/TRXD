@@ -109,6 +109,10 @@ const (
 	ErrorFetchingInstance       = "Error fetching instance"
 	AlreadyAnActiveInstance     = "Already an active instance"
 	ErrorCreatingInstance       = "Error creating instance"
+	MissingLifetime             = "global lifetime is missing"
+	DisabledInstances           = "instances are disabled"
+	ErrorDeletingInstance       = "Error deleting instance"
+	InstanceNotFound            = "Instance not found"
 )
 
 var UserRegex = regexp.MustCompile(`(^[^@\s]+@[^@\s]+\.[^@\s]+$)`)

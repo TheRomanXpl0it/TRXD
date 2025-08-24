@@ -198,6 +198,22 @@ func (q *Queries) DeleteFlag(ctx context.Context, arg DeleteFlagParams) error {
 	return err
 }
 
+const deleteInstance = `-- name: DeleteInstance :exec
+DELETE FROM instances
+  WHERE team_id = $1 AND chall_id = $2
+`
+
+type DeleteInstanceParams struct {
+	TeamID  int32 `json:"team_id"`
+	ChallID int32 `json:"chall_id"`
+}
+
+// Delete an instance
+func (q *Queries) DeleteInstance(ctx context.Context, arg DeleteInstanceParams) error {
+	_, err := q.exec(ctx, q.deleteInstanceStmt, deleteInstance, arg.TeamID, arg.ChallID)
+	return err
+}
+
 const deleteTag = `-- name: DeleteTag :exec
 DELETE FROM tags WHERE chall_id = $1 AND name = $2
 `
@@ -456,6 +472,29 @@ func (q *Queries) GetInstance(ctx context.Context, arg GetInstanceParams) (Insta
 		&i.Host,
 		&i.Port,
 	)
+	return i, err
+}
+
+const getInstanceInfo = `-- name: GetInstanceInfo :one
+SELECT expires_at, host, port FROM instances WHERE team_id = $1 AND chall_id = $2
+`
+
+type GetInstanceInfoParams struct {
+	TeamID  int32 `json:"team_id"`
+	ChallID int32 `json:"chall_id"`
+}
+
+type GetInstanceInfoRow struct {
+	ExpiresAt time.Time `json:"expires_at"`
+	Host      string    `json:"host"`
+	Port      int32     `json:"port"`
+}
+
+// Retrieve the instance associated with a challenge and team
+func (q *Queries) GetInstanceInfo(ctx context.Context, arg GetInstanceInfoParams) (GetInstanceInfoRow, error) {
+	row := q.queryRow(ctx, q.getInstanceInfoStmt, getInstanceInfo, arg.TeamID, arg.ChallID)
+	var i GetInstanceInfoRow
+	err := row.Scan(&i.ExpiresAt, &i.Host, &i.Port)
 	return i, err
 }
 
@@ -1050,6 +1089,24 @@ func (q *Queries) UpdateFlag(ctx context.Context, arg UpdateFlagParams) error {
 		arg.NewFlag,
 		arg.Regex,
 	)
+	return err
+}
+
+const updateInstance = `-- name: UpdateInstance :exec
+UPDATE instances
+  SET expires_at = $3
+  WHERE team_id = $1 AND chall_id = $2
+`
+
+type UpdateInstanceParams struct {
+	TeamID    int32     `json:"team_id"`
+	ChallID   int32     `json:"chall_id"`
+	ExpiresAt time.Time `json:"expires_at"`
+}
+
+// Update an instance expiration time
+func (q *Queries) UpdateInstance(ctx context.Context, arg UpdateInstanceParams) error {
+	_, err := q.exec(ctx, q.updateInstanceStmt, updateInstance, arg.TeamID, arg.ChallID, arg.ExpiresAt)
 	return err
 }
 

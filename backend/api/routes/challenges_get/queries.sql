@@ -40,3 +40,7 @@ SELECT teams.id, teams.name
 
 -- name: GetChallDockerConfig :one
 SELECT * FROM docker_configs WHERE chall_id = $1;
+
+-- name: GetInstanceInfo :one
+-- Retrieve the instance associated with a challenge and team
+SELECT expires_at, host, port FROM instances WHERE team_id = $1 AND chall_id = $2;

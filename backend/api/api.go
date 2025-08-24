@@ -17,6 +17,8 @@ import (
 	"trxd/api/routes/flags_delete"
 	"trxd/api/routes/flags_update"
 	"trxd/api/routes/instances_create"
+	"trxd/api/routes/instances_delete"
+	"trxd/api/routes/instances_update"
 	"trxd/api/routes/submissions_create"
 	"trxd/api/routes/tags_create"
 	"trxd/api/routes/tags_delete"
@@ -101,8 +103,8 @@ func SetupApp() *fiber.App {
 	api.Get("/challenges/:id", spectator, team, challenges_get.Route)
 
 	api.Post("/instances", player, team, instances_create.Route)
-	// api.Patch("/instances", player, team, instances_update.Route)
-	// api.Delete("/instances", player, team, instances_delete.Route)
+	api.Patch("/instances", player, team, instances_update.Route)
+	api.Delete("/instances", player, team, instances_delete.Route)
 	// api.Get("/instances", admin, instances_get.Route)
 
 	api.Post("/submissions", player, team, submissions_create.Route) // TODO: maybe set spectator instead of player

@@ -1,8 +1,6 @@
-package instances_create
+package instances_delete
 
 import (
-	"fmt"
-	"time"
 	"trxd/db"
 	"trxd/db/sqlc"
 	"trxd/utils"
@@ -61,32 +59,16 @@ func Route(c *fiber.Ctx) error {
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingInstance, err)
 	}
-	if instance != nil {
-		return utils.Error(c, fiber.StatusConflict, consts.AlreadyAnActiveInstance)
+	if instance == nil {
+		return utils.Error(c, fiber.StatusNotFound, consts.InstanceNotFound)
 	}
 
-	if !chall.DockerConfig.Lifetime.Valid {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.MissingLifetime, fmt.Errorf(consts.MissingLifetime))
-	}
-	lifetime := time.Second * time.Duration(chall.DockerConfig.Lifetime.Int32)
-	expires_at := time.Now().Add(lifetime)
+	log.Info("Deleting Instance", "tid", tid, "challID", *data.ChallID)
 
-	info, err := CreateInstance(c.Context(), tid, *data.ChallID, expires_at, chall.DockerConfig.HashDomain)
+	err = DeleteInstance(c.Context(), tid, *data.ChallID)
 	if err != nil {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorCreatingInstance, err)
-	}
-	// TODO: integration tests
-	if info == nil { // race condition
-		return utils.Error(c, fiber.StatusConflict, consts.AlreadyAnActiveInstance)
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorDeletingInstance, err)
 	}
 
-	// TODO: call the instancer
-	log.Info("Creating Instance:", "tid", tid, "challID", *data.ChallID, "expiresAt", expires_at,
-		"host", info.Host, "port", info.Port, "docker-conf", chall.DockerConfig)
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"expires_at": expires_at,
-		"host":       info.Host,
-		"port":       info.Port,
-	})
+	return c.SendStatus(fiber.StatusOK)
 }

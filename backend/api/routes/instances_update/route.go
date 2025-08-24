@@ -1,4 +1,4 @@
-package instances_create
+package instances_update
 
 import (
 	"fmt"
@@ -9,7 +9,6 @@ import (
 	"trxd/utils/consts"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/tde-nico/log"
 )
 
 func Route(c *fiber.Ctx) error {
@@ -57,36 +56,16 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusBadRequest, consts.ChallengeNotInstanciable)
 	}
 
-	instance, err := GetInstance(c.Context(), *data.ChallID, tid)
-	if err != nil {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingInstance, err)
-	}
-	if instance != nil {
-		return utils.Error(c, fiber.StatusConflict, consts.AlreadyAnActiveInstance)
-	}
-
 	if !chall.DockerConfig.Lifetime.Valid {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.MissingLifetime, fmt.Errorf(consts.MissingLifetime))
 	}
 	lifetime := time.Second * time.Duration(chall.DockerConfig.Lifetime.Int32)
 	expires_at := time.Now().Add(lifetime)
 
-	info, err := CreateInstance(c.Context(), tid, *data.ChallID, expires_at, chall.DockerConfig.HashDomain)
+	err = UpdateInstance(c.Context(), tid, *data.ChallID, expires_at)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorCreatingInstance, err)
 	}
-	// TODO: integration tests
-	if info == nil { // race condition
-		return utils.Error(c, fiber.StatusConflict, consts.AlreadyAnActiveInstance)
-	}
 
-	// TODO: call the instancer
-	log.Info("Creating Instance:", "tid", tid, "challID", *data.ChallID, "expiresAt", expires_at,
-		"host", info.Host, "port", info.Port, "docker-conf", chall.DockerConfig)
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"expires_at": expires_at,
-		"host":       info.Host,
-		"port":       info.Port,
-	})
+	return c.SendStatus(fiber.StatusOK)
 }
