@@ -1,6 +1,7 @@
 package teams_register
 
 import (
+	"strings"
 	"trxd/db"
 	"trxd/utils"
 	"trxd/utils/consts"
@@ -42,6 +43,9 @@ func Route(c *fiber.Ctx) error {
 
 	team, err = RegisterTeam(c.Context(), data.Name, data.Password, uid)
 	if err != nil {
+		if strings.HasPrefix(err.Error(), "[race condition]") {
+			return utils.Error(c, fiber.StatusConflict, consts.AlreadyInTeam)
+		}
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorRegisteringTeam, err)
 	}
 	if team == nil {

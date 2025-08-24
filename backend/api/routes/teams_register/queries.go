@@ -34,8 +34,7 @@ func RegisterTeam(ctx context.Context, name, password string, userID int32) (*sq
 	team, err := db.Sql.GetTeamByName(ctx, name)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			//? this will happen in a race condition on the check if the user is already in a team
-			return nil, fmt.Errorf("team %s not found (probably user already in a team)", name)
+			return nil, fmt.Errorf("[race condition] team %s not found", name)
 		}
 		return nil, err
 	}

@@ -2,6 +2,8 @@
 
 - move countries from api to frontend or /static
 
+- endpoint to get docker images list
+
 - resolve TODOs left into the code
 - when finished endpoints, review needed data and revome `RETURNIN *;` and similar when not needed
 - sort constants alphabetically

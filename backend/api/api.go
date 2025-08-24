@@ -107,7 +107,7 @@ func SetupApp() *fiber.App {
 	api.Delete("/instances", player, team, instances_delete.Route)
 	// api.Get("/instances", admin, instances_get.Route)
 
-	api.Post("/submissions", player, team, submissions_create.Route) // TODO: maybe set spectator instead of player
+	api.Post("/submissions", spectator, team, submissions_create.Route)
 	// api.Get("/submissions", admin, submissions_get.Route)
 	// api.Delete("/submissions", admin, submissions_delete.Route)
 

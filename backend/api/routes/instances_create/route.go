@@ -75,7 +75,6 @@ func Route(c *fiber.Ctx) error {
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorCreatingInstance, err)
 	}
-	// TODO: integration tests
 	if info == nil { // race condition
 		return utils.Error(c, fiber.StatusConflict, consts.AlreadyAnActiveInstance)
 	}
@@ -84,13 +83,22 @@ func Route(c *fiber.Ctx) error {
 	log.Info("Creating Instance:", "tid", tid, "challID", *data.ChallID, "expiresAt", expires_at,
 		"host", info.Host, "port", info.Port, "docker-conf", chall.DockerConfig)
 
+	var port *int32
+	if !chall.DockerConfig.HashDomain {
+		port = &info.Port
+	}
 	timeout := int(time.Until(expires_at).Seconds())
 	if timeout < 0 {
 		timeout = 0
 	}
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"host":    info.Host,
-		"port":    info.Port,
-		"timeout": timeout,
+
+	return c.Status(fiber.StatusOK).JSON(struct {
+		Host    string `json:"host"`
+		Port    *int32 `json:"port,omitempty"`
+		Timeout int    `json:"timeout"`
+	}{
+		Host:    info.Host,
+		Port:    port,
+		Timeout: timeout,
 	})
 }

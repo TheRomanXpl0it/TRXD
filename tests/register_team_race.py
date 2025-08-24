@@ -39,7 +39,6 @@ if r.status_code == 409:
 counter = {
 	"valid": 0,
 	"Already in a team": 0,
-	"Error registering team": 0,
 	"invalid": 0,
 }
 lock = threading.Lock()
@@ -59,8 +58,6 @@ def register_team(name):
 		elif "error" in res:
 			if res["error"] == "Already in a team":
 				counter["Already in a team"] += 1
-			elif res["error"] == "Error registering team":
-				counter["Error registering team"] += 1
 			else:
 				print(f"Unexpected error: {res['error']}")
 				counter["invalid"] += 1

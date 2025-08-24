@@ -139,6 +139,7 @@ func TestRoute(t *testing.T) {
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/login", JSON{"email": "test3@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/teams/register", JSON{"name": "test-team-2", "password": "testpass"}, http.StatusOK)
 	session.Get(fmt.Sprintf("/challenges/%d", id), nil, http.StatusOK)
 	body = session.Body()
 	if body == nil {
@@ -186,6 +187,7 @@ func TestRoute(t *testing.T) {
 		t.Fatal("Expected body to not be nil")
 	}
 	id = int32(body.([]interface{})[0].(map[string]interface{})["id"].(float64))
+	id3 := int32(body.([]interface{})[2].(map[string]interface{})["id"].(float64))
 
 	session.Get(fmt.Sprintf("/challenges/%d", id), nil, http.StatusOK)
 	body = session.Body()
@@ -195,6 +197,125 @@ func TestRoute(t *testing.T) {
 	test_utils.DeleteKeys(body, "id", "timestamp")
 	test_utils.Compare(t, expectedAuthorHidden, body)
 
-	// TODO: add test with dockeconfig
-	// TODO: add test with instances
+	expectedDocker := JSON{
+		"attachments": []interface{}{},
+		"authors": []interface{}{
+			"author1",
+		},
+		"category":    "cat-1",
+		"description": "TEST chall-3 DESC",
+		"difficulty":  "Hard",
+		"docker_config": JSON{
+			"envs":        nil,
+			"hash_domain": true,
+			"image":       "ubuntu:latest",
+			"lifetime":    nil,
+			"max_cpu":     nil,
+			"max_memory":  nil,
+		},
+		"first_blood": JSON{
+			"name": "A",
+		},
+		"flags": []JSON{
+			{
+				"flag":  "flag{test-3}",
+				"regex": false,
+			},
+		},
+		"hidden":     false,
+		"host":       "chall-3.test.com",
+		"instance":   true,
+		"max_points": 500,
+		"name":       "chall-3",
+		"points":     500,
+		"port":       0,
+		"score_type": "Dynamic",
+		"solved":     false,
+		"solves":     1,
+		"solves_list": []JSON{
+			{
+				"name": "A",
+			},
+		},
+		"tags": []interface{}{
+			"tag-3",
+		},
+		"timeout": 0,
+		"type":    "Container",
+	}
+
+	session.Get(fmt.Sprintf("/challenges/%d", id3), nil, http.StatusOK)
+	body = session.Body()
+	if body == nil {
+		t.Fatal("Expected body to not be nil")
+	}
+	test_utils.DeleteKeys(body, "id", "timestamp")
+	test_utils.Compare(t, expectedDocker, body)
+
+	session.Post("/instances", JSON{"chall_id": id3}, http.StatusOK)
+	body = session.Body()
+	if body == nil {
+		t.Fatal("Expected body to not be nil")
+	}
+
+	var host string
+	if jsonHost, ok := body.(map[string]interface{})["host"]; !ok {
+		t.Fatal("Expected host")
+	} else {
+		host = jsonHost.(string)
+	}
+
+	expectedInstance := JSON{
+		"attachments": []interface{}{},
+		"authors": []interface{}{
+			"author1",
+		},
+		"category":    "cat-1",
+		"description": "TEST chall-3 DESC",
+		"difficulty":  "Hard",
+		"docker_config": JSON{
+			"envs":        nil,
+			"hash_domain": true,
+			"image":       "ubuntu:latest",
+			"lifetime":    nil,
+			"max_cpu":     nil,
+			"max_memory":  nil,
+		},
+		"first_blood": JSON{
+			"name": "A",
+		},
+		"flags": []JSON{
+			{
+				"flag":  "flag{test-3}",
+				"regex": false,
+			},
+		},
+		"hidden":     false,
+		"host":       host,
+		"instance":   true,
+		"max_points": 500,
+		"name":       "chall-3",
+		"points":     500,
+		"port":       0,
+		"score_type": "Dynamic",
+		"solved":     false,
+		"solves":     1,
+		"solves_list": []JSON{
+			{
+				"name": "A",
+			},
+		},
+		"tags": []interface{}{
+			"tag-3",
+		},
+		"type": "Container",
+	}
+
+	session.Get(fmt.Sprintf("/challenges/%d", id3), nil, http.StatusOK)
+	body = session.Body()
+	if body == nil {
+		t.Fatal("Expected body to not be nil")
+	}
+	test_utils.DeleteKeys(body, "id", "timestamp", "timeout")
+	test_utils.Compare(t, expectedInstance, body)
 }

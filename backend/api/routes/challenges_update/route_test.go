@@ -219,7 +219,7 @@ func TestRoute(t *testing.T) {
 				"max_points":  test.testBody["max_points"],
 				"name":        test.testBody["name"],
 				"points":      test.testBody["max_points"],
-				"port":        test.testBody["port"],
+				"port":        0,
 				"score_type":  test.testBody["score_type"],
 				"solved":      false,
 				"solves":      0,

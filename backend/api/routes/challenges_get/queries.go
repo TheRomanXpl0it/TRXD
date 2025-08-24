@@ -11,13 +11,13 @@ import (
 )
 
 type DockerConfig struct {
-	Image      string `json:"image,omitempty"`
-	Compose    string `json:"compose,omitempty"`
-	HashDomain *bool  `json:"hash_domain,omitempty"`
-	Lifetime   *int   `json:"lifetime,omitempty"`
-	Envs       string `json:"envs,omitempty"`
-	MaxMemory  *int   `json:"max_memory,omitempty"`
-	MaxCpu     string `json:"max_cpu,omitempty"`
+	Image      string  `json:"image,omitempty"`
+	Compose    string  `json:"compose,omitempty"`
+	HashDomain *bool   `json:"hash_domain"`
+	Lifetime   *int    `json:"lifetime"`
+	Envs       *string `json:"envs"`
+	MaxMemory  *int    `json:"max_memory"`
+	MaxCpu     *string `json:"max_cpu"`
 }
 
 type Chall struct {
@@ -180,7 +180,21 @@ func GetChallenge(ctx context.Context, id int32, uid int32, tid int32, author bo
 		chall.SolvesList = solves
 	}
 
-	if !author {
+	var noDockerConfig bool
+	dockerConfig, err := db.Sql.GetChallDockerConfig(ctx, challenge.ID)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return nil, err
+		} else {
+			noDockerConfig = err == sql.ErrNoRows
+		}
+	}
+
+	if dockerConfig.HashDomain {
+		chall.Port = 0
+	}
+
+	if !author { // Not Author
 		return &chall, nil
 	}
 
@@ -199,14 +213,9 @@ func GetChallenge(ctx context.Context, id int32, uid int32, tid int32, author bo
 		chall.Flags = &flags
 	}
 
-	dockerConfig, err := db.Sql.GetChallDockerConfig(ctx, challenge.ID)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return &chall, nil
-		}
-		return nil, err
+	if noDockerConfig {
+		return &chall, nil
 	}
-
 	chall.DockerConfig = &DockerConfig{}
 
 	if dockerConfig.Image.Valid {
@@ -221,14 +230,14 @@ func GetChallenge(ctx context.Context, id int32, uid int32, tid int32, author bo
 		chall.DockerConfig.Lifetime = &lifetime
 	}
 	if dockerConfig.Envs.Valid {
-		chall.DockerConfig.Envs = dockerConfig.Envs.String
+		chall.DockerConfig.Envs = &dockerConfig.Envs.String
 	}
 	if dockerConfig.MaxMemory.Valid {
 		maxMemory := int(dockerConfig.MaxMemory.Int32)
 		chall.DockerConfig.MaxMemory = &maxMemory
 	}
 	if dockerConfig.MaxCpu.Valid {
-		chall.DockerConfig.MaxCpu = dockerConfig.MaxCpu.String
+		chall.DockerConfig.MaxCpu = &dockerConfig.MaxCpu.String
 	}
 
 	return &chall, nil
