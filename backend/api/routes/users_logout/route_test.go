@@ -23,7 +23,7 @@ var testData = []struct {
 		expectedStatus: http.StatusUnauthorized,
 	},
 	{
-		testBody:       JSON{"username": "test", "email": "test@test.test", "password": "testpass"},
+		testBody:       JSON{"name": "test", "email": "test@test.test", "password": "testpass"},
 		register:       true,
 		expectedStatus: http.StatusOK,
 	},

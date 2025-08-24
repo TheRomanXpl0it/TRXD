@@ -475,6 +475,27 @@ func (q *Queries) GetInstance(ctx context.Context, arg GetInstanceParams) (Insta
 	return i, err
 }
 
+const getInstanceExpire = `-- name: GetInstanceExpire :one
+SELECT expires_at
+  FROM instances
+  JOIN teams ON teams.id = instances.team_id
+  JOIN users ON users.team_id = teams.id
+  WHERE users.id = $2 AND chall_id = $1
+`
+
+type GetInstanceExpireParams struct {
+	ChallID int32 `json:"chall_id"`
+	UserID  int32 `json:"user_id"`
+}
+
+// Retrieve the expiration time of a specific instance
+func (q *Queries) GetInstanceExpire(ctx context.Context, arg GetInstanceExpireParams) (time.Time, error) {
+	row := q.queryRow(ctx, q.getInstanceExpireStmt, getInstanceExpire, arg.ChallID, arg.UserID)
+	var expires_at time.Time
+	err := row.Scan(&expires_at)
+	return expires_at, err
+}
+
 const getInstanceInfo = `-- name: GetInstanceInfo :one
 SELECT expires_at, host, port FROM instances WHERE team_id = $1 AND chall_id = $2
 `

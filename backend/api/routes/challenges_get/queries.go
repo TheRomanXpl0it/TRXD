@@ -21,28 +21,29 @@ type DockerConfig struct {
 }
 
 type Chall struct {
-	ID           int32                          `json:"id"`
-	Name         string                         `json:"name"`
-	Category     string                         `json:"category"`
-	Description  string                         `json:"description"`
-	Difficulty   string                         `json:"difficulty"`
-	Authors      []string                       `json:"authors"`
-	Instance     bool                           `json:"instance"`
+	ID          int32                        `json:"id"`
+	Name        string                       `json:"name"`
+	Category    string                       `json:"category"`
+	Description string                       `json:"description"`
+	Difficulty  string                       `json:"difficulty"`
+	Authors     []string                     `json:"authors"`
+	Instance    bool                         `json:"instance"`
+	Points      int                          `json:"points"`
+	Solves      int                          `json:"solves"`
+	FirstBlood  *sqlc.GetFirstBloodRow       `json:"first_blood"`
+	Host        string                       `json:"host"`
+	Port        int                          `json:"port"`
+	Attachments []string                     `json:"attachments"`
+	Tags        []string                     `json:"tags"`
+	Timeout     int                          `json:"timeout"`
+	Solved      bool                         `json:"solved"`
+	SolvesList  []sqlc.GetChallengeSolvesRow `json:"solves_list"`
+
 	Type         *sqlc.DeployType               `json:"type,omitempty"`
 	Hidden       *bool                          `json:"hidden,omitempty"`
 	MaxPoints    *int                           `json:"max_points,omitempty"`
 	ScoreType    *sqlc.ScoreType                `json:"score_type,omitempty"`
-	Points       int                            `json:"points"`
-	Solves       int                            `json:"solves"`
-	FirstBlood   *sqlc.GetFirstBloodRow         `json:"first_blood"`
-	Host         string                         `json:"host"`
-	Port         int                            `json:"port"`
-	Attachments  []string                       `json:"attachments"`
-	Tags         []string                       `json:"tags"`
 	Flags        *[]sqlc.GetFlagsByChallengeRow `json:"flags,omitempty"`
-	Timeout      int                            `json:"timeout"`
-	Solved       bool                           `json:"solved"`
-	SolvesList   []sqlc.GetChallengeSolvesRow   `json:"solves_list"`
 	DockerConfig *DockerConfig                  `json:"docker_config,omitempty"`
 }
 

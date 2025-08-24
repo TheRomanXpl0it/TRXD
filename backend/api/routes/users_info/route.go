@@ -1,6 +1,7 @@
 package users_info
 
 import (
+	"fmt"
 	"trxd/db"
 	"trxd/utils"
 	"trxd/utils/consts"
@@ -16,7 +17,7 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
 	}
 	if user == nil {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser)
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, fmt.Errorf("user not found"))
 	}
 
 	var teamID *int32
@@ -24,9 +25,9 @@ func Route(c *fiber.Ctx) error {
 		teamID = &user.TeamID.Int32
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"id":       user.ID,
-		"username": user.Name,
-		"role":     user.Role,
-		"team_id":  teamID,
+		"id":      user.ID,
+		"name":    user.Name,
+		"role":    user.Role,
+		"team_id": teamID,
 	})
 }

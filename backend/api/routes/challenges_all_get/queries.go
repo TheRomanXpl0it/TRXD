@@ -2,6 +2,8 @@ package challenges_all_get
 
 import (
 	"context"
+	"database/sql"
+	"time"
 	"trxd/db"
 	"trxd/db/sqlc"
 )
@@ -17,6 +19,27 @@ type Chall struct {
 	Solves     int32    `json:"solves"`
 	Tags       []string `json:"tags"`
 	Solved     bool     `json:"solved"`
+	Timeout    *int     `json:"timeout,omitempty"`
+}
+
+func GetInstanceExpire(ctx context.Context, uid int32, challID int32) (*int, error) {
+	expiresAt, err := db.Sql.GetInstanceExpire(ctx, sqlc.GetInstanceExpireParams{
+		UserID:  uid,
+		ChallID: challID,
+	})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	lifetime := int(time.Until(expiresAt).Seconds())
+	if lifetime <= 0 {
+		lifetime = 0
+	}
+
+	return &lifetime, nil
 }
 
 func GetChallenges(ctx context.Context, uid int32, author bool) ([]*Chall, error) {
@@ -36,6 +59,11 @@ func GetChallenges(ctx context.Context, uid int32, author bool) ([]*Chall, error
 			return nil, err
 		}
 
+		lifetime, err := GetInstanceExpire(ctx, uid, challenge.ID)
+		if err != nil {
+			return nil, err
+		}
+
 		chall := &Chall{
 			ID:       challenge.ID,
 			Name:     challenge.Name,
@@ -46,6 +74,7 @@ func GetChallenges(ctx context.Context, uid int32, author bool) ([]*Chall, error
 			Solves:   challenge.Solves,
 			Tags:     []string{},
 			Solved:   challenge.Solved,
+			Timeout:  lifetime,
 		}
 		if challenge.Difficulty.Valid {
 			chall.Difficulty = challenge.Difficulty.String

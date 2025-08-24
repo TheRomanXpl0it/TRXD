@@ -29,7 +29,7 @@ func TestRoute(t *testing.T) {
 	session.Get("/info", nil, http.StatusUnauthorized)
 	session.CheckResponse(errorf(consts.Unauthorized))
 
-	session.Post("/register", JSON{"username": "test", "email": "allow@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/register", JSON{"name": "test", "email": "allow@test.test", "password": "testpass"}, http.StatusOK)
 	session.CheckResponse(nil)
 
 	session.Get("/info", nil, http.StatusOK)
@@ -38,7 +38,7 @@ func TestRoute(t *testing.T) {
 		t.Fatal("Expected body to not be nil")
 	}
 	test_utils.DeleteKeys(body, "id")
-	utils.Compare(body, JSON{"username": "test", "role": sqlc.UserRolePlayer, "team_id": nil})
+	utils.Compare(body, JSON{"name": "test", "role": sqlc.UserRolePlayer, "team_id": nil})
 
 	session.Post("/teams/register", JSON{"name": "test", "password": "testpass"}, http.StatusOK)
 
@@ -52,5 +52,5 @@ func TestRoute(t *testing.T) {
 		t.Errorf("Expected team_id to be set, got nil")
 	}
 	test_utils.DeleteKeys(body, "team_id")
-	test_utils.Compare(t, body, JSON{"username": "test", "role": sqlc.UserRolePlayer})
+	test_utils.Compare(t, body, JSON{"name": "test", "role": sqlc.UserRolePlayer})
 }

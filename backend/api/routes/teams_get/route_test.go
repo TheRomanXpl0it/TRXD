@@ -86,7 +86,7 @@ func TestRoute(t *testing.T) {
 	test_utils.Compare(t, expectedPlayer, body)
 
 	session = test_utils.NewApiTestSession(t, app)
-	session.Post("/register", JSON{"username": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/register", JSON{"name": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
 	session.Get(fmt.Sprintf("/teams/%d", A.ID), nil, http.StatusOK)
 	body = session.Body()
 	if body == nil {

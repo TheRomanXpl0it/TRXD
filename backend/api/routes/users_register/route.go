@@ -24,7 +24,7 @@ func Route(c *fiber.Ctx) error {
 	}
 
 	var data struct {
-		Username string `json:"username"`
+		Name     string `json:"name"`
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
@@ -32,7 +32,7 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidJSON)
 	}
 
-	if data.Username == "" || data.Email == "" || data.Password == "" {
+	if data.Name == "" || data.Email == "" || data.Password == "" {
 		return utils.Error(c, fiber.StatusBadRequest, consts.MissingRequiredFields)
 	}
 	if len(data.Password) < consts.MinPasswordLength {
@@ -41,7 +41,7 @@ func Route(c *fiber.Ctx) error {
 	if len(data.Password) > consts.MaxPasswordLength {
 		return utils.Error(c, fiber.StatusBadRequest, consts.LongPassword)
 	}
-	if len(data.Username) > consts.MaxNameLength {
+	if len(data.Name) > consts.MaxNameLength {
 		return utils.Error(c, fiber.StatusBadRequest, consts.LongName)
 	}
 	if len(data.Email) > consts.MaxEmailLength {
@@ -52,7 +52,7 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidEmail)
 	}
 
-	user, err := RegisterUser(c.Context(), data.Username, data.Email, data.Password)
+	user, err := RegisterUser(c.Context(), data.Name, data.Email, data.Password)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorRegisteringUser, err)
 	}

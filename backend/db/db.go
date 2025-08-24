@@ -18,6 +18,13 @@ import (
 var db *sql.DB
 var Sql *sqlc.Queries
 
+func init() {
+	err := os.Setenv("TZ", "UTC")
+	if err != nil {
+		log.Fatal("Failed to set timezone:", err)
+	}
+}
+
 func ConnectDB(info *utils.DBInfo, test ...bool) error {
 	var err error
 	db, err = sql.Open("postgres", info.ConnectionString())

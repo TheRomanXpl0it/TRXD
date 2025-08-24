@@ -84,9 +84,13 @@ func Route(c *fiber.Ctx) error {
 	log.Info("Creating Instance:", "tid", tid, "challID", *data.ChallID, "expiresAt", expires_at,
 		"host", info.Host, "port", info.Port, "docker-conf", chall.DockerConfig)
 
+	timeout := int(time.Until(expires_at).Seconds())
+	if timeout < 0 {
+		timeout = 0
+	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"expires_at": expires_at,
-		"host":       info.Host,
-		"port":       info.Port,
+		"host":    info.Host,
+		"port":    info.Port,
+		"timeout": timeout,
 	})
 }

@@ -60,7 +60,7 @@ func TestRoute(t *testing.T) {
 	session.CheckResponse(expected)
 
 	session = test_utils.NewApiTestSession(t, app)
-	session.Post("/register", JSON{"username": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/register", JSON{"name": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
 	session.Get("/teams", nil, http.StatusOK)
 	session.CheckResponse(expected)
 

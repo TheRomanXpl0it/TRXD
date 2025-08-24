@@ -67,5 +67,11 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorCreatingInstance, err)
 	}
 
-	return c.SendStatus(fiber.StatusOK)
+	timeout := int(time.Until(expires_at).Seconds())
+	if timeout < 0 {
+		timeout = 0
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"timeout": timeout,
+	})
 }

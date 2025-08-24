@@ -25,7 +25,7 @@ func TestRoute(t *testing.T) {
 	defer app.Shutdown()
 
 	session := test_utils.NewApiTestSession(t, app)
-	session.Post("/register", JSON{"username": "test", "email": "test2@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/register", JSON{"name": "test", "email": "test2@test.test", "password": "testpass"}, http.StatusOK)
 	session.Post("/teams/register", JSON{"name": "test-team", "password": "testpass"}, http.StatusOK)
 	session.Get("/challenges", nil, http.StatusOK)
 	body := session.Body()

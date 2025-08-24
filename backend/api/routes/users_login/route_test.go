@@ -56,7 +56,7 @@ var testData = []struct {
 		expectedResponse: errorf(consts.InvalidCredentials),
 	},
 	{
-		testBody:       JSON{"username": "test", "email": "test@test.test", "password": "testpass"},
+		testBody:       JSON{"name": "test", "email": "test@test.test", "password": "testpass"},
 		register:       true,
 		expectedStatus: http.StatusOK,
 	},

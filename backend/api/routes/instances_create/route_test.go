@@ -66,6 +66,11 @@ func TestRoute(t *testing.T) {
 	session.Post("/instances", JSON{"chall_id": 99999}, http.StatusNotFound)
 	session.CheckResponse(errorf(consts.ChallengeNotFound))
 
+	test_utils.UpdateConfig(t, "secret", "")
+	session.Post("/instances", JSON{"chall_id": challID1}, http.StatusForbidden)
+	session.CheckResponse(errorf(consts.DisabledInstances))
+	test_utils.UpdateConfig(t, "secret", "test-secret")
+
 	session.Post("/instances", JSON{"chall_id": challID1}, http.StatusBadRequest)
 	session.CheckResponse(errorf(consts.ChallengeNotInstanciable))
 
@@ -73,9 +78,6 @@ func TestRoute(t *testing.T) {
 	body = session.Body()
 	if body == nil {
 		t.Fatal("Expected body to not be nil")
-	}
-	if _, ok := body.(map[string]interface{})["expires_at"]; !ok {
-		t.Fatalf("Expected expires_at to be present in response: %+v", body)
 	}
 	if host, ok := body.(map[string]interface{})["host"]; !ok {
 		t.Fatalf("Expected host to be present in response: %+v", body)
@@ -86,6 +88,9 @@ func TestRoute(t *testing.T) {
 	}
 	if _, ok := body.(map[string]interface{})["port"]; !ok {
 		t.Fatalf("Expected port to be present in response: %+v", body)
+	}
+	if _, ok := body.(map[string]interface{})["timeout"]; !ok {
+		t.Fatalf("Expected timeout to be present in response: %+v", body)
 	}
 
 	session.Post("/instances", JSON{"chall_id": challID3}, http.StatusConflict)
@@ -107,9 +112,6 @@ func TestRoute(t *testing.T) {
 	if body == nil {
 		t.Fatal("Expected body to not be nil")
 	}
-	if _, ok := body.(map[string]interface{})["expires_at"]; !ok {
-		t.Fatalf("Expected expires_at to be present in response: %+v", body)
-	}
 	if host, ok := body.(map[string]interface{})["host"]; !ok {
 		t.Fatalf("Expected host to be present in response: %+v", body)
 	} else {
@@ -119,5 +121,8 @@ func TestRoute(t *testing.T) {
 	}
 	if _, ok := body.(map[string]interface{})["port"]; !ok {
 		t.Fatalf("Expected port to be present in response: %+v", body)
+	}
+	if _, ok := body.(map[string]interface{})["timeout"]; !ok {
+		t.Fatalf("Expected timeout to be present in response: %+v", body)
 	}
 }

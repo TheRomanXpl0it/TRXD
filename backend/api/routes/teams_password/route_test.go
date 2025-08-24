@@ -85,7 +85,7 @@ func TestRoute(t *testing.T) {
 		}
 
 		session = test_utils.NewApiTestSession(t, app)
-		session.Post("/register", JSON{"username": "test", "email": fmt.Sprintf("test%d@test.test", i), "password": "testpass"}, http.StatusOK)
+		session.Post("/register", JSON{"name": "test", "email": fmt.Sprintf("test%d@test.test", i), "password": "testpass"}, http.StatusOK)
 		session.Post("/teams/join", JSON{"name": "test", "password": password}, http.StatusOK)
 		session.Post("/submissions", JSON{}, http.StatusBadRequest)
 	}

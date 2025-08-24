@@ -37,7 +37,7 @@ func TestRoute(t *testing.T) {
 	idAdmin := int32(body.([]interface{})[len(body.([]interface{}))-1].(map[string]interface{})["id"].(float64))
 
 	session = test_utils.NewApiTestSession(t, app)
-	session.Post("/register", JSON{"username": "self", "email": "self@test.com", "password": "testpass"}, http.StatusOK)
+	session.Post("/register", JSON{"name": "self", "email": "self@test.com", "password": "testpass"}, http.StatusOK)
 	session.Get("/info", nil, http.StatusOK)
 	body = session.Body()
 	if body == nil {
@@ -122,7 +122,7 @@ func TestRoute(t *testing.T) {
 
 	expectedPlayerAdmin := JSON{
 		"country": "",
-		"email":   "a@a",
+		"email":   "a@a.a",
 		"image":   "",
 		"name":    "a",
 		"role":    "Player",

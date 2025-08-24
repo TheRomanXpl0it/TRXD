@@ -20,7 +20,7 @@ user = gen_name()
 email = user + "@test.test"
 s = requests.Session()
 r = s.post('http://localhost:1337/api/register', json={
-	"username": user,
+	"name": user,
 	"email": email,
 	"password": "test1234",
 })
@@ -49,7 +49,7 @@ def submit(user):
 	s = requests.Session()
 
 	r = s.post('http://localhost:1337/api/register', json={
-		"username": user,
+		"name": user,
 		"email": email,
 		"password": "test1234",
 	})

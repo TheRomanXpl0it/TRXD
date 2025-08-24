@@ -30,7 +30,7 @@ var testData = []struct {
 		expectedResponse: errorf(consts.InvalidJSON),
 	},
 	{
-		testBody:         JSON{"username": "test"},
+		testBody:         JSON{"name": "test"},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
@@ -45,12 +45,12 @@ var testData = []struct {
 		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
 	{
-		testBody:         JSON{"username": "test", "email": "test@test.test"},
+		testBody:         JSON{"name": "test", "email": "test@test.test"},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
 	{
-		testBody:         JSON{"username": "test", "password": "testpass"},
+		testBody:         JSON{"name": "test", "password": "testpass"},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
@@ -60,41 +60,41 @@ var testData = []struct {
 		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
 	{
-		testBody:         JSON{"username": "test", "email": "test@test.test", "password": strings.Repeat("a", consts.MinPasswordLength-1)},
+		testBody:         JSON{"name": "test", "email": "test@test.test", "password": strings.Repeat("a", consts.MinPasswordLength-1)},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(consts.ShortPassword),
 	},
 	{
-		testBody:         JSON{"username": "test", "email": "test@test.test", "password": strings.Repeat("a", consts.MaxPasswordLength+1)},
+		testBody:         JSON{"name": "test", "email": "test@test.test", "password": strings.Repeat("a", consts.MaxPasswordLength+1)},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(consts.LongPassword),
 	},
 	{
-		testBody:         JSON{"username": strings.Repeat("a", consts.MaxNameLength+1), "email": "test@test.test", "password": "testpass"},
+		testBody:         JSON{"name": strings.Repeat("a", consts.MaxNameLength+1), "email": "test@test.test", "password": "testpass"},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(consts.LongName),
 	},
 	{
-		testBody:         JSON{"username": "test", "email": strings.Repeat("a", consts.MaxEmailLength+1), "password": "testpass"},
+		testBody:         JSON{"name": "test", "email": strings.Repeat("a", consts.MaxEmailLength+1), "password": "testpass"},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(consts.LongEmail),
 	},
 	{
-		testBody:         JSON{"username": "test", "email": "invalid-email", "password": "testpass"},
+		testBody:         JSON{"name": "test", "email": "invalid-email", "password": "testpass"},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(consts.InvalidEmail),
 	},
 	{
-		testBody:       JSON{"username": "test", "email": "test@test.test", "password": "testpass"},
+		testBody:       JSON{"name": "test", "email": "test@test.test", "password": "testpass"},
 		expectedStatus: http.StatusOK,
 	},
 	{
-		testBody:         JSON{"username": "test", "email": "test@test.test", "password": "testpass"},
+		testBody:         JSON{"name": "test", "email": "test@test.test", "password": "testpass"},
 		expectedStatus:   http.StatusConflict,
 		expectedResponse: errorf(consts.UserAlreadyExists),
 	},
 	{
-		testBody:       JSON{"username": "test", "email": "test1@test.test", "password": "testpass"},
+		testBody:       JSON{"name": "test", "email": "test1@test.test", "password": "testpass"},
 		expectedStatus: http.StatusOK,
 	},
 }
@@ -105,14 +105,14 @@ func TestRoute(t *testing.T) {
 
 	test_utils.UpdateConfig(t, "allow-register", "false")
 	session := test_utils.NewApiTestSession(t, app)
-	session.Post("/register", JSON{"username": "test", "email": "allow@test.test", "password": "testpass"}, http.StatusForbidden)
+	session.Post("/register", JSON{"name": "test", "email": "allow@test.test", "password": "testpass"}, http.StatusForbidden)
 	session.CheckResponse(errorf(consts.DisabledRegistration))
 
 	test_utils.UpdateConfig(t, "allow-register", "true")
 	session = test_utils.NewApiTestSession(t, app)
-	session.Post("/register", JSON{"username": "test", "email": "allow@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/register", JSON{"name": "test", "email": "allow@test.test", "password": "testpass"}, http.StatusOK)
 	session.CheckResponse(nil)
-	session.Post("/register", JSON{"username": "test", "email": "allow+1@test.test", "password": "testpass"}, http.StatusForbidden)
+	session.Post("/register", JSON{"name": "test", "email": "allow+1@test.test", "password": "testpass"}, http.StatusForbidden)
 	session.CheckResponse(errorf(consts.AlreadyRegistered))
 
 	for _, test := range testData {

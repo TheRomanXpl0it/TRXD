@@ -10,3 +10,11 @@ SELECT id, name, category, difficulty, type, hidden, points, solves, EXISTS(
       AND submissions.status = 'Correct'
       AND submissions.chall_id = challenges.id) AS solved
   FROM challenges;
+
+-- name: GetInstanceExpire :one
+-- Retrieve the expiration time of a specific instance
+SELECT expires_at
+  FROM instances
+  JOIN teams ON teams.id = instances.team_id
+  JOIN users ON users.team_id = teams.id
+  WHERE users.id = sqlc.arg(user_id) AND chall_id = $1;

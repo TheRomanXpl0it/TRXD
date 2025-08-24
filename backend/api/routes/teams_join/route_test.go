@@ -82,10 +82,10 @@ func TestRoute(t *testing.T) {
 	defer app.Shutdown()
 
 	session := test_utils.NewApiTestSession(t, app)
-	session.Post("/register", JSON{"username": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/register", JSON{"name": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
 	session.Post("/teams/register", JSON{"name": "test", "password": "testpass"}, http.StatusOK)
 	session = test_utils.NewApiTestSession(t, app)
-	session.Post("/register", JSON{"username": "test2", "email": "test2@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/register", JSON{"name": "test2", "email": "test2@test.test", "password": "testpass"}, http.StatusOK)
 
 	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)

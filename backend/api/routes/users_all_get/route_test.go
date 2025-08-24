@@ -106,7 +106,7 @@ func TestRoute(t *testing.T) {
 	}
 
 	session = test_utils.NewApiTestSession(t, app)
-	session.Post("/register", JSON{"username": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/register", JSON{"name": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
 	session.Get("/users", nil, http.StatusOK)
 	body = session.Body()
 	if body == nil {
@@ -118,7 +118,7 @@ func TestRoute(t *testing.T) {
 	expectedAdmin := []JSON{
 		{
 			"country": "",
-			"email":   "a@a",
+			"email":   "a@a.a",
 			"image":   "",
 			"name":    "a",
 			"role":    "Player",
@@ -126,7 +126,7 @@ func TestRoute(t *testing.T) {
 		},
 		{
 			"country": "",
-			"email":   "b@b",
+			"email":   "b@b.b",
 			"image":   "",
 			"name":    "b",
 			"role":    "Player",
@@ -134,7 +134,7 @@ func TestRoute(t *testing.T) {
 		},
 		{
 			"country": "",
-			"email":   "c@c",
+			"email":   "c@c.c",
 			"image":   "",
 			"name":    "c",
 			"role":    "Player",
@@ -142,7 +142,7 @@ func TestRoute(t *testing.T) {
 		},
 		{
 			"country": "",
-			"email":   "d@d",
+			"email":   "d@d.d",
 			"image":   "",
 			"name":    "d",
 			"role":    "Player",
@@ -150,7 +150,7 @@ func TestRoute(t *testing.T) {
 		},
 		{
 			"country": "",
-			"email":   "e@e",
+			"email":   "admin@email.com",
 			"image":   "",
 			"name":    "e",
 			"role":    "Admin",
@@ -158,7 +158,7 @@ func TestRoute(t *testing.T) {
 		},
 		{
 			"country": "",
-			"email":   "f@f",
+			"email":   "f@f.f",
 			"image":   "",
 			"name":    "f",
 			"role":    "Author",

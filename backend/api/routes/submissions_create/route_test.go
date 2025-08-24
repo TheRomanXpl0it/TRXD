@@ -96,7 +96,7 @@ func TestRoute(t *testing.T) {
 	defer app.Shutdown()
 
 	session := test_utils.NewApiTestSession(t, app)
-	session.Post("/register", JSON{"username": "test2", "email": "test2@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/register", JSON{"name": "test2", "email": "test2@test.test", "password": "testpass"}, http.StatusOK)
 	session.Post("/submissions", JSON{"chall_id": 0, "flag": "flag{test}"}, http.StatusForbidden)
 	session.CheckResponse(errorf(consts.Forbidden))
 

@@ -63,6 +63,7 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusNotFound, consts.InstanceNotFound)
 	}
 
+	// TODO: call the instancer
 	log.Info("Deleting Instance", "tid", tid, "challID", *data.ChallID)
 
 	err = DeleteInstance(c.Context(), tid, *data.ChallID)

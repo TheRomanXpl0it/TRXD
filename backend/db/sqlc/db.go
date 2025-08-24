@@ -99,6 +99,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getInstanceStmt, err = db.PrepareContext(ctx, getInstance); err != nil {
 		return nil, fmt.Errorf("error preparing query GetInstance: %w", err)
 	}
+	if q.getInstanceExpireStmt, err = db.PrepareContext(ctx, getInstanceExpire); err != nil {
+		return nil, fmt.Errorf("error preparing query GetInstanceExpire: %w", err)
+	}
 	if q.getInstanceInfoStmt, err = db.PrepareContext(ctx, getInstanceInfo); err != nil {
 		return nil, fmt.Errorf("error preparing query GetInstanceInfo: %w", err)
 	}
@@ -319,6 +322,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getInstanceStmt: %w", cerr)
 		}
 	}
+	if q.getInstanceExpireStmt != nil {
+		if cerr := q.getInstanceExpireStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getInstanceExpireStmt: %w", cerr)
+		}
+	}
 	if q.getInstanceInfoStmt != nil {
 		if cerr := q.getInstanceInfoStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getInstanceInfoStmt: %w", cerr)
@@ -533,6 +541,7 @@ type Queries struct {
 	getFirstBloodStmt            *sql.Stmt
 	getFlagsByChallengeStmt      *sql.Stmt
 	getInstanceStmt              *sql.Stmt
+	getInstanceExpireStmt        *sql.Stmt
 	getInstanceInfoStmt          *sql.Stmt
 	getTagsByChallengeStmt       *sql.Stmt
 	getTeamByIDStmt              *sql.Stmt
@@ -594,6 +603,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getFirstBloodStmt:            q.getFirstBloodStmt,
 		getFlagsByChallengeStmt:      q.getFlagsByChallengeStmt,
 		getInstanceStmt:              q.getInstanceStmt,
+		getInstanceExpireStmt:        q.getInstanceExpireStmt,
 		getInstanceInfoStmt:          q.getInstanceInfoStmt,
 		getTagsByChallengeStmt:       q.getTagsByChallengeStmt,
 		getTeamByIDStmt:              q.getTeamByIDStmt,
