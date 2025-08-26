@@ -85,6 +85,12 @@ func TestRoute(t *testing.T) {
 		},
 		{
 			"description": "",
+			"key":         "reclaim-instance-interval",
+			"type":        "int",
+			"value":       "300",
+		},
+		{
+			"description": "",
 			"key":         "secret",
 			"type":        "string",
 			"value":       "test-secret",

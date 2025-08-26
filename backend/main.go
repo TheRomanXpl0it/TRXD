@@ -9,6 +9,7 @@ import (
 	"trxd/api/routes/users_register"
 	"trxd/db"
 	"trxd/db/sqlc"
+	"trxd/instancer"
 	"trxd/utils"
 	"trxd/utils/consts"
 
@@ -154,6 +155,8 @@ func main() {
 
 	log.Info("Starting TRXd server")
 	defer log.Info("Stopping TRXd server")
+
+	go instancer.ReclaimLoop()
 
 	app := api.SetupApp()
 	err = app.Listen(":1337")

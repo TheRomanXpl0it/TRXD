@@ -519,6 +519,32 @@ func (q *Queries) GetInstanceInfo(ctx context.Context, arg GetInstanceInfoParams
 	return i, err
 }
 
+const getNextInstanceToDelete = `-- name: GetNextInstanceToDelete :one
+SELECT team_id, chall_id, expires_at
+  FROM instances
+  WHERE expires_at < NOW() + (
+    (SELECT value
+      FROM configs
+      WHERE key='reclaim-instance-interval'
+    ) || ' seconds')::INTERVAL
+  ORDER BY expires_at ASC
+  LIMIT 1
+`
+
+type GetNextInstanceToDeleteRow struct {
+	TeamID    int32     `json:"team_id"`
+	ChallID   int32     `json:"chall_id"`
+	ExpiresAt time.Time `json:"expires_at"`
+}
+
+// Retrieves the next instance to delete
+func (q *Queries) GetNextInstanceToDelete(ctx context.Context) (GetNextInstanceToDeleteRow, error) {
+	row := q.queryRow(ctx, q.getNextInstanceToDeleteStmt, getNextInstanceToDelete)
+	var i GetNextInstanceToDeleteRow
+	err := row.Scan(&i.TeamID, &i.ChallID, &i.ExpiresAt)
+	return i, err
+}
+
 const getTeamMembers = `-- name: GetTeamMembers :many
 SELECT id, name, role, score FROM users WHERE team_id = $1 ORDER BY id
 `

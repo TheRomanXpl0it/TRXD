@@ -105,6 +105,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getInstanceInfoStmt, err = db.PrepareContext(ctx, getInstanceInfo); err != nil {
 		return nil, fmt.Errorf("error preparing query GetInstanceInfo: %w", err)
 	}
+	if q.getNextInstanceToDeleteStmt, err = db.PrepareContext(ctx, getNextInstanceToDelete); err != nil {
+		return nil, fmt.Errorf("error preparing query GetNextInstanceToDelete: %w", err)
+	}
 	if q.getTagsByChallengeStmt, err = db.PrepareContext(ctx, getTagsByChallenge); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTagsByChallenge: %w", err)
 	}
@@ -332,6 +335,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getInstanceInfoStmt: %w", cerr)
 		}
 	}
+	if q.getNextInstanceToDeleteStmt != nil {
+		if cerr := q.getNextInstanceToDeleteStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getNextInstanceToDeleteStmt: %w", cerr)
+		}
+	}
 	if q.getTagsByChallengeStmt != nil {
 		if cerr := q.getTagsByChallengeStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getTagsByChallengeStmt: %w", cerr)
@@ -543,6 +551,7 @@ type Queries struct {
 	getInstanceStmt              *sql.Stmt
 	getInstanceExpireStmt        *sql.Stmt
 	getInstanceInfoStmt          *sql.Stmt
+	getNextInstanceToDeleteStmt  *sql.Stmt
 	getTagsByChallengeStmt       *sql.Stmt
 	getTeamByIDStmt              *sql.Stmt
 	getTeamByNameStmt            *sql.Stmt
@@ -605,6 +614,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getInstanceStmt:              q.getInstanceStmt,
 		getInstanceExpireStmt:        q.getInstanceExpireStmt,
 		getInstanceInfoStmt:          q.getInstanceInfoStmt,
+		getNextInstanceToDeleteStmt:  q.getNextInstanceToDeleteStmt,
 		getTagsByChallengeStmt:       q.getTagsByChallengeStmt,
 		getTeamByIDStmt:              q.getTeamByIDStmt,
 		getTeamByNameStmt:            q.getTeamByNameStmt,
