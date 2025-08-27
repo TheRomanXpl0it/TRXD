@@ -49,6 +49,13 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+    
+    - name: Build Test Service
+      run: |
+        cd ../tests/echo-server
+        chmod +x ./build.sh
+        ./build.sh
+        cd -
 
     - name: Set up Go
       uses: actions/setup-go@v5

@@ -10,6 +10,21 @@ import (
 	"github.com/lib/pq"
 )
 
+func GetInstance(ctx context.Context, challID, teamID int32) (*sqlc.Instance, error) {
+	instance, err := db.Sql.GetInstance(ctx, sqlc.GetInstanceParams{
+		ChallID: challID,
+		TeamID:  teamID,
+	})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &instance, nil
+}
+
 func dbCreateInstance(ctx context.Context, teamID, challID int32, expiresAt time.Time, hashDomain bool) (*sqlc.CreateInstanceRow, error) {
 	info, err := db.Sql.CreateInstance(ctx, sqlc.CreateInstanceParams{
 		TeamID:     teamID,

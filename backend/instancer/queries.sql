@@ -1,3 +1,7 @@
+-- name: GetInstance :one
+-- Gets an instance by ID
+SELECT * FROM instances WHERE chall_id = $1 AND team_id = $2;
+
 -- name: GetNextInstanceToDelete :one
 -- Retrieves the next instance to delete
 SELECT team_id, chall_id, expires_at, docker_id

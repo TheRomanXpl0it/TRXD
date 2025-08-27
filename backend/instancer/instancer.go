@@ -34,7 +34,6 @@ func InitInstancer() error {
 
 func CreateInstance(ctx context.Context, tid, challID int32, expires_at time.Time,
 	conf *sqlc.GetDockerConfigsByIDRow) (string, *int32, error) {
-	log.Info("Creating instance:", "team", tid, "challenge", challID)
 
 	info, err := dbCreateInstance(ctx, tid, challID, expires_at, conf.HashDomain)
 	if err != nil {
@@ -47,6 +46,8 @@ func CreateInstance(ctx context.Context, tid, challID int32, expires_at time.Tim
 	if !conf.Image.Valid || conf.Image.String == "" {
 		return "", nil, errors.New("[invalid image]") // TODO: tests
 	}
+
+	log.Info("Creating instance:", "team", tid, "challenge", challID)
 
 	var port *int32
 	if !conf.HashDomain {

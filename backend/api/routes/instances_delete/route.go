@@ -39,7 +39,7 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusForbidden, consts.DisabledInstances)
 	}
 
-	chall, err := GetChallenge(c.Context(), *data.ChallID)
+	chall, err := db.GetChallenge(c.Context(), *data.ChallID)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingChallenge, err)
 	}
@@ -55,7 +55,7 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusBadRequest, consts.ChallengeNotInstanciable)
 	}
 
-	instance, err := GetInstance(c.Context(), *data.ChallID, tid)
+	instance, err := instancer.GetInstance(c.Context(), *data.ChallID, tid)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingInstance, err)
 	}

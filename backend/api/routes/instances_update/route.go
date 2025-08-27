@@ -40,7 +40,7 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusForbidden, consts.DisabledInstances)
 	}
 
-	chall, err := GetChallenge(c.Context(), *data.ChallID)
+	chall, err := db.GetChallenge(c.Context(), *data.ChallID)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingChallenge, err)
 	}
