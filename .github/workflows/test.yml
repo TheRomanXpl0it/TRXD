@@ -12,7 +12,7 @@ env:
   POSTGRES_PASSWORD: testpass
   POSTGRES_PORT: 2345
   CLICOLOR_FORCE: 1
-  TEST_WORKERS: 500
+  TEST_WORKERS: 100
 
 defaults:
   run:

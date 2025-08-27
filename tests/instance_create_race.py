@@ -78,6 +78,13 @@ for thread in threads:
 for key, value in counter.items():
 	print(f"{key}: {value}")
 
+r = s.delete('http://localhost:1337/api/instances', json={
+	"chall_id": chall_id,
+})
+if r.status_code != 200:
+	print(f"Failed to delete instance: {r.text}")
+	sys.exit(1)
+
 if counter["instanced"] != 1:
 	print("Test failed: Expected exactly one valid instance.")
 	sys.exit(1)

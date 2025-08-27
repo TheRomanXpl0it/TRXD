@@ -3,11 +3,11 @@ package instances_delete
 import (
 	"trxd/db"
 	"trxd/db/sqlc"
+	"trxd/instancer"
 	"trxd/utils"
 	"trxd/utils/consts"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/tde-nico/log"
 )
 
 func Route(c *fiber.Ctx) error {
@@ -63,10 +63,7 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusNotFound, consts.InstanceNotFound)
 	}
 
-	// TODO: call the instancer
-	log.Info("Deleting Instance", "tid", tid, "challID", *data.ChallID)
-
-	err = DeleteInstance(c.Context(), tid, *data.ChallID)
+	err = instancer.DeleteInstance(c.Context(), tid, *data.ChallID, instance.DockerID)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorDeletingInstance, err)
 	}

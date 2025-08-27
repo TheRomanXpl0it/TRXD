@@ -12,6 +12,8 @@ type Chall struct {
 	DockerConfig *sqlc.GetDockerConfigsByIDRow
 }
 
+// TODO: move these
+
 func GetChallenge(ctx context.Context, challID int32) (*Chall, error) {
 	info := &Chall{}
 

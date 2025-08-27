@@ -113,6 +113,7 @@ const (
 	DisabledInstances           = "instances are disabled"
 	ErrorDeletingInstance       = "Error deleting instance"
 	InstanceNotFound            = "Instance not found"
+	InvalidImage                = "Invalid image"
 )
 
 var UserRegex = regexp.MustCompile(`(^[^@\s]+@[^@\s]+\.[^@\s]+$)`)

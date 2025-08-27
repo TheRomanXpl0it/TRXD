@@ -208,7 +208,7 @@ func TestRoute(t *testing.T) {
 		"docker_config": JSON{
 			"envs":        nil,
 			"hash_domain": true,
-			"image":       "ubuntu:latest",
+			"image":       "echo-server:latest",
 			"lifetime":    nil,
 			"max_cpu":     nil,
 			"max_memory":  nil,
@@ -276,7 +276,7 @@ func TestRoute(t *testing.T) {
 		"docker_config": JSON{
 			"envs":        nil,
 			"hash_domain": true,
-			"image":       "ubuntu:latest",
+			"image":       "echo-server:latest",
 			"lifetime":    nil,
 			"max_cpu":     nil,
 			"max_memory":  nil,

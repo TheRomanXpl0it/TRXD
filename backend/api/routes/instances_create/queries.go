@@ -3,17 +3,16 @@ package instances_create
 import (
 	"context"
 	"database/sql"
-	"time"
 	"trxd/db"
 	"trxd/db/sqlc"
-
-	"github.com/lib/pq"
 )
 
 type Chall struct {
 	Info         *sqlc.Challenge
 	DockerConfig *sqlc.GetDockerConfigsByIDRow
 }
+
+// TODO: move these
 
 func GetChallenge(ctx context.Context, challID int32) (*Chall, error) {
 	info := &Chall{}
@@ -52,23 +51,4 @@ func GetInstance(ctx context.Context, challID, teamID int32) (*sqlc.Instance, er
 	}
 
 	return &instance, nil
-}
-
-func CreateInstance(ctx context.Context, teamID, challID int32, expiresAt time.Time, hashDomain bool) (*sqlc.CreateInstanceRow, error) {
-	info, err := db.Sql.CreateInstance(ctx, sqlc.CreateInstanceParams{
-		TeamID:     teamID,
-		ChallID:    challID,
-		ExpiresAt:  expiresAt,
-		HashDomain: hashDomain,
-	})
-	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok {
-			if pqErr.Code == "23505" { // Unique violation error code
-				return nil, nil
-			}
-		}
-		return nil, err
-	}
-
-	return &info, nil
 }

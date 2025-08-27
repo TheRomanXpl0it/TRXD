@@ -5,11 +5,11 @@ import (
 	"time"
 	"trxd/db"
 	"trxd/db/sqlc"
+	"trxd/instancer"
 	"trxd/utils"
 	"trxd/utils/consts"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/tde-nico/log"
 )
 
 func Route(c *fiber.Ctx) error {
@@ -71,25 +71,16 @@ func Route(c *fiber.Ctx) error {
 	lifetime := time.Second * time.Duration(chall.DockerConfig.Lifetime.Int32)
 	expires_at := time.Now().Add(lifetime)
 
-	info, err := CreateInstance(c.Context(), tid, *data.ChallID, expires_at, chall.DockerConfig.HashDomain)
+	host, port, err := instancer.CreateInstance(c.Context(), tid, *data.ChallID, expires_at, chall.DockerConfig)
 	if err != nil {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorCreatingInstance, err)
-	}
-	if info == nil { // race condition
-		return utils.Error(c, fiber.StatusConflict, consts.AlreadyAnActiveInstance)
-	}
-
-	// TODO: call the instancer
-	log.Info("Creating Instance:", "tid", tid, "challID", *data.ChallID, "expiresAt", expires_at,
-		"host", info.Host, "port", info.Port, "docker-conf", chall.DockerConfig)
-
-	var port *int32
-	if !chall.DockerConfig.HashDomain {
-		port = &info.Port
-	}
-	timeout := int(time.Until(expires_at).Seconds())
-	if timeout < 0 {
-		timeout = 0
+		switch err.Error() {
+		case "[race condition]":
+			return utils.Error(c, fiber.StatusConflict, consts.AlreadyAnActiveInstance)
+		case "[invalid image]":
+			return utils.Error(c, fiber.StatusBadRequest, consts.InvalidImage) // TODO: tests
+		default:
+			return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorCreatingInstance, err)
+		}
 	}
 
 	return c.Status(fiber.StatusOK).JSON(struct {
@@ -97,8 +88,8 @@ func Route(c *fiber.Ctx) error {
 		Port    *int32 `json:"port,omitempty"`
 		Timeout int    `json:"timeout"`
 	}{
-		Host:    info.Host,
+		Host:    host,
 		Port:    port,
-		Timeout: timeout,
+		Timeout: max(int(time.Until(expires_at).Seconds()), 0),
 	})
 }

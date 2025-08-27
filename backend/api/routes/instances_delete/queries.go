@@ -12,6 +12,8 @@ type Chall struct {
 	DockerConfig *sqlc.GetDockerConfigsByIDRow
 }
 
+// TODO: move these
+
 func GetChallenge(ctx context.Context, challID int32) (*Chall, error) {
 	info := &Chall{}
 
@@ -49,16 +51,4 @@ func GetInstance(ctx context.Context, challID, teamID int32) (*sqlc.Instance, er
 	}
 
 	return &instance, nil
-}
-
-func DeleteInstance(ctx context.Context, tid int32, challID int32) error {
-	err := db.Sql.DeleteInstance(ctx, sqlc.DeleteInstanceParams{
-		TeamID:  tid,
-		ChallID: challID,
-	})
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

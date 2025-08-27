@@ -239,11 +239,12 @@ type Flag struct {
 }
 
 type Instance struct {
-	TeamID    int32     `json:"team_id"`
-	ChallID   int32     `json:"chall_id"`
-	ExpiresAt time.Time `json:"expires_at"`
-	Host      string    `json:"host"`
-	Port      int32     `json:"port"`
+	TeamID    int32          `json:"team_id"`
+	ChallID   int32          `json:"chall_id"`
+	ExpiresAt time.Time      `json:"expires_at"`
+	Host      string         `json:"host"`
+	Port      int32          `json:"port"`
+	DockerID  sql.NullString `json:"docker_id"`
 }
 
 type Submission struct {

@@ -453,7 +453,7 @@ func (q *Queries) GetFlagsByChallenge(ctx context.Context, challID int32) ([]Get
 }
 
 const getInstance = `-- name: GetInstance :one
-SELECT team_id, chall_id, expires_at, host, port FROM instances WHERE chall_id = $1 AND team_id = $2
+SELECT team_id, chall_id, expires_at, host, port, docker_id FROM instances WHERE chall_id = $1 AND team_id = $2
 `
 
 type GetInstanceParams struct {
@@ -471,6 +471,7 @@ func (q *Queries) GetInstance(ctx context.Context, arg GetInstanceParams) (Insta
 		&i.ExpiresAt,
 		&i.Host,
 		&i.Port,
+		&i.DockerID,
 	)
 	return i, err
 }
@@ -520,7 +521,7 @@ func (q *Queries) GetInstanceInfo(ctx context.Context, arg GetInstanceInfoParams
 }
 
 const getNextInstanceToDelete = `-- name: GetNextInstanceToDelete :one
-SELECT team_id, chall_id, expires_at
+SELECT team_id, chall_id, expires_at, docker_id
   FROM instances
   WHERE expires_at < NOW() + (
     (SELECT value
@@ -532,16 +533,22 @@ SELECT team_id, chall_id, expires_at
 `
 
 type GetNextInstanceToDeleteRow struct {
-	TeamID    int32     `json:"team_id"`
-	ChallID   int32     `json:"chall_id"`
-	ExpiresAt time.Time `json:"expires_at"`
+	TeamID    int32          `json:"team_id"`
+	ChallID   int32          `json:"chall_id"`
+	ExpiresAt time.Time      `json:"expires_at"`
+	DockerID  sql.NullString `json:"docker_id"`
 }
 
 // Retrieves the next instance to delete
 func (q *Queries) GetNextInstanceToDelete(ctx context.Context) (GetNextInstanceToDeleteRow, error) {
 	row := q.queryRow(ctx, q.getNextInstanceToDeleteStmt, getNextInstanceToDelete)
 	var i GetNextInstanceToDeleteRow
-	err := row.Scan(&i.TeamID, &i.ChallID, &i.ExpiresAt)
+	err := row.Scan(
+		&i.TeamID,
+		&i.ChallID,
+		&i.ExpiresAt,
+		&i.DockerID,
+	)
 	return i, err
 }
 
@@ -1154,6 +1161,24 @@ type UpdateInstanceParams struct {
 // Update an instance expiration time
 func (q *Queries) UpdateInstance(ctx context.Context, arg UpdateInstanceParams) error {
 	_, err := q.exec(ctx, q.updateInstanceStmt, updateInstance, arg.TeamID, arg.ChallID, arg.ExpiresAt)
+	return err
+}
+
+const updateInstanceDockerID = `-- name: UpdateInstanceDockerID :exec
+UPDATE instances
+  SET docker_id = $3
+  WHERE team_id = $1 AND chall_id = $2
+`
+
+type UpdateInstanceDockerIDParams struct {
+	TeamID   int32          `json:"team_id"`
+	ChallID  int32          `json:"chall_id"`
+	DockerID sql.NullString `json:"docker_id"`
+}
+
+// Adds the container ID to the instance
+func (q *Queries) UpdateInstanceDockerID(ctx context.Context, arg UpdateInstanceDockerIDParams) error {
+	_, err := q.exec(ctx, q.updateInstanceDockerIDStmt, updateInstanceDockerID, arg.TeamID, arg.ChallID, arg.DockerID)
 	return err
 }
 
