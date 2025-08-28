@@ -111,6 +111,7 @@ var defaultConfigs = map[string]any{
 	"hash-len":                  12,
 	"secret":                    "",
 	"domain":                    "",
+	"discord-webhook":           "",
 }
 
 func InitConfigs() error {

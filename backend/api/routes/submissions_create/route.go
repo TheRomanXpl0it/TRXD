@@ -4,6 +4,7 @@ import (
 	"trxd/db"
 	"trxd/utils"
 	"trxd/utils/consts"
+	"trxd/utils/discord"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -40,6 +41,10 @@ func Route(c *fiber.Ctx) error {
 	status, first_blood, err := SubmitFlag(c.Context(), uid, *data.ChallID, data.Flag)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorSubmittingFlag, err)
+	}
+
+	if first_blood {
+		discord.BroadcastFirstBlood(c.Context(), challenge, uid)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
