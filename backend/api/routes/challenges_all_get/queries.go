@@ -19,7 +19,8 @@ type Chall struct {
 	Solves     int32    `json:"solves"`
 	Tags       []string `json:"tags"`
 	Solved     bool     `json:"solved"`
-	Timeout    *int     `json:"timeout,omitempty"`
+	// TODO: return if first blooded
+	Timeout *int `json:"timeout,omitempty"`
 }
 
 func GetInstanceExpire(ctx context.Context, uid int32, challID int32) (*int, error) {
