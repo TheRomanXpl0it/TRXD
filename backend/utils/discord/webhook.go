@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"trxd/db"
 	"trxd/db/sqlc"
@@ -15,10 +16,6 @@ import (
 )
 
 const WebhookTimeout = 5 * time.Second
-
-type WebhookBody struct {
-	Content string `json:"content"`
-}
 
 func BroadcastWebhook(url string, body interface{}) error {
 	payload, err := json.Marshal(body)
@@ -58,11 +55,10 @@ func BroadcastFirstBlood(ctx context.Context, challenge *sqlc.Challenge, uid int
 		return
 	}
 
-	// TODO: it's hardcoded :(
-	msg := fmt.Sprintf("First blood for **%s** goes to **%s**! 🩸", challenge.Name, team.Name)
-	body := WebhookBody{
-		Content: msg,
-	}
+	// TODO: Hardcoded format:(
+	name := strings.ReplaceAll(team.Name, "@", "@\u200b")
+	msg := fmt.Sprintf("First blood for **%s** goes to **%s**! 🩸", challenge.Name, name)
+	body := map[string]string{"content": msg}
 
 	if err := BroadcastWebhook(conf.Value, body); err != nil {
 		log.Error("Failed to send webhook:", "err", err)

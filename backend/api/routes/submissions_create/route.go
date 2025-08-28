@@ -4,7 +4,7 @@ import (
 	"trxd/db"
 	"trxd/utils"
 	"trxd/utils/consts"
-	"trxd/utils/broadcast"
+	"trxd/utils/discord"
 
 	"github.com/gofiber/fiber/v2"
 )
