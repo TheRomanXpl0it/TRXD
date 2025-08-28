@@ -1,14 +1,10 @@
 import { api } from "@/api/axios";
 import type { Team, AuthProps, User } from "@/context/AuthProvider";
 import axios from "axios";
+import type { Challenge as ChallengeType } from "@/context/ChallengeProvider";
 
-
-export async function getChallengeData(){
+export async function getChallengesData(){
     // Simulate file attachments as objects with name and url
-    type Attachment = {
-        name: string;
-        url: string;
-    };
 
     let challenges = [];
     let categories = [];
@@ -29,56 +25,57 @@ export async function getChallengeData(){
         return {
                 id: challenge.id,
                 title: challenge.name,
-                description: challenge.description,
                 solves: challenge.solves,
                 points: challenge.points,
                 category: challenge.category,
-                remote: challenge.host,
                 solved: challenge.solved,
                 tags: challenge.tags,
                 difficulty: challenge.difficulty,
-                attachments: challenge.attachments.map((attachment: any) => ({
-                    name: attachment.name,
-                    url: attachment.url,
-                })) as Attachment[],
-                authors: challenge.authors,
                 hidden: challenge.hidden,
-                flags: challenge.flags,
                 instanced: challenge.instance,
-                timeout: challenge.timeout ? new Date(challenge.timeout) : undefined,
+                timeout: challenge.timeout ? challenge.timeout : undefined,
         };
     });
+    console.log("Processed challenges:", challenges);
     categories = challenges.map((challenge: any) => challenge.category);
     categories = [...new Set(categories)]; // Remove duplicates
     return JSON.stringify({ challenges, categories });
-
-    const mockChallenges = [
-        {
-            challenge : {
-                id : 1,
-                title: 'Challenge 1',
-                description: 'This is the first challenge',
-                flag: 'flag{first_challenge}',
-                points: 100,
-                solves: 0,
-                category: 'Web',
-                tags: ['Web', 'Easy'],
-                difficulty: 'Easy',
-                remote: 'https://example.com',
-                solved: false,
-                attachments: [
-                    { name: "executable", url: "/files/challenge1/executable" },
-                    { name: "libc", url: "/files/challenge1/libc" }
-                ] as Attachment[],
-                authors: ["author1"],
-                hidden: true,
-                instanced: false,
-                timeout: undefined,
-            },
-        }
-    ];
-    return JSON.stringify(mockChallenges);
 } 
+
+export function toChallenge(api: any): ChallengeType {
+  let remote = api.host ?? undefined;
+  remote += api.port ? `:${api.port}` : "";
+  return {
+    id: api.id,
+    title: api.name,
+    description: api.description ?? "",
+    category: api.category,                    // adjust if API returns array
+    tags: api.tags ?? [],
+    points: api.points ?? 0,
+    solves: api.solves ?? 0,
+    hidden: Boolean(api.hidden),
+    authors: api.authors ?? [],
+    remote: remote,
+    instanced: Boolean(api.instance),
+    attachments: api.attachments ?? [],        // map if your API differs
+    timeout: api.timeout ?? undefined,
+    solved: Boolean(api.solved),
+    solves_list: api.solves_list ?? [],
+    first_blood: api.first_blood ?? undefined,
+    flags: api.flags ?? [],
+    docker: api.dockerConfig ?? undefined,
+  };
+}
+
+export async function fetchChallengeById(
+  challengeId: string,
+  signal?: AbortSignal
+): Promise<ChallengeType> {
+  const res = await api.get(`/challenges/${encodeURIComponent(challengeId)}`, {
+    signal,
+  });
+  return toChallenge(res.data);
+}
 
 export async function login({
   email,
@@ -144,7 +141,7 @@ export async function fetchTeamData(teamId: number): Promise<Team> {
         rank: -1,
     };
     try{
-        const response = await api.get(`/team/${teamId}`);
+        const response = await api.get(`/teams/${teamId}`);
         teamData = response.data;
     } catch (error) {
         console.error("Error fetching team data:", error);
@@ -198,7 +195,7 @@ export async function submitFlag(
 ): Promise<{ status: number; data?: any }> {
   try {
     const response = await api.post(
-      `/submit`,
+      `/submissions`,
       { "chall_id": challengeId, "flag": flag },
       { withCredentials: true }
     );
@@ -282,5 +279,49 @@ export async function fetchUserData(userId: number): Promise< User | null > {
   } catch (error) {
     console.error("Error fetching user data:", error);
     return { id:-1, username: "", email: "", role: "", score: -1, country: "", joinedAt: "", solves: [], teamId: null };
+  }
+}
+
+export async function startInstance(challengeId: number){
+  try {
+    const data = { "chall_id": challengeId }
+    const response = await api.post(
+      `/instances`,
+      data,
+      { withCredentials: true }
+    );
+    return { status: response.status, data: response.data };
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      return {
+        status: error.response.status,
+        data: error.response.data,
+      };
+    }
+    console.error("Unexpected error during instance start:", error);
+    return { status: 500, data: { message: "Unexpected error occurred" } };
+  }
+}
+
+export async function stopInstance(challengeId: number){
+  try {
+    const data = { "chall_id": challengeId }
+    const response = await api.delete(
+      `/instances`,
+      {
+        data: data,
+        withCredentials: true 
+      }
+    );
+    return { status: response.status, data: response.data };
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      return {
+        status: error.response.status,
+        data: error.response.data,
+      };
+    }
+    console.error("Unexpected error during instance stop:", error);
+    return { status: 500, data: { message: "Unexpected error occurred" } };
   }
 }

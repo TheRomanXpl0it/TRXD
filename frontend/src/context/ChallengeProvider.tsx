@@ -1,7 +1,26 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getChallengeData } from '@/lib/backend-interaction';
+import { getChallengesData } from '@/lib/backend-interaction';
+import { WeekNumberLabel } from 'react-day-picker';
 
 // Types
+
+export type DockerConfig = {
+  image: string;
+  compose: string;
+  hashDomain: boolean;
+  lifetime: number;
+  envs: string;
+  maxMemory: number;
+  maxCPU: number;
+};
+
+export type Solve = {
+  id: number;
+  name: string;
+  timestamp: string;
+};
+
+
 export type Challenge = {
   id: number;
   title: string;
@@ -11,6 +30,8 @@ export type Challenge = {
   category: string;
   remote: string;
   solved: boolean;
+  first_blood?: boolean;
+  solves_list?: Solve[];
   tags?: string[];
   difficulty?: string;
   attachments?: File[];
@@ -18,7 +39,8 @@ export type Challenge = {
   hidden: boolean;
   flags?: [{ flag: string; regex: boolean }];
   instanced?: boolean;
-  timeout?: Date;
+  timeout?: number;
+  docker?: DockerConfig;
 };
 
 // Context type
@@ -44,7 +66,7 @@ function ChallengeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     async function fetchChallenges() {
-      const challengesResult = await getChallengeData();
+      const challengesResult = await getChallengesData();
       const { challenges, categories } = JSON.parse(challengesResult);
       setChallenges(challenges);
       setCategories(categories);

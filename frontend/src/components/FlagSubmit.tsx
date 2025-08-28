@@ -1,171 +1,98 @@
-"use client"
- 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { Button } from "@/components/ui/button"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Container } from "lucide-react"
-import { useState, useEffect } from "react"
-import { submitFlag } from "@/lib/backend-interaction"
-import { cn } from "@/lib/utils"
+"use client";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { useContext } from "react"
-import { ChallengeContext } from "@/context/ChallengeProvider"
-import { Challenge as ChallengeType } from "@/context/ChallengeProvider"
+import { useContext, useState } from "react";
+import { submitFlag } from "@/lib/backend-interaction";
+import { ChallengeContext, Challenge as ChallengeType } from "@/context/ChallengeProvider";
+import { useInstance } from "@/context/InstanceProvider";
 
+const formSchema = z.object({ flag: z.string().nonempty({ message: "Flag is required" }) });
 
-const formSchema = z.object({
-    flag: z.string().nonempty({
-        message: "Flag is required",
-    }),
-});
-
-
-
-
-export function FlagSubmit({
-  challenge
-}: {
-  challenge: ChallengeType
-}) {
-  const isInstanced: boolean = challenge.instanced ?? false;
-  const timeout: Date = challenge.timeout ? new Date(challenge.timeout) : new Date();
+export function FlagSubmit({ challenge }: { challenge: ChallengeType }) {
+  const { isInstanced, isRunning } = useInstance();
   const challengeContext = useContext(ChallengeContext);
-  if (!challengeContext) throw new Error("ChallengeContext is undefined");
-  const { challenges, setChallenges } = challengeContext;
+  const setChallenges = challengeContext?.setChallenges ?? ((_: any) => {});
+  const [status, setStatus] = useState<"Idle" | "Correct" | "Wrong" | "Invalid" | "Repeated">("Idle");
 
-
-
-  const [remainingTime, setRemainingTime] = useState(
-    Math.max(0, Math.floor((timeout.getTime() - Date.now()) / 1000))
-  );
-  const [submissionStatus, setSubmissionStatus] = useState<"Idle" | "Correct" | "Wrong" | "Invalid" | "Repeated">("Idle");
-
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setRemainingTime(Math.max(0, Math.floor((timeout.getTime() - Date.now()) / 1000)));
-    }, 1000);
-
-    return () => clearInterval(interval); // Cleanup on unmount
-  }, [timeout]);
-
-  function showContainer() {
-    return (
-      <Button className="bg-blue-500 w-full text-white">
-        <Container /> Start Instance
-      </Button>
-    );
-  }
-
-  function showTimer() {
-    return (
-      <div className="flex items-center space-x-2 rounded-lg bg-blue-500 text-white p-2 justify-between">
-        <span className="flex items-center space-x-2">
-          <Container size={24} />
-          <span>Instance Running</span>
-        </span>
-        <span>
-          Time Remaining: {Math.floor(remainingTime / 60)}:
-          {("0" + (remainingTime % 60)).slice(-2)} seconds
-        </span>
-      </div>
-    );
-  }
-
-  function showFlagSubmit() {
-    return (
-      <div className="w-full space-y-4">
-        {isInstanced && remainingTime > 0 ? <div className="w-full">{showTimer()}</div> : null}
-        <div className="w-full">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col space-y-2 w-full">
-              <Label>Flag</Label>
-              <div className="flex items-end space-x-2">
-                <FormField
-                  control={form.control}
-                  name="flag"
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormControl>
-                        <Input
-                          placeholder="TRX{...}"
-                          className={cn(
-                            submissionStatus === "Correct" && "border-green-500",
-                            submissionStatus === "Wrong" && "border-red-500",
-                            submissionStatus === "Invalid" && "border-yellow-500"
-                          )}
-                          {...field}
-                          onChange={(e) => {
-                            field.onChange(e);
-                            setSubmissionStatus("Idle");
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" className="self-start">Submit</Button>
-              </div>
-            </form>
-          </Form>
-        </div>
-      </div>
-    );
-  }
-
-  function showDockerControls() {
-    return remainingTime > 0 ? showFlagSubmit() : showContainer();
-  }
-
-  const form = useForm({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      flag: "",
-    },
+    defaultValues: { flag: "" },
   });
 
-const onSubmit = async (data: any) => {
-  const result = await submitFlag(challenge.id, data.flag);
-  const status = result.data.status as typeof submissionStatus;
-  setSubmissionStatus(status);
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    try {
+      const result = await submitFlag(challenge.id, data.flag);
+      console.log(result);
+      const s = result.data.status as typeof status;
+      const firstblood = result.data.first_blood as boolean;
+      setStatus(s);
+      if (s === "Correct" && !firstblood) {
+        toast.success("Flag submitted successfully!");
+        setChallenges(prev => prev.map(c => (c.id === challenge.id ? { ...c, solved: true } : c)));
+      }
+      else if (s === "Correct" && firstblood) {
+        toast.success("Flag submitted successfully! First blood!");
+        setChallenges(prev => prev.map(c => (c.id === challenge.id ? { ...c, solved: true, firstBlood: true } : c)));
+      } 
+      else if (s === "Wrong") toast.error("Wrong flag.");
+      else if (s === "Repeated") toast.error("Flag already submitted.");
+      else if (s === "Invalid") toast.error("Invalid flag format.");
+      else { toast.error("Unexpected response."); console.error(result); }
+    } catch (e) {
+      toast.error("Network error while submitting flag.");
+      console.error(e);
+    }
+  };
 
-  switch (status) {
-    case "Correct":
-      toast.success("Flag submitted successfully!");
-      setChallenges(prevChallenges =>
-        prevChallenges.map(c =>
-          c.id === challenge.id
-            ? { ...c, solved: true }
-            : c
-        )
-      );
-      break;
-    case "Wrong":
-      toast.error("Wrong flag.");
-      break;
-    case "Repeated":
-      toast.error("Flag already submitted.");
-      break;
-    case "Invalid":
-      toast.error("Invalid flag format.");
-      break;
-    default:
-      toast.error("An unexpected error occurred.");
-      console.error("Unexpected result:", result);
-      break;
-  }
-};
+  const disabled = isInstanced && !isRunning;
 
-  return <>{isInstanced ? showDockerControls() : showFlagSubmit()}</>;
+  return (
+    <div className="w-full">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col space-y-2 w-full">
+          <Label>Flag</Label>
+          <div className="flex items-end space-x-2">
+            <FormField
+              control={form.control}
+              name="flag"
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormControl>
+                    <Input
+                      placeholder="TRX{...}"
+                      disabled={disabled}
+                      className={cn(
+                        status === "Correct" && "border-green-500",
+                        status === "Wrong" && "border-red-500",
+                        status === "Invalid" && "border-yellow-500"
+                      )}
+                      {...field}
+                      onChange={(e) => { field.onChange(e); setStatus("Idle"); }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="self-start" disabled={disabled}>
+              Submit
+            </Button>
+          </div>
+          {disabled && (
+            <p className="text-sm text-muted-foreground">
+              Start the instance to submit the flag.
+            </p>
+          )}
+        </form>
+      </Form>
+    </div>
+  );
 }

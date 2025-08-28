@@ -16,7 +16,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useChallenges } from "@/context/ChallengeProvider";
 import { toast } from "sonner";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 const Categories = lazy(() =>
   import("@/components/Categories").then((module) => ({
@@ -78,7 +78,6 @@ return (
 export function Challenges() {
   const { settings } = useContext(SettingContext);
   const { auth } = useContext(AuthContext);
-  const navigate = useNavigate();
 
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
 
