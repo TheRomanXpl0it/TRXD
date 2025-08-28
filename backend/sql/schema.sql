@@ -134,7 +134,7 @@ CREATE TABLE IF NOT EXISTS instances (
   expires_at TIMESTAMP NOT NULL,
   host TEXT NOT NULL,
   port INTEGER CHECK (port >= 1 AND port <= 65535) NOT NULL,
-  docker_id CHAR(64), -- Docker container ID
+  docker_id VARCHAR(64), -- Docker container ID
   FOREIGN KEY(team_id) REFERENCES teams(id) ON DELETE CASCADE,
   FOREIGN KEY(chall_id) REFERENCES challenges(id) ON DELETE CASCADE,
   PRIMARY KEY(team_id, chall_id)

@@ -1,5 +1,8 @@
 - config to start and end ctf
 
+- check all TEXT fields into go to have a max
+- check nil config get
+
 - move countries from api to frontend or /static
 
 - endpoint to get docker images list
@@ -23,3 +26,4 @@
 - flag submit that checks for all challenges and mark solved the one of the correct flag (credits to: midnightsun)
 - writeups for challs into the platform (visible after ctf ends)
 - signed flags
+- https://github.com/inconshreveable/slt

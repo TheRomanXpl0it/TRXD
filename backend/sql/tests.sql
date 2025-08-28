@@ -59,6 +59,18 @@ BEGIN
   INSERT INTO challenges (name, category, description, difficulty, authors, type, max_points, score_type, hidden) VALUES ('chall-4', 'cat-1', 'TEST chall-4 DESC', 'Insane', 'author2', 'Compose', 500, 'Dynamic', false);
   INSERT INTO challenges (name, category, description, difficulty, authors, type, max_points, score_type) VALUES ('chall-5', 'cat-2', 'TEST chall-5 DESC', 'Easy', 'author3', 'Normal', 500, 'Static');
   UPDATE docker_configs SET image='echo-server:latest', hash_domain=TRUE WHERE chall_id=(SELECT id FROM challenges WHERE name='chall-3');
+  UPDATE docker_configs SET compose='
+services:
+  app:
+    image: echo-server:latest
+    container_name: chall_333333333333
+    ports:
+      - "1337:1337"
+    environment:
+      - ECHO_MESSAGE=Hello from app
+      - INSTANCE_PORT=${INSTANCE_PORT}
+      - INSTANCE_HOST=${INSTANCE_HOST}
+    ', hash_domain=TRUE WHERE chall_id=(SELECT id FROM challenges WHERE name='chall-4');
   INSERT INTO tags (name, chall_id) VALUES ('tag-1', (SELECT id FROM challenges WHERE name='chall-1'));
   INSERT INTO tags (name, chall_id) VALUES ('test-tag', (SELECT id FROM challenges WHERE name='chall-1'));
   INSERT INTO tags (name, chall_id) VALUES ('tag-2', (SELECT id FROM challenges WHERE name='chall-2'));

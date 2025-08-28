@@ -30,7 +30,7 @@ type Chall struct {
 	Instance    bool                         `json:"instance"`
 	Points      int                          `json:"points"`
 	Solves      int                          `json:"solves"`
-	FirstBlood  *sqlc.GetFirstBloodRow       `json:"first_blood"`
+	FirstBlood  *sqlc.GetFirstBloodRow       `json:"first_blood"` // TODO: make this a boolean (if your team solved)
 	Host        string                       `json:"host"`
 	Port        int                          `json:"port"`
 	Attachments []string                     `json:"attachments"`
