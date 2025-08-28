@@ -43,18 +43,18 @@ func BroadcastWebhook(url string, body interface{}) error {
 func BroadcastFirstBlood(ctx context.Context, challenge *sqlc.Challenge, uid int32) {
 	conf, err := db.GetConfig(ctx, "discord-webhook")
 	if err != nil {
-		log.Error("Failed to fetch webhook url: %v", err)
+		log.Error("Failed to fetch webhook url:", "err", err)
 		return
 	}
 
 	// Discord broadcast is disabled
-	if conf == nil {
+	if conf == nil || conf.Value == "" {
 		return
 	}
 
 	team, err := db.GetTeamFromUser(ctx, uid)
 	if err != nil {
-		log.Error("Failed to fetch user's team: %v", err)
+		log.Error("Failed to fetch user's team:", "err", err)
 		return
 	}
 
@@ -65,6 +65,6 @@ func BroadcastFirstBlood(ctx context.Context, challenge *sqlc.Challenge, uid int
 	}
 
 	if err := BroadcastWebhook(conf.Value, body); err != nil {
-		log.Error("Failed to send webhook: %v", err)
+		log.Error("Failed to send webhook:", "err", err)
 	}
 }

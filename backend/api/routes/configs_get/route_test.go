@@ -43,6 +43,12 @@ func TestRoute(t *testing.T) {
 		},
 		{
 			"description": "",
+			"key":         "discord-webhook",
+			"type":        "string",
+			"value":       "",
+		},
+		{
+			"description": "",
 			"key":         "domain",
 			"type":        "string",
 			"value":       "test.com",
