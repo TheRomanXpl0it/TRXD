@@ -19,7 +19,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Link } from "react-router-dom"
 
 type SolvesListProps = {
   solves_list: Solve[];

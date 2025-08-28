@@ -14,13 +14,29 @@ type Team = {
   name: string;
   logo?: string;
   country?: string;
-  members?: string[];
+  members: TeamMember[];
+  badges?: Badge[];
+  score: number;
+  solves?: TeamSolves[];
+  bio?: string;
 
 };
 
 type Solve = {
   challengeId: number;
   solveTimestamp: string;
+}
+
+type Badge = {
+  description: string;
+  name: string;
+}
+
+type TeamSolves = {
+  category: string;
+  id: number;
+  name: string;
+  timestamp: string;
 }
 
 type User = {
@@ -32,14 +48,15 @@ type User = {
   email: string;
   country: string;
   joinedAt: string;
-  solves: string[];
+  solves: Solve[];
   teamId: number | null;
 }
 
 type TeamMember = {
   id: number;
   username: string;
-  solves: Solve[];
+  role: string;
+  score: number;
 }
 
 interface AuthProps {
@@ -63,11 +80,24 @@ function isTeam(obj: any): obj is Team {
   return (
     typeof obj === "object" &&
     obj !== null &&
-    "id" in obj &&
-    "name" in obj &&
-    "members" in obj &&
-    Array.isArray(obj.members) &&
-    obj.members.every((member: any) => typeof member === "string")
+    typeof obj.id === "number" &&
+    typeof obj.name === "string" &&
+    typeof obj.score === "number" &&
+    (
+      obj.members === undefined ||
+      (
+        Array.isArray(obj.members) &&
+        obj.members.every(
+          (member: any) =>
+            typeof member === "object" &&
+            member !== null &&
+            typeof member.id === "number" &&
+            typeof member.username === "string" &&
+            typeof member.role === "string" &&
+            typeof member.score === "number"
+        )
+      )
+    )
   );
 }
 

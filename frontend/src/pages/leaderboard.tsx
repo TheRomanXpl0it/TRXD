@@ -46,6 +46,8 @@ export function Leaderboard() {
     const { settings } = useContext(SettingContext);
     const [data, setData] = useState<Player[]>([]);
 
+    const showQuotes = settings.General?.find((setting) => setting.title === 'Show Quotes')?.value;
+
     useEffect(() => {
         async function fetchData() {
             const result = await getData();
@@ -58,7 +60,7 @@ export function Leaderboard() {
         <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
             Leaderboard
         </h2>
-        {settings.General?.find((setting) => setting.title === 'Show Quotes')?.value && (
+        { showQuotes && (
         <blockquote className="mt-6 border-l-2 pl-6 italic">
             "You gain strength, courage and confidence by every experience in which you really stop to look fear in the face. You must do the thing you think you cannot do."
         </blockquote>

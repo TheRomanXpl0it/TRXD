@@ -14,6 +14,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { UserCategoryRing } from "@/components/UserCategoryRing";
+import type { Solve } from "@/context/AuthProvider";
 
 function userSolves(user: User) {
     if (!user.solves || user.solves.length === 0) return "No solves yet";
@@ -69,7 +71,12 @@ export function Account() {
   }, [username]);
 
   if (!user) return <Loading />;
-  console.log(user);
+  const categories = [
+    { key: "web", label: "Web", count: 18, color: "#10b981" },
+    { key: "pwn", label: "Pwn", count: 9,  color: "#3b82f6" },
+    { key: "rev", label: "Reversing", count: 6, color: "#a855f7" },
+    { key: "crypto", label: "Crypto", count: 3, color: "#f59e0b" },
+  ];
 
   return (
     <>
@@ -81,30 +88,32 @@ export function Account() {
             "You did not wake up to be mediocre."
             </blockquote>
         )}
-        <div className="flex flex-col items-center mt-6">
-            {/* Avatar centered */}
-            <Avatar className="h-32 w-32 rounded-full mb-2  text-3xl">
-                <AvatarImage src={user.profilePicture || "/default-avatar.png"} alt={`${user.username}'s avatar`} />
-                <AvatarFallback className="flex items-center justify-center h-full w-full bg-gray-200 text-gray-500">
-                {user.username.charAt(0).toUpperCase()}
-                </AvatarFallback>
-            </Avatar>
-
-            {/* Username and Country centered below avatar */}
-            <div className="text-center mb-4">
+        <div className="flex flex-row justify-between mt-6 mr-10">
+            <UserCategoryRing
+              totalSolves={categories.reduce((s, c) => s + c.count, 0)}
+              categories={categories}
+              size={100}         // optional
+              strokeWidth={16}   // optional
+            />
+          <div className="flex flex-row justify-between items-center">
+            <div className="flex items-center mr-4">
                 <h2 className="text-3xl font-semibold">{user.username}</h2>
                 <p className="text-sm text-gray-500">{user.country}</p>
             </div>
-
-            {/* Other info left-aligned below */}
-            <div className="w-full max-w-md text-right">
-                <p className="text-sm text-gray-500">Joined: {new Date(user.joinedAt).toLocaleDateString()}</p>
-            </div>
-            <div className="text-center mb-4 mt-5">
-                {userSolves(user)}
-            </div>
+            <Avatar className="h-32 w-32 rounded-full mb-2  text-3xl">
+                <AvatarImage src={user.profilePicture || "/default-avatar.png"} alt={`${user.username}'s avatar`} />
+                <AvatarFallback className="flex items-center justify-center h-full w-full bg-gray-200 text-gray-500">
+                  {user.username.charAt(0).toUpperCase()}
+                </AvatarFallback>
+            </Avatar>
+          </div>
         </div>
-
+        <div className="w-full text-right mr-10">
+            <p className="text-sm text-gray-500">Joined: {new Date(user.joinedAt).toLocaleDateString()}</p>
+        </div>
+        <div className="text-center mb-4 mt-5">
+            {userSolves(user)}
+        </div>
     </>
   );
 }

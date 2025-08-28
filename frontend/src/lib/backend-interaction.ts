@@ -135,8 +135,10 @@ export async function fetchTeamData(teamId: number): Promise<Team> {
     let teamData = {
         id: teamId,
         name: "",
-        members: [""],
+        members: [],
         teamlogo: "/teamLogo.png",
+        solves: [],
+        country: "",
         score: 0,
         rank: -1,
     };
