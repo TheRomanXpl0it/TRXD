@@ -12,6 +12,7 @@ import (
 	"trxd/instancer"
 	"trxd/utils"
 	"trxd/utils/consts"
+	"trxd/utils/crypto_utils"
 
 	"github.com/joho/godotenv"
 	"github.com/tde-nico/log"
@@ -68,7 +69,7 @@ func Flags() {
 		var name, email, password string
 		if len(parts) == 2 {
 			var err error
-			password, err = utils.GenerateRandPass()
+			password, err = crypto_utils.GeneratePassword()
 			if err != nil {
 				log.Fatal("Error generating random password", "err", err)
 			}

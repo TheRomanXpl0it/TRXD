@@ -5,8 +5,7 @@ import (
 	"database/sql"
 	"trxd/db"
 	"trxd/db/sqlc"
-
-	"golang.org/x/crypto/bcrypt"
+	"trxd/utils/crypto_utils"
 )
 
 func authTeam(ctx context.Context, name, password string) (*sqlc.Team, error) {
@@ -18,12 +17,8 @@ func authTeam(ctx context.Context, name, password string) (*sqlc.Team, error) {
 		return nil, nil
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(team.PasswordHash), []byte(password))
-	if err != nil {
-		if err == bcrypt.ErrMismatchedHashAndPassword {
-			return nil, nil
-		}
-		return nil, err
+	if !crypto_utils.Verify(password, team.PasswordSalt, team.PasswordHash) {
+		return nil, nil
 	}
 
 	return team, nil

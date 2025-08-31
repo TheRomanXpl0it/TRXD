@@ -6,8 +6,8 @@ WITH locked_user AS (
     FOR UPDATE
   ),
   new_team AS (
-    INSERT INTO teams (name, password_hash)
-    SELECT $2, $3
+    INSERT INTO teams (name, password_hash, password_salt)
+    SELECT $2, $3, $4
     FROM locked_user
     RETURNING *
   )

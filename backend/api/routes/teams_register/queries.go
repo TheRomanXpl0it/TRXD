@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"trxd/db"
 	"trxd/db/sqlc"
+	"trxd/utils/crypto_utils"
 
 	"github.com/lib/pq"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func RegisterTeam(ctx context.Context, name, password string, userID int32) (*sqlc.Team, error) {
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	hash, salt, err := crypto_utils.Hash(password)
 	if err != nil {
 		return nil, err
 	}
@@ -20,7 +20,8 @@ func RegisterTeam(ctx context.Context, name, password string, userID int32) (*sq
 	err = db.Sql.RegisterTeam(ctx, sqlc.RegisterTeamParams{
 		ID:           userID,
 		Name:         name,
-		PasswordHash: string(passwordHash),
+		PasswordHash: hash,
+		PasswordSalt: salt,
 	})
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {

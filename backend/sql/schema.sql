@@ -34,7 +34,8 @@ CREATE TABLE IF NOT EXISTS configs (
 CREATE TABLE IF NOT EXISTS teams (
   id SERIAL NOT NULL,
   name VARCHAR(64) UNIQUE NOT NULL,
-  password_hash CHAR(60) NOT NULL,
+  password_hash CHAR(64) NOT NULL,
+  password_salt CHAR(32) NOT NULL,
   score INTEGER NOT NULL DEFAULT 0,
   country VARCHAR(3),
   image TEXT,
@@ -46,7 +47,8 @@ CREATE TABLE IF NOT EXISTS users (
   id SERIAL NOT NULL,
   name VARCHAR(64) NOT NULL,
   email VARCHAR(256) UNIQUE NOT NULL,
-  password_hash CHAR(60) NOT NULL,
+  password_hash CHAR(64) NOT NULL,
+  password_salt CHAR(32) NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   score INTEGER NOT NULL DEFAULT 0,

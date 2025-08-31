@@ -5,8 +5,7 @@ import (
 	"database/sql"
 	"trxd/db"
 	"trxd/db/sqlc"
-
-	"golang.org/x/crypto/bcrypt"
+	"trxd/utils/crypto_utils"
 )
 
 func LoginUser(ctx context.Context, email, password string) (*sqlc.User, error) {
@@ -18,12 +17,8 @@ func LoginUser(ctx context.Context, email, password string) (*sqlc.User, error) 
 		return nil, err
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
-	if err != nil {
-		if err == bcrypt.ErrMismatchedHashAndPassword {
-			return nil, nil
-		}
-		return nil, err
+	if !crypto_utils.Verify(password, user.PasswordSalt, user.PasswordHash) {
+		return nil, nil
 	}
 
 	return &user, nil

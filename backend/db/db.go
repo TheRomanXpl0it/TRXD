@@ -10,9 +10,10 @@ import (
 	"time"
 	"trxd/db/sqlc"
 	"trxd/utils"
+	"trxd/utils/crypto_utils"
 
-	"github.com/gofiber/fiber/v2/log"
 	"github.com/lib/pq"
+	"github.com/tde-nico/log"
 )
 
 var db *sql.DB
@@ -116,7 +117,7 @@ var defaultConfigs = map[string]any{
 
 func InitConfigs() error {
 	if secret, ok := defaultConfigs["secret"]; ok && secret == "" {
-		randSecret, err := utils.GenerateRandPass()
+		randSecret, err := crypto_utils.GeneratePassword()
 		if err != nil {
 			return fmt.Errorf("failed to generate random secret: %v", err)
 		}

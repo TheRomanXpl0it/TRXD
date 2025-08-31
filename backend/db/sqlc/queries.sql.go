@@ -723,7 +723,7 @@ func (q *Queries) GetTeamsScoreboard(ctx context.Context) ([]GetTeamsScoreboardR
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, name, email, password_hash, created_at, score, role, team_id, country, image FROM users WHERE email = $1
+SELECT id, name, email, password_hash, password_salt, created_at, score, role, team_id, country, image FROM users WHERE email = $1
 `
 
 // Retrieve a user by their email address
@@ -735,6 +735,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Name,
 		&i.Email,
 		&i.PasswordHash,
+		&i.PasswordSalt,
 		&i.CreatedAt,
 		&i.Score,
 		&i.Role,
@@ -861,10 +862,10 @@ WITH locked_user AS (
     FOR UPDATE
   ),
   new_team AS (
-    INSERT INTO teams (name, password_hash)
-    SELECT $2, $3
+    INSERT INTO teams (name, password_hash, password_salt)
+    SELECT $2, $3, $4
     FROM locked_user
-    RETURNING id, name, password_hash, score, country, image, bio
+    RETURNING id, name, password_hash, password_salt, score, country, image, bio
   )
 UPDATE users
   SET team_id = new_team.id
@@ -876,22 +877,29 @@ type RegisterTeamParams struct {
 	ID           int32  `json:"id"`
 	Name         string `json:"name"`
 	PasswordHash string `json:"password_hash"`
+	PasswordSalt string `json:"password_salt"`
 }
 
 // Insert a new team and add the founder user to the team
 func (q *Queries) RegisterTeam(ctx context.Context, arg RegisterTeamParams) error {
-	_, err := q.exec(ctx, q.registerTeamStmt, registerTeam, arg.ID, arg.Name, arg.PasswordHash)
+	_, err := q.exec(ctx, q.registerTeamStmt, registerTeam,
+		arg.ID,
+		arg.Name,
+		arg.PasswordHash,
+		arg.PasswordSalt,
+	)
 	return err
 }
 
 const registerUser = `-- name: RegisterUser :one
-INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, password_hash, created_at, score, role, team_id, country, image
+INSERT INTO users (name, email, password_hash, password_salt, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, email, password_hash, password_salt, created_at, score, role, team_id, country, image
 `
 
 type RegisterUserParams struct {
 	Name         string   `json:"name"`
 	Email        string   `json:"email"`
 	PasswordHash string   `json:"password_hash"`
+	PasswordSalt string   `json:"password_salt"`
 	Role         UserRole `json:"role"`
 }
 
@@ -901,6 +909,7 @@ func (q *Queries) RegisterUser(ctx context.Context, arg RegisterUserParams) (Use
 		arg.Name,
 		arg.Email,
 		arg.PasswordHash,
+		arg.PasswordSalt,
 		arg.Role,
 	)
 	var i User
@@ -909,6 +918,7 @@ func (q *Queries) RegisterUser(ctx context.Context, arg RegisterUserParams) (Use
 		&i.Name,
 		&i.Email,
 		&i.PasswordHash,
+		&i.PasswordSalt,
 		&i.CreatedAt,
 		&i.Score,
 		&i.Role,
@@ -920,32 +930,34 @@ func (q *Queries) RegisterUser(ctx context.Context, arg RegisterUserParams) (Use
 }
 
 const resetTeamPassword = `-- name: ResetTeamPassword :exec
-UPDATE teams SET password_hash = $1 WHERE id = $2
+UPDATE teams SET password_hash = $2, password_salt = $3 WHERE id = $1
 `
 
 type ResetTeamPasswordParams struct {
-	PasswordHash string `json:"password_hash"`
 	ID           int32  `json:"id"`
+	PasswordHash string `json:"password_hash"`
+	PasswordSalt string `json:"password_salt"`
 }
 
 // Reset a team's password to a new password
 func (q *Queries) ResetTeamPassword(ctx context.Context, arg ResetTeamPasswordParams) error {
-	_, err := q.exec(ctx, q.resetTeamPasswordStmt, resetTeamPassword, arg.PasswordHash, arg.ID)
+	_, err := q.exec(ctx, q.resetTeamPasswordStmt, resetTeamPassword, arg.ID, arg.PasswordHash, arg.PasswordSalt)
 	return err
 }
 
 const resetUserPassword = `-- name: ResetUserPassword :exec
-UPDATE users SET password_hash = $1 WHERE id = $2
+UPDATE users SET password_hash = $2, password_salt = $3 WHERE id = $1
 `
 
 type ResetUserPasswordParams struct {
-	PasswordHash string `json:"password_hash"`
 	ID           int32  `json:"id"`
+	PasswordHash string `json:"password_hash"`
+	PasswordSalt string `json:"password_salt"`
 }
 
 // Reset a user's password to a new password
 func (q *Queries) ResetUserPassword(ctx context.Context, arg ResetUserPasswordParams) error {
-	_, err := q.exec(ctx, q.resetUserPasswordStmt, resetUserPassword, arg.PasswordHash, arg.ID)
+	_, err := q.exec(ctx, q.resetUserPasswordStmt, resetUserPassword, arg.ID, arg.PasswordHash, arg.PasswordSalt)
 	return err
 }
 

@@ -4,13 +4,13 @@ import (
 	"context"
 	"trxd/db"
 	"trxd/db/sqlc"
+	"trxd/utils/crypto_utils"
 
 	"github.com/lib/pq"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func RegisterUser(ctx context.Context, name, email, password string, role ...sqlc.UserRole) (*sqlc.User, error) {
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	hash, salt, err := crypto_utils.Hash(password)
 	if err != nil {
 		return nil, err
 	}
@@ -22,7 +22,8 @@ func RegisterUser(ctx context.Context, name, email, password string, role ...sql
 	user, err := db.Sql.RegisterUser(ctx, sqlc.RegisterUserParams{
 		Name:         name,
 		Email:        email,
-		PasswordHash: string(passwordHash),
+		PasswordHash: hash,
+		PasswordSalt: salt,
 		Role:         role[0],
 	})
 	if err != nil {

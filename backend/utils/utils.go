@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -9,8 +8,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/tde-nico/log"
 )
-
-const PassLen = 10
 
 func In[T comparable](slice T, items []T) bool {
 	for _, item := range items {
@@ -34,16 +31,10 @@ func BytesToHex(data []byte) string {
 	return string(dataHex)
 }
 
-func GenerateRandPass() (string, error) {
-	data := make([]byte, PassLen)
-	n, err := rand.Read(data)
-	if err != nil {
-		return "", err
-	}
-	if n != PassLen {
-		return "", fmt.Errorf("expected to read %d bytes, but got %d", PassLen, n)
-	}
-	return BytesToHex(data), nil
+func HextoBytes(dataHex string) []byte {
+	data := make([]byte, (len(dataHex)+1)/2)
+	hex.Decode(data, []byte(dataHex))
+	return data
 }
 
 func Compare(a, b interface{}) error {

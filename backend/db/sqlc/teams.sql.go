@@ -45,7 +45,7 @@ func (q *Queries) GetBadgesFromTeam(ctx context.Context, id int32) ([]GetBadgesF
 }
 
 const getTeamByID = `-- name: GetTeamByID :one
-SELECT id, name, password_hash, score, country, image, bio FROM teams WHERE id = $1
+SELECT id, name, password_hash, password_salt, score, country, image, bio FROM teams WHERE id = $1
 `
 
 // Retrieve a team by its ID
@@ -56,6 +56,7 @@ func (q *Queries) GetTeamByID(ctx context.Context, id int32) (Team, error) {
 		&i.ID,
 		&i.Name,
 		&i.PasswordHash,
+		&i.PasswordSalt,
 		&i.Score,
 		&i.Country,
 		&i.Image,
@@ -65,7 +66,7 @@ func (q *Queries) GetTeamByID(ctx context.Context, id int32) (Team, error) {
 }
 
 const getTeamByName = `-- name: GetTeamByName :one
-SELECT id, name, password_hash, score, country, image, bio FROM teams WHERE name = $1
+SELECT id, name, password_hash, password_salt, score, country, image, bio FROM teams WHERE name = $1
 `
 
 // Retrieve a team by its name
@@ -76,6 +77,7 @@ func (q *Queries) GetTeamByName(ctx context.Context, name string) (Team, error) 
 		&i.ID,
 		&i.Name,
 		&i.PasswordHash,
+		&i.PasswordSalt,
 		&i.Score,
 		&i.Country,
 		&i.Image,
@@ -85,7 +87,7 @@ func (q *Queries) GetTeamByName(ctx context.Context, name string) (Team, error) 
 }
 
 const getTeamFromUser = `-- name: GetTeamFromUser :one
-SELECT t.id, t.name, t.password_hash, t.score, t.country, t.image, t.bio FROM teams t
+SELECT t.id, t.name, t.password_hash, t.password_salt, t.score, t.country, t.image, t.bio FROM teams t
   JOIN users u ON u.team_id = t.id
   WHERE u.id = $1
 `
@@ -98,6 +100,7 @@ func (q *Queries) GetTeamFromUser(ctx context.Context, id int32) (Team, error) {
 		&i.ID,
 		&i.Name,
 		&i.PasswordHash,
+		&i.PasswordSalt,
 		&i.Score,
 		&i.Country,
 		&i.Image,

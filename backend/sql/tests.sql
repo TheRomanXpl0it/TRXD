@@ -84,15 +84,15 @@ services:
   INSERT INTO flags (flag, chall_id) VALUES ('flag{test-4}', (SELECT id FROM challenges WHERE name='chall-4'));
   INSERT INTO flags (flag, chall_id) VALUES ('flag{test-5}', (SELECT id FROM challenges WHERE name='chall-5'));
   -- password:'testpass' 
-  INSERT INTO teams (name, password_hash) VALUES ('A', '$2a$10$bE3j0W5EpaJhtZFzres59ux0SCo0BldnagHZqrSsaffgoWNHNZKBi');
-  INSERT INTO teams (name, password_hash) VALUES ('B', '$2a$10$bE3j0W5EpaJhtZFzres59ux0SCo0BldnagHZqrSsaffgoWNHNZKBi');
-  INSERT INTO teams (name, password_hash) VALUES ('C', '$2a$10$bE3j0W5EpaJhtZFzres59ux0SCo0BldnagHZqrSsaffgoWNHNZKBi');
-  INSERT INTO users (name, email, password_hash, role, team_id) VALUES ('a', 'a@a.a', '$2a$10$bE3j0W5EpaJhtZFzres59ux0SCo0BldnagHZqrSsaffgoWNHNZKBi', 'Player', (SELECT id FROM teams WHERE name='A'));
-  INSERT INTO users (name, email, password_hash, role, team_id) VALUES ('b', 'b@b.b', '$2a$10$bE3j0W5EpaJhtZFzres59ux0SCo0BldnagHZqrSsaffgoWNHNZKBi', 'Player', (SELECT id FROM teams WHERE name='A'));
-  INSERT INTO users (name, email, password_hash, role, team_id) VALUES ('c', 'c@c.c', '$2a$10$bE3j0W5EpaJhtZFzres59ux0SCo0BldnagHZqrSsaffgoWNHNZKBi', 'Player', (SELECT id FROM teams WHERE name='B'));
-  INSERT INTO users (name, email, password_hash, role) VALUES ('d', 'd@d.d', '$2a$10$bE3j0W5EpaJhtZFzres59ux0SCo0BldnagHZqrSsaffgoWNHNZKBi', 'Player');
-  INSERT INTO users (name, email, password_hash, role, team_id) VALUES ('e', 'admin@email.com', '$2a$10$bE3j0W5EpaJhtZFzres59ux0SCo0BldnagHZqrSsaffgoWNHNZKBi', 'Admin', (SELECT id FROM teams WHERE name='A'));
-  INSERT INTO users (name, email, password_hash, role, team_id) VALUES ('f', 'f@f.f', '$2a$10$bE3j0W5EpaJhtZFzres59ux0SCo0BldnagHZqrSsaffgoWNHNZKBi', 'Author', (SELECT id FROM teams WHERE name='C'));
+  INSERT INTO teams (name, password_hash, password_salt) VALUES ('A', '41d65efe433e60755bef957e56ed6466b24c44a86b8ec595df4c9cdfa9c3aca9', '1a5e93869fa3c2ee04139db8834f8808');
+  INSERT INTO teams (name, password_hash, password_salt) VALUES ('B', '41d65efe433e60755bef957e56ed6466b24c44a86b8ec595df4c9cdfa9c3aca9', '1a5e93869fa3c2ee04139db8834f8808');
+  INSERT INTO teams (name, password_hash, password_salt) VALUES ('C', '41d65efe433e60755bef957e56ed6466b24c44a86b8ec595df4c9cdfa9c3aca9', '1a5e93869fa3c2ee04139db8834f8808');
+  INSERT INTO users (name, email, password_hash, password_salt, role, team_id) VALUES ('a', 'a@a.a', '41d65efe433e60755bef957e56ed6466b24c44a86b8ec595df4c9cdfa9c3aca9', '1a5e93869fa3c2ee04139db8834f8808', 'Player', (SELECT id FROM teams WHERE name='A'));
+  INSERT INTO users (name, email, password_hash, password_salt, role, team_id) VALUES ('b', 'b@b.b', '41d65efe433e60755bef957e56ed6466b24c44a86b8ec595df4c9cdfa9c3aca9', '1a5e93869fa3c2ee04139db8834f8808', 'Player', (SELECT id FROM teams WHERE name='A'));
+  INSERT INTO users (name, email, password_hash, password_salt, role, team_id) VALUES ('c', 'c@c.c', '41d65efe433e60755bef957e56ed6466b24c44a86b8ec595df4c9cdfa9c3aca9', '1a5e93869fa3c2ee04139db8834f8808', 'Player', (SELECT id FROM teams WHERE name='B'));
+  INSERT INTO users (name, email, password_hash, password_salt, role) VALUES ('d', 'd@d.d', '41d65efe433e60755bef957e56ed6466b24c44a86b8ec595df4c9cdfa9c3aca9', '1a5e93869fa3c2ee04139db8834f8808', 'Player');
+  INSERT INTO users (name, email, password_hash, password_salt, role, team_id) VALUES ('e', 'admin@email.com', '41d65efe433e60755bef957e56ed6466b24c44a86b8ec595df4c9cdfa9c3aca9', '1a5e93869fa3c2ee04139db8834f8808', 'Admin', (SELECT id FROM teams WHERE name='A'));
+  INSERT INTO users (name, email, password_hash, password_salt, role, team_id) VALUES ('f', 'f@f.f', '41d65efe433e60755bef957e56ed6466b24c44a86b8ec595df4c9cdfa9c3aca9', '1a5e93869fa3c2ee04139db8834f8808', 'Author', (SELECT id FROM teams WHERE name='C'));
 END;
 $$ LANGUAGE plpgsql;
 

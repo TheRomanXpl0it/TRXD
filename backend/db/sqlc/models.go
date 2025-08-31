@@ -265,6 +265,7 @@ type Team struct {
 	ID           int32          `json:"id"`
 	Name         string         `json:"name"`
 	PasswordHash string         `json:"password_hash"`
+	PasswordSalt string         `json:"password_salt"`
 	Score        int32          `json:"score"`
 	Country      sql.NullString `json:"country"`
 	Image        sql.NullString `json:"image"`
@@ -282,6 +283,7 @@ type User struct {
 	Name         string         `json:"name"`
 	Email        string         `json:"email"`
 	PasswordHash string         `json:"password_hash"`
+	PasswordSalt string         `json:"password_salt"`
 	CreatedAt    time.Time      `json:"created_at"`
 	Score        int32          `json:"score"`
 	Role         UserRole       `json:"role"`

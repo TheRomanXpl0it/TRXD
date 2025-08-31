@@ -3,6 +3,7 @@ package users_password
 import (
 	"trxd/utils"
 	"trxd/utils/consts"
+	"trxd/utils/crypto_utils"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -22,7 +23,7 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidUserID)
 	}
 
-	newPassword, err := utils.GenerateRandPass()
+	newPassword, err := crypto_utils.GeneratePassword()
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorGeneratingPassword, err)
 	}

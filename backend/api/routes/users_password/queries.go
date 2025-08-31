@@ -4,19 +4,19 @@ import (
 	"context"
 	"trxd/db"
 	"trxd/db/sqlc"
-
-	"golang.org/x/crypto/bcrypt"
+	"trxd/utils/crypto_utils"
 )
 
 func ResetUserPassword(ctx context.Context, userID int32, newPassword string) error {
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	hash, salt, err := crypto_utils.Hash(newPassword)
 	if err != nil {
 		return err
 	}
 
 	err = db.Sql.ResetUserPassword(ctx, sqlc.ResetUserPasswordParams{
 		ID:           userID,
-		PasswordHash: string(passwordHash),
+		PasswordHash: hash,
+		PasswordSalt: salt,
 	})
 	if err != nil {
 		return err

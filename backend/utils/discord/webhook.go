@@ -1,13 +1,13 @@
 package discord
 
 import (
-	"fmt"
-	"time"
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"trxd/db"
 	"trxd/db/sqlc"
@@ -44,7 +44,6 @@ func BroadcastFirstBlood(ctx context.Context, challenge *sqlc.Challenge, uid int
 		return
 	}
 
-	// Discord broadcast is disabled
 	if conf == nil || conf.Value == "" {
 		return
 	}
