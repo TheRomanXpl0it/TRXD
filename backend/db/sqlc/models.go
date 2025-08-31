@@ -243,7 +243,7 @@ type Instance struct {
 	ChallID   int32          `json:"chall_id"`
 	ExpiresAt time.Time      `json:"expires_at"`
 	Host      string         `json:"host"`
-	Port      int32          `json:"port"`
+	Port      sql.NullInt32  `json:"port"`
 	DockerID  sql.NullString `json:"docker_id"`
 }
 

@@ -3,6 +3,7 @@ package instancer
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 	"trxd/db"
 	"trxd/db/sqlc"
@@ -35,6 +36,9 @@ func dbCreateInstance(ctx context.Context, teamID, challID int32, expiresAt time
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
 			if pqErr.Code == "23505" { // Unique violation error code
+				if pqErr.Constraint == "instances_port_key" {
+					return nil, errors.New("[port conflict]")
+				}
 				return nil, nil
 			}
 		}

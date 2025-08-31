@@ -5,6 +5,8 @@ RETURNS INTEGER AS $$
 DECLARE
   candidate INTEGER;
 BEGIN
+  PERFORM pg_advisory_xact_lock(1337);
+  
   SELECT port INTO candidate
     FROM generate_series(min_port, max_port) AS g(port)
     WHERE port NOT IN (SELECT i.port FROM instances i)
@@ -36,40 +38,39 @@ $$ LANGUAGE plpgsql;
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
-CREATE OR REPLACE FUNCTION generate_team_hash_trimmed(secret TEXT, team_id INTEGER, port INTEGER, len INTEGER)
+CREATE OR REPLACE FUNCTION generate_team_hash_trimmed(team_id INTEGER, chall_id INTEGER)
 RETURNS TEXT AS $$
 DECLARE
-  full_hash TEXT;
+  secret TEXT;
 BEGIN
-  full_hash := encode(
-    digest(secret || team_id::TEXT || port::TEXT, 'sha256'),
+  secret := (SELECT value FROM configs WHERE key='secret');
+  RETURN encode(
+    hmac(team_id::TEXT || '|' || chall_id::TEXT, secret, 'sha256'),
     'hex'
   );
-
-  RETURN substring(full_hash FROM 1 FOR len);
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION generate_team_hash(secret TEXT, team_id INTEGER, port INTEGER)
+CREATE OR REPLACE FUNCTION generate_team_hash(team_id INTEGER, chall_id INTEGER)
 RETURNS TEXT AS $$
 DECLARE
   len INTEGER;
+  full_hash TEXT;
 BEGIN
   len := CAST((SELECT value FROM configs WHERE key = 'hash-len') AS INT);
-  RETURN generate_team_hash_trimmed(secret, team_id, port, len);
+  full_hash := generate_team_hash_trimmed(team_id, chall_id);
+  RETURN substring(full_hash FROM 1 FOR len);
 END;
 $$ LANGUAGE plpgsql;
 
 
 -- generate_instance_remote
 
-CREATE OR REPLACE FUNCTION generate_instance_remote(
-  secret TEXT, team_id INTEGER, chall_id INTEGER, hash_domain BOOLEAN)
+CREATE OR REPLACE FUNCTION generate_instance_remote(team_id INTEGER, chall_id INTEGER, hash_domain BOOLEAN)
 RETURNS TABLE(host TEXT, port INTEGER) AS $$
 DECLARE
   hash TEXT;
 BEGIN
-  port := get_random_available_port();
   host := (SELECT challenges.host FROM challenges WHERE id = chall_id);
 
   IF host IS NULL OR host = '' THEN
@@ -77,8 +78,12 @@ BEGIN
   END IF;
 
   IF hash_domain THEN
-    hash := generate_team_hash(secret, team_id, port);
+    hash := generate_team_hash(team_id, chall_id);
     host := hash || '.' || host;
+  END IF;
+
+  IF NOT hash_domain THEN
+    port := get_random_available_port();
   END IF;
 
   RETURN NEXT;

@@ -159,8 +159,8 @@ func GetChallenge(ctx context.Context, id int32, uid int32, tid int32, author bo
 	} else if challenge.Host.Valid {
 		chall.Host = challenge.Host.String
 	}
-	if instance != nil {
-		chall.Port = int(instance.Port)
+	if instance != nil && instance.Port.Valid {
+		chall.Port = int(instance.Port.Int32)
 	} else if challenge.Port.Valid {
 		chall.Port = int(challenge.Port.Int32)
 	}

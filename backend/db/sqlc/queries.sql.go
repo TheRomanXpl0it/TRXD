@@ -104,22 +104,16 @@ func (q *Queries) CreateFlag(ctx context.Context, arg CreateFlagParams) error {
 }
 
 const createInstance = `-- name: CreateInstance :one
-WITH conf_secret AS (
-    SELECT value AS secret
-    FROM configs
-    WHERE key='secret'
-    FOR UPDATE
-  ),
-  info AS (
+WITH info AS (
     SELECT generate_instance_remote(
-      (SELECT secret FROM conf_secret),
       $1,
       $2,
       $4::BOOLEAN
-    ) AS tuple
+    ) AS remote
   )
 INSERT INTO instances (team_id, chall_id, expires_at, host, port)
-  VALUES ($1, $2, $3, (SELECT (tuple).host FROM info), (SELECT (tuple).port FROM info))
+  VALUES ($1, $2, $3,
+    (SELECT (remote).host FROM info), (SELECT (remote).port FROM info))
 RETURNING host, port
 `
 
@@ -131,8 +125,8 @@ type CreateInstanceParams struct {
 }
 
 type CreateInstanceRow struct {
-	Host string `json:"host"`
-	Port int32  `json:"port"`
+	Host string        `json:"host"`
+	Port sql.NullInt32 `json:"port"`
 }
 
 // Creates a new instance for a team
@@ -507,9 +501,9 @@ type GetInstanceInfoParams struct {
 }
 
 type GetInstanceInfoRow struct {
-	ExpiresAt time.Time `json:"expires_at"`
-	Host      string    `json:"host"`
-	Port      int32     `json:"port"`
+	ExpiresAt time.Time     `json:"expires_at"`
+	Host      string        `json:"host"`
+	Port      sql.NullInt32 `json:"port"`
 }
 
 // Retrieve the instance associated with a challenge and team

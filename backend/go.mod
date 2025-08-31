@@ -3,7 +3,7 @@ module trxd
 go 1.24.2
 
 require (
-	github.com/compose-spec/compose-go v1.20.2
+	github.com/compose-spec/compose-go/v2 v2.8.1
 	github.com/docker/cli v28.3.3+incompatible
 	github.com/docker/compose/v2 v2.39.2
 	github.com/docker/docker v28.3.3+incompatible
@@ -51,7 +51,6 @@ require (
 	github.com/charmbracelet/x/ansi v0.8.0 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.13-0.20250311204145-2c3ea96c31dd // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
-	github.com/compose-spec/compose-go/v2 v2.8.1 // indirect
 	github.com/containerd/console v1.0.5 // indirect
 	github.com/containerd/containerd/api v1.9.0 // indirect
 	github.com/containerd/containerd/v2 v2.1.4 // indirect
@@ -100,7 +99,6 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-version v1.7.0 // indirect
-	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/in-toto/in-toto-golang v0.9.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/inhies/go-bytesize v0.0.0-20220417184213-4913239db9cf // indirect

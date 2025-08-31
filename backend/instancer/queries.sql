@@ -16,22 +16,16 @@ SELECT team_id, chall_id, expires_at, docker_id
 
 -- name: CreateInstance :one
 -- Creates a new instance for a team
-WITH conf_secret AS (
-    SELECT value AS secret
-    FROM configs
-    WHERE key='secret'
-    FOR UPDATE
-  ),
-  info AS (
+WITH info AS (
     SELECT generate_instance_remote(
-      (SELECT secret FROM conf_secret),
-      $1,
-      $2,
+      sqlc.arg(team_id),
+      sqlc.arg(chall_id),
       sqlc.arg(hash_domain)::BOOLEAN
-    ) AS tuple
+    ) AS remote
   )
 INSERT INTO instances (team_id, chall_id, expires_at, host, port)
-  VALUES ($1, $2, $3, (SELECT (tuple).host FROM info), (SELECT (tuple).port FROM info))
+  VALUES (sqlc.arg(team_id), sqlc.arg(chall_id), sqlc.arg(expires_at),
+    (SELECT (remote).host FROM info), (SELECT (remote).port FROM info))
 RETURNING host, port;
 
 -- name: UpdateInstanceDockerID :exec

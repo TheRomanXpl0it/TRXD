@@ -70,15 +70,11 @@ func CreateInstance(ctx context.Context, tid, challID int32, expires_at time.Tim
 		return "", nil, errors.New("[race condition]")
 	}
 
-	// if !conf.Image.Valid || conf.Image.String == "" {
-	// 	return "", nil, errors.New("[invalid image]") // TODO: tests
-	// }
-
 	log.Info("Creating instance:", "team", tid, "challenge", challID)
 
 	var port *int32
-	if !conf.HashDomain {
-		port = &info.Port
+	if !conf.HashDomain && info.Port.Valid {
+		port = &info.Port.Int32
 	}
 	if !conf.Envs.Valid {
 		conf.Envs.String = ""
@@ -249,7 +245,7 @@ func DeleteInstance(ctx context.Context, tid int32, challID int32, dockerID sql.
 
 	if dockerID.Valid {
 		var err error
-		log.Info("Killing instance:", "docker_id", dockerID.String, "len", len(dockerID.String))
+		log.Warn("Killing instance:", "docker_id", dockerID.String, "len", len(dockerID.String))
 		if len(dockerID.String) == 64 { // TODO: maybe change this method of selection
 			err = KillContainer(ctx, dockerID.String)
 		} else {
@@ -273,7 +269,7 @@ func KillContainer(ctx context.Context, id string) error {
 		return nil
 	}
 
-	err := cli.ContainerKill(ctx, id, "")
+	err := cli.ContainerKill(ctx, id, "SIGKILL")
 	if err != nil {
 		return err
 	}
