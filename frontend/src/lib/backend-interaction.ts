@@ -52,6 +52,8 @@ export function toChallenge(api: any): ChallengeType {
     category: api.category,                    // adjust if API returns array
     tags: api.tags ?? [],
     points: api.points ?? 0,
+    max_points: api.max_points ?? undefined,
+    score_type: api.score_type ?? "Static",
     solves: api.solves ?? 0,
     hidden: Boolean(api.hidden),
     authors: api.authors ?? [],
@@ -179,7 +181,7 @@ export async function getSessionInfo(): Promise<AuthProps | number> {
     const data = response.data;
     return {
       id: data.id,
-      username: data.username,
+      username: data.name,
       role: data.role,
       teamId: data.team_id,
     };

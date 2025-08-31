@@ -33,6 +33,8 @@ export type Challenge = {
   first_blood?: boolean;
   solves_list?: Solve[];
   tags?: string[];
+  score_type: "Static" | "Dynamic";
+  max_points?: number;
   difficulty?: string;
   attachments?: File[];
   authors?: string[];

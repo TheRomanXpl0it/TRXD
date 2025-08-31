@@ -88,28 +88,28 @@ export function Account() {
             "You did not wake up to be mediocre."
             </blockquote>
         )}
-        <div className="flex flex-row justify-between mt-6 mr-10">
-            <UserCategoryRing
-              totalSolves={categories.reduce((s, c) => s + c.count, 0)}
-              categories={categories}
-              size={100}         // optional
-              strokeWidth={16}   // optional
-            />
+        <div className="flex justify-center items-center mt-6 mr-10 gap-20">
+          <UserCategoryRing
+            totalSolves={categories.reduce((s, c) => s + c.count, 0)}
+            categories={categories}
+            size={100}
+            strokeWidth={16}
+          />
           <div className="flex flex-row justify-between items-center">
             <div className="flex items-center mr-4">
                 <h2 className="text-3xl font-semibold">{user.username}</h2>
                 <p className="text-sm text-gray-500">{user.country}</p>
             </div>
-            <Avatar className="h-32 w-32 rounded-full mb-2  text-3xl">
+            <Avatar className="h-32 w-32 rounded-full mb-2 text-3xl">
                 <AvatarImage src={user.profilePicture || "/default-avatar.png"} alt={`${user.username}'s avatar`} />
                 <AvatarFallback className="flex items-center justify-center h-full w-full bg-gray-200 text-gray-500">
-                  {user.username.charAt(0).toUpperCase()}
+              {user.username.charAt(0).toUpperCase()}
                 </AvatarFallback>
             </Avatar>
           </div>
-        </div>
-        <div className="w-full text-right mr-10">
-            <p className="text-sm text-gray-500">Joined: {new Date(user.joinedAt).toLocaleDateString()}</p>
+            <div className="mr-10">
+                <p className="text-sm text-gray-500">Joined: {new Date(user.joinedAt).toLocaleDateString()}</p>
+            </div>
         </div>
         <div className="text-center mb-4 mt-5">
             {userSolves(user)}

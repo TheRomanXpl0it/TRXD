@@ -50,7 +50,18 @@ import {
   Paperclip,
   Container,
   MemoryStick,
-  Cpu
+  Cpu,
+  Tags,
+  Flag,
+  TrendingDown,
+  Bug,
+  NotebookText,
+  ChartBar,
+  EyeClosed,
+  Captions,
+  Files,
+  Play,
+  UserPen
 } from "lucide-react"
 import {
   FileInput,
@@ -58,14 +69,6 @@ import {
   FileUploaderContent,
   FileUploaderItem
 } from "@/components/ui/file-upload"
-import {
-  MultiSelector,
-  MultiSelectorContent,
-  MultiSelectorInput,
-  MultiSelectorItem,
-  MultiSelectorList,
-  MultiSelectorTrigger
-} from "@/components/ui/multi-select"
 import { AuthProps } from "@/context/AuthProvider"
 import { Challenge as ChallengeType } from "@/context/ChallengeProvider"
 import type { DockerConfig } from "@/context/ChallengeProvider"
@@ -88,6 +91,8 @@ const formSchema = z.object({
   description: z.string(),
   difficulty: z.string(),
   tags: z.array(z.string()).nonempty("Please at least one item"),
+  scoreType: z.enum(["Static", "Dynamic"]).default("Dynamic"),
+  maxPoints: z.number().min(0, "Points must be a positive number").default(500),
   hidden: z.boolean(),
   files: z.string(),
   authors: z.array(z.string()),
@@ -111,20 +116,13 @@ const formSchema = z.object({
   }
 });
 
-function displayAuthors(authors: string[]){
-  return (
-    authors.map((author, index) => (
-      <MultiSelectorItem key={index} value={author}>{author}</MultiSelectorItem>
-    ))
-  )
-}
-
 export function ChallengeForm( { challenge, auth } : { 
   challenge?: ChallengeType,
   auth: AuthProps
 }) {
 
   let defaultAuthors: string[] | undefined = [auth.username];
+  let defaultScoreType: "Static" | "Dynamic" = "Dynamic";
   let defaultTitle: string | undefined = "";
   let defaultDescription: string | undefined = "";
   let defaultDifficulty: string | undefined = "Easy";
@@ -133,18 +131,21 @@ export function ChallengeForm( { challenge, auth } : {
   let defaultFlags: { flag: string; regex: boolean }[] = [{ flag: "", regex: false }];
   let defaultInstanced: boolean | undefined = false;
   let dockerConfig: DockerConfig | undefined = undefined;
-  let authors: string[] = [];
+  let defaultMaxPoints: number | undefined = 500;
 
   if ( challenge ){
+    console.log(challenge);
     defaultAuthors = challenge.authors ?? [auth.username];
     defaultDescription = challenge.description ?? "";
     defaultDifficulty = challenge.difficulty ?? "Easy";
-    defaultTags = challenge.tags ?? ["Easy"];
+    defaultTags = challenge.tags ?? ["SQLInjection"];
     defaultHidden = challenge.hidden ?? true;
     defaultTitle = challenge.title ?? "";
     defaultInstanced = challenge.instanced ?? false;
     dockerConfig = challenge.docker ?? undefined;
-    
+    defaultScoreType = challenge.score_type ?? "Dynamic";
+    defaultMaxPoints = challenge.max_points ?? 1000;
+
     if (challenge.flags?.length) {
       defaultFlags = challenge.flags.map(flag =>
         typeof flag === "string" ? { flag: flag, regex: false } : flag
@@ -171,6 +172,8 @@ export function ChallengeForm( { challenge, auth } : {
       "authors": defaultAuthors,
       "hidden": defaultHidden,
       "instanced": defaultInstanced,
+      "scoreType": defaultScoreType,
+      "maxPoints": defaultMaxPoints,
       "docker": dockerConfig
         ? {
             image: dockerConfig.image ?? "",
@@ -221,7 +224,7 @@ export function ChallengeForm( { challenge, auth } : {
         name="title"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Title</FormLabel>
+            <FormLabel><Captions size={25}/>Title</FormLabel>
             <FormControl>
               <Input 
               placeholder=""
@@ -232,10 +235,10 @@ export function ChallengeForm( { challenge, auth } : {
             <FormDescription>The title of the challenge</FormDescription>
             <FormMessage />
           </FormItem>
-        )}
-        />
+      )}
+      />
 
-        <FormLabel>Flags</FormLabel>
+        <FormLabel><Flag size={24} />Flags</FormLabel>
         {flagFields.map((field, index) => (
         <div key={field.id} className="space-y-2 border p-4 rounded-md">
           <FormField
@@ -285,7 +288,7 @@ export function ChallengeForm( { challenge, auth } : {
         name="description"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Description</FormLabel>
+            <FormLabel><NotebookText size={24}/>Description</FormLabel>
             <FormControl>
               <Textarea
                 placeholder=""
@@ -304,7 +307,7 @@ export function ChallengeForm( { challenge, auth } : {
         name="difficulty"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Difficulty</FormLabel>
+            <FormLabel><Bug size={24}/>Difficulty</FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
                 <SelectTrigger>
@@ -326,10 +329,52 @@ export function ChallengeForm( { challenge, auth } : {
 
         <FormField
         control={form.control}
+        name="scoreType"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel><TrendingDown size={24}/>Score Type</FormLabel>
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select score type" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                <SelectItem value="Static">Static</SelectItem>
+                <SelectItem value="Dynamic">Dynamic</SelectItem>
+              </SelectContent>
+            </Select>
+              <FormDescription>Score type of the challenge</FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+        />
+
+        <FormField
+        control={form.control}
+        name="maxPoints"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel><ChartBar size={24}/>Max Score</FormLabel>
+            <FormControl>
+              <Input
+                placeholder=""
+                type="number"
+                {...field}
+              />
+            </FormControl>
+            <FormDescription>The maximum score of the challenge, in case this is a <strong>Dynamic</strong> challenge, this will be the upper limit for the score. If your challenge has <strong>Static</strong> scoring, this will be the effective score.</FormDescription>
+            <FormMessage />
+          </FormItem>
+      )}
+      />
+
+        <FormField
+        control={form.control}
         name="tags"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Tags</FormLabel>
+            <FormLabel><Tags size={24}/>Tags</FormLabel>
             <FormControl>
               <TagsInput
                 value={field.value}
@@ -349,7 +394,7 @@ export function ChallengeForm( { challenge, auth } : {
             render={({ field }) => (
               <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                 <div className="space-y-0.5">
-                  <FormLabel>Hidden</FormLabel>
+                  <FormLabel><EyeClosed size={24}/>Hidden</FormLabel>
                   <FormDescription>Challenge is hidden, you can edit it later on inside the challenge card.</FormDescription>
                 </div>
                 <FormControl>
@@ -367,7 +412,7 @@ export function ChallengeForm( { challenge, auth } : {
             name="files"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Challenge files</FormLabel>
+                <FormLabel><Files size={24}/>Challenge files</FormLabel>
                 <FormControl>
                   <FileUploader
                     value={files}
@@ -413,23 +458,13 @@ export function ChallengeForm( { challenge, auth } : {
             name="authors"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Authors</FormLabel>
+                <FormLabel><UserPen size={24}/>Authors</FormLabel>
                 <FormControl>
-                  <MultiSelector
-                    values={field.value}
-                    onValuesChange={field.onChange}
-                    loop
-                    className="max-w-xs"
-                  >
-                    <MultiSelectorTrigger>
-                      <MultiSelectorInput placeholder="Select Authors" />
-                    </MultiSelectorTrigger>
-                    <MultiSelectorContent>
-                    <MultiSelectorList>
-                      { displayAuthors(authors) }
-                    </MultiSelectorList>
-                    </MultiSelectorContent>
-                  </MultiSelector>
+                  <TagsInput
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    placeholder="Enter the challenge Authors"
+                  />
                 </FormControl>
                 <FormDescription>Select multiple options.</FormDescription>
                 <FormMessage />
@@ -437,40 +472,40 @@ export function ChallengeForm( { challenge, auth } : {
                   )}
               />
 
-                <FormField
-                  control={form.control}
-                  name="instanced"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel>Instanced</FormLabel>
-                        <FormDescription>Spin up a per-user/container instance.</FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={(val) => {
-                            field.onChange(val);
-                            if (val) {
-                              setValue("docker", {
-                                image: "",
-                                compose: "",
-                                hashDomain: false,
-                                lifetime: 3600,
-                                envs: "",
-                                maxMemory: 0,
-                                maxCPU: 0,
-                              }, { shouldValidate: true, shouldDirty: true });
-                            } else {
-                              setValue("docker", undefined, { shouldValidate: true, shouldDirty: true });
-                            }
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <FormField
+                control={form.control}
+                name="instanced"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel><Play size={24}/>Instanced</FormLabel>
+                      <FormDescription>Spin up a per-user/container instance.</FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={(val) => {
+                          field.onChange(val);
+                          if (val) {
+                            setValue("docker", {
+                              image: "",
+                              compose: "",
+                              hashDomain: false,
+                              lifetime: 3600,
+                              envs: "",
+                              maxMemory: 0,
+                              maxCPU: 0,
+                            }, { shouldValidate: true, shouldDirty: true });
+                          } else {
+                            setValue("docker", undefined, { shouldValidate: true, shouldDirty: true });
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
         {instanced && (
           <div className="space-y-4 rounded-lg border p-4">
