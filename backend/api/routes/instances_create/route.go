@@ -75,13 +75,13 @@ func Route(c *fiber.Ctx) error {
 		internalPort = &chall.Info.Port.Int32
 	}
 
-	host, port, err := instancer.CreateInstance(c.Context(), tid, *data.ChallID, internalPort, expires_at, chall.DockerConfig)
+	host, port, err := instancer.CreateInstance(c.Context(), tid, *data.ChallID, internalPort, expires_at, chall.Info.Type, chall.DockerConfig)
 	if err != nil {
 		switch err.Error() {
 		case "[race condition]":
 			return utils.Error(c, fiber.StatusConflict, consts.AlreadyAnActiveInstance)
-		case "[invalid image]":
-			return utils.Error(c, fiber.StatusBadRequest, consts.InvalidImage) // TODO: tests
+		case "[no image or compose]":
+			return utils.Error(c, fiber.StatusBadRequest, consts.InvalidImage)
 		default:
 			return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorCreatingInstance, err)
 		}

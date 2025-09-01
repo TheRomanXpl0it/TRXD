@@ -20,7 +20,7 @@ import (
 )
 
 func CreateInstance(ctx context.Context, tid, challID int32, internalPort *int32,
-	expires_at time.Time, conf *sqlc.GetDockerConfigsByIDRow) (string, *int32, error) {
+	expires_at time.Time, deployType sqlc.DeployType, conf *sqlc.GetDockerConfigsByIDRow) (string, *int32, error) {
 	info, err := dbCreateInstance(ctx, tid, challID, expires_at, conf.HashDomain)
 	if err != nil {
 		return "", nil, err
@@ -40,15 +40,15 @@ func CreateInstance(ctx context.Context, tid, challID int32, internalPort *int32
 	}
 
 	var res string
-	if conf.Image.Valid {
+	if deployType == sqlc.DeployTypeContainer && conf.Image.Valid {
 		res, err = CreateContainer(ctx, conf.Image.String, info.Host, internalPort,
 			externalPort, &conf.Envs.String, conf.MaxMemory.Int32, conf.MaxCpu.String)
-	} else if conf.Compose.Valid {
+	} else if deployType == sqlc.DeployTypeCompose && conf.Compose.Valid {
 		projectName := fmt.Sprintf("chall_%d_%d", tid, challID)
 		res, err = CreateCompose(ctx, projectName, conf.Compose.String, info.Host, externalPort,
 			&conf.Envs.String, conf.MaxMemory.Int32, conf.MaxCpu.String)
 	} else {
-		return "", nil, errors.New("[no image or compose]") // TODO: tests
+		return "", nil, errors.New("[no image or compose]")
 	}
 	if err != nil {
 		return "", nil, err
@@ -64,11 +64,15 @@ func CreateInstance(ctx context.Context, tid, challID int32, internalPort *int32
 
 func CreateContainer(ctx context.Context, image string, host string, internalPort *int32,
 	externalPort *int32, envs *string, maxMemory int32, maxCpu string) (string, error) {
+	if externalPort != nil && internalPort == nil {
+		return "", errors.New("[missing internal port]")
+	}
+
 	if cli == nil {
 		return "", nil
 	}
 
-	var name, domain, portStr string // change hash name
+	var name, domain, portStr string
 	if externalPort == nil {
 		splittedHost := strings.SplitN(host, ".", 2)
 		name = splittedHost[0]
@@ -121,9 +125,6 @@ func CreateContainer(ctx context.Context, image string, host string, internalPor
 
 	var networkingConfig *network.NetworkingConfig
 	if portStr != "" {
-		if internalPort == nil {
-			return "", errors.New("[missing internal port]") // TODO: tests
-		}
 		natPort := nat.Port(strconv.Itoa(int(*internalPort)) + "/tcp")
 		containerConf.ExposedPorts[natPort] = struct{}{}
 		hostConf.PortBindings[natPort] = []nat.PortBinding{{HostIP: "0.0.0.0", HostPort: portStr}}

@@ -6,10 +6,10 @@ DECLARE
   candidate INTEGER;
 BEGIN
   PERFORM pg_advisory_xact_lock(1337);
-  
+
   SELECT port INTO candidate
     FROM generate_series(min_port, max_port) AS g(port)
-    WHERE port NOT IN (SELECT i.port FROM instances i)
+    WHERE port NOT IN (SELECT i.port FROM instances i WHERE i.port IS NOT NULL)
     ORDER BY random()
     LIMIT 1;
 

@@ -39,13 +39,17 @@ func TestRoute(t *testing.T) {
 		t.Fatal("Expected body to not be nil")
 	}
 
-	var challID1, challID3 int32
+	var challID1, challID2, challID3, challID4 int32
 	for _, chall := range body.([]interface{}) {
 		switch chall.(map[string]interface{})["name"] {
 		case "chall-1":
 			challID1 = int32(chall.(map[string]interface{})["id"].(float64))
+		case "chall-2":
+			challID2 = int32(chall.(map[string]interface{})["id"].(float64))
 		case "chall-3":
 			challID3 = int32(chall.(map[string]interface{})["id"].(float64))
+		case "chall-4":
+			challID4 = int32(chall.(map[string]interface{})["id"].(float64))
 		}
 	}
 
@@ -145,6 +149,45 @@ func TestRoute(t *testing.T) {
 		if !strings.HasSuffix(host.(string), ".test.com") || strings.HasSuffix(host.(string), ".chall-3.test.com") {
 			t.Fatalf("Expected host to end with .test.com: %s", host)
 		}
+	}
+	if _, ok := body.(map[string]interface{})["port"]; ok {
+		t.Fatalf("Expected port to not be present in response: %+v", body)
+	}
+	if _, ok := body.(map[string]interface{})["timeout"]; !ok {
+		t.Fatalf("Expected timeout to be present in response: %+v", body)
+	}
+	session.Delete("/instances", JSON{"chall_id": challID3}, http.StatusOK)
+
+	session = test_utils.NewApiTestSession(t, app)
+	session.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
+	session.PatchMultipart("/challenges", JSON{"chall_id": challID3, "type": "Compose"}, []string{}, http.StatusOK)
+	session.CheckResponse(nil)
+
+	session = test_utils.NewApiTestSession(t, app)
+	session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/instances", JSON{"chall_id": challID3}, http.StatusBadRequest)
+	session.CheckResponse(errorf(consts.InvalidImage))
+
+	session = test_utils.NewApiTestSession(t, app)
+	session.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
+	session.PatchMultipart("/challenges", JSON{"chall_id": challID3, "type": "Container"}, []string{}, http.StatusOK)
+	session.CheckResponse(nil)
+
+	session.PatchMultipart("/challenges", JSON{"chall_id": challID2, "type": "Container", "image": "aaaa"}, []string{}, http.StatusOK)
+	session.CheckResponse(nil)
+
+	session = test_utils.NewApiTestSession(t, app)
+	session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/instances", JSON{"chall_id": challID2}, http.StatusInternalServerError)
+	session.CheckResponse(errorf(consts.ErrorCreatingInstance))
+
+	session.Post("/instances", JSON{"chall_id": challID4}, http.StatusOK)
+	body = session.Body()
+	if body == nil {
+		t.Fatal("Expected body to not be nil")
+	}
+	if _, ok := body.(map[string]interface{})["host"]; !ok {
+		t.Fatalf("Expected host to be present in response: %+v", body)
 	}
 	if _, ok := body.(map[string]interface{})["port"]; ok {
 		t.Fatalf("Expected port to not be present in response: %+v", body)
