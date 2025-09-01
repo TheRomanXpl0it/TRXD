@@ -50,7 +50,7 @@ func TestRoute(t *testing.T) {
 		"instance": false,
 		"name":     "chall-1",
 		"points":   500,
-		"port":     1337,
+		"port":     1234,
 		"solved":   false,
 		"solves":   1,
 		"solves_list": []JSON{
@@ -118,7 +118,7 @@ func TestRoute(t *testing.T) {
 		"max_points": 500,
 		"name":       "chall-1",
 		"points":     500,
-		"port":       1337,
+		"port":       1234,
 		"score_type": "Dynamic",
 		"solved":     false,
 		"solves":     1,

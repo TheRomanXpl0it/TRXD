@@ -2,6 +2,8 @@ package consts
 
 import "regexp"
 
+const Name = "trxd"
+
 const (
 	MinPasswordLength        = 8
 	MaxPasswordLength        = 64

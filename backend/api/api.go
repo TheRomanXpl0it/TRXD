@@ -49,11 +49,11 @@ import (
 
 func SetupApp() *fiber.App {
 	app := fiber.New(fiber.Config{
-		AppName: "TRXd",
+		AppName: consts.Name,
 	})
 
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:1337",
+		AllowOrigins:     "http://localhost:1337", // TODO: edit
 		AllowCredentials: true,
 	}))
 

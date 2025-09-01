@@ -70,8 +70,12 @@ func Route(c *fiber.Ctx) error {
 	}
 	lifetime := time.Second * time.Duration(chall.DockerConfig.Lifetime.Int32)
 	expires_at := time.Now().Add(lifetime)
+	var internalPort *int32
+	if chall.Info.Port.Valid {
+		internalPort = &chall.Info.Port.Int32
+	}
 
-	host, port, err := instancer.CreateInstance(c.Context(), tid, *data.ChallID, expires_at, chall.DockerConfig)
+	host, port, err := instancer.CreateInstance(c.Context(), tid, *data.ChallID, internalPort, expires_at, chall.DockerConfig)
 	if err != nil {
 		switch err.Error() {
 		case "[race condition]":
