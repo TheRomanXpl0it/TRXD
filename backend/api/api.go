@@ -50,6 +50,45 @@ func SetupApp() *fiber.App {
 		AppName: consts.Name,
 	})
 
+	// app.Use(compress.New(compress.Config{
+	// 	Level: compress.LevelBestSpeed, // 1
+	// }))
+
+	// app.Use(csrf.New(csrf.Config{
+	// 	KeyLookup:      "header:X-Csrf-Token",
+	// 	CookieName:     "csrf_",
+	// 	CookieSameSite: "Lax",
+	// 	Expiration:     1 * time.Hour,
+	// 	KeyGenerator:   utils.UUIDv4,
+	// }))
+
+	// app.Use(limiter.New(limiter.Config{
+	// 	Next: func(c *fiber.Ctx) bool {
+	// 		return c.IP() == "127.0.0.1"
+	// 	},
+	// 	Max:        20,
+	// 	Expiration: 30 * time.Second,
+	// 	KeyGenerator: func(c *fiber.Ctx) string {
+	// 		return c.Get("x-forwarded-for")
+	// 	},
+	// 	LimitReached: func(c *fiber.Ctx) error {
+	// 		return c.SendFile("./toofast.html")
+	// 	},
+	// 	Storage: myCustomStorage{},
+	// }))
+
+	// app.Use(favicon.New(favicon.Config{
+	// 	File: "./favicon.ico",
+	// 	URL:  "/favicon.ico",
+	// }))
+
+	// app.Use(recover.New())
+
+	// app.Get("/foo/:sleepTime", timeout.New(h, 2*time.Second))
+	// app.Get("/foo", timeout.NewWithContext(handler, 10*time.Second))
+
+	// app.Get("/metrics", monitor.New(monitor.Config{Title: "MyService Metrics Page"}))
+
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     "http://localhost:1337", // TODO: edit
 		AllowCredentials: true,

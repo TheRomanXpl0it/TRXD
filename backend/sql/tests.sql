@@ -53,8 +53,8 @@ BEGIN
   */
   INSERT INTO categories (name, icon) VALUES ('cat-1', 'cat-1');
   INSERT INTO categories (name, icon) VALUES ('cat-2', 'cat-2');
-  INSERT INTO challenges (name, category, description, difficulty, authors, type, max_points, score_type, host, port, hidden) VALUES ('chall-1', 'cat-1', 'TEST chall-1 DESC', 'Easy', 'author1,author2', 'Normal', 500, 'Dynamic', 'http://theromanxpl0.it', 1234, false);
-  INSERT INTO challenges (name, category, description, difficulty, authors, type, max_points, score_type, hidden) VALUES ('chall-2', 'cat-2', 'TEST chall-2 DESC', 'Medium', 'author1,author2,author3', 'Normal', 500, 'Dynamic', false);
+  INSERT INTO challenges (name, category, description, difficulty, authors, type, max_points, score_type, host, port, hidden) VALUES ('chall-1', 'cat-1', 'TEST chall-1 DESC', 'Easy', E'author1\x01author2', 'Normal', 500, 'Dynamic', 'http://theromanxpl0.it', 1234, false);
+  INSERT INTO challenges (name, category, description, difficulty, authors, type, max_points, score_type, hidden) VALUES ('chall-2', 'cat-2', 'TEST chall-2 DESC', 'Medium', E'author1\x01author2\x01author3', 'Normal', 500, 'Dynamic', false);
   INSERT INTO challenges (name, category, description, difficulty, authors, type, max_points, score_type, host, port, hidden) VALUES ('chall-3', 'cat-1', 'TEST chall-3 DESC', 'Hard', 'author1', 'Container', 500, 'Dynamic', 'chall-3.test.com', 1337, false);
   INSERT INTO challenges (name, category, description, difficulty, authors, type, max_points, score_type, hidden) VALUES ('chall-4', 'cat-1', 'TEST chall-4 DESC', 'Insane', 'author2', 'Compose', 500, 'Dynamic', false);
   INSERT INTO challenges (name, category, description, difficulty, authors, type, max_points, score_type) VALUES ('chall-5', 'cat-2', 'TEST chall-5 DESC', 'Easy', 'author3', 'Normal', 500, 'Static');

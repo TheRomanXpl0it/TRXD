@@ -1,12 +1,9 @@
-BETA 0.1.0:
-	- change api names
-
 BETA:
 	- resolve TODOs left into the code
-	- check all TEXT fields into go to have a max
-	- when finished endpoints, review needed data and revome `RETURNING *;` and similar when not needed
-	- sort constants alphabetically
 	- move countries from api to frontend or /static
+	- change api/db names
+	- expose attachments
+	- remove files from attachments if removed from chall
 
 ALPHA:
 	- dockerize 🙏
@@ -15,6 +12,7 @@ ALPHA:
 	- anti panic
 	- nginx
 	- redis
+	- expose frontend
 	- integration tests (for generic behaviour)
 	- tests for distributed functioning
 	- role configuraion endpoint
@@ -31,6 +29,8 @@ EXTRA:
 	- extract data for ctftime
 	- scoreboard freeze
 	- telegram bot for first bloods
+	- when finished endpoints, review needed data and revome `RETURNING *;` and similar when not needed
+	- hash verifier flag or script
 
 BONUS IDEAS:
 	- maybe set default starting points for challenges as global config

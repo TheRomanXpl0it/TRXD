@@ -26,6 +26,9 @@ func Route(c *fiber.Ctx) error {
 	if data.Country != "" && len(data.Country) > consts.MaxCountryLength {
 		return utils.Error(c, fiber.StatusBadRequest, consts.LongCountry)
 	}
+	if data.Image != "" && len(data.Image) > consts.MaxImageLength {
+		return utils.Error(c, fiber.StatusBadRequest, consts.LongImage)
+	}
 
 	uid := c.Locals("uid").(int32)
 

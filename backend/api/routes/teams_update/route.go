@@ -23,6 +23,12 @@ func Route(c *fiber.Ctx) error {
 	if data.Country != "" && len(data.Country) > consts.MaxCountryLength {
 		return utils.Error(c, fiber.StatusBadRequest, consts.LongCountry)
 	}
+	if data.Image != "" && len(data.Image) > consts.MaxImageLength {
+		return utils.Error(c, fiber.StatusBadRequest, consts.LongImage)
+	}
+	if data.Bio != "" && len(data.Bio) > consts.MaxBioLength {
+		return utils.Error(c, fiber.StatusBadRequest, consts.LongBio)
+	}
 
 	tid := c.Locals("tid").(int32)
 	err := UpdateTeam(c.Context(), tid, data.Country, data.Image, data.Bio)

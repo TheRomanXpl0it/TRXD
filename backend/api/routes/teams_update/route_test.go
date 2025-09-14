@@ -40,6 +40,16 @@ var testData = []struct {
 		expectedResponse: errorf(consts.LongCountry),
 	},
 	{
+		testBody:         JSON{"image": strings.Repeat("a", consts.MaxImageLength+1)},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.LongImage),
+	},
+	{
+		testBody:         JSON{"bio": strings.Repeat("a", consts.MaxBioLength+1)},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.LongBio),
+	},
+	{
 		testBody:       JSON{"country": "a", "image": "a", "bio": "a"},
 		expectedStatus: http.StatusOK,
 	},

@@ -30,7 +30,6 @@ func Flags() {
 	flag.BoolVar(&h, "h", false, "Show help")
 	flag.BoolVar(&toggleRegisterAllow, "t", false, "Toggle the allow-register config")
 	flag.StringVar(&user, "r", "", "Register a new admin user with 'username:email:password'")
-	// TODO: hash verifier flag
 	flag.BoolVar(&testData, "test-data-WARNING-DO-NOT-USE-IN-PRODUCTION", false, "Inserts mocks data into the db")
 	flag.Parse()
 

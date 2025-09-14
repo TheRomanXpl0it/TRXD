@@ -38,8 +38,8 @@ CREATE TABLE IF NOT EXISTS teams (
   password_salt CHAR(32) NOT NULL,
   score INTEGER NOT NULL DEFAULT 0,
   country VARCHAR(3),
-  image TEXT,
-  bio TEXT,
+  image VARCHAR(1024),
+  bio VARCHAR(10240),
   PRIMARY KEY(id)
 );
 
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS users (
 
   team_id INTEGER,
   country VARCHAR(3),
-  image TEXT,
+  image VARCHAR(1024),
 
   FOREIGN KEY(team_id) REFERENCES teams(id),
   PRIMARY KEY(id)
