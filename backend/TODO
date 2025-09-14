@@ -1,11 +1,9 @@
 BETA 0.1.0:
 	- change api names
-	- check all TEXT fields into go to have a max
-	- check nil config get
-	- config autoload for tests
 
 BETA:
 	- resolve TODOs left into the code
+	- check all TEXT fields into go to have a max
 	- when finished endpoints, review needed data and revome `RETURNING *;` and similar when not needed
 	- sort constants alphabetically
 	- move countries from api to frontend or /static

@@ -63,6 +63,10 @@ func GetInterval() (time.Duration, error) {
 	if err != nil {
 		return 0, err
 	}
+	if conf == nil || conf.Value == "" {
+		interval := consts.DefaultConfigs["reclaim-instance-interval"].(int)
+		return time.Duration(interval) * time.Second, nil
+	}
 
 	value, err := strconv.Atoi(conf.Value)
 	if err != nil {

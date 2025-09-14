@@ -13,6 +13,7 @@ import (
 	"trxd/db"
 	"trxd/db/sqlc"
 	"trxd/utils"
+	"trxd/utils/consts"
 )
 
 const PROJECT_DIR = "backend"
@@ -68,14 +69,17 @@ func Main(m *testing.M) {
 		fatalf("Failed to insert mock data: %v\n", err)
 	}
 
+	consts.DefaultConfigs["allow-register"] = true
 	err = db.UpdateConfig(context.Background(), "allow-register", "true")
 	if err != nil {
 		fatalf("Failed to update config: %v\n", err)
 	}
+	consts.DefaultConfigs["secret"] = "test-secret"
 	err = db.UpdateConfig(context.Background(), "secret", "test-secret")
 	if err != nil {
 		fatalf("Failed to update config: %v\n", err)
 	}
+	consts.DefaultConfigs["domain"] = "test.com"
 	err = db.UpdateConfig(context.Background(), "domain", "test.com")
 	if err != nil {
 		fatalf("Failed to update config: %v\n", err)

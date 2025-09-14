@@ -10,6 +10,7 @@ import (
 	"time"
 	"trxd/db/sqlc"
 	"trxd/utils"
+	"trxd/utils/consts"
 	"trxd/utils/crypto_utils"
 
 	"github.com/lib/pq"
@@ -99,32 +100,16 @@ func ExecSQLFile(path string) (bool, error) {
 	return true, nil
 }
 
-var defaultConfigs = map[string]any{
-	"allow-register":            false,
-	"chall-min-points":          50,
-	"chall-points-decay":        15,
-	"instance-lifetime":         30 * 60, // 30 minutes
-	"reclaim-instance-interval": 5 * 60,  // 5 minutes
-	"instance-max-memory":       512,
-	"instance-max-cpu":          "1.0",
-	"min-port":                  20000,
-	"max-port":                  30000,
-	"hash-len":                  12,
-	"secret":                    "",
-	"domain":                    "",
-	"discord-webhook":           "",
-}
-
 func InitConfigs() error {
-	if secret, ok := defaultConfigs["secret"]; ok && secret == "" {
+	if secret, ok := consts.DefaultConfigs["secret"]; ok && secret == "" {
 		randSecret, err := crypto_utils.GeneratePassword()
 		if err != nil {
 			return fmt.Errorf("failed to generate random secret: %v", err)
 		}
-		defaultConfigs["secret"] = randSecret
+		consts.DefaultConfigs["secret"] = randSecret
 	}
 
-	for key, value := range defaultConfigs {
+	for key, value := range consts.DefaultConfigs {
 		conf, err := CreateConfig(context.Background(), key, value)
 		if err != nil {
 			return fmt.Errorf("failed to create config for key %s=%v: %v", key, value, err)

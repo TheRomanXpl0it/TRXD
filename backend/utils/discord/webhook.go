@@ -43,7 +43,6 @@ func BroadcastFirstBlood(ctx context.Context, challenge *sqlc.Challenge, uid int
 		log.Error("Failed to fetch webhook url:", "err", err)
 		return
 	}
-
 	if conf == nil || conf.Value == "" {
 		return
 	}
@@ -54,7 +53,7 @@ func BroadcastFirstBlood(ctx context.Context, challenge *sqlc.Challenge, uid int
 		return
 	}
 
-	// TODO: Hardcoded format:(
+	// TODO: not hardcoded format:(
 	challengeName := strings.ReplaceAll(challenge.Name, "@", "@\u200b")
 	teamName := strings.ReplaceAll(team.Name, "@", "@\u200b")
 	msg := fmt.Sprintf("First blood for **%s** goes to **%s**! 🩸", challengeName, teamName)
