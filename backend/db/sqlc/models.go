@@ -197,21 +197,21 @@ type Category struct {
 }
 
 type Challenge struct {
-	ID          int32          `json:"id"`
-	Name        string         `json:"name"`
-	Category    string         `json:"category"`
-	Description string         `json:"description"`
-	Difficulty  sql.NullString `json:"difficulty"`
-	Authors     sql.NullString `json:"authors"`
-	Type        DeployType     `json:"type"`
-	Hidden      bool           `json:"hidden"`
-	MaxPoints   int32          `json:"max_points"`
-	ScoreType   ScoreType      `json:"score_type"`
-	Points      int32          `json:"points"`
-	Solves      int32          `json:"solves"`
-	Host        sql.NullString `json:"host"`
-	Port        sql.NullInt32  `json:"port"`
-	Attachments sql.NullString `json:"attachments"`
+	ID          int32      `json:"id"`
+	Name        string     `json:"name"`
+	Category    string     `json:"category"`
+	Description string     `json:"description"`
+	Difficulty  string     `json:"difficulty"`
+	Authors     string     `json:"authors"`
+	Type        DeployType `json:"type"`
+	Hidden      bool       `json:"hidden"`
+	MaxPoints   int32      `json:"max_points"`
+	ScoreType   ScoreType  `json:"score_type"`
+	Points      int32      `json:"points"`
+	Solves      int32      `json:"solves"`
+	Host        string     `json:"host"`
+	Port        int32      `json:"port"`
+	Attachments string     `json:"attachments"`
 }
 
 type Config struct {
@@ -222,14 +222,14 @@ type Config struct {
 }
 
 type DockerConfig struct {
-	ChallID    int32          `json:"chall_id"`
-	Image      sql.NullString `json:"image"`
-	Compose    sql.NullString `json:"compose"`
-	HashDomain bool           `json:"hash_domain"`
-	Lifetime   sql.NullInt32  `json:"lifetime"`
-	Envs       sql.NullString `json:"envs"`
-	MaxMemory  sql.NullInt32  `json:"max_memory"`
-	MaxCpu     sql.NullString `json:"max_cpu"`
+	ChallID    int32  `json:"chall_id"`
+	Image      string `json:"image"`
+	Compose    string `json:"compose"`
+	HashDomain bool   `json:"hash_domain"`
+	Lifetime   int32  `json:"lifetime"`
+	Envs       string `json:"envs"`
+	MaxMemory  int32  `json:"max_memory"`
+	MaxCpu     string `json:"max_cpu"`
 }
 
 type Flag struct {

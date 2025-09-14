@@ -7,7 +7,6 @@ package sqlc
 
 import (
 	"context"
-	"database/sql"
 )
 
 const getChallengeByID = `-- name: GetChallengeByID :one
@@ -44,21 +43,21 @@ SELECT
   compose,
   hash_domain,
   envs,
-  COALESCE(lifetime, (SELECT value::INTEGER FROM configs WHERE key='instance-lifetime')) AS lifetime,
-  COALESCE(max_memory, (SELECT value::INTEGER FROM configs WHERE key='instance-max-memory')) AS max_memory,
-  COALESCE(max_cpu, (SELECT value FROM configs WHERE key='instance-max-cpu')) AS max_cpu
+  COALESCE(NULLIF(lifetime, 0), (SELECT value::INTEGER FROM configs WHERE key='instance-lifetime')) AS lifetime,
+  COALESCE(NULLIF(max_memory, 0), (SELECT value::INTEGER FROM configs WHERE key='instance-max-memory')) AS max_memory,
+  COALESCE(NULLIF(max_cpu, ''), (SELECT value FROM configs WHERE key='instance-max-cpu')) AS max_cpu
 FROM docker_configs
 WHERE chall_id = $1
 `
 
 type GetDockerConfigsByIDRow struct {
-	Image      sql.NullString `json:"image"`
-	Compose    sql.NullString `json:"compose"`
-	HashDomain bool           `json:"hash_domain"`
-	Envs       sql.NullString `json:"envs"`
-	Lifetime   sql.NullInt32  `json:"lifetime"`
-	MaxMemory  sql.NullInt32  `json:"max_memory"`
-	MaxCpu     sql.NullString `json:"max_cpu"`
+	Image      string      `json:"image"`
+	Compose    string      `json:"compose"`
+	HashDomain bool        `json:"hash_domain"`
+	Envs       string      `json:"envs"`
+	Lifetime   interface{} `json:"lifetime"`
+	MaxMemory  interface{} `json:"max_memory"`
+	MaxCpu     interface{} `json:"max_cpu"`
 }
 
 // Retrieve Docker configurations by challenge ID

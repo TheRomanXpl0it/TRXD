@@ -11,8 +11,8 @@ import (
 )
 
 type DockerConfig struct {
-	Image      string  `json:"image,omitempty"`
-	Compose    string  `json:"compose,omitempty"`
+	Image      string  `json:"image"`
+	Compose    string  `json:"compose"`
 	HashDomain *bool   `json:"hash_domain"`
 	Lifetime   *int    `json:"lifetime"`
 	Envs       *string `json:"envs"`
@@ -137,6 +137,7 @@ func GetChallenge(ctx context.Context, id int32, uid int32, tid int32, author bo
 		Name:        challenge.Name,
 		Category:    challenge.Category,
 		Description: challenge.Description,
+		Difficulty:  challenge.Difficulty,
 		Authors:     []string{},
 		Instance:    challenge.Type != sqlc.DeployTypeNormal,
 		Points:      int(challenge.Points),
@@ -146,35 +147,28 @@ func GetChallenge(ctx context.Context, id int32, uid int32, tid int32, author bo
 		Solved:      solved,
 		SolvesList:  []sqlc.GetChallengeSolvesRow{},
 		FirstBlood:  firstBlood,
+		Host:        challenge.Host,
+		Port:        int(challenge.Port),
 	}
 
-	if challenge.Difficulty.Valid {
-		chall.Difficulty = challenge.Difficulty.String
-	}
-	if challenge.Authors.Valid {
-		chall.Authors = strings.Split(challenge.Authors.String, consts.Separator)
-	}
 	if instance != nil {
 		chall.Host = instance.Host
-	} else if challenge.Host.Valid {
-		chall.Host = challenge.Host.String
-	}
-	if instance != nil && instance.Port.Valid {
-		chall.Port = int(instance.Port.Int32)
-	} else if challenge.Port.Valid {
-		chall.Port = int(challenge.Port.Int32)
-	}
-	if challenge.Attachments.Valid {
-		chall.Attachments = strings.Split(challenge.Attachments.String, consts.Separator)
-	}
-	if tags != nil {
-		chall.Tags = tags
-	}
-	if instance != nil {
+		if instance.Port.Valid {
+			chall.Port = int(instance.Port.Int32)
+		}
 		chall.Timeout = int(time.Until(instance.ExpiresAt).Seconds())
 		if chall.Timeout < 0 {
 			chall.Timeout = 0
 		}
+	}
+	if challenge.Authors != "" {
+		chall.Authors = strings.Split(challenge.Authors, consts.Separator)
+	}
+	if challenge.Attachments != "" {
+		chall.Attachments = strings.Split(challenge.Attachments, consts.Separator)
+	}
+	if tags != nil {
+		chall.Tags = tags
 	}
 	if solves != nil {
 		chall.SolvesList = solves
@@ -216,28 +210,16 @@ func GetChallenge(ctx context.Context, id int32, uid int32, tid int32, author bo
 	if noDockerConfig {
 		return &chall, nil
 	}
-	chall.DockerConfig = &DockerConfig{}
-
-	if dockerConfig.Image.Valid {
-		chall.DockerConfig.Image = dockerConfig.Image.String
-	}
-	if dockerConfig.Compose.Valid {
-		chall.DockerConfig.Compose = dockerConfig.Compose.String
-	}
-	chall.DockerConfig.HashDomain = &dockerConfig.HashDomain
-	if dockerConfig.Lifetime.Valid {
-		lifetime := int(dockerConfig.Lifetime.Int32)
-		chall.DockerConfig.Lifetime = &lifetime
-	}
-	if dockerConfig.Envs.Valid {
-		chall.DockerConfig.Envs = &dockerConfig.Envs.String
-	}
-	if dockerConfig.MaxMemory.Valid {
-		maxMemory := int(dockerConfig.MaxMemory.Int32)
-		chall.DockerConfig.MaxMemory = &maxMemory
-	}
-	if dockerConfig.MaxCpu.Valid {
-		chall.DockerConfig.MaxCpu = &dockerConfig.MaxCpu.String
+	lifetime := int(dockerConfig.Lifetime)
+	maxMemory := int(dockerConfig.MaxMemory)
+	chall.DockerConfig = &DockerConfig{
+		Image:      dockerConfig.Image,
+		Compose:    dockerConfig.Compose,
+		HashDomain: &dockerConfig.HashDomain,
+		Lifetime:   &lifetime,
+		Envs:       &dockerConfig.Envs,
+		MaxMemory:  &maxMemory,
+		MaxCpu:     &dockerConfig.MaxCpu,
 	}
 
 	return &chall, nil

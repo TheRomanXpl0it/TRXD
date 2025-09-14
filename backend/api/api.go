@@ -1,7 +1,6 @@
 package api
 
 import (
-	"os"
 	"trxd/api/middlewares"
 	"trxd/api/routes/categories_create"
 	"trxd/api/routes/categories_delete"
@@ -43,7 +42,6 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/proxy"
 	"github.com/tde-nico/log"
 )
 
@@ -122,26 +120,10 @@ func SetupApp() *fiber.App {
 	api.Get("/configs", admin, configs_get.Route)
 	api.Patch("/configs", admin, configs_update.Route)
 
-	if log.GetLevel() == log.DebugLevel {
-		// Serve frontend in development mode
-		frontendAddr := "http://127.0.0.1:5173/"
-		if os.Getenv("FRONTEND_ADDR") != "" {
-			frontendAddr = os.Getenv("FRONTEND_ADDR")
-		}
-		app.Use(func(c *fiber.Ctx) error {
-			err := proxy.Do(c, frontendAddr+c.Path()[1:])
-			if err != nil {
-				return err
-			}
-			c.Response().Header.Del(fiber.HeaderServer)
-			return nil
-		})
-	} else {
-		// 404 handler
-		app.Use(func(c *fiber.Ctx) error {
-			return utils.Error(c, fiber.StatusNotFound, consts.EndpointNotFound)
-		})
-	}
+	// 404 handler
+	app.Use(func(c *fiber.Ctx) error {
+		return utils.Error(c, fiber.StatusNotFound, consts.EndpointNotFound)
+	})
 
 	return app
 }

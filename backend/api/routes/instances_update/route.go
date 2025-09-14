@@ -56,10 +56,10 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusBadRequest, consts.ChallengeNotInstanciable)
 	}
 
-	if !chall.DockerConfig.Lifetime.Valid {
+	if chall.DockerConfig.Lifetime == 0 {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.MissingLifetime, fmt.Errorf(consts.MissingLifetime))
 	}
-	lifetime := time.Second * time.Duration(chall.DockerConfig.Lifetime.Int32)
+	lifetime := time.Second * time.Duration(chall.DockerConfig.Lifetime.(int64))
 	expires_at := time.Now().Add(lifetime)
 
 	err = UpdateInstance(c.Context(), tid, *data.ChallID, expires_at)

@@ -91,8 +91,8 @@ CREATE TABLE IF NOT EXISTS challenges (
   name VARCHAR(128) UNIQUE NOT NULL,
   category VARCHAR(32) NOT NULL,
   description VARCHAR(1024) NOT NULL,
-  difficulty VARCHAR(16),
-  authors TEXT,
+  difficulty VARCHAR(16) NOT NULL DEFAULT '',
+  authors TEXT NOT NULL DEFAULT '',
   type deploy_type NOT NULL,
   hidden BOOLEAN NOT NULL DEFAULT TRUE,
 
@@ -101,9 +101,9 @@ CREATE TABLE IF NOT EXISTS challenges (
   points INTEGER NOT NULL,
   solves INTEGER NOT NULL DEFAULT 0,
 
-  host TEXT,
-  port INTEGER CHECK (port >= 1 AND port <= 65535),
-  attachments TEXT, -- List of attachments separated by nullbytes
+  host TEXT NOT NULL DEFAULT '',
+  port INTEGER NOT NULL CHECK (port >= 0 AND port <= 65535) DEFAULT 0,
+  attachments TEXT NOT NULL DEFAULT '', -- List of attachments separated by nullbytes
 
   FOREIGN KEY(category) REFERENCES categories(name),
   PRIMARY KEY(id)
@@ -111,13 +111,13 @@ CREATE TABLE IF NOT EXISTS challenges (
 
 CREATE TABLE IF NOT EXISTS docker_configs (
   chall_id INTEGER NOT NULL,
-  image TEXT, -- Docker image
-  compose TEXT, -- Docker Compose file
+  image TEXT NOT NULL DEFAULT '', -- Docker image
+  compose TEXT NOT NULL DEFAULT '', -- Docker Compose file
   hash_domain BOOLEAN NOT NULL DEFAULT FALSE, -- Use a hash to generate the domain (e.g., 00112233AABB.example.com)
-  lifetime INTEGER, -- Lifetime in seconds
-  envs TEXT, -- Environment variables in JSON format
-  max_memory INTEGER, -- Memory in MB (e.g., '512' for 512 MB)
-  max_cpu VARCHAR(16), -- CPUs as float (e.g., '1.5' for 1.5 CPUs)
+  lifetime INTEGER NOT NULL DEFAULT 0, -- Lifetime in seconds
+  envs TEXT NOT NULL DEFAULT '', -- Environment variables in JSON format
+  max_memory INTEGER NOT NULL DEFAULT 0, -- Memory in MB (e.g., '512' for 512 MB)
+  max_cpu VARCHAR(16) NOT NULL DEFAULT '', -- CPUs as float (e.g., '1.5' for 1.5 CPUs)
   FOREIGN KEY(chall_id) REFERENCES challenges(id) ON DELETE CASCADE,
   PRIMARY KEY(chall_id)
 );
@@ -135,7 +135,7 @@ CREATE TABLE IF NOT EXISTS instances (
   chall_id INTEGER NOT NULL,
   expires_at TIMESTAMP NOT NULL,
   host TEXT NOT NULL,
-  port INTEGER UNIQUE CHECK (port >= 1 AND port <= 65535),
+  port INTEGER UNIQUE CHECK (port >= 0 AND port <= 65535),
   docker_id VARCHAR(64), -- Docker container ID
   FOREIGN KEY(team_id) REFERENCES teams(id) ON DELETE CASCADE,
   FOREIGN KEY(chall_id) REFERENCES challenges(id) ON DELETE CASCADE,

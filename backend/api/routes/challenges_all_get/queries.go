@@ -66,19 +66,17 @@ func GetChallenges(ctx context.Context, uid int32, author bool) ([]*Chall, error
 		}
 
 		chall := &Chall{
-			ID:       challenge.ID,
-			Name:     challenge.Name,
-			Category: challenge.Category,
-			Instance: challenge.Type != sqlc.DeployTypeNormal,
-			Hidden:   challenge.Hidden,
-			Points:   challenge.Points,
-			Solves:   challenge.Solves,
-			Tags:     []string{},
-			Solved:   challenge.Solved,
-			Timeout:  lifetime,
-		}
-		if challenge.Difficulty.Valid {
-			chall.Difficulty = challenge.Difficulty.String
+			ID:         challenge.ID,
+			Name:       challenge.Name,
+			Category:   challenge.Category,
+			Difficulty: challenge.Difficulty,
+			Instance:   challenge.Type != sqlc.DeployTypeNormal,
+			Hidden:     challenge.Hidden,
+			Points:     challenge.Points,
+			Solves:     challenge.Solves,
+			Tags:       []string{},
+			Solved:     challenge.Solved,
+			Timeout:    lifetime,
 		}
 		if tags != nil {
 			chall.Tags = tags

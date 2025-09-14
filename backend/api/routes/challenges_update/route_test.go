@@ -73,7 +73,7 @@ var testData = []struct {
 		expectedResponse: errorf(consts.InvalidPort),
 	},
 	{
-		testBody:         JSON{"chall_id": "", "lifetime": 0},
+		testBody:         JSON{"chall_id": "", "lifetime": -1},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(consts.InvalidLifetime),
 	},
@@ -83,7 +83,7 @@ var testData = []struct {
 		expectedResponse: errorf(consts.InvalidEnvs),
 	},
 	{
-		testBody:         JSON{"chall_id": "", "max_memory": 0},
+		testBody:         JSON{"chall_id": "", "max_memory": -1},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(consts.InvalidMaxMemory),
 	},
@@ -203,6 +203,7 @@ func TestRoute(t *testing.T) {
 				"description": test.testBody["description"],
 				"difficulty":  test.testBody["difficulty"],
 				"docker_config": JSON{
+					"compose":     test.testBody["compose"],
 					"envs":        test.testBody["envs"],
 					"hash_domain": test.testBody["hash_domain"],
 					"image":       test.testBody["image"],
@@ -232,4 +233,72 @@ func TestRoute(t *testing.T) {
 		}
 	}
 
+	testBody := JSON{
+		"chall_id":    challID,
+		"name":        "Test",
+		"category":    "cat-2",
+		"description": "",
+		"difficulty":  "",
+		"authors":     "",
+		"hidden":      false,
+		"max_points":  0,
+		"host":        "",
+		"port":        0,
+
+		"image":       "",
+		"compose":     "",
+		"hash_domain": false,
+		"lifetime":    0,
+		"envs":        "",
+		"max_memory":  0,
+		"max_cpu":     "",
+
+		"attachments": "",
+	}
+	testFiles := []string{}
+
+	session = test_utils.NewApiTestSession(t, app)
+	session.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
+	session.PatchMultipart("/challenges", testBody, testFiles, http.StatusOK)
+	session.CheckResponse(nil)
+
+	session.Get(fmt.Sprintf("/challenges/%d", challID), nil, http.StatusOK)
+	body := session.Body()
+	if body == nil {
+		t.Fatal("Expected body to not be nil")
+	}
+	expected := JSON{
+		"attachments": []string{},
+		"authors":     []string{},
+		"category":    testBody["category"],
+		"description": testBody["description"],
+		"difficulty":  testBody["difficulty"],
+		"docker_config": JSON{
+			"compose":     testBody["compose"],
+			"envs":        testBody["envs"],
+			"hash_domain": testBody["hash_domain"],
+			"image":       testBody["image"],
+			"lifetime":    testBody["lifetime"],
+			"max_cpu":     testBody["max_cpu"],
+			"max_memory":  testBody["max_memory"],
+		},
+		"first_blood": nil,
+		"flags":       []string{},
+		"hidden":      testBody["hidden"],
+		"host":        testBody["host"],
+		"id":          challID,
+		"instance":    testBody["type"] != "Normal",
+		"max_points":  testBody["max_points"],
+		"name":        testBody["name"],
+		"points":      testBody["max_points"],
+		"port":        0,
+		"score_type":  "Dynamic",
+		"solved":      false,
+		"solves":      0,
+		"solves_list": []string{},
+		"tags":        []string{},
+		"timeout":     0,
+		"type":        "Container",
+	}
+	test_utils.Compare(t, expected, body)
 }

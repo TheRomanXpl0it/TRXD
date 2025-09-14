@@ -16,7 +16,7 @@ const (
 	MaxChallDescLength       = 1024
 	MaxChallDifficultyLength = 16
 	MaxCountryLength         = 3
-	MinPort                  = 1
+	MinPort                  = 0
 	MaxPort                  = 65535
 	MaxTagNameLength         = 32
 )

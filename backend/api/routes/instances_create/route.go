@@ -65,14 +65,14 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusConflict, consts.AlreadyAnActiveInstance)
 	}
 
-	if !chall.DockerConfig.Lifetime.Valid {
+	if chall.DockerConfig.Lifetime == 0 {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.MissingLifetime, fmt.Errorf(consts.MissingLifetime))
 	}
-	lifetime := time.Second * time.Duration(chall.DockerConfig.Lifetime.Int32)
+	lifetime := time.Second * time.Duration(chall.DockerConfig.Lifetime.(int64))
 	expires_at := time.Now().Add(lifetime)
 	var internalPort *int32
-	if chall.Info.Port.Valid {
-		internalPort = &chall.Info.Port.Int32
+	if chall.Info.Port != 0 {
+		internalPort = &chall.Info.Port
 	}
 
 	host, port, err := instancer.CreateInstance(c.Context(), tid, *data.ChallID, internalPort, expires_at, chall.Info.Type, chall.DockerConfig)

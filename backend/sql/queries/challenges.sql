@@ -9,9 +9,9 @@ SELECT
   compose,
   hash_domain,
   envs,
-  COALESCE(lifetime, (SELECT value::INTEGER FROM configs WHERE key='instance-lifetime')) AS lifetime,
-  COALESCE(max_memory, (SELECT value::INTEGER FROM configs WHERE key='instance-max-memory')) AS max_memory,
-  COALESCE(max_cpu, (SELECT value FROM configs WHERE key='instance-max-cpu')) AS max_cpu
+  COALESCE(NULLIF(lifetime, 0), (SELECT value::INTEGER FROM configs WHERE key='instance-lifetime')) AS lifetime,
+  COALESCE(NULLIF(max_memory, 0), (SELECT value::INTEGER FROM configs WHERE key='instance-max-memory')) AS max_memory,
+  COALESCE(NULLIF(max_cpu, ''), (SELECT value FROM configs WHERE key='instance-max-cpu')) AS max_cpu
 FROM docker_configs
 WHERE chall_id = $1;
 

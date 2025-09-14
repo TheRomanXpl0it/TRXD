@@ -24,22 +24,22 @@ type UpdateChallParams struct {
 	Category    string           `form:"category"`
 	Description *string          `form:"description"`
 	Difficulty  *string          `form:"difficulty"`
-	Authors     []string         `form:"authors"`
+	Authors     *[]string        `form:"authors"`
 	Type        *sqlc.DeployType `form:"type"`
 	Hidden      *bool            `form:"hidden"`
 	MaxPoints   *int             `form:"max_points"`
 	ScoreType   *sqlc.ScoreType  `form:"score_type"`
 	Host        *string          `form:"host"`
 	Port        *int             `form:"port"`
-	Attachments []string
+	Attachments *[]string        `form:"attachments"`
 
-	Image      string `form:"image"`
-	Compose    string `form:"compose"`
-	HashDomain *bool  `form:"hash_domain"`
-	Lifetime   *int   `form:"lifetime"`
-	Envs       string `form:"envs"`
-	MaxMemory  *int   `form:"max_memory"`
-	MaxCpu     string `form:"max_cpu"`
+	Image      *string `form:"image"`
+	Compose    *string `form:"compose"`
+	HashDomain *bool   `form:"hash_domain"`
+	Lifetime   *int    `form:"lifetime"`
+	Envs       *string `form:"envs"`
+	MaxMemory  *int    `form:"max_memory"`
+	MaxCpu     *string `form:"max_cpu"`
 }
 
 func Route(c *fiber.Ctx) error {
@@ -84,21 +84,21 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidPort)
 	}
 
-	if data.Lifetime != nil && *data.Lifetime <= 0 {
+	if data.Lifetime != nil && *data.Lifetime < 0 {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidLifetime)
 	}
-	if data.Envs != "" {
+	if data.Envs != nil && *data.Envs != "" {
 		var tmp map[string]string
-		err = json.Unmarshal([]byte(data.Envs), &tmp)
+		err = json.Unmarshal([]byte(*data.Envs), &tmp)
 		if err != nil {
 			return utils.Error(c, fiber.StatusBadRequest, consts.InvalidEnvs)
 		}
 	}
-	if data.MaxMemory != nil && *data.MaxMemory <= 0 {
+	if data.MaxMemory != nil && *data.MaxMemory < 0 {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidMaxMemory)
 	}
-	if data.MaxCpu != "" {
-		_, err = strconv.ParseFloat(data.MaxCpu, 32)
+	if data.MaxCpu != nil && *data.MaxCpu != "" {
+		_, err = strconv.ParseFloat(*data.MaxCpu, 32)
 		if err != nil {
 			return utils.Error(c, fiber.StatusBadRequest, consts.InvalidMaxCpu)
 		}
@@ -122,6 +122,7 @@ func Route(c *fiber.Ctx) error {
 		}
 	}
 
+	attachmentsList := make([]string, 0)
 	for _, files := range multipartForm.File {
 		for _, file := range files {
 			cleanPath := filepath.Clean(dir + filepath.Base(file.Filename))
@@ -129,8 +130,12 @@ func Route(c *fiber.Ctx) error {
 				return utils.Error(c, fiber.StatusBadRequest, consts.InvalidFilePath)
 			}
 			attachments[cleanPath] = file
-			data.Attachments = append(data.Attachments, cleanPath)
+			attachmentsList = append(attachmentsList, cleanPath)
 		}
+	}
+
+	if len(attachmentsList) != 0 {
+		data.Attachments = &attachmentsList
 	}
 
 	err = UpdateChallenge(c.Context(), data)

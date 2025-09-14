@@ -35,18 +35,15 @@ func CreateInstance(ctx context.Context, tid, challID int32, internalPort *int32
 	if !conf.HashDomain && info.Port.Valid {
 		externalPort = &info.Port.Int32
 	}
-	if !conf.Envs.Valid {
-		conf.Envs.String = ""
-	}
 
 	var res string
-	if deployType == sqlc.DeployTypeContainer && conf.Image.Valid {
-		res, err = CreateContainer(ctx, conf.Image.String, info.Host, internalPort,
-			externalPort, &conf.Envs.String, conf.MaxMemory.Int32, conf.MaxCpu.String)
-	} else if deployType == sqlc.DeployTypeCompose && conf.Compose.Valid {
+	if deployType == sqlc.DeployTypeContainer && conf.Image != "" {
+		res, err = CreateContainer(ctx, conf.Image, info.Host, internalPort,
+			externalPort, &conf.Envs, int32(conf.MaxMemory.(int64)), conf.MaxCpu.(string))
+	} else if deployType == sqlc.DeployTypeCompose && conf.Compose != "" {
 		projectName := fmt.Sprintf("chall_%d_%d", tid, challID)
-		res, err = CreateCompose(ctx, projectName, conf.Compose.String, info.Host, externalPort,
-			&conf.Envs.String, conf.MaxMemory.Int32, conf.MaxCpu.String)
+		res, err = CreateCompose(ctx, projectName, conf.Compose, info.Host, externalPort,
+			&conf.Envs, int32(conf.MaxMemory.(int64)), conf.MaxCpu.(string))
 	} else {
 		return "", nil, errors.New("[no image or compose]")
 	}

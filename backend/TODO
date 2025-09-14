@@ -1,29 +1,45 @@
-- config to start and end ctf
+BETA 0.1.0:
+	- change api names
+	- check all TEXT fields into go to have a max
+	- check nil config get
+	- config autoload for tests
 
-- check all TEXT fields into go to have a max
-- check nil config get
+BETA:
+	- resolve TODOs left into the code
+	- when finished endpoints, review needed data and revome `RETURNING *;` and similar when not needed
+	- sort constants alphabetically
+	- move countries from api to frontend or /static
 
-- move countries from api to frontend or /static
+ALPHA:
+	- dockerize 🙏
+	- config to start and end ctf
+	- rate limiter middleware
+	- anti panic
+	- nginx
+	- redis
+	- integration tests (for generic behaviour)
+	- tests for distributed functioning
+	- role configuraion endpoint
+	- DOCUMENTATION
 
-- endpoint to get docker images list
+EXTRA:
+	- single user mode
+	- editable homepage & theme
+	- endpoint to get docker images list
+	- deletable instances (from admin)
+	- deletable submissions (from admin)
+	- link to join team
+	- endpoint + cli cmd to parse a category/challenge file (maybe yaml) with all infos
+	- extract data for ctftime
+	- scoreboard freeze
+	- telegram bot for first bloods
 
-- resolve TODOs left into the code
-- when finished endpoints, review needed data and revome `RETURNIN *;` and similar when not needed
-- sort constants alphabetically
-
-- nginx
-- redis
-- rate limiter middleware
-
-- webhook to discord for first bloods
-- deletable instances (from admin)
-- auto cleaner thread of dead instances
-- deletable submissions (from admin)
-- endpoint + cli cmd to parse a category/challenge file with all infos
-- link to join team
-- kick user from team
-- maybe set default starting points for challenges as config
-- flag submit that checks for all challenges and mark solved the one of the correct flag (credits to: midnightsun)
-- writeups for challs into the platform (visible after ctf ends)
-- signed flags
-- https://github.com/inconshreveable/slt
+BONUS IDEAS:
+	- maybe set default starting points for challenges as global config
+	- ctf stats page
+	- flag submit that checks for all challenges and mark solved the one of the correct flag (credits to: midnightsun)
+	- writeups for challs into the platform (visible after ctf ends)
+	- signed flags (aes ecb with team id (4 byte) and chall id (4 byte))
+	- tls instances: https://github.com/inconshreveable/slt
+	- likes and dislikes for challs (only for who actually solved)
+	- kick user from team

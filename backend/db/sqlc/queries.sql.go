@@ -310,15 +310,15 @@ SELECT id, name, category, difficulty, type, hidden, points, solves, EXISTS(
 `
 
 type GetChallengesPreviewRow struct {
-	ID         int32          `json:"id"`
-	Name       string         `json:"name"`
-	Category   string         `json:"category"`
-	Difficulty sql.NullString `json:"difficulty"`
-	Type       DeployType     `json:"type"`
-	Hidden     bool           `json:"hidden"`
-	Points     int32          `json:"points"`
-	Solves     int32          `json:"solves"`
-	Solved     bool           `json:"solved"`
+	ID         int32      `json:"id"`
+	Name       string     `json:"name"`
+	Category   string     `json:"category"`
+	Difficulty string     `json:"difficulty"`
+	Type       DeployType `json:"type"`
+	Hidden     bool       `json:"hidden"`
+	Points     int32      `json:"points"`
+	Solves     int32      `json:"solves"`
+	Solved     bool       `json:"solved"`
 }
 
 // Retrieve all challenges
