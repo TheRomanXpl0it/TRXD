@@ -30,7 +30,7 @@ type Chall struct {
 	Instance    bool                         `json:"instance"`
 	Points      int                          `json:"points"`
 	Solves      int                          `json:"solves"`
-	FirstBlood  *sqlc.GetFirstBloodRow       `json:"first_blood"` // TODO: make this a boolean (if your team solved)
+	FirstBlood  bool                         `json:"first_blood"`
 	Host        string                       `json:"host"`
 	Port        int                          `json:"port"`
 	Attachments []string                     `json:"attachments"`
@@ -66,18 +66,6 @@ func IsChallengeSolved(ctx context.Context, id int32, uid int32) (bool, error) {
 	}
 
 	return solved, nil
-}
-
-func GetFirstBlood(ctx context.Context, id int32) (*sqlc.GetFirstBloodRow, error) {
-	firstBlood, err := db.Sql.GetFirstBlood(ctx, id)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
-		}
-		return nil, err
-	}
-
-	return &firstBlood, nil
 }
 
 func GetInstanceInfo(ctx context.Context, challID int32, teamID int32) (*sqlc.GetInstanceInfoRow, error) {
@@ -117,11 +105,6 @@ func GetChallenge(ctx context.Context, id int32, uid int32, tid int32, author bo
 		return nil, err
 	}
 
-	firstBlood, err := GetFirstBlood(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
 	solves, err := db.Sql.GetChallengeSolves(ctx, id)
 	if err != nil {
 		return nil, err
@@ -146,7 +129,6 @@ func GetChallenge(ctx context.Context, id int32, uid int32, tid int32, author bo
 		Tags:        []string{},
 		Solved:      solved,
 		SolvesList:  []sqlc.GetChallengeSolvesRow{},
-		FirstBlood:  firstBlood,
 		Host:        challenge.Host,
 		Port:        int(challenge.Port),
 	}
@@ -172,6 +154,7 @@ func GetChallenge(ctx context.Context, id int32, uid int32, tid int32, author bo
 	}
 	if solves != nil {
 		chall.SolvesList = solves
+		chall.FirstBlood = solves[0].ID == tid
 	}
 
 	var noDockerConfig bool

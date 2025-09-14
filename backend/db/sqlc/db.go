@@ -90,9 +90,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getDockerConfigsByIDStmt, err = db.PrepareContext(ctx, getDockerConfigsByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetDockerConfigsByID: %w", err)
 	}
-	if q.getFirstBloodStmt, err = db.PrepareContext(ctx, getFirstBlood); err != nil {
-		return nil, fmt.Errorf("error preparing query GetFirstBlood: %w", err)
-	}
 	if q.getFlagsByChallengeStmt, err = db.PrepareContext(ctx, getFlagsByChallenge); err != nil {
 		return nil, fmt.Errorf("error preparing query GetFlagsByChallenge: %w", err)
 	}
@@ -311,11 +308,6 @@ func (q *Queries) Close() error {
 	if q.getDockerConfigsByIDStmt != nil {
 		if cerr := q.getDockerConfigsByIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getDockerConfigsByIDStmt: %w", cerr)
-		}
-	}
-	if q.getFirstBloodStmt != nil {
-		if cerr := q.getFirstBloodStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getFirstBloodStmt: %w", cerr)
 		}
 	}
 	if q.getFlagsByChallengeStmt != nil {
@@ -554,7 +546,6 @@ type Queries struct {
 	getConfigStmt                *sql.Stmt
 	getConfigsStmt               *sql.Stmt
 	getDockerConfigsByIDStmt     *sql.Stmt
-	getFirstBloodStmt            *sql.Stmt
 	getFlagsByChallengeStmt      *sql.Stmt
 	getInstanceStmt              *sql.Stmt
 	getInstanceExpireStmt        *sql.Stmt
@@ -618,7 +609,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getConfigStmt:                q.getConfigStmt,
 		getConfigsStmt:               q.getConfigsStmt,
 		getDockerConfigsByIDStmt:     q.getDockerConfigsByIDStmt,
-		getFirstBloodStmt:            q.getFirstBloodStmt,
 		getFlagsByChallengeStmt:      q.getFlagsByChallengeStmt,
 		getInstanceStmt:              q.getInstanceStmt,
 		getInstanceExpireStmt:        q.getInstanceExpireStmt,

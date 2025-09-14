@@ -297,15 +297,29 @@ func (q *Queries) GetChallengeSolves(ctx context.Context, challID int32) ([]GetC
 }
 
 const getChallengesPreview = `-- name: GetChallengesPreview :many
-SELECT id, name, category, difficulty, type, hidden, points, solves, EXISTS(
-  SELECT 1
-    FROM submissions
-    JOIN users ON users.id = submissions.user_id
-    JOIN teams ON users.team_id = teams.id
-      AND teams.id = (SELECT team_id FROM users WHERE users.id = $1)
-    WHERE users.role = 'Player'
-      AND submissions.status = 'Correct'
-      AND submissions.chall_id = challenges.id) AS solved
+SELECT id, name, category, difficulty, type, hidden, points, solves,
+    EXISTS(
+      SELECT 1
+        FROM submissions
+        JOIN users ON users.id = submissions.user_id
+        JOIN teams ON users.team_id = teams.id
+          AND teams.id = (SELECT team_id FROM users WHERE users.id = $1)
+        WHERE users.role = 'Player'
+          AND submissions.status = 'Correct'
+        AND submissions.chall_id = challenges.id
+    ) AS solved,
+    EXISTS(
+      SELECT 1
+        FROM submissions
+        JOIN users ON users.id = submissions.user_id
+        JOIN teams ON users.team_id = teams.id
+          AND teams.id = (SELECT team_id FROM users WHERE users.id = $1)
+        WHERE users.role = 'Player'
+          AND submissions.status = 'Correct'
+          AND submissions.chall_id = challenges.id
+        ORDER BY submissions.timestamp
+        LIMIT 1
+    ) AS first_blood
   FROM challenges
 `
 
@@ -319,6 +333,7 @@ type GetChallengesPreviewRow struct {
 	Points     int32      `json:"points"`
 	Solves     int32      `json:"solves"`
 	Solved     bool       `json:"solved"`
+	FirstBlood bool       `json:"first_blood"`
 }
 
 // Retrieve all challenges
@@ -341,6 +356,7 @@ func (q *Queries) GetChallengesPreview(ctx context.Context, id int32) ([]GetChal
 			&i.Points,
 			&i.Solves,
 			&i.Solved,
+			&i.FirstBlood,
 		); err != nil {
 			return nil, err
 		}
@@ -386,31 +402,6 @@ func (q *Queries) GetConfigs(ctx context.Context) ([]Config, error) {
 		return nil, err
 	}
 	return items, nil
-}
-
-const getFirstBlood = `-- name: GetFirstBlood :one
-SELECT teams.id, teams.name
-  FROM submissions
-  JOIN users ON users.id = submissions.user_id
-  JOIN teams ON users.team_id = teams.id
-  WHERE users.role = 'Player'
-    AND submissions.chall_id = $1
-    AND submissions.status = 'Correct'
-  ORDER BY submissions.timestamp ASC
-  LIMIT 1
-`
-
-type GetFirstBloodRow struct {
-	ID   int32  `json:"id"`
-	Name string `json:"name"`
-}
-
-// Retrieve the team that achieved the first blood on a challenge
-func (q *Queries) GetFirstBlood(ctx context.Context, challID int32) (GetFirstBloodRow, error) {
-	row := q.queryRow(ctx, q.getFirstBloodStmt, getFirstBlood, challID)
-	var i GetFirstBloodRow
-	err := row.Scan(&i.ID, &i.Name)
-	return i, err
 }
 
 const getFlagsByChallenge = `-- name: GetFlagsByChallenge :many

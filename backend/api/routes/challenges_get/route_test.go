@@ -43,16 +43,14 @@ func TestRoute(t *testing.T) {
 		"category":    "cat-1",
 		"description": "TEST chall-1 DESC",
 		"difficulty":  "Easy",
-		"first_blood": JSON{
-			"name": "A",
-		},
-		"host":     "http://theromanxpl0.it",
-		"instance": false,
-		"name":     "chall-1",
-		"points":   500,
-		"port":     1234,
-		"solved":   false,
-		"solves":   1,
+		"first_blood": false,
+		"host":        "http://theromanxpl0.it",
+		"instance":    false,
+		"name":        "chall-1",
+		"points":      500,
+		"port":        1234,
+		"solved":      false,
+		"solves":      1,
 		"solves_list": []JSON{
 			{
 				"name": "A",
@@ -99,9 +97,7 @@ func TestRoute(t *testing.T) {
 		"category":    "cat-1",
 		"description": "TEST chall-1 DESC",
 		"difficulty":  "Easy",
-		"first_blood": JSON{
-			"name": "A",
-		},
+		"first_blood": false,
 		"flags": []JSON{
 			{
 				"flag":  "flag{test-1}",
@@ -156,7 +152,7 @@ func TestRoute(t *testing.T) {
 		"category":    "cat-2",
 		"description": "TEST chall-5 DESC",
 		"difficulty":  "Easy",
-		"first_blood": nil,
+		"first_blood": false,
 		"flags": []JSON{
 			{
 				"flag":  "flag{test-5}",
@@ -214,9 +210,7 @@ func TestRoute(t *testing.T) {
 			"max_cpu":     "",
 			"max_memory":  0,
 		},
-		"first_blood": JSON{
-			"name": "A",
-		},
+		"first_blood": false,
 		"flags": []JSON{
 			{
 				"flag":  "flag{test-3}",
@@ -283,9 +277,7 @@ func TestRoute(t *testing.T) {
 			"max_cpu":     "",
 			"max_memory":  0,
 		},
-		"first_blood": JSON{
-			"name": "A",
-		},
+		"first_blood": false,
 		"flags": []JSON{
 			{
 				"flag":  "flag{test-3}",

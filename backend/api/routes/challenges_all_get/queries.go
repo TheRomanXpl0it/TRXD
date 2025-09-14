@@ -19,8 +19,8 @@ type Chall struct {
 	Solves     int32    `json:"solves"`
 	Tags       []string `json:"tags"`
 	Solved     bool     `json:"solved"`
-	// TODO: return if first blooded
-	Timeout *int `json:"timeout,omitempty"`
+	FirstBlood bool     `json:"first_blood"`
+	Timeout    *int     `json:"timeout,omitempty"`
 }
 
 func GetInstanceExpire(ctx context.Context, uid int32, challID int32) (*int, error) {
@@ -76,6 +76,7 @@ func GetChallenges(ctx context.Context, uid int32, author bool) ([]*Chall, error
 			Solves:     challenge.Solves,
 			Tags:       []string{},
 			Solved:     challenge.Solved,
+			FirstBlood: challenge.FirstBlood,
 			Timeout:    lifetime,
 		}
 		if tags != nil {

@@ -26,18 +26,6 @@ SELECT teams.id, teams.name, submissions.timestamp
     AND submissions.status = 'Correct'
   ORDER BY submissions.timestamp ASC;
 
--- name: GetFirstBlood :one
--- Retrieve the team that achieved the first blood on a challenge
-SELECT teams.id, teams.name
-  FROM submissions
-  JOIN users ON users.id = submissions.user_id
-  JOIN teams ON users.team_id = teams.id
-  WHERE users.role = 'Player'
-    AND submissions.chall_id = $1
-    AND submissions.status = 'Correct'
-  ORDER BY submissions.timestamp ASC
-  LIMIT 1;
-
 -- name: GetChallDockerConfig :one
 SELECT * FROM docker_configs WHERE chall_id = $1;
 
