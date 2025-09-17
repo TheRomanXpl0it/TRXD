@@ -41,3 +41,4 @@ BONUS IDEAS:
 	- tls instances: https://github.com/inconshreveable/slt
 	- likes and dislikes for challs (only for who actually solved)
 	- kick user from team
+	- timeout on endpoints

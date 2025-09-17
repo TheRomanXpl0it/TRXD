@@ -145,6 +145,11 @@ func main() {
 		log.Fatal("Error getting database info from env", "err", err)
 	}
 
+	if os.Getenv("TESTING") == "true" {
+		consts.Testing = true
+		log.Warn("Running in TESTING mode")
+	}
+
 	err = db.ConnectDB(info)
 	if err != nil {
 		log.Fatal("Error connecting to database", "err", err)

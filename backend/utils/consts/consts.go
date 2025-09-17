@@ -96,6 +96,7 @@ const (
 	InvalidTeamCredentials      = "Invalid name or password"
 	InvalidTeamID               = "Invalid team ID, must be non negative"
 	InvalidUserID               = "Invalid user ID, must be non negative"
+	InternalServerError         = "Internal server error"
 	LongBio                     = "Bio must not exceed 10240 characters"
 	LongCategory                = "Category must not exceed 32 characters"
 	LongChallDesc               = "Challenge description must not exceed 1024 characters"

@@ -41,8 +41,20 @@ import (
 	"trxd/utils/consts"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/compress"
+	"github.com/gofiber/fiber/v2/middleware/favicon"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
+	"github.com/gofiber/fiber/v2/middleware/monitor"
 	"github.com/tde-nico/log"
+)
+
+var (
+	noAuth    = middlewares.NoAuth
+	spectator = middlewares.Spectator
+	player    = middlewares.Player
+	team      = middlewares.Team
+	author    = middlewares.Author
+	admin     = middlewares.Admin
 )
 
 func SetupApp() *fiber.App {
@@ -50,62 +62,59 @@ func SetupApp() *fiber.App {
 		AppName: consts.Name,
 	})
 
-	// app.Use(compress.New(compress.Config{
-	// 	Level: compress.LevelBestSpeed, // 1
-	// }))
+	SetupFeatures(app)
+	SetupApi(app)
 
+	// 404 handler
+	app.Use(func(c *fiber.Ctx) error {
+		return utils.Error(c, fiber.StatusNotFound, consts.EndpointNotFound)
+	})
+
+	return app
+}
+
+func SetupFeatures(app *fiber.App) {
+	app.Use(func(c *fiber.Ctx) error {
+		defer func() {
+			r := recover()
+			if r == nil {
+				return
+			}
+			log.Critical("Panic recovered:", "crit", r)
+			_ = utils.Error(c, fiber.StatusInternalServerError, consts.InternalServerError)
+		}()
+		return c.Next()
+	})
+
+	app.Use(compress.New())
+
+	if !consts.Testing {
+		app.Use(limiter.New())
+	}
+
+	//! TODO: for some reason, this CSRF breaks every test, need investigation
 	// app.Use(csrf.New(csrf.Config{
-	// 	KeyLookup:      "header:X-Csrf-Token",
-	// 	CookieName:     "csrf_",
-	// 	CookieSameSite: "Lax",
-	// 	Expiration:     1 * time.Hour,
-	// 	KeyGenerator:   utils.UUIDv4,
+	// 	CookieSameSite:    fiber.CookieSameSiteLaxMode,
+	// 	CookieSessionOnly: true,
+	// 	Expiration:        1 * time.Hour,
+	// 	Session:           middlewares.Store,
 	// }))
 
-	// app.Use(limiter.New(limiter.Config{
-	// 	Next: func(c *fiber.Ctx) bool {
-	// 		return c.IP() == "127.0.0.1"
-	// 	},
-	// 	Max:        20,
-	// 	Expiration: 30 * time.Second,
-	// 	KeyGenerator: func(c *fiber.Ctx) string {
-	// 		return c.Get("x-forwarded-for")
-	// 	},
-	// 	LimitReached: func(c *fiber.Ctx) error {
-	// 		return c.SendFile("./toofast.html")
-	// 	},
-	// 	Storage: myCustomStorage{},
-	// }))
-
-	// app.Use(favicon.New(favicon.Config{
-	// 	File: "./favicon.ico",
-	// 	URL:  "/favicon.ico",
-	// }))
-
-	// app.Use(recover.New())
-
-	// app.Get("/foo/:sleepTime", timeout.New(h, 2*time.Second))
-	// app.Get("/foo", timeout.NewWithContext(handler, 10*time.Second))
-
-	// app.Get("/metrics", monitor.New(monitor.Config{Title: "MyService Metrics Page"}))
-
-	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:1337", // TODO: edit
-		AllowCredentials: true,
+	app.Use(favicon.New(favicon.Config{
+		File: "./static/favicon.ico",
+		URL:  "/favicon.ico",
 	}))
 
+	app.Get("/monitor", admin, monitor.New(monitor.Config{Title: consts.Name + " Monitor"}))
+}
+
+func SetupApi(app *fiber.App) {
 	var api fiber.Router
 	if log.GetLevel() == log.DebugLevel {
 		api = app.Group("/api", middlewares.Debug)
 	} else {
 		api = app.Group("/api")
 	}
-	noAuth := middlewares.NoAuth
-	spectator := middlewares.Spectator
-	player := middlewares.Player
-	team := middlewares.Team
-	author := middlewares.Author
-	admin := middlewares.Admin
 
 	// TODO: make this resource static: countries.json
 	api.Get("/countries", func(c *fiber.Ctx) error { return c.JSON(consts.Countries) })
@@ -158,11 +167,4 @@ func SetupApp() *fiber.App {
 
 	api.Get("/configs", admin, configs_get.Route)
 	api.Patch("/configs", admin, configs_update.Route)
-
-	// 404 handler
-	app.Use(func(c *fiber.Ctx) error {
-		return utils.Error(c, fiber.StatusNotFound, consts.EndpointNotFound)
-	})
-
-	return app
 }

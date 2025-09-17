@@ -1,5 +1,7 @@
 package consts
 
+var Testing = false
+
 var DefaultConfigs = map[string]any{
 	"allow-register":            false,
 	"chall-min-points":          50,

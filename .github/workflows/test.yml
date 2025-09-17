@@ -13,6 +13,7 @@ env:
   POSTGRES_PORT: 2345
   CLICOLOR_FORCE: 1
   TEST_WORKERS: 100
+  TESTING: true
 
 defaults:
   run:

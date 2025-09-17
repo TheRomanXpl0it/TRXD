@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"trxd/utils"
+	"trxd/utils/consts"
 
 	"github.com/joho/godotenv"
 )
@@ -11,6 +12,8 @@ import (
 var tmp_db *sql.DB
 
 func OpenTestDB(testDBName string) error {
+	consts.Testing = true
+
 	godotenv.Load(".env")
 
 	info, err := utils.GetDBInfoFromEnv()
