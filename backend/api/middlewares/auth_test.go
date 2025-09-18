@@ -28,7 +28,7 @@ var testAuthMiddlewares = []struct {
 	{
 		method:           "GET",
 		endpoint:         "/info",
-		expectedStatuses: []int{http.StatusUnauthorized, http.StatusOK, http.StatusOK, http.StatusOK, http.StatusOK, http.StatusOK},
+		expectedStatuses: []int{http.StatusOK, http.StatusOK, http.StatusOK, http.StatusOK, http.StatusOK, http.StatusOK},
 	},
 	{
 		method:           "GET",

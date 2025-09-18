@@ -6,15 +6,10 @@ import (
 	"trxd/api"
 	"trxd/db/sqlc"
 	"trxd/utils"
-	"trxd/utils/consts"
 	"trxd/utils/test_utils"
 )
 
 type JSON map[string]interface{}
-
-func errorf(val interface{}) JSON {
-	return JSON{"error": val}
-}
 
 func TestMain(m *testing.M) {
 	test_utils.Main(m)
@@ -26,8 +21,8 @@ func TestRoute(t *testing.T) {
 
 	session := test_utils.NewApiTestSession(t, app)
 
-	session.Get("/info", nil, http.StatusUnauthorized)
-	session.CheckResponse(errorf(consts.Unauthorized))
+	session.Get("/info", nil, http.StatusOK)
+	session.CheckResponse(nil)
 
 	session.Post("/register", JSON{"name": "test", "email": "allow@test.test", "password": "testpass"}, http.StatusOK)
 	session.CheckResponse(nil)

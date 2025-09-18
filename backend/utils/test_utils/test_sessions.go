@@ -23,11 +23,15 @@ type apiTestSession struct {
 }
 
 func NewApiTestSession(t *testing.T, app *fiber.App) *apiTestSession {
-	return &apiTestSession{
+	s := &apiTestSession{
 		t:       t,
 		app:     app,
 		Cookies: []*http.Cookie{},
 	}
+
+	s.Get("/info", nil, http.StatusOK)
+
+	return s
 }
 
 func (s *apiTestSession) updateCookies(newCookies []*http.Cookie) {
@@ -47,6 +51,9 @@ func (s *apiTestSession) updateCookies(newCookies []*http.Cookie) {
 
 func (s *apiTestSession) SendRequest(req *http.Request, expectedStatus int) *http.Response {
 	for _, cookie := range s.Cookies {
+		if cookie.Name == "csrf_" {
+			req.Header.Set("X-Csrf-Token", cookie.Value)
+		}
 		req.AddCookie(cookie)
 	}
 
@@ -177,6 +184,10 @@ func (s *apiTestSession) Patch(url string, body interface{}, expectedStatus int)
 
 func (s *apiTestSession) Delete(url string, body interface{}, expectedStatus int) *http.Response {
 	return s.Request(http.MethodDelete, url, body, expectedStatus)
+}
+
+func (s *apiTestSession) Options(url string, body interface{}, expectedStatus int) *http.Response {
+	return s.Request(http.MethodOptions, url, body, expectedStatus)
 }
 
 func (s *apiTestSession) GetMultipart(url string, body map[string]interface{}, files []string, expectedStatus int) *http.Response {

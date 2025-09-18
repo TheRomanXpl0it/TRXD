@@ -21,10 +21,12 @@ def gen_name():
 
 
 s = requests.Session()
+s.get('http://localhost:1337/api/info')
+
 r = s.post('http://localhost:1337/api/login', json={
 	"email": 'admin@email.com',
 	"password": "testpass",
-})
+}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
 
 r = s.get('http://localhost:1337/api/challenges')
 challs = r.json()
@@ -38,7 +40,11 @@ m = MultipartEncoder(fields={
 	"hash_domain": 'false',
 })
 r = s.patch('http://localhost:1337/api/challenges',
-	data=m, headers={'Content-Type': m.content_type})
+	data=m, headers={
+		'Content-Type': m.content_type,
+		'X-Csrf-Token': s.cookies.get('csrf_')
+	},
+)
 
 
 sessions = [None] * N
@@ -46,22 +52,24 @@ for i in range(N):
 	user = gen_name()
 	email = user + "@test.test"
 	s = requests.Session()
+	s.get('http://localhost:1337/api/info')
+
 	r = s.post('http://localhost:1337/api/register', json={
 		"name": user,
 		"email": email,
 		"password": "test1234",
-	})
+	}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
 
 	if r.status_code == 200:
 		r = s.post('http://localhost:1337/api/teams/register', json={
 			"name": "test-team"+user,
 			"password": "test1234",
-		})
+		}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
 	else:
 		r = s.post('http://localhost:1337/api/login', json={
 			"email": email,
 			"password": "test1234",
-		})
+		}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
 
 	sessions[i] = s
 
@@ -76,12 +84,12 @@ def instance(i):
 	s = sessions[i]
 	r = s.post('http://localhost:1337/api/instances', json={
 		"chall_id": chall_id,
-	})
+	}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
 	resp = r.json()
 
 	r = s.delete('http://localhost:1337/api/instances', json={
 		"chall_id": chall_id,
-	})
+	}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
 	success = r.status_code == 200
 	del_resp = r.text
 

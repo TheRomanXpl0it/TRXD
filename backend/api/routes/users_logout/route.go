@@ -9,11 +9,6 @@ import (
 )
 
 func Route(c *fiber.Ctx) error {
-	uid := c.Locals("uid")
-	if uid == nil {
-		return utils.Error(c, fiber.StatusUnauthorized, consts.NotLoggedIn)
-	}
-
 	sess, err := middlewares.Store.Get(c)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingSession, err)

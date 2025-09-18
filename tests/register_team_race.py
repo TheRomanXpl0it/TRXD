@@ -20,21 +20,21 @@ email = user + "@test.test"
 # print(user, email)
 
 s = requests.Session()
+s.get('http://localhost:1337/api/info')
+
 r = s.post('http://localhost:1337/api/register', json={
 	"name": user,
 	"email": email,
 	"password": "test1234",
-})
+}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
 
 if r.status_code == 409:
 	print("User already exists, logging in with existing user.")
 	r = s.post('http://localhost:1337/api/login', json={
 		"email": email,
 		"password": "test1234",
-	})
+	}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
 
-# print(r)
-# print(r.text)
 
 counter = {
 	"valid": 0,
@@ -47,7 +47,7 @@ def register_team(name):
 	r = s.post('http://localhost:1337/api/teams/register', json={
 		"name": name,
 		"password": "testpass",
-	})
+	}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
 	if r.status_code != 200:
 		res = r.json()
 	else:

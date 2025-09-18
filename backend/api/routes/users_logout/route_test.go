@@ -18,10 +18,8 @@ var testData = []struct {
 	register       bool
 	login          bool
 	expectedStatus int
+	expectedBody   JSON
 }{
-	{
-		expectedStatus: http.StatusUnauthorized,
-	},
 	{
 		testBody:       JSON{"name": "test", "email": "test@test.test", "password": "testpass"},
 		register:       true,
@@ -48,13 +46,14 @@ func TestRoute(t *testing.T) {
 			session.Post("/login", test.testBody, http.StatusOK)
 		}
 		session.Post("/logout", test.testBody, test.expectedStatus)
+		session.CheckResponse(test.expectedBody)
 
 		for _, cookie := range session.Cookies {
 			if cookie.Name == "session_id" && cookie.Value != "" {
-				t.Errorf("Expected session_id cookie to be cleared, got %s", cookie.Value)
+				t.Fatalf("Expected session_id cookie to be cleared, got %s", cookie.Value)
 			}
 		}
 
-		session.Post("/teams/register", JSON{"name": "test-team2", "password": "testpass"}, http.StatusUnauthorized)
+		session.Get("/challenges", JSON{"name": "test-team2", "password": "testpass"}, http.StatusUnauthorized)
 	}
 }

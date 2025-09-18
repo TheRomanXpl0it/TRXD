@@ -10,7 +10,12 @@ import (
 )
 
 func Route(c *fiber.Ctx) error {
-	uid := c.Locals("uid").(int32)
+	uidLocal := c.Locals("uid")
+	if uidLocal == nil {
+		return c.SendStatus(fiber.StatusOK)
+	}
+
+	uid := uidLocal.(int32)
 
 	user, err := db.GetUserByID(c.Context(), uid)
 	if err != nil {

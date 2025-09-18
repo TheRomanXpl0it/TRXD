@@ -1,6 +1,7 @@
 package api
 
 import (
+	"time"
 	"trxd/api/middlewares"
 	"trxd/api/routes/categories_create"
 	"trxd/api/routes/categories_delete"
@@ -42,6 +43,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
+	"github.com/gofiber/fiber/v2/middleware/csrf"
 	"github.com/gofiber/fiber/v2/middleware/favicon"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/monitor"
@@ -92,13 +94,12 @@ func SetupFeatures(app *fiber.App) {
 		app.Use(limiter.New())
 	}
 
-	//! TODO: for some reason, this CSRF breaks every test, need investigation
-	// app.Use(csrf.New(csrf.Config{
-	// 	CookieSameSite:    fiber.CookieSameSiteLaxMode,
-	// 	CookieSessionOnly: true,
-	// 	Expiration:        1 * time.Hour,
-	// 	Session:           middlewares.Store,
-	// }))
+	app.Use(csrf.New(csrf.Config{
+		CookieSameSite:    fiber.CookieSameSiteLaxMode,
+		CookieSessionOnly: true,
+		Expiration:        1 * time.Hour,
+		Session:           middlewares.Store,
+	}))
 
 	app.Use(favicon.New(favicon.Config{
 		File: "./static/favicon.ico",
@@ -122,7 +123,7 @@ func SetupApi(app *fiber.App) {
 	api.Post("/register", noAuth, users_register.Route)
 	api.Post("/login", noAuth, users_login.Route)
 	api.Post("/logout", noAuth, users_logout.Route)
-	api.Get("/info", spectator, users_info.Route)
+	api.Get("/info", noAuth, users_info.Route)
 	api.Get("/scoreboard", noAuth, teams_scoreboard.Route)
 
 	api.Patch("/users", player, users_update.Route)
