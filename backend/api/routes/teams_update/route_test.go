@@ -37,17 +37,17 @@ var testData = []struct {
 	{
 		testBody:         JSON{"country": strings.Repeat("a", consts.MaxCountryLength+1)},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.LongCountry),
+		expectedResponse: errorf("Country must not exceed 3"),
 	},
 	{
 		testBody:         JSON{"image": strings.Repeat("a", consts.MaxImageLength+1)},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.LongImage),
+		expectedResponse: errorf("Image must not exceed 1024"),
 	},
 	{
 		testBody:         JSON{"bio": strings.Repeat("a", consts.MaxBioLength+1)},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.LongBio),
+		expectedResponse: errorf("Bio must not exceed 10240"),
 	},
 	{
 		testBody:       JSON{"country": "a", "image": "a", "bio": "a"},

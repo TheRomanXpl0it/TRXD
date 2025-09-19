@@ -38,7 +38,7 @@ var testData = []struct {
 	{
 		testBody:         JSON{"team_id": -1},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.InvalidTeamID),
+		expectedResponse: errorf("TeamID must be at least 0"),
 	},
 	{
 		testBody:       JSON{"team_id": 0},
@@ -82,6 +82,8 @@ func TestRoute(t *testing.T) {
 			if !ok {
 				t.Fatalf("Expected 'new_password' to be a string, got: %T", newPasswordInterface)
 			}
+		} else {
+			session.CheckResponse(test.expectedResponse)
 		}
 
 		session = test_utils.NewApiTestSession(t, app)

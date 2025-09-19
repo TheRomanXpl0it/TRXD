@@ -1,6 +1,7 @@
 package teams_get
 
 import (
+	"trxd/api/validator"
 	"trxd/db/sqlc"
 	"trxd/utils"
 	"trxd/utils/consts"
@@ -15,8 +16,9 @@ func Route(c *fiber.Ctx) error {
 	if err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidTeamID)
 	}
-	if teamID < 0 {
-		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidTeamID)
+	valid, err := validator.Var(c, teamID, "team_id")
+	if err != nil || !valid {
+		return err
 	}
 
 	allData := false

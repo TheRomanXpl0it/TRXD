@@ -70,7 +70,7 @@ func TestRoute(t *testing.T) {
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Get(fmt.Sprintf("/teams/%d", -1), nil, http.StatusBadRequest)
-	session.CheckResponse(errorf(consts.InvalidTeamID))
+	session.CheckResponse(errorf("team_id must be at least 0"))
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Get(fmt.Sprintf("/teams/%d", 99999), nil, http.StatusNotFound)

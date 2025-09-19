@@ -1,6 +1,7 @@
 package teams_join
 
 import (
+	"trxd/api/validator"
 	"trxd/db"
 	"trxd/utils"
 	"trxd/utils/consts"
@@ -10,24 +11,16 @@ import (
 
 func Route(c *fiber.Ctx) error {
 	var data struct {
-		Name     string `json:"name"`
-		Password string `json:"password"`
+		Name     string `json:"name" validate:"required,team_name"`
+		Password string `json:"password" validate:"required,team_password"`
 	}
 	if err := c.BodyParser(&data); err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidJSON)
 	}
 
-	if data.Name == "" || data.Password == "" {
-		return utils.Error(c, fiber.StatusBadRequest, consts.MissingRequiredFields)
-	}
-	if len(data.Password) < consts.MinPasswordLength {
-		return utils.Error(c, fiber.StatusBadRequest, consts.ShortPassword)
-	}
-	if len(data.Password) > consts.MaxPasswordLength {
-		return utils.Error(c, fiber.StatusBadRequest, consts.LongPassword)
-	}
-	if len(data.Name) > consts.MaxNameLength {
-		return utils.Error(c, fiber.StatusBadRequest, consts.LongName)
+	valid, err := validator.Struct(c, data)
+	if err != nil || !valid {
+		return err
 	}
 
 	uid := c.Locals("uid").(int32)

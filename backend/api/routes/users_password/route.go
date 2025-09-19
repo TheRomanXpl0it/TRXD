@@ -1,6 +1,7 @@
 package users_password
 
 import (
+	"trxd/api/validator"
 	"trxd/utils"
 	"trxd/utils/consts"
 	"trxd/utils/crypto_utils"
@@ -10,17 +11,15 @@ import (
 
 func Route(c *fiber.Ctx) error {
 	var data struct {
-		UserID *int32 `json:"user_id"`
+		UserID *int32 `json:"user_id" validate:"required,user_id"`
 	}
 	if err := c.BodyParser(&data); err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidJSON)
 	}
 
-	if data.UserID == nil {
-		return utils.Error(c, fiber.StatusBadRequest, consts.MissingRequiredFields)
-	}
-	if *data.UserID < 0 {
-		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidUserID)
+	valid, err := validator.Struct(c, data)
+	if err != nil || !valid {
+		return err
 	}
 
 	newPassword, err := crypto_utils.GeneratePassword()

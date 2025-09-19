@@ -60,7 +60,7 @@ func TestRoute(t *testing.T) {
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Get(fmt.Sprintf("/users/%d", -1), nil, http.StatusBadRequest)
-	session.CheckResponse(errorf(consts.InvalidUserID))
+	session.CheckResponse(errorf("user_id must be at least 0"))
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Get(fmt.Sprintf("/users/%d", 99999), nil, http.StatusNotFound)

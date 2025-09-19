@@ -2,6 +2,7 @@ package users_register
 
 import (
 	"trxd/api/middlewares"
+	"trxd/api/validator"
 	"trxd/db"
 	"trxd/utils"
 	"trxd/utils/consts"
@@ -24,31 +25,20 @@ func Route(c *fiber.Ctx) error {
 	}
 
 	var data struct {
-		Name     string `json:"name"`
-		Email    string `json:"email"`
-		Password string `json:"password"`
+		Name     string `json:"name" validate:"required,user_name"`
+		Email    string `json:"email" validate:"required,user_email"`
+		Password string `json:"password" validate:"required,user_password"`
 	}
 	if err := c.BodyParser(&data); err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidJSON)
 	}
 
-	if data.Name == "" || data.Email == "" || data.Password == "" {
-		return utils.Error(c, fiber.StatusBadRequest, consts.MissingRequiredFields)
-	}
-	if len(data.Password) < consts.MinPasswordLength {
-		return utils.Error(c, fiber.StatusBadRequest, consts.ShortPassword)
-	}
-	if len(data.Password) > consts.MaxPasswordLength {
-		return utils.Error(c, fiber.StatusBadRequest, consts.LongPassword)
-	}
-	if len(data.Name) > consts.MaxNameLength {
-		return utils.Error(c, fiber.StatusBadRequest, consts.LongName)
-	}
-	if len(data.Email) > consts.MaxEmailLength {
-		return utils.Error(c, fiber.StatusBadRequest, consts.LongEmail)
+	valid, err := validator.Struct(c, data)
+	if err != nil || !valid {
+		return err
 	}
 
-	if !consts.UserRegex.MatchString(data.Email) {
+	if !consts.UserRegex.MatchString(data.Email) { // TODO: put into the validator
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidEmail)
 	}
 

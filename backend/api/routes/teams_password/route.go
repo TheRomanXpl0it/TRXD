@@ -1,6 +1,7 @@
 package teams_password
 
 import (
+	"trxd/api/validator"
 	"trxd/utils"
 	"trxd/utils/consts"
 	"trxd/utils/crypto_utils"
@@ -10,17 +11,15 @@ import (
 
 func Route(c *fiber.Ctx) error {
 	var data struct {
-		TeamID *int32 `json:"team_id"`
+		TeamID *int32 `json:"team_id" validate:"required,team_id"`
 	}
 	if err := c.BodyParser(&data); err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidJSON)
 	}
 
-	if data.TeamID == nil {
-		return utils.Error(c, fiber.StatusBadRequest, consts.MissingRequiredFields)
-	}
-	if *data.TeamID < 0 {
-		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidTeamID)
+	valid, err := validator.Struct(c, data)
+	if err != nil || !valid {
+		return err
 	}
 
 	newPassword, err := crypto_utils.GeneratePassword()
