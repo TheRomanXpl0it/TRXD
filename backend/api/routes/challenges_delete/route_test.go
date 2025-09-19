@@ -37,7 +37,7 @@ var testData = []struct {
 	{
 		testBody:         JSON{"chall_id": -1},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.InvalidChallengeID),
+		expectedResponse: errorf("ChallID must be at least 0"),
 	},
 	{
 		testBody:       JSON{"chall_id": ""},

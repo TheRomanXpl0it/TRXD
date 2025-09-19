@@ -1,6 +1,7 @@
 package challenges_get
 
 import (
+	"trxd/api/validator"
 	"trxd/db/sqlc"
 	"trxd/utils"
 	"trxd/utils/consts"
@@ -17,8 +18,9 @@ func Route(c *fiber.Ctx) error {
 	if err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidChallengeID)
 	}
-	if challengeID < 0 {
-		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidChallengeID)
+	valid, err := validator.Var(c, challengeID, "challenge_id")
+	if err != nil || !valid {
+		return err
 	}
 
 	all := utils.In(role, []sqlc.UserRole{sqlc.UserRoleAuthor, sqlc.UserRoleAdmin})

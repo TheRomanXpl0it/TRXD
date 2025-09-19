@@ -62,7 +62,7 @@ func TestRoute(t *testing.T) {
 	session.CheckResponse(errorf(consts.MissingRequiredFields))
 
 	session.Patch("/instances", JSON{"chall_id": -1}, http.StatusBadRequest)
-	session.CheckResponse(errorf(consts.InvalidChallengeID))
+	session.CheckResponse(errorf("ChallID must be at least 0"))
 
 	session.Patch("/instances", JSON{"chall_id": 99999}, http.StatusNotFound)
 	session.CheckResponse(errorf(consts.ChallengeNotFound))

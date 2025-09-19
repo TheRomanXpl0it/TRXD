@@ -43,17 +43,17 @@ var testData = []struct {
 	{
 		testBody:         JSON{"name": strings.Repeat("a", consts.MaxCategoryLength+1), "new_icon": "test"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.LongCategory),
+		expectedResponse: errorf("Name must not exceed 32"),
 	},
 	{
 		testBody:         JSON{"name": "test", "new_name": strings.Repeat("a", consts.MaxCategoryLength+1), "new_icon": "test"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.LongCategory),
+		expectedResponse: errorf("NewName must not exceed 32"),
 	},
 	{
 		testBody:         JSON{"name": "test", "new_name": "test", "new_icon": strings.Repeat("a", consts.MaxIconLength+1)},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.LongIcon),
+		expectedResponse: errorf("NewIcon must not exceed 32"),
 	},
 	{
 		testBody:         JSON{"name": "test", "new_icon": "AAA"},

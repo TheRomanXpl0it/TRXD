@@ -63,32 +63,32 @@ var testData = []struct {
 	{
 		testBody:         JSON{"name": strings.Repeat("a", consts.MaxChallNameLength+1), "category": "cat", "description": "test-desc", "type": "Normal", "max_points": 1, "score_type": "Static"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.LongChallName),
+		expectedResponse: errorf("Name must not exceed 128"),
 	},
 	{
 		testBody:         JSON{"name": "test", "category": strings.Repeat("a", consts.MaxCategoryLength+1), "description": "test-desc", "type": "Normal", "max_points": 1, "score_type": "Static"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.LongCategory),
+		expectedResponse: errorf("Category must not exceed 32"),
 	},
 	{
 		testBody:         JSON{"name": "test", "category": "cat", "description": strings.Repeat("a", consts.MaxChallDescLength+1), "type": "Normal", "max_points": 1, "score_type": "Static"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.LongChallDesc),
+		expectedResponse: errorf("Description must not exceed 1024"),
 	},
 	{
 		testBody:         JSON{"name": "test", "category": "cat", "description": "test-desc", "type": "aaaaa", "max_points": 1, "score_type": "Static"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.InvalidChallType),
+		expectedResponse: errorf("Type must be one of: Normal Container Compose"),
 	},
 	{
 		testBody:         JSON{"name": "test", "category": "cat", "description": "test-desc", "type": "Normal", "max_points": -1, "score_type": "Static"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.InvalidChallMaxPoints),
+		expectedResponse: errorf("MaxPoints must be at least 0"),
 	},
 	{
 		testBody:         JSON{"name": "test", "category": "cat", "description": "test-desc", "type": "Normal", "max_points": 1, "score_type": "aaaa"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.InvalidChallScoreType),
+		expectedResponse: errorf("ScoreType must be one of: Static Dynamic"),
 	},
 	{
 		testBody:         JSON{"name": "test3", "category": "cat2", "description": "test-desc", "type": "Normal", "max_points": 1, "score_type": "Static"},

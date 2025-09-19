@@ -3,6 +3,7 @@ package categories_update
 import (
 	"trxd/api/routes/categories_create"
 	"trxd/api/routes/categories_delete"
+	"trxd/api/validator"
 	"trxd/utils"
 	"trxd/utils/consts"
 
@@ -11,25 +12,20 @@ import (
 
 func Route(c *fiber.Ctx) error {
 	var data struct {
-		Name    string `json:"name"`
-		NewName string `json:"new_name"`
-		NewIcon string `json:"new_icon"`
+		Name    string `json:"name" validate:"required,category_name"`
+		NewName string `json:"new_name" validate:"category_name"`
+		NewIcon string `json:"new_icon" validate:"category_name"`
 	}
 	if err := c.BodyParser(&data); err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidJSON)
 	}
 
-	if data.Name == "" || (data.NewName == "" && data.NewIcon == "") {
+	if data.NewName == "" && data.NewIcon == "" {
 		return utils.Error(c, fiber.StatusBadRequest, consts.MissingRequiredFields)
 	}
-	if len(data.Name) > consts.MaxCategoryLength {
-		return utils.Error(c, fiber.StatusBadRequest, consts.LongCategory)
-	}
-	if len(data.NewName) > consts.MaxCategoryLength {
-		return utils.Error(c, fiber.StatusBadRequest, consts.LongCategory)
-	}
-	if len(data.NewIcon) > consts.MaxIconLength {
-		return utils.Error(c, fiber.StatusBadRequest, consts.LongIcon)
+	valid, err := validator.Struct(c, data)
+	if err != nil || !valid {
+		return err
 	}
 
 	cat, err := GetCategory(c.Context(), data.Name)

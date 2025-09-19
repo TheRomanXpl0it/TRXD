@@ -71,7 +71,7 @@ func TestRoute(t *testing.T) {
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/login", JSON{"email": "test2@test.test", "password": "testpass"}, http.StatusOK)
 	session.Get(fmt.Sprintf("/challenges/%d", -1), nil, http.StatusBadRequest)
-	session.CheckResponse(errorf(consts.InvalidChallengeID))
+	session.CheckResponse(errorf("challenge_id must be at least 0"))
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/login", JSON{"email": "test2@test.test", "password": "testpass"}, http.StatusOK)

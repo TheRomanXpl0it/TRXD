@@ -1,13 +1,12 @@
 package challenges_update
 
 import (
-	"encoding/json"
 	"fmt"
 	"mime/multipart"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
+	"trxd/api/validator"
 	"trxd/db"
 	"trxd/db/sqlc"
 	"trxd/utils"
@@ -19,27 +18,27 @@ import (
 )
 
 type UpdateChallParams struct {
-	ChallID     *int32           `form:"chall_id"`
-	Name        string           `form:"name"`
-	Category    string           `form:"category"`
-	Description *string          `form:"description"`
-	Difficulty  *string          `form:"difficulty"`
+	ChallID     *int32           `form:"chall_id" validate:"required,challenge_id"`
+	Name        string           `form:"name" validate:"challenge_name"`
+	Category    string           `form:"category" validate:"category_name"`
+	Description *string          `form:"description" validate:"omitempty,challenge_description"`
+	Difficulty  *string          `form:"difficulty" validate:"omitempty,challenge_difficulty"`
 	Authors     *[]string        `form:"authors"`
-	Type        *sqlc.DeployType `form:"type"`
+	Type        *sqlc.DeployType `form:"type" validate:"omitempty,challenge_type"`
 	Hidden      *bool            `form:"hidden"`
-	MaxPoints   *int             `form:"max_points"`
-	ScoreType   *sqlc.ScoreType  `form:"score_type"`
+	MaxPoints   *int             `form:"max_points" validate:"omitempty,challenge_max_points"`
+	ScoreType   *sqlc.ScoreType  `form:"score_type" validate:"omitempty,challenge_score_type"`
 	Host        *string          `form:"host"`
-	Port        *int             `form:"port"`
+	Port        *int             `form:"port" validate:"omitempty,challenge_port"`
 	Attachments *[]string        `form:"attachments"`
 
 	Image      *string `form:"image"`
 	Compose    *string `form:"compose"`
 	HashDomain *bool   `form:"hash_domain"`
-	Lifetime   *int    `form:"lifetime"`
-	Envs       *string `form:"envs"`
-	MaxMemory  *int    `form:"max_memory"`
-	MaxCpu     *string `form:"max_cpu"`
+	Lifetime   *int    `form:"lifetime" validate:"omitempty,challenge_lifetime"`
+	Envs       *string `form:"envs" validate:"omitempty,challenge_envs"`
+	MaxMemory  *int    `form:"max_memory" validate:"omitempty,challenge_max_memory"`
+	MaxCpu     *string `form:"max_cpu" validate:"omitempty,challenge_max_cpu"`
 }
 
 func Route(c *fiber.Ctx) error {
@@ -55,53 +54,12 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidFormData)
 	}
 
-	if data.ChallID == nil {
-		return utils.Error(c, fiber.StatusBadRequest, consts.ChallIDRequired)
-	}
-	if *data.ChallID < 0 {
-		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidChallengeID)
+	valid, err := validator.Struct(c, data)
+	if err != nil || !valid {
+		return err
 	}
 	if IsChallEmpty(data) && IsDockerConfigsEmpty(data) && len(multipartForm.File) == 0 {
 		return utils.Error(c, fiber.StatusBadRequest, consts.NoDataToUpdate)
-	}
-
-	if len(data.Name) > consts.MaxChallNameLength {
-		return utils.Error(c, fiber.StatusBadRequest, consts.LongChallName)
-	}
-	if len(data.Category) > consts.MaxCategoryLength {
-		return utils.Error(c, fiber.StatusBadRequest, consts.LongCategory)
-	}
-	if data.Description != nil && len(*data.Description) > consts.MaxChallDescLength {
-		return utils.Error(c, fiber.StatusBadRequest, consts.LongChallDesc)
-	}
-	if data.Difficulty != nil && len(*data.Difficulty) > consts.MaxChallDifficultyLength {
-		return utils.Error(c, fiber.StatusBadRequest, consts.LongChallDifficulty)
-	}
-	if data.MaxPoints != nil && *data.MaxPoints < 0 {
-		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidChallMaxPoints)
-	}
-	if data.Port != nil && (*data.Port < consts.MinPort || *data.Port > consts.MaxPort) {
-		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidPort)
-	}
-
-	if data.Lifetime != nil && *data.Lifetime < 0 {
-		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidLifetime)
-	}
-	if data.Envs != nil && *data.Envs != "" {
-		var tmp map[string]string
-		err = json.Unmarshal([]byte(*data.Envs), &tmp)
-		if err != nil {
-			return utils.Error(c, fiber.StatusBadRequest, consts.InvalidEnvs)
-		}
-	}
-	if data.MaxMemory != nil && *data.MaxMemory < 0 {
-		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidMaxMemory)
-	}
-	if data.MaxCpu != nil && *data.MaxCpu != "" {
-		_, err = strconv.ParseFloat(*data.MaxCpu, 32)
-		if err != nil {
-			return utils.Error(c, fiber.StatusBadRequest, consts.InvalidMaxCpu)
-		}
 	}
 
 	challenge, err := db.GetChallengeByID(c.Context(), *data.ChallID)
