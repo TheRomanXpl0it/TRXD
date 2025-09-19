@@ -76,23 +76,24 @@ func SetupApp() *fiber.App {
 }
 
 func SetupFeatures(app *fiber.App) {
-	app.Use(func(c *fiber.Ctx) error {
-		defer func() {
-			r := recover()
-			if r == nil {
-				return
-			}
-			log.Critical("Panic recovered:", "crit", r)
-			_ = utils.Error(c, fiber.StatusInternalServerError, consts.InternalServerError)
-		}()
-		return c.Next()
-	})
-
-	app.Use(compress.New())
-
 	if !consts.Testing {
+		app.Use(func(c *fiber.Ctx) error {
+			defer func() {
+				r := recover()
+				if r == nil {
+					return
+				}
+				log.Critical("Panic recovered:", "crit", r)
+				_ = utils.Error(c, fiber.StatusInternalServerError, consts.InternalServerError)
+			}()
+			return c.Next()
+		})
+
+		// TODO: tests
 		app.Use(limiter.New())
 	}
+
+	app.Use(compress.New())
 
 	app.Use(csrf.New(csrf.Config{
 		CookieSameSite:    fiber.CookieSameSiteLaxMode,

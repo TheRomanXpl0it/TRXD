@@ -1,4 +1,5 @@
 BETA:
+	- error generator for tests
 	- resolve TODOs left into the code
 	- move countries from api to frontend or /static
 	- change api/db names

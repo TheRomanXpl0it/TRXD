@@ -15,7 +15,7 @@ const (
 	MaxFlagLength            = 128
 	MaxIconLength            = 32
 	MaxImageLength           = 1024
-	MaxNameLength            = 64
+	MaxNameLength            = 64 // TODO: Separate this into user and team
 	MaxPasswordLength        = 64
 	MaxPort                  = 65535
 	MaxTagNameLength         = 32
@@ -97,30 +97,37 @@ const (
 	InvalidTeamID               = "Invalid team ID, must be non negative"
 	InvalidUserID               = "Invalid user ID, must be non negative"
 	InternalServerError         = "Internal server error"
-	LongBio                     = "Bio must not exceed 10240 characters"
-	LongCategory                = "Category must not exceed 32 characters"
-	LongChallDesc               = "Challenge description must not exceed 1024 characters"
-	LongChallDifficulty         = "Challenge difficulty must not exceed 16 characters"
-	LongChallName               = "Challenge name must not exceed 128 characters"
-	LongCountry                 = "Country must not exceed 3 characters"
-	LongEmail                   = "Email must not exceed 256 characters"
-	LongFlag                    = "Flag must not exceed 128 characters"
-	LongIcon                    = "Icon must not exceed 32 characters"
-	LongImage                   = "Image must not exceed 1024 characters"
-	LongName                    = "Name must not exceed 64 characters"
-	LongPassword                = "Password must not exceed 64 characters"
-	LongTagName                 = "Tag name must not exceed 32 characters"
-	MissingLifetime             = "global lifetime is missing"
-	MissingRequiredFields       = "Missing required fields"
-	NoDataToUpdate              = "No data provided to update"
-	NotLoggedIn                 = "Not logged in"
-	ShortPassword               = "Password must be at least 8 characters long"
-	TagAlreadyExists            = "Tag already exists"
-	TeamAlreadyExists           = "Team already exists"
-	TeamNotFound                = "Team not found"
-	Unauthorized                = "Unauthorized"
-	UserAlreadyExists           = "User already exists"
-	UserNotFound                = "User not found"
+
+	LongBio             = "Bio must not exceed 10240 characters"
+	LongCategory        = "Category must not exceed 32 characters"
+	LongChallDesc       = "Challenge description must not exceed 1024 characters"
+	LongChallDifficulty = "Challenge difficulty must not exceed 16 characters"
+	LongChallName       = "Challenge name must not exceed 128 characters"
+	LongCountry         = "Country must not exceed 3 characters"
+	LongEmail           = "Email must not exceed 256 characters"
+	LongFlag            = "Flag must not exceed 128 characters"
+	LongIcon            = "Icon must not exceed 32 characters"
+	LongImage           = "Image must not exceed 1024 characters"
+	LongName            = "Name must not exceed 64 characters"
+	LongPassword        = "Password must not exceed 64 characters"
+	LongTagName         = "Tag name must not exceed 32 characters"
+
+	MaxError   = "{0} must not exceed {1}"
+	MinError   = "{0} must be at least {1}"
+	OneofError = "{0} must be one of: {1}"
+
+	MissingLifetime       = "global lifetime is missing"
+	MissingRequiredFields = "Missing required fields"
+	NoDataToUpdate        = "No data provided to update"
+	NotLoggedIn           = "Not logged in"
+
+	ShortPassword     = "Password must be at least 8 characters long"
+	TagAlreadyExists  = "Tag already exists"
+	TeamAlreadyExists = "Team already exists"
+	TeamNotFound      = "Team not found"
+	Unauthorized      = "Unauthorized"
+	UserAlreadyExists = "User already exists"
+	UserNotFound      = "User not found"
 )
 
 var UserRegex = regexp.MustCompile(`(^[^@\s]+@[^@\s]+\.[^@\s]+$)`)
