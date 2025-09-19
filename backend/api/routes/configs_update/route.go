@@ -1,6 +1,7 @@
 package configs_update
 
 import (
+	"trxd/api/validator"
 	"trxd/db"
 	"trxd/utils"
 	"trxd/utils/consts"
@@ -10,15 +11,16 @@ import (
 
 func Route(c *fiber.Ctx) error {
 	var data struct {
-		Key   string `json:"key"`
-		Value string `json:"value"`
+		Key   string `json:"key" validate:"required"`
+		Value string `json:"value" validate:"required"`
 	}
 	if err := c.BodyParser(&data); err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidJSON)
 	}
 
-	if data.Key == "" || data.Value == "" {
-		return utils.Error(c, fiber.StatusBadRequest, consts.MissingRequiredFields)
+	valid, err := validator.Struct(c, data)
+	if err != nil || !valid {
+		return err
 	}
 
 	conf, err := db.GetConfig(c.Context(), data.Key)

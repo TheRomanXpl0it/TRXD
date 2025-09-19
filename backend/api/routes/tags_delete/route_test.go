@@ -44,12 +44,12 @@ var testData = []struct {
 	{
 		testBody:         JSON{"chall_id": "", "name": strings.Repeat("a", consts.MaxTagNameLength+1)},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.LongTagName),
+		expectedResponse: errorf("Name must not exceed 32"),
 	},
 	{
 		testBody:         JSON{"chall_id": -1, "name": "test"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.InvalidChallengeID),
+		expectedResponse: errorf("ChallID must be at least 0"),
 	},
 	{
 		testBody:       JSON{"chall_id": "", "name": "test-2"},

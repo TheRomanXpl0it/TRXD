@@ -1,6 +1,7 @@
 package tags_delete
 
 import (
+	"trxd/api/validator"
 	"trxd/utils"
 	"trxd/utils/consts"
 
@@ -9,24 +10,19 @@ import (
 
 func Route(c *fiber.Ctx) error {
 	var data struct {
-		ChallID *int32 `json:"chall_id"`
-		Name    string `json:"name"`
+		ChallID *int32 `json:"chall_id" validate:"required,challenge_id"`
+		Name    string `json:"name" validate:"required,tag_name"`
 	}
 	if err := c.BodyParser(&data); err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidJSON)
 	}
 
-	if data.ChallID == nil || data.Name == "" {
-		return utils.Error(c, fiber.StatusBadRequest, consts.MissingRequiredFields)
-	}
-	if *data.ChallID < 0 {
-		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidChallengeID)
-	}
-	if len(data.Name) > consts.MaxTagNameLength {
-		return utils.Error(c, fiber.StatusBadRequest, consts.LongTagName)
+	valid, err := validator.Struct(c, data)
+	if err != nil || !valid {
+		return err
 	}
 
-	err := DeleteTag(c.Context(), *data.ChallID, data.Name)
+	err = DeleteTag(c.Context(), *data.ChallID, data.Name)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorDeletingTag, err)
 	}
