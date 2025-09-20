@@ -1,5 +1,6 @@
 BETA:
 	- error generator for tests
+	- split main.go flag function
 	- resolve TODOs left into the code
 	- move countries from api to frontend or /static
 	- change api/db names

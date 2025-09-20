@@ -100,7 +100,7 @@ func Route(c *fiber.Ctx) error {
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
 			if pqErr.Code == "23505" { // Unique violation error code
-				return utils.Error(c, fiber.StatusConflict, consts.ChallNameExists)
+				return utils.Error(c, fiber.StatusConflict, consts.ChallengeNameAlreadyExists)
 			}
 			if pqErr.Code == "23503" { // Foreign key violation error code
 				return utils.Error(c, fiber.StatusNotFound, consts.CategoryNotFound)

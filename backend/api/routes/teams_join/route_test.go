@@ -41,17 +41,17 @@ var testData = []struct {
 		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
 	{
-		testBody:         JSON{"name": "test", "password": strings.Repeat("a", consts.MinPasswordLength-1)},
+		testBody:         JSON{"name": "test", "password": strings.Repeat("a", consts.MinPasswordLen-1)},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf("Password must be at least 8"),
 	},
 	{
-		testBody:         JSON{"name": "test", "password": strings.Repeat("a", consts.MaxPasswordLength+1)},
+		testBody:         JSON{"name": "test", "password": strings.Repeat("a", consts.MaxPasswordLen+1)},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf("Password must not exceed 64"),
 	},
 	{
-		testBody:         JSON{"name": strings.Repeat("a", consts.MaxNameLength+1), "password": "testpass"},
+		testBody:         JSON{"name": strings.Repeat("a", consts.MaxTeamNameLen+1), "password": "testpass"},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf("Name must not exceed 64"),
 	},

@@ -38,10 +38,6 @@ func Route(c *fiber.Ctx) error {
 		return err
 	}
 
-	if !consts.UserRegex.MatchString(data.Email) { // TODO: put into the validator
-		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidEmail)
-	}
-
 	user, err := RegisterUser(c.Context(), data.Name, data.Email, data.Password)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorRegisteringUser, err)

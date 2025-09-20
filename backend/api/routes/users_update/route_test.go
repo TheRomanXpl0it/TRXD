@@ -35,17 +35,17 @@ var testData = []struct {
 		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
 	{
-		testBody:         JSON{"name": strings.Repeat("a", consts.MaxNameLength+1)},
+		testBody:         JSON{"name": strings.Repeat("a", consts.MaxUserNameLen+1)},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf("Name must not exceed 64"),
 	},
 	{
-		testBody:         JSON{"country": strings.Repeat("a", consts.MaxCountryLength+1)},
+		testBody:         JSON{"country": strings.Repeat("a", consts.MaxCountryLen+1)},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf("Country must not exceed 3"),
 	},
 	{
-		testBody:         JSON{"image": strings.Repeat("a", consts.MaxImageLength+1)},
+		testBody:         JSON{"image": strings.Repeat("a", consts.MaxImageLen+1)},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf("Image must not exceed 1024"),
 	},

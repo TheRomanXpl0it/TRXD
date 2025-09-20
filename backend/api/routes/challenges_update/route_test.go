@@ -38,22 +38,22 @@ var testData = []struct {
 		expectedResponse: errorf(consts.NoDataToUpdate),
 	},
 	{
-		testBody:         JSON{"chall_id": "", "name": strings.Repeat("a", consts.MaxChallNameLength+1)},
+		testBody:         JSON{"chall_id": "", "name": strings.Repeat("a", consts.MaxChallNameLen+1)},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf("Name must not exceed 128"),
 	},
 	{
-		testBody:         JSON{"chall_id": "", "category": strings.Repeat("a", consts.MaxCategoryLength+1)},
+		testBody:         JSON{"chall_id": "", "category": strings.Repeat("a", consts.MaxCategoryLen+1)},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf("Category must not exceed 32"),
 	},
 	{
-		testBody:         JSON{"chall_id": "", "description": strings.Repeat("a", consts.MaxChallDescLength+1)},
+		testBody:         JSON{"chall_id": "", "description": strings.Repeat("a", consts.MaxChallDescLen+1)},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf("Description must not exceed 1024"),
 	},
 	{
-		testBody:         JSON{"chall_id": "", "difficulty": strings.Repeat("a", consts.MaxChallDifficultyLength+1)},
+		testBody:         JSON{"chall_id": "", "difficulty": strings.Repeat("a", consts.MaxChallDifficultyLen+1)},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf("Difficulty must not exceed 16"),
 	},
@@ -105,7 +105,7 @@ var testData = []struct {
 	{
 		testBody:         JSON{"chall_id": "", "name": "chall-2"},
 		expectedStatus:   http.StatusConflict,
-		expectedResponse: errorf(consts.ChallNameExists),
+		expectedResponse: errorf(consts.ChallengeNameAlreadyExists),
 	},
 	{
 		testBody:         JSON{"chall_id": "", "category": "<invalid-category>"},

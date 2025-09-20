@@ -56,12 +56,12 @@ var testData = []struct {
 		expectedResponse: errorf(consts.ChallengeNotFound),
 	},
 	{
-		testBody:         JSON{"chall_id": "", "flag": strings.Repeat("a", consts.MaxFlagLength+1), "new_flag": "test"},
+		testBody:         JSON{"chall_id": "", "flag": strings.Repeat("a", consts.MaxFlagLen+1), "new_flag": "test"},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf("Flag must not exceed 128"),
 	},
 	{
-		testBody:         JSON{"chall_id": "", "flag": "test", "new_flag": strings.Repeat("a", consts.MaxFlagLength+1)},
+		testBody:         JSON{"chall_id": "", "flag": "test", "new_flag": strings.Repeat("a", consts.MaxFlagLen+1)},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf("NewFlag must not exceed 128"),
 	},

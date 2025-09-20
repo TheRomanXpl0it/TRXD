@@ -47,12 +47,12 @@ var testData = []struct {
 		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
 	{
-		testBody:         JSON{"chall_id": "", "old_name": strings.Repeat("a", consts.MaxTagNameLength+1), "new_name": "test-2"},
+		testBody:         JSON{"chall_id": "", "old_name": strings.Repeat("a", consts.MaxTagNameLen+1), "new_name": "test-2"},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf("OldName must not exceed 32"),
 	},
 	{
-		testBody:         JSON{"chall_id": "", "old_name": "test", "new_name": strings.Repeat("a", consts.MaxTagNameLength+1)},
+		testBody:         JSON{"chall_id": "", "old_name": "test", "new_name": strings.Repeat("a", consts.MaxTagNameLen+1)},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf("NewName must not exceed 32"),
 	},

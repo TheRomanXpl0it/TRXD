@@ -41,7 +41,7 @@ var testData = []struct {
 		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
 	{
-		testBody:         JSON{"chall_id": "", "name": strings.Repeat("a", consts.MaxTagNameLength+1)},
+		testBody:         JSON{"chall_id": "", "name": strings.Repeat("a", consts.MaxTagNameLen+1)},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf("Name must not exceed 32"),
 	},

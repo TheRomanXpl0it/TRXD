@@ -7,6 +7,7 @@ import (
 	"strings"
 	"trxd/api"
 	"trxd/api/routes/users_register"
+	"trxd/api/validator"
 	"trxd/db"
 	"trxd/db/sqlc"
 	"trxd/instancer"
@@ -83,17 +84,17 @@ func Flags() {
 		if name == "" || email == "" || password == "" {
 			log.Fatal("Username, email, and password must not be empty")
 		}
-		if len(password) < consts.MinPasswordLength {
-			log.Fatal(consts.ShortPassword)
+		valid, err := validator.Var(nil, name, "user_name")
+		if err != nil || !valid {
+			log.Fatal(err)
 		}
-		if len(name) > consts.MaxNameLength {
-			log.Fatal(consts.LongName)
+		valid, err = validator.Var(nil, email, "user_email")
+		if err != nil || !valid {
+			log.Fatal(err)
 		}
-		if len(email) > consts.MaxEmailLength {
-			log.Fatal(consts.LongEmail)
-		}
-		if len(password) > consts.MaxPasswordLength {
-			log.Fatal(consts.LongPassword)
+		valid, err = validator.Var(nil, password, "user_password")
+		if err != nil || !valid {
+			log.Fatal(err)
 		}
 
 		user, err := users_register.RegisterUser(context.Background(), name, email, password, sqlc.UserRoleAdmin)

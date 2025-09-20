@@ -61,17 +61,17 @@ var testData = []struct {
 		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
 	{
-		testBody:         JSON{"name": strings.Repeat("a", consts.MaxChallNameLength+1), "category": "cat", "description": "test-desc", "type": "Normal", "max_points": 1, "score_type": "Static"},
+		testBody:         JSON{"name": strings.Repeat("a", consts.MaxChallNameLen+1), "category": "cat", "description": "test-desc", "type": "Normal", "max_points": 1, "score_type": "Static"},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf("Name must not exceed 128"),
 	},
 	{
-		testBody:         JSON{"name": "test", "category": strings.Repeat("a", consts.MaxCategoryLength+1), "description": "test-desc", "type": "Normal", "max_points": 1, "score_type": "Static"},
+		testBody:         JSON{"name": "test", "category": strings.Repeat("a", consts.MaxCategoryLen+1), "description": "test-desc", "type": "Normal", "max_points": 1, "score_type": "Static"},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf("Category must not exceed 32"),
 	},
 	{
-		testBody:         JSON{"name": "test", "category": "cat", "description": strings.Repeat("a", consts.MaxChallDescLength+1), "type": "Normal", "max_points": 1, "score_type": "Static"},
+		testBody:         JSON{"name": "test", "category": "cat", "description": strings.Repeat("a", consts.MaxChallDescLen+1), "type": "Normal", "max_points": 1, "score_type": "Static"},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf("Description must not exceed 1024"),
 	},
