@@ -67,6 +67,15 @@ func SetupApp() *fiber.App {
 	SetupFeatures(app)
 	SetupApi(app)
 
+	// TODO: put frontend
+	app.Static("/static", "./static")
+
+	//TODO: tests
+	app.Use("/attachments", spectator, team, middlewares.Attachments)
+	app.Static("/attachments", "./attachments", fiber.Static{
+		Download: true,
+	})
+
 	// 404 handler
 	app.Use(func(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusNotFound, consts.EndpointNotFound)
@@ -89,7 +98,6 @@ func SetupFeatures(app *fiber.App) {
 			return c.Next()
 		})
 
-		// TODO: tests
 		app.Use(limiter.New())
 	}
 
@@ -117,9 +125,6 @@ func SetupApi(app *fiber.App) {
 	} else {
 		api = app.Group("/api")
 	}
-
-	// TODO: make this resource static: countries.json
-	api.Get("/countries", func(c *fiber.Ctx) error { return c.JSON(consts.Countries) })
 
 	api.Post("/register", noAuth, users_register.Route)
 	api.Post("/login", noAuth, users_login.Route)

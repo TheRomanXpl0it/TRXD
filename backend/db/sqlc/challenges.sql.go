@@ -76,6 +76,23 @@ func (q *Queries) GetDockerConfigsByID(ctx context.Context, challID int32) (GetD
 	return i, err
 }
 
+const getHiddenAndAttachments = `-- name: GetHiddenAndAttachments :one
+SELECT hidden, attachments FROM challenges WHERE id = $1
+`
+
+type GetHiddenAndAttachmentsRow struct {
+	Hidden      bool   `json:"hidden"`
+	Attachments string `json:"attachments"`
+}
+
+// Checks if a challenge is hidden
+func (q *Queries) GetHiddenAndAttachments(ctx context.Context, id int32) (GetHiddenAndAttachmentsRow, error) {
+	row := q.queryRow(ctx, q.getHiddenAndAttachmentsStmt, getHiddenAndAttachments, id)
+	var i GetHiddenAndAttachmentsRow
+	err := row.Scan(&i.Hidden, &i.Attachments)
+	return i, err
+}
+
 const getTagsByChallenge = `-- name: GetTagsByChallenge :many
 SELECT name FROM tags WHERE chall_id = $1
 `

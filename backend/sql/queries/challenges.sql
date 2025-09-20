@@ -18,3 +18,7 @@ WHERE chall_id = $1;
 -- name: GetTagsByChallenge :many
 -- Retrieve all tags associated with a challenge
 SELECT name FROM tags WHERE chall_id = $1;
+
+-- name: GetHiddenAndAttachments :one
+-- Checks if a challenge is hidden
+SELECT hidden, attachments FROM challenges WHERE id = $1;

@@ -67,3 +67,15 @@ func GetTagsByChallenge(ctx context.Context, challengeID int32) ([]string, error
 
 	return tags, nil
 }
+
+func GetHiddenAndAttachments(ctx context.Context, challengeID int32) (*sqlc.GetHiddenAndAttachmentsRow, error) {
+	res, err := Sql.GetHiddenAndAttachments(ctx, challengeID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &res, nil
+}

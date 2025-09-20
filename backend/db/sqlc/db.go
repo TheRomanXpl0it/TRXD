@@ -93,6 +93,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getFlagsByChallengeStmt, err = db.PrepareContext(ctx, getFlagsByChallenge); err != nil {
 		return nil, fmt.Errorf("error preparing query GetFlagsByChallenge: %w", err)
 	}
+	if q.getHiddenAndAttachmentsStmt, err = db.PrepareContext(ctx, getHiddenAndAttachments); err != nil {
+		return nil, fmt.Errorf("error preparing query GetHiddenAndAttachments: %w", err)
+	}
 	if q.getInstanceStmt, err = db.PrepareContext(ctx, getInstance); err != nil {
 		return nil, fmt.Errorf("error preparing query GetInstance: %w", err)
 	}
@@ -313,6 +316,11 @@ func (q *Queries) Close() error {
 	if q.getFlagsByChallengeStmt != nil {
 		if cerr := q.getFlagsByChallengeStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getFlagsByChallengeStmt: %w", cerr)
+		}
+	}
+	if q.getHiddenAndAttachmentsStmt != nil {
+		if cerr := q.getHiddenAndAttachmentsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getHiddenAndAttachmentsStmt: %w", cerr)
 		}
 	}
 	if q.getInstanceStmt != nil {
@@ -547,6 +555,7 @@ type Queries struct {
 	getConfigsStmt               *sql.Stmt
 	getDockerConfigsByIDStmt     *sql.Stmt
 	getFlagsByChallengeStmt      *sql.Stmt
+	getHiddenAndAttachmentsStmt  *sql.Stmt
 	getInstanceStmt              *sql.Stmt
 	getInstanceExpireStmt        *sql.Stmt
 	getInstanceInfoStmt          *sql.Stmt
@@ -610,6 +619,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getConfigsStmt:               q.getConfigsStmt,
 		getDockerConfigsByIDStmt:     q.getDockerConfigsByIDStmt,
 		getFlagsByChallengeStmt:      q.getFlagsByChallengeStmt,
+		getHiddenAndAttachmentsStmt:  q.getHiddenAndAttachmentsStmt,
 		getInstanceStmt:              q.getInstanceStmt,
 		getInstanceExpireStmt:        q.getInstanceExpireStmt,
 		getInstanceInfoStmt:          q.getInstanceInfoStmt,
