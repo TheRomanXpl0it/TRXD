@@ -25,6 +25,7 @@ const (
 const (
 	Unauthorized        = "Unauthorized"
 	Forbidden           = "Forbidden"
+	NotFound            = "Endpoint not found"
 	InternalServerError = "Internal server error"
 
 	AlreadyAnActiveInstance = "Already an active instance"
@@ -32,11 +33,10 @@ const (
 	AlreadyLoggedIn         = "Already logged in"
 	AlreadyRegistered       = "Already registered"
 
-	ChallIDRequired          = "Challenge ID is required"
 	ChallengeNotInstanciable = "Challenge is not instanciable"
 
-	DisabledInstances    = "instances are disabled"
-	DisabledRegistration = "Registration is disabled"
+	DisabledInstances     = "instances are disabled"
+	DisabledRegistrations = "Registrations are disabled"
 
 	ErrorCreatingAttachmentsDir = "Error creating attachments directory"
 	ErrorCreatingCategory       = "Error creating category"
@@ -82,7 +82,7 @@ const (
 	InvalidFormData        = "Invalid form data"
 	InvalidImage           = "Invalid image"
 	InvalidJSON            = "Invalid JSON format"
-	InvalidMaxCpu          = "Max CPU must be a positive number"
+	InvalidMaxCpu          = "Invalid Max CPU, must be a positive number"
 	InvalidMultipartForm   = "Invalid multipart form"
 	InvalidTeamCredentials = "Invalid name or password"
 	InvalidTeamID          = "Invalid team ID, must be non negative"
@@ -103,7 +103,6 @@ const (
 	CategoryNotFound  = "Category not found"
 	ChallengeNotFound = "Challenge not found"
 	ConfigNotFound    = "Configuration not found"
-	EndpointNotFound  = "Endpoint not found"
 	InstanceNotFound  = "Instance not found"
 	TeamNotFound      = "Team not found"
 	UserNotFound      = "User not found"

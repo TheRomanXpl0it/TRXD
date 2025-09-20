@@ -18,11 +18,12 @@ import (
 type apiTestSession struct {
 	t        *testing.T
 	app      *fiber.App
+	global   bool
 	Cookies  []*http.Cookie
 	lastResp *http.Response
 }
 
-func NewApiTestSession(t *testing.T, app *fiber.App) *apiTestSession {
+func NewApiTestSession(t *testing.T, app *fiber.App, globalRequest ...bool) *apiTestSession {
 	s := &apiTestSession{
 		t:       t,
 		app:     app,
@@ -30,6 +31,10 @@ func NewApiTestSession(t *testing.T, app *fiber.App) *apiTestSession {
 	}
 
 	s.Get("/info", nil, http.StatusOK)
+
+	if len(globalRequest) > 0 && globalRequest[0] {
+		s.global = true
+	}
 
 	return s
 }
@@ -86,7 +91,9 @@ func (s *apiTestSession) Request(method string, url string, body interface{}, ex
 	if url[0] != '/' {
 		url = "/" + url
 	}
-	url = "/api" + url
+	if !s.global {
+		url = "/api" + url
+	}
 
 	req, err := http.NewRequest(method, url, bytes.NewReader(reqBody))
 	if err != nil {
@@ -155,7 +162,9 @@ func (s *apiTestSession) RequestMultipart(method string, url string, body map[st
 	if url[0] != '/' {
 		url = "/" + url
 	}
-	url = "/api" + url
+	if !s.global {
+		url = "/api" + url
+	}
 
 	req, err := http.NewRequest(method, url, &requestBody)
 	if err != nil {

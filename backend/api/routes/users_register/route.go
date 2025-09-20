@@ -16,7 +16,7 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingConfig, err)
 	}
 	if conf == nil || conf.Value != "true" {
-		return utils.Error(c, fiber.StatusForbidden, consts.DisabledRegistration)
+		return utils.Error(c, fiber.StatusForbidden, consts.DisabledRegistrations)
 	}
 
 	uid := c.Locals("uid")

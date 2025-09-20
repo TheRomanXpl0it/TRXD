@@ -70,7 +70,6 @@ func SetupApp() *fiber.App {
 	// TODO: put frontend
 	app.Static("/static", "./static")
 
-	//TODO: tests
 	app.Use("/attachments", spectator, team, middlewares.Attachments)
 	app.Static("/attachments", "./attachments", fiber.Static{
 		Download: true,
@@ -78,7 +77,7 @@ func SetupApp() *fiber.App {
 
 	// 404 handler
 	app.Use(func(c *fiber.Ctx) error {
-		return utils.Error(c, fiber.StatusNotFound, consts.EndpointNotFound)
+		return utils.Error(c, fiber.StatusNotFound, consts.NotFound)
 	})
 
 	return app

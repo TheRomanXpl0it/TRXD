@@ -106,7 +106,7 @@ func TestRoute(t *testing.T) {
 	test_utils.UpdateConfig(t, "allow-register", "false")
 	session := test_utils.NewApiTestSession(t, app)
 	session.Post("/register", JSON{"name": "test", "email": "allow@test.test", "password": "testpass"}, http.StatusForbidden)
-	session.CheckResponse(errorf(consts.DisabledRegistration))
+	session.CheckResponse(errorf(consts.DisabledRegistrations))
 
 	test_utils.UpdateConfig(t, "allow-register", "true")
 	session = test_utils.NewApiTestSession(t, app)
