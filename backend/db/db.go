@@ -34,15 +34,17 @@ func ConnectDB(info *utils.DBInfo, test ...bool) error {
 		return err
 	}
 
-	if info.MaxConnections <= 0 {
+	initStorage(info.RedisHost, info.RedisPort, info.RedisPassword)
+
+	if info.PgMaxConnections <= 0 {
 		log.Fatal("invalid max connections: must be greater than 0")
-	} else if info.MaxConnections > 100 {
+	} else if info.PgMaxConnections > 100 {
 		log.Warn("max connections is set to a high value, hard cap set to 100")
-		info.MaxConnections = 100
+		info.PgMaxConnections = 100
 	}
 
-	db.SetMaxOpenConns(info.MaxConnections)
-	db.SetMaxIdleConns(info.MaxConnections)
+	db.SetMaxOpenConns(info.PgMaxConnections)
+	db.SetMaxIdleConns(info.PgMaxConnections)
 	db.SetConnMaxIdleTime(time.Hour)
 
 	Sql = sqlc.New(db)
@@ -59,6 +61,9 @@ func ConnectDB(info *utils.DBInfo, test ...bool) error {
 }
 
 func CloseDB() {
+	if RedisStorage != nil {
+		RedisStorage.Close()
+	}
 	if Sql != nil {
 		Sql.Close()
 	}
@@ -110,11 +115,11 @@ func InitConfigs() error {
 	}
 
 	for key, value := range consts.DefaultConfigs {
-		conf, err := CreateConfig(context.Background(), key, value)
+		valid, err := CreateConfig(context.Background(), key, value)
 		if err != nil {
 			return fmt.Errorf("failed to create config for key %s=%v: %v", key, value, err)
 		}
-		if conf == nil {
+		if !valid {
 			return fmt.Errorf("failed to create config for key %s=%v: config already exists", key, value)
 		}
 	}

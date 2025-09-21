@@ -7,52 +7,82 @@ import (
 )
 
 type DBInfo struct {
-	User           string
-	Password       string
-	DBName         string
-	Host           string
-	Port           int
-	MaxConnections int
+	PgUser           string
+	PgPassword       string
+	PgDBName         string
+	PgHost           string
+	PgPort           int
+	PgMaxConnections int
+	RedisHost        string
+	RedisPort        int
+	RedisPassword    string
 }
 
 const connStrTemplate = "postgres://%s:%s@%s:%d/%s?sslmode=disable"
 
 func (info *DBInfo) ConnectionString() string {
-	return fmt.Sprintf(connStrTemplate, info.User, info.Password, info.Host, info.Port, info.DBName)
+	return fmt.Sprintf(connStrTemplate, info.PgUser, info.PgPassword, info.PgHost, info.PgPort, info.PgDBName)
 }
 
 func GetDBInfoFromEnv() (*DBInfo, error) {
-	portStr := os.Getenv("POSTGRES_PORT")
-	if portStr == "" {
-		portStr = "5432"
+	var err error
+	var pgPort int
+	var pgMaxConns int
+	var redisPort int
+
+	pgPortStr := os.Getenv("POSTGRES_PORT")
+	if pgPortStr != "" {
+		pgPort, err = strconv.Atoi(pgPortStr)
+		if err != nil {
+			return nil, fmt.Errorf("invalid POSTGRES_PORT: %v", err)
+		}
+	} else {
+		pgPort = 5432
 	}
-	port, err := strconv.Atoi(portStr)
-	if err != nil {
-		return nil, fmt.Errorf("invalid POSTGRES_PORT: %v", err)
+
+	pgHost := os.Getenv("POSTGRES_HOST")
+	if pgHost == "" {
+		pgHost = "localhost"
 	}
-	host := os.Getenv("POSTGRES_HOST")
-	if host == "" {
-		host = "localhost"
+
+	pgMaxConnsStr := os.Getenv("MAX_CONNECTIONS")
+	if pgMaxConnsStr != "" {
+		pgMaxConns, err = strconv.Atoi(pgMaxConnsStr)
+		if err != nil {
+			return nil, fmt.Errorf("invalid MAX_CONNECTIONS: %v", err)
+		}
+	} else {
+		pgMaxConns = 50
 	}
-	maxConnsStr := os.Getenv("MAX_CONNECTIONS")
-	if maxConnsStr == "" {
-		maxConnsStr = "50"
+
+	redisHost := os.Getenv("REDIS_HOST")
+	if redisHost == "" {
+		redisHost = "localhost"
 	}
-	maxConns, err := strconv.Atoi(maxConnsStr)
-	if err != nil {
-		return nil, fmt.Errorf("invalid MAX_CONNECTIONS: %v", err)
+
+	redisPortStr := os.Getenv("REDIS_PORT")
+	if redisPortStr == "" {
+		redisPort = 6379
+	} else {
+		redisPort, err = strconv.Atoi(redisPortStr)
+		if err != nil {
+			return nil, fmt.Errorf("invalid REDIS_PORT: %v", err)
+		}
 	}
 
 	info := DBInfo{
-		User:           os.Getenv("POSTGRES_USER"),
-		Password:       os.Getenv("POSTGRES_PASSWORD"),
-		DBName:         os.Getenv("POSTGRES_DB"),
-		Host:           host,
-		Port:           port,
-		MaxConnections: maxConns,
+		PgUser:           os.Getenv("POSTGRES_USER"),
+		PgPassword:       os.Getenv("POSTGRES_PASSWORD"),
+		PgDBName:         os.Getenv("POSTGRES_DB"),
+		PgHost:           pgHost,
+		PgPort:           pgPort,
+		PgMaxConnections: pgMaxConns,
+		RedisHost:        redisHost,
+		RedisPort:        redisPort,
+		RedisPassword:    os.Getenv("REDIS_PASSWORD"),
 	}
 
-	if info.User == "" || info.Password == "" || info.DBName == "" {
+	if info.PgUser == "" || info.PgPassword == "" || info.PgDBName == "" {
 		return nil, fmt.Errorf("POSTGRES_USER, POSTGRES_PASSWORD, and POSTGRES_DB must be set")
 	}
 

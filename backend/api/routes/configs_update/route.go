@@ -27,11 +27,11 @@ func Route(c *fiber.Ctx) error {
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorUpdatingConfig, err)
 	}
-	if conf == nil {
+	if conf == "" {
 		return utils.Error(c, fiber.StatusNotFound, consts.ConfigNotFound)
 	}
 
-	if conf.Value == data.Value {
+	if conf == data.Value {
 		return c.SendStatus(fiber.StatusOK) // No change needed
 	}
 

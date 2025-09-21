@@ -38,6 +38,7 @@ import (
 	"trxd/api/routes/users_password"
 	"trxd/api/routes/users_register"
 	"trxd/api/routes/users_update"
+	"trxd/db"
 	"trxd/utils"
 	"trxd/utils/consts"
 
@@ -106,7 +107,7 @@ func SetupFeatures(app *fiber.App) {
 		CookieSameSite:    fiber.CookieSameSiteLaxMode,
 		CookieSessionOnly: true,
 		Expiration:        1 * time.Hour,
-		Session:           middlewares.Store,
+		Session:           db.Store,
 	}))
 
 	app.Use(favicon.New(favicon.Config{

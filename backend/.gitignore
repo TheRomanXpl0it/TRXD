@@ -1,5 +1,7 @@
 pgdata/
 .pgdata/
+redis_data/
+.redis_data/
 tmp/
 attachments/
 

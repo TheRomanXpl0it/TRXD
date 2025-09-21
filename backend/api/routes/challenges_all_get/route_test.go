@@ -183,11 +183,11 @@ func TestRoute(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to get config: %v", err)
 	}
-	if conf == nil {
+	if conf == "" {
 		t.Fatal("Expected config to not be nil")
 	}
 	var lifetime int
-	_, err = fmt.Sscanf(conf.Value, "%d", &lifetime)
+	_, err = fmt.Sscanf(conf, "%d", &lifetime)
 	if err != nil {
 		t.Fatalf("Failed to parse config value: %v", err)
 	}

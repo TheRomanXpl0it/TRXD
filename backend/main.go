@@ -44,12 +44,12 @@ func Flags() {
 		if err != nil {
 			log.Fatal("Error getting allow-register config", "err", err)
 		}
-		if conf == nil {
+		if conf == "" {
 			log.Fatal("allow-register config not found")
 		}
 
 		var toggle string
-		if conf != nil && conf.Value == "false" {
+		if conf == "false" {
 			toggle = "true"
 		} else {
 			toggle = "false"

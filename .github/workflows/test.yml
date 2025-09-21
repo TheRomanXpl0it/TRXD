@@ -11,6 +11,7 @@ env:
   POSTGRES_USER: testuser
   POSTGRES_PASSWORD: testpass
   POSTGRES_PORT: 2345
+  REDIS_PORT: 9736
   CLICOLOR_FORCE: 1
   TEST_WORKERS: 100
   TESTING: true
@@ -32,31 +33,21 @@ jobs:
 
   tests:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:15
-        ports:
-          - 2345:5432
-        env:
-          POSTGRES_USER: testuser
-          POSTGRES_PASSWORD: testpass
-          POSTGRES_DB: testdb
-        options: >-
-          --health-cmd="pg_isready -U testuser -d testdb"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
     
+    - name: Set up Infra
+      run: |
+        cd ../
+        docker compose -p trxd-test-pipeline up -d postgres redis
+
     - name: Build Test Service
       run: |
         cd ../tests/echo-server
         chmod +x ./build.sh
         ./build.sh
-        cd -
 
     - name: Set up Go
       uses: actions/setup-go@v5
@@ -81,7 +72,7 @@ jobs:
 
     - name: Wait for Postgres
       run: |
-        until pg_isready -h localhost -p 2345 -U testuser -d testdb; do
+        until pg_isready -h localhost -p $POSTGRES_PORT -U testuser -d testdb; do
           echo "Waiting for Postgres..."
           sleep 2
         done
@@ -92,7 +83,7 @@ jobs:
 
     - name: Run Go Unit tests
       run: |
-        go test -p=8 -v ./...
+        go test -p=1 -v ./...
 
     - name: Run Python Integration tests
       run: |
@@ -126,3 +117,8 @@ jobs:
 
         cd -
         kill $(cat ./server.pid)
+
+    - name: Infra Teardown
+      run: |
+        cd ../
+        docker compose -p trxd-test-pipeline down

@@ -23,5 +23,14 @@ dist-ssr
 *.sln
 *.sw?
 
+# Data
+.env
+pgdata/
+.pgdata/
+pg_data/
+.pg_data/
+redis_data/
+.redis_data/
+
 # Other files
 *.bashrc

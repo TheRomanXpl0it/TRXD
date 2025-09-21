@@ -1,8 +1,8 @@
 package users_login
 
 import (
-	"trxd/api/middlewares"
 	"trxd/api/validator"
+	"trxd/db"
 	"trxd/utils"
 	"trxd/utils/consts"
 
@@ -36,7 +36,7 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusUnauthorized, consts.InvalidCredentials)
 	}
 
-	sess, err := middlewares.Store.Get(c)
+	sess, err := db.Store.Get(c)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingSession, err)
 	}

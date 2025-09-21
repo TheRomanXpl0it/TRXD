@@ -36,19 +36,17 @@ func OpenTestDB(testDBName string) error {
 	}
 	defer tmp_db.Exec(fmt.Sprintf(`DROP DATABASE IF EXISTS %s;`, testDBName))
 
-	info.DBName = testDBName
-	err = setupTestDB(info)
+	info.PgDBName = testDBName
+	err = ConnectDB(info, true)
 	if err != nil {
 		return err
 	}
 
-	return nil
-}
-
-func setupTestDB(info *utils.DBInfo) error {
-	err := ConnectDB(info, true)
-	if err != nil {
-		return err
+	if RedisStorage != nil {
+		err = RedisStorage.Reset()
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

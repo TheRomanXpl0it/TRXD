@@ -1,7 +1,6 @@
 package users_register
 
 import (
-	"trxd/api/middlewares"
 	"trxd/api/validator"
 	"trxd/db"
 	"trxd/utils"
@@ -15,7 +14,7 @@ func Route(c *fiber.Ctx) error {
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingConfig, err)
 	}
-	if conf == nil || conf.Value != "true" {
+	if conf != "true" {
 		return utils.Error(c, fiber.StatusForbidden, consts.DisabledRegistrations)
 	}
 
@@ -46,7 +45,7 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusConflict, consts.UserAlreadyExists)
 	}
 
-	sess, err := middlewares.Store.Get(c)
+	sess, err := db.Store.Get(c)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingSession, err)
 	}

@@ -44,7 +44,7 @@ func BroadcastFirstBlood(ctx context.Context, challenge *sqlc.Challenge, uid int
 		log.Error("Failed to fetch webhook url:", "err", err)
 		return
 	}
-	if conf == nil || conf.Value == "" {
+	if conf == "" {
 		return
 	}
 
@@ -60,7 +60,7 @@ func BroadcastFirstBlood(ctx context.Context, challenge *sqlc.Challenge, uid int
 	msg := fmt.Sprintf("First blood for **%s** goes to **%s**! 🩸", challengeName, teamName)
 	body := map[string]string{"content": msg}
 
-	if err := BroadcastWebhook(conf.Value, body); err != nil {
+	if err := BroadcastWebhook(conf, body); err != nil {
 		log.Error("Failed to send webhook:", "err", err)
 	}
 }

@@ -10,7 +10,7 @@ import (
 )
 
 func NoAuth(c *fiber.Ctx) error {
-	sess, err := Store.Get(c)
+	sess, err := db.Store.Get(c)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingSession, err)
 	}
@@ -37,7 +37,7 @@ func NoAuth(c *fiber.Ctx) error {
 }
 
 func Spectator(c *fiber.Ctx) error {
-	sess, err := Store.Get(c)
+	sess, err := db.Store.Get(c)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingSession, err)
 	}
@@ -75,7 +75,7 @@ func Team(c *fiber.Ctx) error {
 }
 
 func Player(c *fiber.Ctx) error {
-	sess, err := Store.Get(c)
+	sess, err := db.Store.Get(c)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingSession, err)
 	}
@@ -106,7 +106,7 @@ func Player(c *fiber.Ctx) error {
 }
 
 func Author(c *fiber.Ctx) error {
-	sess, err := Store.Get(c)
+	sess, err := db.Store.Get(c)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingSession, err)
 	}
@@ -135,7 +135,7 @@ func Author(c *fiber.Ctx) error {
 }
 
 func Admin(c *fiber.Ctx) error {
-	sess, err := Store.Get(c)
+	sess, err := db.Store.Get(c)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingSession, err)
 	}

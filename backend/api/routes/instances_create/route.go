@@ -36,7 +36,7 @@ func Route(c *fiber.Ctx) error {
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingConfig, err)
 	}
-	if secret == nil || secret.Value == "" {
+	if secret == "" {
 		return utils.Error(c, fiber.StatusForbidden, consts.DisabledInstances)
 	}
 
