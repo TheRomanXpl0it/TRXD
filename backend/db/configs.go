@@ -26,14 +26,7 @@ func CreateConfig(ctx context.Context, key string, value any) (bool, error) {
 		return false, err
 	}
 
-	if RedisStorage == nil {
-		return true, nil
-	}
-
-	if val == "" {
-		val = "\x00"
-	}
-	err = RedisStorage.SetWithContext(ctx, key, []byte(val), 0)
+	err = StorageSet(ctx, key, val)
 	if err != nil {
 		return false, err
 	}
@@ -52,14 +45,7 @@ func UpdateConfig(ctx context.Context, key string, value any) error {
 		return err
 	}
 
-	if RedisStorage == nil {
-		return nil
-	}
-
-	if val == "" {
-		val = "\x00"
-	}
-	err = RedisStorage.SetWithContext(ctx, key, []byte(val), 0)
+	err = StorageSet(ctx, key, val)
 	if err != nil {
 		return err
 	}
@@ -76,15 +62,7 @@ func GetCompleteConfig(ctx context.Context, key string) (*sqlc.Config, error) {
 		return nil, err
 	}
 
-	if RedisStorage == nil {
-		return &config, nil
-	}
-
-	val := config.Value
-	if val == "" {
-		val = "\x00"
-	}
-	err = RedisStorage.SetWithContext(ctx, key, []byte(val), 0)
+	err = StorageSet(ctx, key, config.Value)
 	if err != nil {
 		return nil, err
 	}
@@ -93,17 +71,12 @@ func GetCompleteConfig(ctx context.Context, key string) (*sqlc.Config, error) {
 }
 
 func GetConfig(ctx context.Context, key string) (string, error) {
-	if RedisStorage != nil {
-		val, err := RedisStorage.GetWithContext(ctx, key)
-		if err != nil {
-			return "", err
-		}
-		if val != nil {
-			if string(val) == "\x00" {
-				return "", nil
-			}
-			return string(val), nil
-		}
+	val, err := StorageGet(ctx, key)
+	if err != nil {
+		return "", err
+	}
+	if val != nil {
+		return *val, nil
 	}
 
 	config, err := GetCompleteConfig(ctx, key)

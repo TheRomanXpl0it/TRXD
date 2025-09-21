@@ -69,6 +69,7 @@ func SetupApp() *fiber.App {
 	SetupApi(app)
 
 	// TODO: put frontend
+	// app.Static("/", "./frontend")
 	app.Static("/static", "./static")
 
 	app.Use("/attachments", spectator, team, middlewares.Attachments)

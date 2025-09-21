@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"os"
 	"time"
 	"trxd/utils/consts"
@@ -11,7 +12,7 @@ import (
 	"github.com/tde-nico/log"
 )
 
-var RedisStorage *redis.Storage
+var redisStorage *redis.Storage
 var Store *session.Store
 
 func initStorage(host string, port int, password string) {
@@ -22,7 +23,7 @@ func initStorage(host string, port int, password string) {
 	}
 
 	if os.Getenv("REDIS_DISABLED") == "" {
-		RedisStorage = redis.New(redis.Config{
+		redisStorage = redis.New(redis.Config{
 			Host:      host,
 			Port:      port,
 			Password:  password,
@@ -30,10 +31,60 @@ func initStorage(host string, port int, password string) {
 			Reset:     false,
 			TLSConfig: nil,
 		})
-		storeConf.Storage = RedisStorage
+		storeConf.Storage = redisStorage
 	} else if !consts.Testing {
 		log.Warn("Redis storage disabled")
 	}
 
 	Store = session.New(storeConf)
+}
+
+func StorageSet(ctx context.Context, key string, val string) error {
+	if redisStorage == nil {
+		return nil
+	}
+
+	if val == "" {
+		val = "\x00"
+	}
+	err := redisStorage.SetWithContext(ctx, key, []byte(val), 0)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func StorageGet(ctx context.Context, key string) (*string, error) {
+	if redisStorage == nil {
+		return nil, nil
+	}
+
+	val, err := redisStorage.GetWithContext(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+	if val == nil {
+		return nil, nil
+	}
+
+	strVal := string(val)
+	if strVal == "\x00" {
+		strVal = ""
+	}
+
+	return &strVal, nil
+}
+
+func StorageFlush() error {
+	if redisStorage == nil {
+		return nil
+	}
+
+	err := redisStorage.Reset()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

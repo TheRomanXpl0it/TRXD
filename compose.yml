@@ -1,5 +1,25 @@
 
 services:
+  app:
+    build: .
+    restart: always
+    ports:
+      - "80:1337"
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./attachments:/app/attachments
+    command: ["tail", "-f", "/dev/null"]  # Keeps the container running for debugging
+
   postgres:
     image: postgres:18rc1-alpine
     restart: always

@@ -42,11 +42,9 @@ func OpenTestDB(testDBName string) error {
 		return err
 	}
 
-	if RedisStorage != nil {
-		err = RedisStorage.Reset()
-		if err != nil {
-			return err
-		}
+	err = StorageFlush()
+	if err != nil {
+		return err
 	}
 
 	return nil

@@ -1,5 +1,4 @@
-BETA:
-	- attachments tests
+QOS:
 	- error generator for tests
 	- split main.go flag function
 	- resolve TODOs left into the code
@@ -9,7 +8,6 @@ ALPHA:
 	- dockerize 🙏
 	- config to start and end ctf
 	- nginx
-	- redis
 	- expose frontend
 	- integration tests (for generic behaviour)
 	- tests for distributed functioning
