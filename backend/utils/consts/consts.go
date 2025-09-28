@@ -1,6 +1,6 @@
 package consts
 
-const Name = "trxd"
+const Name = "TRXd"
 
 const (
 	MaxBioLen             = 10240
@@ -25,8 +25,8 @@ const (
 const (
 	Unauthorized        = "Unauthorized"
 	Forbidden           = "Forbidden"
-	NotFound            = "Endpoint not found"
-	InternalServerError = "Internal server error"
+	NotFound            = "Not Found"
+	InternalServerError = "Internal Server Error"
 
 	AlreadyAnActiveInstance = "Already an active instance"
 	AlreadyInTeam           = "Already in a team"
@@ -35,7 +35,7 @@ const (
 
 	ChallengeNotInstanciable = "Challenge is not instanciable"
 
-	DisabledInstances     = "instances are disabled"
+	DisabledInstances     = "Instances are disabled"
 	DisabledRegistrations = "Registrations are disabled"
 
 	ErrorCreatingAttachmentsDir = "Error creating attachments directory"
@@ -107,7 +107,7 @@ const (
 	TeamNotFound      = "Team not found"
 	UserNotFound      = "User not found"
 
-	MissingLifetime       = "global lifetime is missing"
+	MissingLifetime       = "Global lifetime is missing"
 	MissingRequiredFields = "Missing required fields"
 	NoDataToUpdate        = "No data provided to update"
 	NotLoggedIn           = "Not logged in"

@@ -69,7 +69,7 @@ func SetupApp() *fiber.App {
 	SetupApi(app)
 
 	// TODO: put frontend
-	// app.Static("/", "./frontend")
+	app.Static("/", "./frontend")
 	app.Static("/static", "./static")
 
 	app.Use("/attachments", spectator, team, middlewares.Attachments)
@@ -116,7 +116,9 @@ func SetupFeatures(app *fiber.App) {
 		URL:  "/favicon.ico",
 	}))
 
-	app.Get("/monitor", admin, monitor.New(monitor.Config{Title: consts.Name + " Monitor"}))
+	app.Get("/monitor", admin, monitor.New(monitor.Config{
+		Title: consts.Name + " Monitor",
+	}))
 }
 
 func SetupApi(app *fiber.App) {
