@@ -3,7 +3,6 @@ package instancer
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"strconv"
 	"time"
 	"trxd/db"
@@ -13,12 +12,9 @@ import (
 	"github.com/docker/cli/cli/flags"
 	"github.com/docker/compose/v2/pkg/api"
 	"github.com/docker/compose/v2/pkg/compose"
-	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/tde-nico/log"
 )
-
-const SHARED_NETWORK = consts.Name + "_shared"
 
 var cli *client.Client
 var composeCli api.Service
@@ -45,14 +41,6 @@ func InitInstancer() error {
 	}
 
 	composeCli = compose.NewComposeService(dockerCli)
-
-	_, err = cli.NetworkCreate(context.Background(), SHARED_NETWORK, network.CreateOptions{})
-	if err != nil {
-		e := fmt.Sprintf("Error response from daemon: network with name %s already exists", SHARED_NETWORK)
-		if err.Error() != e {
-			return err
-		}
-	}
 
 	return nil
 }

@@ -3,9 +3,12 @@ package instancer
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/docker/compose/v2/pkg/api"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/network"
 	"github.com/tde-nico/log"
 )
 
@@ -19,6 +22,36 @@ func DeleteInstance(ctx context.Context, tid int32, challID int32, dockerID sql.
 		} else {
 			err = KillCompose(ctx, dockerID.String)
 		}
+		if err != nil {
+			return err
+		}
+	}
+
+	if cli != nil {
+		args := filters.NewArgs()
+		args.Add("name", fmt.Sprintf("net_%d_%d", tid, challID))
+		summary, err := cli.NetworkList(ctx, network.ListOptions{
+			Filters: args,
+		})
+		if err != nil {
+			return err
+		}
+		if len(summary) != 1 {
+			return fmt.Errorf("expected 1 network, got %d", len(summary))
+		}
+
+		nginxID, err := FetchNginxID(ctx)
+		if err != nil {
+			return err
+		}
+
+		// TODO: if fails continue to remove container (maybe log error)
+		err = cli.NetworkDisconnect(ctx, summary[0].ID, nginxID, true)
+		if err != nil {
+			return err
+		}
+
+		err = cli.NetworkRemove(ctx, summary[0].ID)
 		if err != nil {
 			return err
 		}

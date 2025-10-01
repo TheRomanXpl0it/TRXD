@@ -61,7 +61,7 @@ BEGIN
   UPDATE docker_configs SET image='echo-server:latest', hash_domain=TRUE WHERE chall_id=(SELECT id FROM challenges WHERE name='chall-3');
   UPDATE docker_configs SET compose='
 services:
-  app:
+  chall:
     image: echo-server:latest
     container_name: chall_333333333333
     ports:

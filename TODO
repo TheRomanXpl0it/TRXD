@@ -1,4 +1,5 @@
 QOS:
+	- flag strip on submit
 	- change csrf token name
 	- error generator for tests
 	- split main.go flag function
@@ -7,6 +8,7 @@ QOS:
 	- change attachments system to its own table in db
 
 ALPHA:
+	- after X cacel pipeline
 	- dockerize 🙏
 	- config to start and end ctf
 	- expose frontend
