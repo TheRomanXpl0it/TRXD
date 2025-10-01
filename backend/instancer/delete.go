@@ -36,24 +36,23 @@ func DeleteInstance(ctx context.Context, tid int32, challID int32, dockerID sql.
 		if err != nil {
 			return err
 		}
-		if len(summary) != 1 {
-			return fmt.Errorf("expected 1 network, got %d", len(summary))
-		}
+		// TODO: check if should need a network
+		if len(summary) == 1 {
+			nginxID, err := FetchNginxID(ctx)
+			if err != nil {
+				return err
+			}
 
-		nginxID, err := FetchNginxID(ctx)
-		if err != nil {
-			return err
-		}
+			// TODO: if fails continue to remove container (maybe log error)
+			err = cli.NetworkDisconnect(ctx, summary[0].ID, nginxID, true)
+			if err != nil {
+				return err
+			}
 
-		// TODO: if fails continue to remove container (maybe log error)
-		err = cli.NetworkDisconnect(ctx, summary[0].ID, nginxID, true)
-		if err != nil {
-			return err
-		}
-
-		err = cli.NetworkRemove(ctx, summary[0].ID)
-		if err != nil {
-			return err
+			err = cli.NetworkRemove(ctx, summary[0].ID)
+			if err != nil {
+				return err
+			}
 		}
 	}
 

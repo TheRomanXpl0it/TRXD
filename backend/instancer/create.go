@@ -33,7 +33,8 @@ type InstanceInfo struct {
 
 func FetchNginxID(ctx context.Context) (string, error) {
 	args := filters.NewArgs()
-	args.Add("name", "trxd-nginx-1") // TODO: make dynamic
+	// args.Add("name", "trxd-nginx-1") // TODO: make dynamic
+	args.Add("name", "trxd-test-pipeline-nginx-1") // TODO: make dynamic
 	summary, err := cli.ContainerList(ctx, container.ListOptions{
 		Filters: args,
 	})
