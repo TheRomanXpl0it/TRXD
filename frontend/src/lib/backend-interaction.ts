@@ -3,6 +3,7 @@ import type { Team, AuthProps, User } from "@/context/AuthProvider";
 import axios from "axios";
 import type { Challenge as ChallengeType } from "@/context/ChallengeProvider";
 
+
 export async function getChallengesData(){
     // Simulate file attachments as objects with name and url
 
@@ -327,5 +328,30 @@ export async function stopInstance(challengeId: number){
     }
     console.error("Unexpected error during instance stop:", error);
     return { status: 500, data: { message: "Unexpected error occurred" } };
+  }
+}
+
+export async function getScoreboard(){
+  try{
+    const response = await api.get("/scoreboard");
+    for (let i = 0; i < response.data.length; i++) {
+      response.data[i].ranking = i + 1; // Add rank based on position
+    }
+    return response.data;
+  }
+  catch (error) {
+    console.error("Error fetching scoreboard data:", error);
+    return [];
+  }
+}
+
+export async function getChartData(){
+  try{
+    const response = await api.get("/scoreboard");
+    return response.data;
+  }
+  catch (error) {
+    console.error("Error fetching chart data:", error);
+    return [];
   }
 }

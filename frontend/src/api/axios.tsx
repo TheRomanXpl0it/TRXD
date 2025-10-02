@@ -1,23 +1,42 @@
 import axios from "axios";
 
-const baseURL = '/api';
+const baseURL = "/api";
 
 export const api = axios.create({
   baseURL,
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true,
+  withCredentials: true, // send cookies
 });
 
-// A place to store your logout handler
+// Utility to read cookie by name
+function getCookie(name: string): string | null {
+  return (
+    document.cookie
+      .split("; ")
+      .find((row) => row.startsWith(name + "="))
+      ?.split("=")[1] ?? null
+  );
+}
+
+// Attach CSRF token automatically
+api.interceptors.request.use((config) => {
+  const csrf = getCookie("csrf_");
+  if (csrf) {
+    config.headers["X-CSRF-Token"] = csrf;
+  }
+  return config;
+});
+
+// Optional unauthorized handler storage
 let unauthorizedHandler: (() => void) | null = null;
 
 export function setUnauthorizedHandler(handler: () => void) {
   unauthorizedHandler = handler;
 }
 
-// Interceptor
+// Response interceptor
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -25,5 +44,5 @@ api.interceptors.response.use(
       unauthorizedHandler();
     }
     return Promise.reject(error);
-  }
+  },
 );

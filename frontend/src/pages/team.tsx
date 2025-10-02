@@ -65,7 +65,6 @@ export function Team() {
   if (!auth){
     toast.error("You must be logged in to view team information.");
     navigate("/login");
-    return;
   }
 
   const effectiveTeamId = teamIdParam ? parseInt(teamIdParam, 10) : auth.teamId;

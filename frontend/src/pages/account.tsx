@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/table"
 import { UserCategoryRing } from "@/components/UserCategoryRing";
 import type { Solve } from "@/context/AuthProvider";
+import { useChallenges } from "@/context/ChallengeProvider";
 
 function userSolves(user: User) {
     if (!user.solves || user.solves.length === 0) return "No solves yet";
@@ -70,13 +71,35 @@ export function Account() {
     }
   }, [username]);
 
+  const { challenges, categories: categoryNames } = useChallenges();
+  const totalsByCategory = new Map<string, number>();
   if (!user) return <Loading />;
-  const categories = [
-    { key: "web", label: "Web", count: 18, color: "#10b981" },
-    { key: "pwn", label: "Pwn", count: 9,  color: "#3b82f6" },
-    { key: "rev", label: "Reversing", count: 6, color: "#a855f7" },
-    { key: "crypto", label: "Crypto", count: 3, color: "#f59e0b" },
-  ];
+  categoryNames.forEach((cat) => {
+    totalsByCategory.set(cat, 0);
+  });
+  challenges.forEach((ch) => {
+    const cat = ch.category;
+    totalsByCategory.set(cat, (totalsByCategory.get(cat) ?? 0) + 1);
+  });
+  const solvedByCategory = new Map<string, number>();
+  (user.solves ?? []).forEach((s) => {
+    const cat = s.category;
+    solvedByCategory.set(cat, (solvedByCategory.get(cat) ?? 0) + 1);
+  });
+  const colorList = Array.from(
+    { length: Math.max(1, totalsByCategory.size) },
+    (_, i) =>
+      `hsl(${Math.round((360 / Math.max(1, totalsByCategory.size)) * i)}, 70%, 50%)`,
+  );
+  let __idx = 0;
+  const ringCategories = Array.from(totalsByCategory.entries())
+    .map(([key, total]) => {
+      const solved = solvedByCategory.get(key) ?? 0;
+      const color = colorList[__idx++ % colorList.length];
+      return { key, label: key, total, solved, color };
+    })
+    .filter((c) => c.total > 0);
+  console.log(user)
 
   return (
     <>
@@ -90,8 +113,12 @@ export function Account() {
         )}
         <div className="flex justify-center items-center mt-6 mr-10 gap-20">
           <UserCategoryRing
-            totalSolves={categories.reduce((s, c) => s + c.count, 0)}
-            categories={categories}
+            totalSolves={ringCategories.reduce(
+              (s, c) => s + (c.solved ?? 0),
+              0,
+            )}
+            teamSolves={user.solves as Solve[]}
+            categories={ringCategories}
             size={100}
             strokeWidth={16}
           />

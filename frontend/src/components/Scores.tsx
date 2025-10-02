@@ -10,8 +10,21 @@ export type Player = {
   badges: string[]
   username: string
 }
+
+export type Badge = {
+  name: string;
+  description: string;
+}
+
+export type ScoreboardEntry = {
+  ranking: number;
+  playerId: number;
+  name: string;
+  score: number;
+  badges: Badge[];
+}
  
-export const columns: ColumnDef<Player>[] = [
+export const columns: ColumnDef<ScoreboardEntry>[] = [
   {
     accessorKey: "ranking",
     header: "Ranking",
@@ -21,7 +34,7 @@ export const columns: ColumnDef<Player>[] = [
     header: "Score",
   },
   {
-    accessorKey: "username",
+    accessorKey: "name",
     header: "Username",
   },
   {
