@@ -28,13 +28,13 @@ export function AppSidebar() {
     const { auth, logout } = useContext(AuthContext);
     const { settings } = useContext(SettingContext);
 
-    const isLoggedIn = auth && auth.username !== null && auth.username !== "";
+    const isLoggedIn = auth && auth.name !== null && auth.name !== "";
     const isAdmin = auth && auth.role === 'Admin';
 
     const allowWriteups = settings.General.find((setting) => setting.title === 'Allow Writeups')?.value;
     const allowTeamPlay = settings.General.find((setting) => setting.title === 'Allow Team Play')?.value;
 
-    let loggedInItems = [
+    const loggedInItems = [
         {
             title: 'Account',
             icon: UserPen,
@@ -42,7 +42,7 @@ export function AppSidebar() {
         }
     ];
 
-    let items = [
+    const items = [
         {
             title: 'Home',
             icon: Home,
@@ -60,7 +60,7 @@ export function AppSidebar() {
         },
     ];
     
-    let adminItems = [
+    const adminItems = [
         {
             title: 'Settings',
             icon: Settings,
@@ -92,7 +92,7 @@ export function AppSidebar() {
             <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <SidebarMenuButton>
-                <User/> {auth.username}
+                <User/> {auth.name}
                 <ChevronUp className="ml-auto" />
                 </SidebarMenuButton>
             </DropdownMenuTrigger>

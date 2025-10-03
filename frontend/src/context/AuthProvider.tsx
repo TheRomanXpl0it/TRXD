@@ -17,31 +17,31 @@ type Team = {
   members: TeamMember[];
   badges?: Badge[];
   score: number;
-  solves?: TeamSolves[];
+  solves?: Solve[];
   bio?: string;
 
 };
 
 type Solve = {
-  challengeId: number;
-  solveTimestamp: string;
-}
-
-type Badge = {
-  description: string;
-  name: string;
-}
-
-type TeamSolves = {
-  category: string;
   id: number;
   name: string;
+  points: number;
+  category: string;
   timestamp: string;
+  first_blood?: boolean;
+}
+
+export type Badge = {
+  id?: number;
+  description: string;
+  name: string;
+  icon?: string;
+  
 }
 
 type User = {
   id: number;
-  username: string;
+  name: string;
   role: string;
   profilePicture?: string;
   score: number;
@@ -54,14 +54,15 @@ type User = {
 
 type TeamMember = {
   id: number;
-  username: string;
+  name: string;
   role: string;
   score: number;
+  profilePicture?: string;
 }
 
 interface AuthProps {
   id: number;
-  username: string;
+  name: string;
   role: string;
   teamId: number | null;
 }
@@ -71,7 +72,7 @@ function isAuthProps(obj: any): obj is AuthProps {
     typeof obj === "object" &&
     obj !== null &&
     "id" in obj &&
-    "username" in obj &&
+    "name" in obj &&
     "role" in obj
   );
 }
@@ -92,7 +93,7 @@ function isTeam(obj: any): obj is Team {
             typeof member === "object" &&
             member !== null &&
             typeof member.id === "number" &&
-            typeof member.username === "string" &&
+            typeof member.name === "string" &&
             typeof member.role === "string" &&
             typeof member.score === "number"
         )

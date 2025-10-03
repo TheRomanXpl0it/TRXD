@@ -297,7 +297,6 @@ export function UserCategoryRing({
                   {categorySegments.map((seg) => {
                     const total = seg.total;
                     const solved = seg.solved;
-                    const unsolved = total - solved;
                     const pct = Math.round((solved / (total || 1)) * 100);
                     return (
                       <div key={seg.key} className="flex items-center gap-2">
@@ -307,7 +306,7 @@ export function UserCategoryRing({
                         />
                         <span className="truncate">{seg.label ?? seg.key}</span>
                         <span className="ml-auto tabular-nums">
-                          {solved}/{total} ({unsolved}) {pct}%
+                          {solved}/{total} {pct}%
                         </span>
                       </div>
                     );
@@ -324,8 +323,7 @@ export function UserCategoryRing({
                   <span className="font-medium">{hover.label}</span>
                 </div>
                 <div className="mt-1 tabular-nums">
-                  {hover.solved}/{hover.solved + hover.unsolved} (
-                  {hover.unsolved}){" "}
+                  {hover.solved}/{hover.solved + hover.unsolved}{"  "}
                   {Math.round(
                     (hover.solved / (hover.solved + hover.unsolved || 1)) * 100,
                   )}

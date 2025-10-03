@@ -17,43 +17,51 @@ import {
 import { UserCategoryRing } from "@/components/UserCategoryRing";
 import type { Solve } from "@/context/AuthProvider";
 import { useChallenges } from "@/context/ChallengeProvider";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 function userSolves(user: User) {
     if (!user.solves || user.solves.length === 0) return "No solves yet";
     return (
     <Table>
-        <TableCaption>{user.username}'s Solves</TableCaption>
+        <TableCaption>{user.name}'s Solves</TableCaption>
         <TableHeader>
             <TableRow>
-            <TableHead className="w-[100px]">Challenge</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Method</TableHead>
-            <TableHead className="text-right">Points</TableHead>
+              <TableHead>Challenge</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Solved at</TableHead>
+              <TableHead>Points</TableHead>
             </TableRow>
         </TableHeader>
         <TableBody>
-            <TableRow>
-            <TableCell className="font-medium">INV001</TableCell>
-            <TableCell>Paid</TableCell>
-            <TableCell>Credit Card</TableCell>
-            <TableCell className="text-right">$250.00</TableCell>
-            </TableRow>
+            {user.solves.map((solve) => (
+              <TableRow key={solve.id}>
+                <TableCell>{solve.name}</TableCell>
+                <TableCell>{solve.category}</TableCell>
+                <TableCell>{new Date(solve.timestamp).toLocaleString()}</TableCell>
+                <TableCell>{solve.points}</TableCell>
+              </TableRow>
+            ))}
         </TableBody>
         </Table>
     );
 
 }
 
+function userBadges(user: User) {
+  
+}
+
 export function Account() {
     const { username } = useParams<{ username?: string }>(); // undefined if you're on /account
     const { settings } = useContext(SettingContext);
     const showQuotes = settings.General?.find((setting) => setting.title === 'Show Quotes')?.value;
+    const allowTeamPlay = settings.General?.find((setting) => setting.title === 'Allow Team Play')?.value;
     const userId = username ? Number(username) : -1;
     const [user, setUser] = useState<User | null>(null);
     const auth = useContext(AuthContext).auth;
 
   useEffect(() => {
-    let userData: User | null = { id: -1, username: "", role:"", score:-1, email: "", country: "", joinedAt: "", solves: [], teamId: null };
+    let userData: User | null = { id: -1, name: "", role:"", score:-1, email: "", country: "", joinedAt: "", solves: [], teamId: null };
     if (username) {
       // Visiting someone else's profile
       (async () => {
@@ -104,7 +112,7 @@ export function Account() {
   return (
     <>
         <h2 className="scroll-m-20 border-b pb-2 text-3xl tracking-tight font-semibold first:mt-0 flex items-center gap-4">
-            {user.username}'s Profile
+            {user.name}'s Profile
         </h2>
         { showQuotes && (
             <blockquote className="mt-6 border-l-2 pl-6 italic">
@@ -112,7 +120,7 @@ export function Account() {
             </blockquote>
         )}
         <div className="flex justify-center items-center mt-6 mr-10 gap-20">
-          <UserCategoryRing
+          { !allowTeamPlay && <UserCategoryRing
             totalSolves={ringCategories.reduce(
               (s, c) => s + (c.solved ?? 0),
               0,
@@ -121,16 +129,18 @@ export function Account() {
             categories={ringCategories}
             size={100}
             strokeWidth={16}
-          />
+            /> 
+          }
+          
           <div className="flex flex-row justify-between items-center">
             <div className="flex items-center mr-4">
-                <h2 className="text-3xl font-semibold">{user.username}</h2>
+                <h2 className="text-3xl font-semibold">{user.name}</h2>
                 <p className="text-sm text-gray-500">{user.country}</p>
             </div>
             <Avatar className="h-32 w-32 rounded-full mb-2 text-3xl">
-                <AvatarImage src={user.profilePicture || "/default-avatar.png"} alt={`${user.username}'s avatar`} />
+                <AvatarImage src={user.profilePicture || "/default-avatar.png"} alt={`${user.name}'s avatar`} />
                 <AvatarFallback className="flex items-center justify-center h-full w-full bg-gray-200 text-gray-500">
-              {user.username.charAt(0).toUpperCase()}
+              {user.name.charAt(0).toUpperCase()}
                 </AvatarFallback>
             </Avatar>
           </div>

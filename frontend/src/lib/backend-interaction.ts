@@ -182,7 +182,7 @@ export async function getSessionInfo(): Promise<AuthProps | number> {
     const data = response.data;
     return {
       id: data.id,
-      username: data.name,
+      name: data.name,
       role: data.role,
       teamId: data.team_id,
     };
@@ -272,18 +272,18 @@ export async function fetchUserData(userId: number): Promise< User | null > {
   try {
     if (userId === -1) {
       console.warn("Invalid userId provided, returning default user data.");
-      return { id: -1, username: "", email: "", role: "", score: -1, country: "", joinedAt: "", solves: [], teamId: null };
+      return { id: -1, name: "", email: "", role: "", score: -1, country: "", joinedAt: "", solves: [], teamId: null };
     }
     const response = await api.get(`/users/${userId}`);
     switch (response.status) {
       case 200:
-        return {id: response.data.id, role: response.data.role, score: response.data.score, profilePicture: response.data.image, username: response.data.name, email: response.data.email, country: response.data.nationality, joinedAt: response.data.joined_at, solves: response.data.solves, teamId: response.data.team_id};
+        return {id: response.data.id, role: response.data.role, score: response.data.score, profilePicture: response.data.image, name: response.data.name, email: response.data.email, country: response.data.nationality, joinedAt: response.data.joined_at, solves: response.data.solves, teamId: response.data.team_id};
       default:
-        return { id:-1, username: "", email: "", role: "", score: -1, country: "", joinedAt: "", solves: [], teamId: null };
+        return { id:-1, name: "", email: "", role: "", score: -1, country: "", joinedAt: "", solves: [], teamId: null };
     }
   } catch (error) {
     console.error("Error fetching user data:", error);
-    return { id:-1, username: "", email: "", role: "", score: -1, country: "", joinedAt: "", solves: [], teamId: null };
+    return { id:-1, name: "", email: "", role: "", score: -1, country: "", joinedAt: "", solves: [], teamId: null };
   }
 }
 

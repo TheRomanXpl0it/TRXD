@@ -1,4 +1,4 @@
-import { Globe } from "lucide-react";
+import { Globe, MedalIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Team, TeamMember, User } from "@/context/AuthProvider";
@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserCategoryRing } from "./UserCategoryRing";
 import { useChallenges } from "@/context/ChallengeProvider";
+import { Stats } from "./Stats";
+import { SolveList } from "./SolveList";
 
 // ---------------- Helpers ----------------
 function initials(fullName?: string) {
@@ -38,13 +40,28 @@ function TeamMember({ member }: { member: TeamMember }) {
         <CardTitle className="flex items-center gap-2">
           <Avatar>
             <AvatarImage src={userData.profilePicture} />
-            <AvatarFallback>{initials(userData?.username)}</AvatarFallback>
+            <AvatarFallback>{initials(userData.name)}</AvatarFallback>
           </Avatar>
-          {userData.username}
+          {userData.name}
         </CardTitle>
       </CardHeader>
       <CardContent>{userData.country}</CardContent>
     </Card>
+  );
+}
+
+function MemberList({ members }: { members: TeamMember[] }) {
+  return (
+    <>
+      <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight mt-2">
+        Member list
+      </h2>
+      <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {members.map((member) => (
+          <TeamMember key={member.id} member={member} />
+        ))}
+      </div>
+    </>
   );
 }
 
@@ -77,12 +94,12 @@ function TeamView({ team }: { team: Team }) {
       return { key, label: key, total, solved, color };
     })
     .filter((c) => c.total > 0);
+
   return (
-    <div className="my-8 ">
-      {/* Header: Big avatar on the left, details on the right */}
+    <div className="my-8">
+      {/* Header */}
       <div className="flex flex-col">
-        {/* Big team avatar */}
-        <div className="flex justify-between">
+        <div className="flex justify-center">
           <div className="flex items-center">
             <Avatar className="w-28 h-28">
               <AvatarImage src={team.logo} />
@@ -90,45 +107,50 @@ function TeamView({ team }: { team: Team }) {
                 {initials(team.name)}
               </AvatarFallback>
             </Avatar>
+
             <div className="flex items-center ml-4">
               <h1 className="text-3xl font-bold tracking-tight">{team.name}</h1>
             </div>
+
             {team.country && (
-              <div className="flex items-center gap-2 text-muted-foreground justify-end">
+              <div className="ml-4 flex items-center gap-2 text-muted-foreground">
                 <Globe className="w-4 h-4" />
                 <span className="text-sm md:text-base">{team.country}</span>
               </div>
             )}
           </div>
-          <div>
-            <UserCategoryRing
-              totalSolves={ringCategories.reduce(
-                (s, c) => s + (c.solved ?? 0),
-                0,
-              )}
-              categories={ringCategories}
-              teamSolves={team.solves}
-              size={100} // optional
-              strokeWidth={16} // optional
-            />
-          </div>
         </div>
-        <div className="flex flex-col">
-          {team.bio && (
-            <p className="text-sm md:text-base leading-relaxed text-right md:text-left text-muted-foreground">
-              {team.bio}
-            </p>
+
+        {team.bio && (
+          <p className="mt-3 text-sm md:text-base leading-relaxed text-muted-foreground">
+            {team.bio}
+          </p>
+        )}
+      </div>
+      <div className="my-8 justify-center flex">
+        <MedalIcon className="w-8 h-8 text-pink-500 mr-2 animate-bounce" />
+        <h3 className="text-2xl font-bold"> This team is currently: GAY</h3>
+      </div>
+      <div className="my-8">
+        <Stats 
+          teamSolves={team.solves ?? []} 
+          members={team.members} 
+          categories={ringCategories}
+          ringCategories={ringCategories}
+          totalSolves={ringCategories.reduce(
+            (s, c) => s + (c.solved ?? 0),
+            0,
           )}
-        </div>
+          badges={team.badges || []}
+        />
       </div>
-      <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight mt-2">
-        Member list
-      </h2>
-      <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {team.members.map((member) => (
-          <TeamMember key={member.id} member={member} />
-        ))}
+      <div className="my-8">
+        <MemberList members={team.members} />
       </div>
+      <div className="my-8">
+        <SolveList solves={team.solves ?? []} />
+      </div>
+      
     </div>
   );
 }

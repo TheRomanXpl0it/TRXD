@@ -1,11 +1,10 @@
 import { Chart } from "@/components/Chart";
 import { Scoreboard } from "@/components/Scoreboard";
-import { columns } from "@/components/Scores";
 import type { ScoreboardEntry } from "@/components/Scores";
 import SettingContext from "@/context/SettingsProvider";
 import { useContext } from "react";
 import { getScoreboard } from "@/lib/backend-interaction";
-
+import { useNavigate } from "react-router-dom";
 type ApiBadge = { name: string; description: string };
 type ApiScoreboardEntry = {
   id: number;
@@ -40,7 +39,7 @@ export function Leaderboard() {
   const showQuotes = settings.General?.find(
     (setting) => setting.title === "Show Quotes",
   )?.value;
-  const teamPlay  = settings.General?.find(
+  const teamPlay = settings.General?.find(
     (setting) => setting.title === "Allow Team Play",
   )?.value;
 
@@ -67,9 +66,11 @@ export function Leaderboard() {
         <Chart />
       </div>
       <div className="p-4">
-        <p className="text-lg font-semibold">Top {teamPlay ? "Teams" : "Players"}</p>
+        <p className="text-lg font-semibold">
+          Top {teamPlay ? "Teams" : "Players"}
+        </p>
       </div>
-      <Scoreboard columns={columns} data={data} />
+      <Scoreboard data={data} />
     </>
   );
 }

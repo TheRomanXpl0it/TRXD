@@ -14,11 +14,6 @@ export type DockerConfig = {
   maxCPU: number;
 };
 
-export type Solve = {
-  id: number;
-  name: string;
-  timestamp: string;
-};
 
 
 export type Challenge = {
