@@ -6,41 +6,25 @@ import (
 	"strconv"
 	"time"
 	"trxd/db"
+	"trxd/instancer/composes"
+	"trxd/instancer/containers"
 	"trxd/utils/consts"
 
-	"github.com/docker/cli/cli/command"
-	"github.com/docker/cli/cli/flags"
-	"github.com/docker/compose/v2/pkg/api"
-	"github.com/docker/compose/v2/pkg/compose"
-	"github.com/docker/docker/client"
 	"github.com/tde-nico/log"
 )
-
-var cli *client.Client
-var composeCli api.Service
 
 func InitInstancer() error {
 	var err error
 
-	cli, err = client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	err = containers.InitCli()
 	if err != nil {
 		return err
 	}
 
-	dockerCli, err := command.NewDockerCli(command.WithAPIClient(cli))
+	err = composes.InitComposeCli()
 	if err != nil {
 		return err
 	}
-
-	err = dockerCli.Initialize(&flags.ClientOptions{
-		Context:  "default",
-		LogLevel: "error",
-	})
-	if err != nil {
-		return err
-	}
-
-	composeCli = compose.NewComposeService(dockerCli)
 
 	return nil
 }
@@ -70,7 +54,9 @@ func ReclaimLoop() {
 	if err != nil {
 		log.Fatal("Failed to initialize instancer:", "err", err)
 	}
-	defer cli.Close()
+	defer containers.CloseCli()
+
+	// TODO: make this a separate function with anti panic
 
 	sleep, err := GetInterval()
 	if err != nil {
