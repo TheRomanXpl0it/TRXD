@@ -17,6 +17,7 @@ env:
   CLICOLOR_FORCE: 1
   TEST_WORKERS: 100
   TESTING: true
+  PROJECT_NAME: trxd-test-pipeline
 
 
 defaults:
@@ -46,7 +47,7 @@ jobs:
     - name: Set up Infra
       run: |
         cd ../
-        docker compose -p trxd-test-pipeline up -d postgres redis
+        docker compose -p $PROJECT_NAME up -d postgres redis
 
     - name: Build Test Service
       run: |

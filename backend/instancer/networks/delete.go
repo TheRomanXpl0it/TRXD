@@ -2,6 +2,7 @@ package networks
 
 import (
 	"context"
+	"strings"
 	"trxd/instancer/containers"
 
 	"github.com/docker/docker/api/types/filters"
@@ -21,7 +22,6 @@ func NetworkDelete(ctx context.Context, name string) error {
 	if err != nil {
 		return err
 	}
-	// TODO: check if should need a network
 	if len(summary) != 1 {
 		return nil
 	}
@@ -31,10 +31,11 @@ func NetworkDelete(ctx context.Context, name string) error {
 		return err
 	}
 
-	// TODO: if fails continue to remove container (maybe log error)
 	err = containers.Cli.NetworkDisconnect(ctx, summary[0].ID, nginxID, true)
 	if err != nil {
-		return err
+		if !strings.Contains(err.Error(), "is not connected") {
+			return err
+		}
 	}
 
 	err = containers.Cli.NetworkRemove(ctx, summary[0].ID)

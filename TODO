@@ -1,4 +1,6 @@
 QOS:
+	- verify no comunication between instances on standard default bridge network
+	- first blood into db as field
 	- change csrf token name
 	- error generator for tests
 	- split main.go flag function
@@ -9,7 +11,6 @@ QOS:
 ALPHA:
 	- dockerize 🙏
 	- config to start and end ctf
-	- expose frontend
 	- integration tests (for generic behaviour)
 	- tests for distributed functioning
 	- role configuraion endpoint

@@ -16,4 +16,5 @@ var DefaultConfigs = map[string]any{
 	"secret":                    "",
 	"domain":                    "",
 	"discord-webhook":           "",
+	"project-name":              "trxd",
 }
