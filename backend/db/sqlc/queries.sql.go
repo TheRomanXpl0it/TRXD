@@ -738,13 +738,17 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 }
 
 const getUserSolves = `-- name: GetUserSolves :many
-SELECT s.chall_id, s.timestamp FROM submissions s
-    WHERE s.user_id = $1
-      AND s.status = 'Correct'
+SELECT c.id, c.name, c.category, s.timestamp
+  FROM submissions s
+  JOIN challenges c ON s.chall_id = c.id
+  WHERE s.user_id = $1
+    AND s.status = 'Correct'
 `
 
 type GetUserSolvesRow struct {
-	ChallID   int32     `json:"chall_id"`
+	ID        int32     `json:"id"`
+	Name      string    `json:"name"`
+	Category  string    `json:"category"`
 	Timestamp time.Time `json:"timestamp"`
 }
 
@@ -758,7 +762,12 @@ func (q *Queries) GetUserSolves(ctx context.Context, userID int32) ([]GetUserSol
 	var items []GetUserSolvesRow
 	for rows.Next() {
 		var i GetUserSolvesRow
-		if err := rows.Scan(&i.ChallID, &i.Timestamp); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Category,
+			&i.Timestamp,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

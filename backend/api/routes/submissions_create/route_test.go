@@ -72,6 +72,11 @@ var testData = []struct {
 		expectedResponse: JSON{"status": sqlc.SubmissionStatusRepeated, "first_blood": false},
 	},
 	{
+		testBody:         JSON{"chall_id": "", "flag": " flag{test} "},
+		expectedStatus:   http.StatusOK,
+		expectedResponse: JSON{"status": sqlc.SubmissionStatusRepeated, "first_blood": false},
+	},
+	{
 		testBody:         JSON{"chall_id": "", "flag": "test"},
 		expectedStatus:   http.StatusOK,
 		expectedResponse: JSON{"status": sqlc.SubmissionStatusWrong, "first_blood": false},

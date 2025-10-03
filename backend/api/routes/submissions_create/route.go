@@ -1,6 +1,7 @@
 package submissions_create
 
 import (
+	"strings"
 	"trxd/api/validator"
 	"trxd/db"
 	"trxd/utils"
@@ -33,6 +34,7 @@ func Route(c *fiber.Ctx) error {
 	}
 
 	uid := c.Locals("uid").(int32)
+	data.Flag = strings.TrimSpace(data.Flag)
 
 	status, first_blood, err := SubmitFlag(c.Context(), uid, *data.ChallID, data.Flag)
 	if err != nil {

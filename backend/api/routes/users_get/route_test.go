@@ -52,6 +52,20 @@ func TestRoute(t *testing.T) {
 		"name":    "a",
 		"role":    "",
 		"score":   1498,
+		"solves": []JSON{
+			{
+				"category": "cat-1",
+				"name":     "chall-1",
+			},
+			{
+				"category": "cat-1",
+				"name":     "chall-3",
+			},
+			{
+				"category": "cat-1",
+				"name":     "chall-4",
+			},
+		},
 	}
 
 	session = test_utils.NewApiTestSession(t, app)
@@ -76,7 +90,7 @@ func TestRoute(t *testing.T) {
 	if body == nil {
 		t.Fatal("Expected body to not be nil")
 	}
-	test_utils.DeleteKeys(body, "id", "joined_at", "solves", "team_id")
+	test_utils.DeleteKeys(body, "id", "joined_at", "team_id", "timestamp")
 	test_utils.Compare(t, expectedNoAuth, body)
 
 	expectedPlayer := JSON{
@@ -86,6 +100,20 @@ func TestRoute(t *testing.T) {
 		"name":    "a",
 		"role":    "",
 		"score":   1498,
+		"solves": []JSON{
+			{
+				"category": "cat-1",
+				"name":     "chall-1",
+			},
+			{
+				"category": "cat-1",
+				"name":     "chall-3",
+			},
+			{
+				"category": "cat-1",
+				"name":     "chall-4",
+			},
+		},
 	}
 	expectedSelf := JSON{
 		"country": "",
@@ -107,7 +135,7 @@ func TestRoute(t *testing.T) {
 	if body == nil {
 		t.Fatal("Expected body to not be nil")
 	}
-	test_utils.DeleteKeys(body, "id", "joined_at", "solves", "team_id")
+	test_utils.DeleteKeys(body, "id", "joined_at", "team_id", "timestamp")
 	test_utils.Compare(t, expectedPlayer, body)
 
 	session = test_utils.NewApiTestSession(t, app)
@@ -117,7 +145,7 @@ func TestRoute(t *testing.T) {
 	if body == nil {
 		t.Fatal("Expected body to not be nil")
 	}
-	test_utils.DeleteKeys(body, "id", "joined_at", "solves", "team_id")
+	test_utils.DeleteKeys(body, "id", "joined_at", "team_id", "timestamp")
 	test_utils.Compare(t, expectedSelf, body)
 
 	expectedPlayerAdmin := JSON{
@@ -127,6 +155,20 @@ func TestRoute(t *testing.T) {
 		"name":    "a",
 		"role":    "Player",
 		"score":   1498,
+		"solves": []JSON{
+			{
+				"category": "cat-1",
+				"name":     "chall-1",
+			},
+			{
+				"category": "cat-1",
+				"name":     "chall-3",
+			},
+			{
+				"category": "cat-1",
+				"name":     "chall-4",
+			},
+		},
 	}
 	expectedAdmin := JSON{
 		"country": "",
@@ -145,7 +187,7 @@ func TestRoute(t *testing.T) {
 	if body == nil {
 		t.Fatal("Expected body to not be nil")
 	}
-	test_utils.DeleteKeys(body, "id", "joined_at", "solves", "team_id")
+	test_utils.DeleteKeys(body, "id", "joined_at", "team_id", "timestamp")
 	test_utils.Compare(t, expectedPlayerAdmin, body)
 
 	session = test_utils.NewApiTestSession(t, app)
@@ -155,6 +197,6 @@ func TestRoute(t *testing.T) {
 	if body == nil {
 		t.Fatal("Expected body to not be nil")
 	}
-	test_utils.DeleteKeys(body, "id", "joined_at", "solves")
+	test_utils.DeleteKeys(body, "id", "joined_at", "timestamp")
 	test_utils.Compare(t, expectedAdmin, body)
 }

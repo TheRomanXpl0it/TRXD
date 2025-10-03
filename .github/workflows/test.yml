@@ -1,10 +1,12 @@
 name: TRXd Tests
 
+
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+
 
 env:
   POSTGRES_DB: testdb
@@ -16,9 +18,11 @@ env:
   TEST_WORKERS: 100
   TESTING: true
 
+
 defaults:
   run:
     working-directory: ./backend
+
 
 jobs:
   diff:
@@ -32,6 +36,7 @@ jobs:
 
 
   tests:
+    timeout-minutes: 30
     runs-on: ubuntu-latest
 
     steps:
