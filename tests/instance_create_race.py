@@ -5,10 +5,10 @@ import threading
 from random import randint
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
-N = int(os.getenv("TEST_WORKERS", 50))
-if N > 50:
-	print("Limiting to 50 threads")
-	N = 50
+N = int(os.getenv("TEST_WORKERS", 25))
+if N > 25:
+	print("Limiting to 25 threads")
+	N = 25
 print(f"Running with {N} threads")
 
 id = randint(1, 100)

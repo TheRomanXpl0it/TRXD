@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"strconv"
+	"strings"
 	"trxd/instancer/infos"
 
 	"github.com/docker/docker/api/types/container"
@@ -36,17 +37,36 @@ func CreateContainer(ctx context.Context, image string, info *infos.InstanceInfo
 		debugContainer(containerConf, hostConf, networkingConfig)
 	}
 
+	var containerID string
 	resp, err := Cli.ContainerCreate(ctx, containerConf, hostConf, networkingConfig, nil, "chall_"+containerInfo.Name)
+	if err == nil {
+		containerID = resp.ID
+	} else {
+		if !strings.Contains(err.Error(), "is already in use") {
+			return "", err
+		}
+
+		containerID, err = FetchContainerByName(ctx, "chall_"+containerInfo.Name)
+		if err != nil {
+			return "", err
+		}
+
+		if info.NetID != "" {
+			err = Cli.NetworkConnect(ctx, info.NetID, containerID, nil)
+			if err != nil {
+				if !strings.Contains(err.Error(), "already exists in network") {
+					return "", err
+				}
+			}
+		}
+	}
+
+	err = Cli.ContainerStart(ctx, containerID, container.StartOptions{})
 	if err != nil {
 		return "", err
 	}
 
-	err = Cli.ContainerStart(ctx, resp.ID, container.StartOptions{})
-	if err != nil {
-		return "", err
-	}
-
-	return resp.ID, nil
+	return containerID, nil
 }
 
 func setupContainerConf(info *infos.ContainerInfo) (*container.Config, *container.HostConfig, *network.NetworkingConfig, error) {

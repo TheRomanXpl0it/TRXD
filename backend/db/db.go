@@ -114,6 +114,10 @@ func InitConfigs() error {
 		consts.DefaultConfigs["secret"] = randSecret
 	}
 
+	if os.Getenv("PROJECT_NAME") != "" {
+		consts.DefaultConfigs["project-name"] = os.Getenv("PROJECT_NAME")
+	}
+
 	for key, value := range consts.DefaultConfigs {
 		valid, err := CreateConfig(context.Background(), key, value)
 		if err != nil {
