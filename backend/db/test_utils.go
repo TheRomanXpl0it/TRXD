@@ -42,11 +42,6 @@ func OpenTestDB(testDBName string) error {
 		return err
 	}
 
-	err = StorageFlush()
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -58,8 +53,17 @@ func CloseTestDB() {
 }
 
 func DeleteAll() error {
-	_, err := db.Exec(`SELECT delete_all();`)
-	return err
+	err := StorageFlush()
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec(`SELECT delete_all();`)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func InsertMockData() error {
