@@ -17,4 +17,5 @@ var DefaultConfigs = map[string]any{
 	"domain":                    "",
 	"discord-webhook":           "",
 	"project-name":              "trxd",
+	"user-mode":                 false,
 }

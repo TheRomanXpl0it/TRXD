@@ -50,15 +50,20 @@ var testData = []struct {
 		expectedResponse: errorf("Image must not exceed 1024"),
 	},
 	{
-		testBody:       JSON{"name": "a", "country": "a", "image": "a"},
+		testBody:         JSON{"name": "a", "country": "a", "image": "a"},
+		expectedStatus:   http.StatusConflict,
+		expectedResponse: errorf(consts.NameAlreadyTaken),
+	},
+	{
+		testBody:       JSON{"name": "aa", "country": "a", "image": "a"},
 		expectedStatus: http.StatusOK,
 	},
 	{
-		testBody:       JSON{"name": "b", "country": "b"},
+		testBody:       JSON{"name": "bb", "country": "b"},
 		expectedStatus: http.StatusOK,
 	},
 	{
-		testBody:       JSON{"name": "c"},
+		testBody:       JSON{"name": "cc"},
 		expectedStatus: http.StatusOK,
 	},
 }

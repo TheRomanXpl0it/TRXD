@@ -94,7 +94,12 @@ var testData = []struct {
 		expectedResponse: errorf(consts.UserAlreadyExists),
 	},
 	{
-		testBody:       JSON{"name": "test", "email": "test1@test.test", "password": "testpass"},
+		testBody:         JSON{"name": "test", "email": "test1@test.test", "password": "testpass"},
+		expectedStatus:   http.StatusConflict,
+		expectedResponse: errorf(consts.UserAlreadyExists),
+	},
+	{
+		testBody:       JSON{"name": "test2", "email": "test1@test.test", "password": "testpass"},
 		expectedStatus: http.StatusOK,
 	},
 }
@@ -105,14 +110,14 @@ func TestRoute(t *testing.T) {
 
 	test_utils.UpdateConfig(t, "allow-register", "false")
 	session := test_utils.NewApiTestSession(t, app)
-	session.Post("/register", JSON{"name": "test", "email": "allow@test.test", "password": "testpass"}, http.StatusForbidden)
+	session.Post("/register", JSON{"name": "test-user", "email": "allow@test.test", "password": "testpass"}, http.StatusForbidden)
 	session.CheckResponse(errorf(consts.DisabledRegistrations))
 
 	test_utils.UpdateConfig(t, "allow-register", "true")
 	session = test_utils.NewApiTestSession(t, app)
-	session.Post("/register", JSON{"name": "test", "email": "allow@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/register", JSON{"name": "test-user", "email": "allow@test.test", "password": "testpass"}, http.StatusOK)
 	session.CheckResponse(nil)
-	session.Post("/register", JSON{"name": "test", "email": "allow+1@test.test", "password": "testpass"}, http.StatusForbidden)
+	session.Post("/register", JSON{"name": "test-user-1", "email": "allow+1@test.test", "password": "testpass"}, http.StatusForbidden)
 	session.CheckResponse(errorf(consts.AlreadyRegistered))
 
 	for _, test := range testData {

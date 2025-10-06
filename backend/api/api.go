@@ -139,13 +139,15 @@ func SetupApi(app *fiber.App) {
 	api.Get("/users", noAuth, users_all_get.Route)
 	api.Get("/users/:id", noAuth, users_get.Route)
 
-	api.Post("/teams/register", player, teams_register.Route)
-	api.Post("/teams/join", player, teams_join.Route)
-	// api.Get("/teams/join/:token", player, teams_join_token.Route)
-	api.Patch("/teams", player, team, teams_update.Route)
-	api.Patch("/teams/password", admin, teams_password.Route)
-	api.Get("/teams", noAuth, teams_all_get.Route)
-	api.Get("/teams/:id", noAuth, teams_get.Route)
+	if !consts.DefaultConfigs["user-mode"].(bool) { // TODO: make it fetch from db/cache
+		api.Post("/teams/register", player, teams_register.Route)
+		api.Post("/teams/join", player, teams_join.Route)
+		// api.Get("/teams/join/:token", player, teams_join_token.Route)
+		api.Patch("/teams", player, team, teams_update.Route)
+		api.Patch("/teams/password", admin, teams_password.Route)
+		api.Get("/teams", noAuth, teams_all_get.Route)
+		api.Get("/teams/:id", noAuth, teams_get.Route)
+	}
 
 	api.Post("/categories", author, categories_create.Route)
 	api.Patch("/categories", author, categories_update.Route)

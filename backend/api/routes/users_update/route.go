@@ -30,6 +30,9 @@ func Route(c *fiber.Ctx) error {
 
 	err = UpdateUser(c.Context(), uid, data.Name, data.Country, data.Image)
 	if err != nil {
+		if err.Error() == "[name already taken]" {
+			return utils.Error(c, fiber.StatusConflict, consts.NameAlreadyTaken)
+		}
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorUpdatingUser, err)
 	}
 
