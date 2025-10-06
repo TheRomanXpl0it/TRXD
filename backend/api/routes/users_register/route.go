@@ -1,6 +1,7 @@
 package users_register
 
 import (
+	"trxd/api/routes/teams_register"
 	"trxd/api/validator"
 	"trxd/db"
 	"trxd/utils"
@@ -45,12 +46,24 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusConflict, consts.UserAlreadyExists)
 	}
 
+	// TODO: tests
+	if consts.DefaultConfigs["user-mode"].(bool) { // TODO: make it fetch from db/cache
+		team, err := teams_register.RegisterTeam(c.Context(), data.Name, data.Password, user.ID)
+		if err != nil {
+			return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorRegisteringTeam, err)
+		}
+		if team == nil {
+			return utils.Error(c, fiber.StatusInternalServerError, consts.TeamAlreadyExists, err)
+		}
+	}
+
 	sess, err := db.Store.Get(c)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingSession, err)
 	}
 
 	sess.Set("uid", user.ID)
+
 	err = sess.Save()
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorSavingSession, err)

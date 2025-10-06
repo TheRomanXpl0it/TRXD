@@ -139,6 +139,7 @@ func SetupApi(app *fiber.App) {
 	api.Get("/users", noAuth, users_all_get.Route)
 	api.Get("/users/:id", noAuth, users_get.Route)
 
+	// TODO: tests
 	if !consts.DefaultConfigs["user-mode"].(bool) { // TODO: make it fetch from db/cache
 		api.Post("/teams/register", player, teams_register.Route)
 		api.Post("/teams/join", player, teams_join.Route)
