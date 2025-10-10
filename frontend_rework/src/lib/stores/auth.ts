@@ -1,0 +1,13 @@
+import { writable, get } from 'svelte/store';
+import { getInfo } from '$lib/auth';
+
+export const user = writable<Awaited<ReturnType<typeof getInfo>>>(null);
+export const authReady = writable(false);
+
+export async function loadUser(force = false) {
+  if (!force && get(authReady)) return;
+  user.set(await getInfo());
+  authReady.set(true);
+}
+
+export function currentUser() { return get(user); }

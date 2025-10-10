@@ -1,0 +1,12 @@
+# common junk
+.git
+.gitignore
+**/.DS_Store
+**/node_modules
+
+# runtime data (the culprit)
+.pgdata
+**/.pgdata
+**/pgdata
+redis-data
+**/redis-data
