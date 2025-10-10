@@ -28,8 +28,12 @@ func Route(c *fiber.Ctx) error {
 
 	uid := c.Locals("uid").(int32)
 
+	// TODO: update team if in single user mode
 	err = UpdateUser(c.Context(), uid, data.Name, data.Country, data.Image)
 	if err != nil {
+		if err.Error() == "[name already taken]" {
+			return utils.Error(c, fiber.StatusConflict, consts.NameAlreadyTaken)
+		}
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorUpdatingUser, err)
 	}
 

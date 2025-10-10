@@ -27,7 +27,13 @@ func FetchContainerByName(ctx context.Context, name string) (string, error) {
 }
 
 func FetchNginxID(ctx context.Context) (string, error) {
-	// TODO: put a cache here
+	id, err := db.StorageGet(ctx, "nginx-id")
+	if err != nil {
+		return "", err
+	}
+	if id != nil && *id != "" {
+		return *id, nil
+	}
 
 	name, err := db.GetConfig(ctx, "project-name")
 	if err != nil {
@@ -36,5 +42,16 @@ func FetchNginxID(ctx context.Context) (string, error) {
 	if name == "" {
 		name = consts.DefaultConfigs["project-name"].(string) + "-nginx-1"
 	}
-	return FetchContainerByName(ctx, name)
+
+	containerID, err := FetchContainerByName(ctx, name)
+	if err != nil {
+		return "", err
+	}
+
+	err = db.StorageSet(ctx, "nginx-id", containerID)
+	if err != nil {
+		return "", err
+	}
+
+	return containerID, nil
 }

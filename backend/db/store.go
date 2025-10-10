@@ -22,7 +22,7 @@ func initStorage(host string, port int, password string) {
 		CookieSameSite: fiber.CookieSameSiteLaxMode,
 	}
 
-	if os.Getenv("REDIS_DISABLED") == "" {
+	if os.Getenv("REDIS_DISABLE") == "" {
 		redisStorage = redis.New(redis.Config{
 			Host:      host,
 			Port:      port,

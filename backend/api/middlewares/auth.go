@@ -24,6 +24,9 @@ func NoAuth(c *fiber.Ctx) error {
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
 	}
+	if user == nil {
+		return c.Next()
+	}
 
 	if user.TeamID.Valid {
 		c.Locals("tid", user.TeamID.Int32)
@@ -50,6 +53,9 @@ func Spectator(c *fiber.Ctx) error {
 	user, err := db.GetUserByID(c.Context(), uid.(int32))
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
+	}
+	if user == nil {
+		return utils.Error(c, fiber.StatusForbidden, consts.Forbidden)
 	}
 
 	if user.TeamID.Valid {

@@ -96,6 +96,7 @@ const (
 	ChallengeAlreadyExists     = "Challenge already exists"
 	ChallengeNameAlreadyExists = "Challenge name already exists"
 	FlagAlreadyExists          = "Flag already exists"
+	NameAlreadyTaken           = "Name already taken"
 	TagAlreadyExists           = "Tag already exists"
 	TeamAlreadyExists          = "Team already exists"
 	UserAlreadyExists          = "User already exists"

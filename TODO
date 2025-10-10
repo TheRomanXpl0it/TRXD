@@ -1,6 +1,9 @@
+- first blood into db as field
+- add first blood in users_get and teams_get
+- flush cache flag
+
 QOS:
 	- verify no comunication between instances on standard default bridge network
-	- first blood into db as field
 	- change csrf token name
 	- error generator for tests
 	- split main.go flag function

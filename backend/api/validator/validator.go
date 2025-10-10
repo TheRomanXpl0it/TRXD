@@ -37,7 +37,7 @@ func init() {
 	validate.RegisterAlias("challenge_max_points", "min=0")
 	validate.RegisterAlias("challenge_score_type", "oneof="+strings.Join(scoreTypes, " "))
 	validate.RegisterAlias("challenge_port", fmt.Sprintf("min=%d,max=%d", consts.MinPort, consts.MaxPort))
-	validate.RegisterAlias("challenge_lifetime", "min=0")
+	validate.RegisterAlias("challenge_lifetime", "min=0") // TODO: test maxint+1
 	validate.RegisterValidation("challenge_envs", validJson)
 	validate.RegisterAlias("challenge_max_memory", "min=0")
 	validate.RegisterValidation("challenge_max_cpu", validFloat)
@@ -49,16 +49,16 @@ func init() {
 	validate.RegisterAlias("team_id", "min=0")
 	validate.RegisterAlias("team_name", fmt.Sprintf("max=%d", consts.MaxTeamNameLen))
 	validate.RegisterAlias("team_password", fmt.Sprintf("min=%d,max=%d", consts.MinPasswordLen, consts.MaxPasswordLen))
-	validate.RegisterAlias("team_country", fmt.Sprintf("max=%d", consts.MaxCountryLen))
-	validate.RegisterAlias("team_image", fmt.Sprintf("max=%d", consts.MaxImageLen))
+	validate.RegisterAlias("team_country", fmt.Sprintf("max=%d", consts.MaxCountryLen)) // TODO: iso3166 / country_code
+	validate.RegisterAlias("team_image", fmt.Sprintf("max=%d", consts.MaxImageLen))     // TODO: url/uri
 	validate.RegisterAlias("team_bio", fmt.Sprintf("max=%d", consts.MaxBioLen))
 
 	validate.RegisterAlias("user_id", "min=0")
 	validate.RegisterAlias("user_name", fmt.Sprintf("max=%d", consts.MaxUserNameLen))
 	validate.RegisterAlias("user_email", fmt.Sprintf("max=%d,email", consts.MaxEmailLen))
 	validate.RegisterAlias("user_password", fmt.Sprintf("min=%d,max=%d", consts.MinPasswordLen, consts.MaxPasswordLen))
-	validate.RegisterAlias("user_country", fmt.Sprintf("max=%d", consts.MaxCountryLen))
-	validate.RegisterAlias("user_image", fmt.Sprintf("max=%d", consts.MaxImageLen))
+	validate.RegisterAlias("user_country", fmt.Sprintf("max=%d", consts.MaxCountryLen)) // TODO: iso3166 / country_code
+	validate.RegisterAlias("user_image", fmt.Sprintf("max=%d", consts.MaxImageLen))     // TODO: url/uri
 }
 
 func errHandle(c *fiber.Ctx, err error) error {
