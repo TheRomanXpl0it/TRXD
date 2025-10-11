@@ -2,7 +2,7 @@ package containers
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"trxd/db"
 	"trxd/utils/consts"
 
@@ -20,7 +20,7 @@ func FetchContainerByName(ctx context.Context, name string) (string, error) {
 		return "", err
 	}
 	if len(summary) != 1 {
-		return "", errors.New("nginx container not found")
+		return "", fmt.Errorf("container not found (%s)", name)
 	}
 
 	return summary[0].ID, nil
@@ -40,10 +40,10 @@ func FetchNginxID(ctx context.Context) (string, error) {
 		return "", err
 	}
 	if name == "" {
-		name = consts.DefaultConfigs["project-name"].(string) + "-nginx-1"
+		name = consts.DefaultConfigs["project-name"].(string)
 	}
 
-	containerID, err := FetchContainerByName(ctx, name)
+	containerID, err := FetchContainerByName(ctx, name+"-nginx-1")
 	if err != nil {
 		return "", err
 	}

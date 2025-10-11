@@ -16,6 +16,7 @@ import (
 
 func CreateInstance(ctx context.Context, tid, challID int32, internalPort *int32,
 	expires_at time.Time, deployType sqlc.DeployType, conf *sqlc.GetDockerConfigsByIDRow) (string, *int32, error) {
+	// TODO: add transaction
 	info, err := dbCreateInstance(ctx, tid, challID, expires_at, conf.HashDomain)
 	if err != nil {
 		return "", nil, err
