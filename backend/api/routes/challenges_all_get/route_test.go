@@ -21,61 +21,104 @@ func TestRoute(t *testing.T) {
 
 	expectedPlayer := []JSON{
 		{
+			"attachments": []interface{}{},
+			"authors": []interface{}{
+				"author1",
+				"author2",
+			},
 			"category":    "cat-1",
+			"description": "TEST chall-1 DESC",
 			"difficulty":  "Easy",
 			"first_blood": false,
 			"hidden":      false,
+			"host":        "http://theromanxpl0.it",
 			"instance":    false,
+			"max_points":  500,
 			"name":        "chall-1",
 			"points":      500,
+			"port":        1234,
+			"score_type":  "Dynamic",
 			"solved":      false,
 			"solves":      1,
 			"tags": []interface{}{
 				"tag-1",
 				"test-tag",
 			},
+			"timeout": 0,
 		},
 		{
+			"attachments": []interface{}{},
+			"authors": []interface{}{
+				"author1",
+			},
 			"category":    "cat-1",
+			"description": "TEST chall-3 DESC",
 			"difficulty":  "Hard",
 			"first_blood": false,
 			"hidden":      false,
+			"host":        "chall-3.test.com",
 			"instance":    true,
+			"max_points":  500,
 			"name":        "chall-3",
 			"points":      500,
+			"port":        1337,
+			"score_type":  "Dynamic",
 			"solved":      false,
 			"solves":      1,
 			"tags": []interface{}{
 				"tag-3",
 			},
+			"timeout": 0,
 		},
 		{
+			"attachments": []interface{}{},
+			"authors": []interface{}{
+				"author2",
+			},
 			"category":    "cat-1",
+			"description": "TEST chall-4 DESC",
 			"difficulty":  "Insane",
 			"first_blood": false,
 			"hidden":      false,
+			"host":        "",
 			"instance":    true,
+			"max_points":  500,
 			"name":        "chall-4",
 			"points":      498,
+			"port":        0,
+			"score_type":  "Dynamic",
 			"solved":      false,
 			"solves":      2,
 			"tags": []interface{}{
 				"tag-4",
 			},
+			"timeout": 0,
 		},
 		{
+			"attachments": []interface{}{},
+			"authors": []interface{}{
+				"author1",
+				"author2",
+				"author3",
+			},
 			"category":    "cat-2",
+			"description": "TEST chall-2 DESC",
 			"difficulty":  "Medium",
 			"first_blood": false,
 			"hidden":      false,
+			"host":        "",
 			"instance":    false,
+			"max_points":  500,
 			"name":        "chall-2",
 			"points":      500,
+			"port":        0,
+			"score_type":  "Dynamic",
 			"solved":      false,
 			"solves":      1,
 			"tags": []interface{}{
 				"tag-2",
 			},
+			"timeout": 0,
 		},
 	}
 
@@ -99,13 +142,22 @@ func TestRoute(t *testing.T) {
 
 	expectedAuthor := []JSON{
 		{
+			"attachments": []interface{}{},
+			"authors": []interface{}{
+				"author3",
+			},
 			"category":    "cat-2",
+			"description": "TEST chall-5 DESC",
 			"difficulty":  "Easy",
 			"first_blood": false,
 			"hidden":      true,
+			"host":        "",
 			"instance":    false,
+			"max_points":  500,
 			"name":        "chall-5",
 			"points":      500,
+			"port":        0,
+			"score_type":  "Static",
 			"solved":      false,
 			"solves":      0,
 			"tags": []interface{}{
@@ -113,13 +165,23 @@ func TestRoute(t *testing.T) {
 			},
 		},
 		{
+			"attachments": []interface{}{},
+			"authors": []interface{}{
+				"author1",
+				"author2",
+			},
 			"category":    "cat-1",
+			"description": "TEST chall-1 DESC",
 			"difficulty":  "Easy",
-			"first_blood": true,
+			"first_blood": false,
 			"hidden":      false,
+			"host":        "http://theromanxpl0.it",
 			"instance":    false,
+			"max_points":  500,
 			"name":        "chall-1",
 			"points":      500,
+			"port":        1234,
+			"score_type":  "Dynamic",
 			"solved":      true,
 			"solves":      1,
 			"tags": []interface{}{
@@ -128,13 +190,22 @@ func TestRoute(t *testing.T) {
 			},
 		},
 		{
+			"attachments": []interface{}{},
+			"authors": []interface{}{
+				"author1",
+			},
 			"category":    "cat-1",
+			"description": "TEST chall-3 DESC",
 			"difficulty":  "Hard",
-			"first_blood": true,
+			"first_blood": false,
 			"hidden":      false,
+			"host":        "f6735eddbadf.chall-3.test.com",
 			"instance":    true,
+			"max_points":  500,
 			"name":        "chall-3",
 			"points":      500,
+			"port":        1337,
+			"score_type":  "Dynamic",
 			"solved":      true,
 			"solves":      1,
 			"tags": []interface{}{
@@ -142,13 +213,22 @@ func TestRoute(t *testing.T) {
 			},
 		},
 		{
+			"attachments": []interface{}{},
+			"authors": []interface{}{
+				"author2",
+			},
 			"category":    "cat-1",
+			"description": "TEST chall-4 DESC",
 			"difficulty":  "Insane",
-			"first_blood": true,
+			"first_blood": false,
 			"hidden":      false,
+			"host":        "",
 			"instance":    true,
+			"max_points":  500,
 			"name":        "chall-4",
 			"points":      498,
+			"port":        0,
+			"score_type":  "Dynamic",
 			"solved":      true,
 			"solves":      2,
 			"tags": []interface{}{
@@ -156,13 +236,24 @@ func TestRoute(t *testing.T) {
 			},
 		},
 		{
+			"attachments": []interface{}{},
+			"authors": []interface{}{
+				"author1",
+				"author2",
+				"author3",
+			},
 			"category":    "cat-2",
+			"description": "TEST chall-2 DESC",
 			"difficulty":  "Medium",
 			"first_blood": false,
 			"hidden":      false,
+			"host":        "",
 			"instance":    false,
+			"max_points":  500,
 			"name":        "chall-2",
 			"points":      500,
+			"port":        0,
+			"score_type":  "Dynamic",
 			"solved":      false,
 			"solves":      1,
 			"tags": []interface{}{
@@ -197,4 +288,6 @@ func TestRoute(t *testing.T) {
 	}
 	test_utils.DeleteKeys(body, "id", "timeout")
 	test_utils.Compare(t, expectedAuthor, body)
+
+	// TODO: instance test
 }

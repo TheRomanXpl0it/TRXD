@@ -91,4 +91,23 @@ func TestRoute(t *testing.T) {
 		session.Post("/tags", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
+
+	session.Get("/challenges", nil, http.StatusOK)
+	body := session.Body()
+	if body == nil {
+		t.Fatal("Expected body to not be nil")
+	}
+	var challengeBody interface{}
+	for _, v := range body.([]interface{}) {
+		if int32(v.(map[string]interface{})["id"].(float64)) == chall.ID {
+			challengeBody = v
+			break
+		}
+	}
+	tags := challengeBody.(map[string]interface{})["tags"]
+	expectedTags := []string{
+		"test",
+		"test-2",
+	}
+	test_utils.Compare(t, expectedTags, tags)
 }

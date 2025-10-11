@@ -9,7 +9,6 @@ import (
 	"trxd/utils/test_utils"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/limiter"
 )
 
 type JSON map[string]interface{}
@@ -51,23 +50,23 @@ func TestPanic(t *testing.T) {
 	session.CheckResponse(errorf(consts.InternalServerError))
 }
 
-func TestLimit(t *testing.T) {
-	consts.Testing = false
-	defer func() { consts.Testing = true }()
+// func TestLimit(t *testing.T) {
+// 	consts.Testing = false
+// 	defer func() { consts.Testing = true }()
 
-	app := api.SetupApp()
-	defer app.Shutdown()
+// 	app := api.SetupApp()
+// 	defer app.Shutdown()
 
-	session := test_utils.NewApiTestSession(t, app)
-	for range limiter.ConfigDefault.Max - 1 {
-		session.Get("/info", nil, http.StatusOK)
-		session.CheckResponse(nil)
-	}
-	session.Get("/info", nil, http.StatusTooManyRequests)
-	session.CheckResponse(nil)
-	session.Get("/info", nil, http.StatusTooManyRequests)
-	session.CheckResponse(nil)
-}
+// 	session := test_utils.NewApiTestSession(t, app)
+// 	for range limiter.ConfigDefault.Max - 1 {
+// 		session.Get("/info", nil, http.StatusOK)
+// 		session.CheckResponse(nil)
+// 	}
+// 	session.Get("/info", nil, http.StatusTooManyRequests)
+// 	session.CheckResponse(nil)
+// 	session.Get("/info", nil, http.StatusTooManyRequests)
+// 	session.CheckResponse(nil)
+// }
 
 func TestCSRF(t *testing.T) {
 	app := api.SetupApp()

@@ -35,32 +35,11 @@ func TestRoute(t *testing.T) {
 	id := int32(body.([]interface{})[0].(map[string]interface{})["id"].(float64))
 
 	expectedPlayer := JSON{
-		"attachments": []interface{}{},
-		"authors": []interface{}{
-			"author1",
-			"author2",
-		},
-		"category":    "cat-1",
-		"description": "TEST chall-1 DESC",
-		"difficulty":  "Easy",
-		"first_blood": false,
-		"host":        "http://theromanxpl0.it",
-		"instance":    false,
-		"name":        "chall-1",
-		"points":      500,
-		"port":        1234,
-		"solved":      false,
-		"solves":      1,
 		"solves_list": []JSON{
 			{
 				"name": "A",
 			},
 		},
-		"tags": []interface{}{
-			"tag-1",
-			"test-tag",
-		},
-		"timeout": 0,
 	}
 
 	session = test_utils.NewApiTestSession(t, app)
@@ -89,15 +68,6 @@ func TestRoute(t *testing.T) {
 	test_utils.Compare(t, expectedPlayer, body)
 
 	expectedAuthor := JSON{
-		"attachments": []interface{}{},
-		"authors": []interface{}{
-			"author1",
-			"author2",
-		},
-		"category":    "cat-1",
-		"description": "TEST chall-1 DESC",
-		"difficulty":  "Easy",
-		"first_blood": false,
 		"flags": []JSON{
 			{
 				"flag":  "flag{test-1}",
@@ -108,27 +78,12 @@ func TestRoute(t *testing.T) {
 				"regex": true,
 			},
 		},
-		"hidden":     false,
-		"host":       "http://theromanxpl0.it",
-		"instance":   false,
-		"max_points": 500,
-		"name":       "chall-1",
-		"points":     500,
-		"port":       1234,
-		"score_type": "Dynamic",
-		"solved":     false,
-		"solves":     1,
 		"solves_list": []JSON{
 			{
 				"name": "A",
 			},
 		},
-		"tags": []interface{}{
-			"tag-1",
-			"test-tag",
-		},
-		"timeout": 0,
-		"type":    "Normal",
+		"type": "Normal",
 	}
 
 	test_utils.RegisterUser(t, "test2", "test3@test.test", "testpass", sqlc.UserRoleAuthor)
@@ -145,36 +100,14 @@ func TestRoute(t *testing.T) {
 	test_utils.Compare(t, expectedAuthor, body)
 
 	expectedAuthorHidden := JSON{
-		"attachments": []interface{}{},
-		"authors": []interface{}{
-			"author3",
-		},
-		"category":    "cat-2",
-		"description": "TEST chall-5 DESC",
-		"difficulty":  "Easy",
-		"first_blood": false,
 		"flags": []JSON{
 			{
 				"flag":  "flag{test-5}",
 				"regex": false,
 			},
 		},
-		"hidden":      true,
-		"host":        "",
-		"instance":    false,
-		"max_points":  500,
-		"name":        "chall-5",
-		"points":      500,
-		"port":        0,
-		"score_type":  "Static",
-		"solved":      false,
-		"solves":      0,
-		"solves_list": []JSON{},
-		"tags": []interface{}{
-			"tag-5",
-		},
-		"timeout": 0,
-		"type":    "Normal",
+		"solves_list": []interface{}{},
+		"type":        "Normal",
 	}
 
 	session.Get("/challenges", nil, http.StatusOK)
@@ -194,13 +127,6 @@ func TestRoute(t *testing.T) {
 	test_utils.Compare(t, expectedAuthorHidden, body)
 
 	expectedDocker := JSON{
-		"attachments": []interface{}{},
-		"authors": []interface{}{
-			"author1",
-		},
-		"category":    "cat-1",
-		"description": "TEST chall-3 DESC",
-		"difficulty":  "Hard",
 		"docker_config": JSON{
 			"compose":     "",
 			"envs":        "",
@@ -210,33 +136,18 @@ func TestRoute(t *testing.T) {
 			"max_cpu":     "",
 			"max_memory":  0,
 		},
-		"first_blood": false,
 		"flags": []JSON{
 			{
 				"flag":  "flag{test-3}",
 				"regex": false,
 			},
 		},
-		"hidden":     false,
-		"host":       "chall-3.test.com",
-		"instance":   true,
-		"max_points": 500,
-		"name":       "chall-3",
-		"points":     500,
-		"port":       0,
-		"score_type": "Dynamic",
-		"solved":     false,
-		"solves":     1,
 		"solves_list": []JSON{
 			{
 				"name": "A",
 			},
 		},
-		"tags": []interface{}{
-			"tag-3",
-		},
-		"timeout": 0,
-		"type":    "Container",
+		"type": "Container",
 	}
 
 	session.Get(fmt.Sprintf("/challenges/%d", id3), nil, http.StatusOK)
@@ -253,21 +164,7 @@ func TestRoute(t *testing.T) {
 		t.Fatal("Expected body to not be nil")
 	}
 
-	var host string
-	if jsonHost, ok := body.(map[string]interface{})["host"]; !ok {
-		t.Fatal("Expected host")
-	} else {
-		host = jsonHost.(string)
-	}
-
 	expectedInstance := JSON{
-		"attachments": []interface{}{},
-		"authors": []interface{}{
-			"author1",
-		},
-		"category":    "cat-1",
-		"description": "TEST chall-3 DESC",
-		"difficulty":  "Hard",
 		"docker_config": JSON{
 			"compose":     "",
 			"envs":        "",
@@ -277,30 +174,16 @@ func TestRoute(t *testing.T) {
 			"max_cpu":     "",
 			"max_memory":  0,
 		},
-		"first_blood": false,
 		"flags": []JSON{
 			{
 				"flag":  "flag{test-3}",
 				"regex": false,
 			},
 		},
-		"hidden":     false,
-		"host":       host,
-		"instance":   true,
-		"max_points": 500,
-		"name":       "chall-3",
-		"points":     500,
-		"port":       0,
-		"score_type": "Dynamic",
-		"solved":     false,
-		"solves":     1,
 		"solves_list": []JSON{
 			{
 				"name": "A",
 			},
-		},
-		"tags": []interface{}{
-			"tag-3",
 		},
 		"type": "Container",
 	}

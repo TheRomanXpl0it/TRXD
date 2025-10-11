@@ -146,7 +146,7 @@ func main() {
 		log.Fatal("Error getting database info from env", "err", err)
 	}
 
-	if os.Getenv("TESTING") == "true" {
+	if os.Getenv("TESTING") != "" {
 		consts.Testing = true
 		log.Warn("Running in TESTING mode")
 	}

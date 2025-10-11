@@ -187,7 +187,7 @@ func TestRoute(t *testing.T) {
 		session.CheckResponse(test.expectedResponse)
 
 		if i == len(testData)-1 {
-			session.Get(fmt.Sprintf("/challenges/%d", challID), nil, http.StatusOK)
+			session.Get("/challenges", nil, http.StatusOK)
 			body := session.Body()
 			if body == nil {
 				t.Fatal("Expected body to not be nil")
@@ -202,6 +202,36 @@ func TestRoute(t *testing.T) {
 				"category":    test.testBody["category"],
 				"description": test.testBody["description"],
 				"difficulty":  test.testBody["difficulty"],
+				"first_blood": false,
+				"hidden":      test.testBody["hidden"],
+				"host":        test.testBody["host"],
+				"id":          challID,
+				"instance":    test.testBody["type"] != "Normal",
+				"max_points":  test.testBody["max_points"],
+				"name":        test.testBody["name"],
+				"points":      test.testBody["max_points"],
+				"port":        1234,
+				"score_type":  test.testBody["score_type"],
+				"solved":      false,
+				"solves":      0,
+				"tags":        []string{},
+				"timeout":     0,
+			}
+			var challengeBody interface{}
+			for _, v := range body.([]interface{}) {
+				if int32(v.(map[string]interface{})["id"].(float64)) == challID {
+					challengeBody = v
+					break
+				}
+			}
+			test_utils.Compare(t, expected, challengeBody)
+
+			session.Get(fmt.Sprintf("/challenges/%d", challID), nil, http.StatusOK)
+			body = session.Body()
+			if body == nil {
+				t.Fatal("Expected body to not be nil")
+			}
+			expected = JSON{
 				"docker_config": JSON{
 					"compose":     test.testBody["compose"],
 					"envs":        test.testBody["envs"],
@@ -211,22 +241,8 @@ func TestRoute(t *testing.T) {
 					"max_cpu":     test.testBody["max_cpu"],
 					"max_memory":  test.testBody["max_memory"],
 				},
-				"first_blood": false,
 				"flags":       []string{},
-				"hidden":      test.testBody["hidden"],
-				"host":        test.testBody["host"],
-				"id":          challID,
-				"instance":    test.testBody["type"] != "Normal",
-				"max_points":  test.testBody["max_points"],
-				"name":        test.testBody["name"],
-				"points":      test.testBody["max_points"],
-				"port":        0,
-				"score_type":  test.testBody["score_type"],
-				"solved":      false,
-				"solves":      0,
 				"solves_list": []string{},
-				"tags":        []string{},
-				"timeout":     0,
 				"type":        test.testBody["type"],
 			}
 			test_utils.Compare(t, expected, body)
@@ -262,7 +278,7 @@ func TestRoute(t *testing.T) {
 	session.PatchMultipart("/challenges", testBody, testFiles, http.StatusOK)
 	session.CheckResponse(nil)
 
-	session.Get(fmt.Sprintf("/challenges/%d", challID), nil, http.StatusOK)
+	session.Get("/challenges/", nil, http.StatusOK)
 	body := session.Body()
 	if body == nil {
 		t.Fatal("Expected body to not be nil")
@@ -273,6 +289,36 @@ func TestRoute(t *testing.T) {
 		"category":    testBody["category"],
 		"description": testBody["description"],
 		"difficulty":  testBody["difficulty"],
+		"first_blood": false,
+		"hidden":      testBody["hidden"],
+		"host":        testBody["host"],
+		"id":          challID,
+		"instance":    testBody["type"] != "Normal",
+		"max_points":  testBody["max_points"],
+		"name":        testBody["name"],
+		"points":      testBody["max_points"],
+		"port":        testBody["port"],
+		"score_type":  "Dynamic",
+		"solved":      false,
+		"solves":      0,
+		"tags":        []string{},
+		"timeout":     0,
+	}
+	var challengeBody interface{}
+	for _, v := range body.([]interface{}) {
+		if int32(v.(map[string]interface{})["id"].(float64)) == challID {
+			challengeBody = v
+			break
+		}
+	}
+	test_utils.Compare(t, expected, challengeBody)
+
+	session.Get(fmt.Sprintf("/challenges/%d", challID), nil, http.StatusOK)
+	body = session.Body()
+	if body == nil {
+		t.Fatal("Expected body to not be nil")
+	}
+	expected = JSON{
 		"docker_config": JSON{
 			"compose":     testBody["compose"],
 			"envs":        testBody["envs"],
@@ -282,22 +328,8 @@ func TestRoute(t *testing.T) {
 			"max_cpu":     testBody["max_cpu"],
 			"max_memory":  testBody["max_memory"],
 		},
-		"first_blood": false,
 		"flags":       []string{},
-		"hidden":      testBody["hidden"],
-		"host":        testBody["host"],
-		"id":          challID,
-		"instance":    testBody["type"] != "Normal",
-		"max_points":  testBody["max_points"],
-		"name":        testBody["name"],
-		"points":      testBody["max_points"],
-		"port":        0,
-		"score_type":  "Dynamic",
-		"solved":      false,
-		"solves":      0,
 		"solves_list": []string{},
-		"tags":        []string{},
-		"timeout":     0,
 		"type":        "Container",
 	}
 	test_utils.Compare(t, expected, body)

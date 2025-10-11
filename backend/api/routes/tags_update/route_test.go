@@ -1,7 +1,6 @@
 package tags_update_test
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 	"testing"
@@ -96,14 +95,21 @@ func TestRoute(t *testing.T) {
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/login", JSON{"email": "author@test.test", "password": "testpass"}, http.StatusOK)
-	session.Get(fmt.Sprintf("/challenges/%d", chall.ID), nil, http.StatusOK)
+	session.Get("/challenges", nil, http.StatusOK)
 	body := session.Body()
 	if body == nil {
 		t.Fatal("Expected body to not be nil")
 	}
-	tags := body.(map[string]interface{})["tags"].([]interface{})
+	var challengeBody interface{}
+	for _, v := range body.([]interface{}) {
+		if int32(v.(map[string]interface{})["id"].(float64)) == chall.ID {
+			challengeBody = v
+			break
+		}
+	}
+	tags := challengeBody.(map[string]interface{})["tags"].([]interface{})
 	if len(tags) != 1 {
-		t.Fatalf("Expected no tags, but got: %v", tags)
+		t.Fatalf("Expected 1 tag, but got: %v", tags)
 	}
 	if tags[0].(string) != "test" {
 		t.Fatalf("Expected tag to be 'test', but got: %v", tags[0])

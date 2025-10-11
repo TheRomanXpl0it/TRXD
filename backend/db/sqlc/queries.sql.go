@@ -296,67 +296,36 @@ func (q *Queries) GetChallengeSolves(ctx context.Context, challID int32) ([]GetC
 	return items, nil
 }
 
-const getChallengesPreview = `-- name: GetChallengesPreview :many
-SELECT id, name, category, difficulty, type, hidden, points, solves,
-    EXISTS(
-      SELECT 1
-        FROM submissions
-        JOIN users ON users.id = submissions.user_id
-        JOIN teams ON users.team_id = teams.id
-          AND teams.id = (SELECT team_id FROM users WHERE users.id = $1)
-        WHERE users.role = 'Player'
-          AND submissions.status = 'Correct'
-        AND submissions.chall_id = challenges.id
-    ) AS solved,
-    EXISTS(
-      SELECT 1
-        FROM submissions
-        JOIN users ON users.id = submissions.user_id
-        JOIN teams ON users.team_id = teams.id
-          AND teams.id = (SELECT team_id FROM users WHERE users.id = $1)
-        WHERE users.role = 'Player'
-          AND submissions.status = 'Correct'
-          AND submissions.chall_id = challenges.id
-        ORDER BY submissions.timestamp
-        LIMIT 1
-    ) AS first_blood
-  FROM challenges
+const getChallenges = `-- name: GetChallenges :many
+SELECT id, name, category, description, difficulty, authors, type, hidden, max_points, score_type, points, solves, host, port, attachments FROM challenges
 `
 
-type GetChallengesPreviewRow struct {
-	ID         int32      `json:"id"`
-	Name       string     `json:"name"`
-	Category   string     `json:"category"`
-	Difficulty string     `json:"difficulty"`
-	Type       DeployType `json:"type"`
-	Hidden     bool       `json:"hidden"`
-	Points     int32      `json:"points"`
-	Solves     int32      `json:"solves"`
-	Solved     bool       `json:"solved"`
-	FirstBlood bool       `json:"first_blood"`
-}
-
 // Retrieve all challenges
-func (q *Queries) GetChallengesPreview(ctx context.Context, id int32) ([]GetChallengesPreviewRow, error) {
-	rows, err := q.query(ctx, q.getChallengesPreviewStmt, getChallengesPreview, id)
+func (q *Queries) GetChallenges(ctx context.Context) ([]Challenge, error) {
+	rows, err := q.query(ctx, q.getChallengesStmt, getChallenges)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetChallengesPreviewRow
+	var items []Challenge
 	for rows.Next() {
-		var i GetChallengesPreviewRow
+		var i Challenge
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
 			&i.Category,
+			&i.Description,
 			&i.Difficulty,
+			&i.Authors,
 			&i.Type,
 			&i.Hidden,
+			&i.MaxPoints,
+			&i.ScoreType,
 			&i.Points,
 			&i.Solves,
-			&i.Solved,
-			&i.FirstBlood,
+			&i.Host,
+			&i.Port,
+			&i.Attachments,
 		); err != nil {
 			return nil, err
 		}
@@ -459,27 +428,6 @@ func (q *Queries) GetInstance(ctx context.Context, arg GetInstanceParams) (Insta
 		&i.DockerID,
 	)
 	return i, err
-}
-
-const getInstanceExpire = `-- name: GetInstanceExpire :one
-SELECT expires_at
-  FROM instances
-  JOIN teams ON teams.id = instances.team_id
-  JOIN users ON users.team_id = teams.id
-  WHERE users.id = $2 AND chall_id = $1
-`
-
-type GetInstanceExpireParams struct {
-	ChallID int32 `json:"chall_id"`
-	UserID  int32 `json:"user_id"`
-}
-
-// Retrieve the expiration time of a specific instance
-func (q *Queries) GetInstanceExpire(ctx context.Context, arg GetInstanceExpireParams) (time.Time, error) {
-	row := q.queryRow(ctx, q.getInstanceExpireStmt, getInstanceExpire, arg.ChallID, arg.UserID)
-	var expires_at time.Time
-	err := row.Scan(&expires_at)
-	return expires_at, err
 }
 
 const getInstanceInfo = `-- name: GetInstanceInfo :one

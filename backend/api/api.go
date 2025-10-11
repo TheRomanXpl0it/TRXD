@@ -46,7 +46,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/csrf"
 	"github.com/gofiber/fiber/v2/middleware/favicon"
-	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/monitor"
 	"github.com/tde-nico/log"
 )
@@ -98,7 +97,7 @@ func SetupFeatures(app *fiber.App) {
 			return c.Next()
 		})
 
-		app.Use(limiter.New())
+		// app.Use(limiter.New())
 	}
 
 	app.Use(compress.New())

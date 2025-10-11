@@ -78,8 +78,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getChallengeSolvesStmt, err = db.PrepareContext(ctx, getChallengeSolves); err != nil {
 		return nil, fmt.Errorf("error preparing query GetChallengeSolves: %w", err)
 	}
-	if q.getChallengesPreviewStmt, err = db.PrepareContext(ctx, getChallengesPreview); err != nil {
-		return nil, fmt.Errorf("error preparing query GetChallengesPreview: %w", err)
+	if q.getChallengesStmt, err = db.PrepareContext(ctx, getChallenges); err != nil {
+		return nil, fmt.Errorf("error preparing query GetChallenges: %w", err)
 	}
 	if q.getConfigStmt, err = db.PrepareContext(ctx, getConfig); err != nil {
 		return nil, fmt.Errorf("error preparing query GetConfig: %w", err)
@@ -98,9 +98,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.getInstanceStmt, err = db.PrepareContext(ctx, getInstance); err != nil {
 		return nil, fmt.Errorf("error preparing query GetInstance: %w", err)
-	}
-	if q.getInstanceExpireStmt, err = db.PrepareContext(ctx, getInstanceExpire); err != nil {
-		return nil, fmt.Errorf("error preparing query GetInstanceExpire: %w", err)
 	}
 	if q.getInstanceInfoStmt, err = db.PrepareContext(ctx, getInstanceInfo); err != nil {
 		return nil, fmt.Errorf("error preparing query GetInstanceInfo: %w", err)
@@ -293,9 +290,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getChallengeSolvesStmt: %w", cerr)
 		}
 	}
-	if q.getChallengesPreviewStmt != nil {
-		if cerr := q.getChallengesPreviewStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getChallengesPreviewStmt: %w", cerr)
+	if q.getChallengesStmt != nil {
+		if cerr := q.getChallengesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getChallengesStmt: %w", cerr)
 		}
 	}
 	if q.getConfigStmt != nil {
@@ -326,11 +323,6 @@ func (q *Queries) Close() error {
 	if q.getInstanceStmt != nil {
 		if cerr := q.getInstanceStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getInstanceStmt: %w", cerr)
-		}
-	}
-	if q.getInstanceExpireStmt != nil {
-		if cerr := q.getInstanceExpireStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getInstanceExpireStmt: %w", cerr)
 		}
 	}
 	if q.getInstanceInfoStmt != nil {
@@ -550,14 +542,13 @@ type Queries struct {
 	getChallDockerConfigStmt     *sql.Stmt
 	getChallengeByIDStmt         *sql.Stmt
 	getChallengeSolvesStmt       *sql.Stmt
-	getChallengesPreviewStmt     *sql.Stmt
+	getChallengesStmt            *sql.Stmt
 	getConfigStmt                *sql.Stmt
 	getConfigsStmt               *sql.Stmt
 	getDockerConfigsByIDStmt     *sql.Stmt
 	getFlagsByChallengeStmt      *sql.Stmt
 	getHiddenAndAttachmentsStmt  *sql.Stmt
 	getInstanceStmt              *sql.Stmt
-	getInstanceExpireStmt        *sql.Stmt
 	getInstanceInfoStmt          *sql.Stmt
 	getNextInstanceToDeleteStmt  *sql.Stmt
 	getTagsByChallengeStmt       *sql.Stmt
@@ -614,14 +605,13 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getChallDockerConfigStmt:     q.getChallDockerConfigStmt,
 		getChallengeByIDStmt:         q.getChallengeByIDStmt,
 		getChallengeSolvesStmt:       q.getChallengeSolvesStmt,
-		getChallengesPreviewStmt:     q.getChallengesPreviewStmt,
+		getChallengesStmt:            q.getChallengesStmt,
 		getConfigStmt:                q.getConfigStmt,
 		getConfigsStmt:               q.getConfigsStmt,
 		getDockerConfigsByIDStmt:     q.getDockerConfigsByIDStmt,
 		getFlagsByChallengeStmt:      q.getFlagsByChallengeStmt,
 		getHiddenAndAttachmentsStmt:  q.getHiddenAndAttachmentsStmt,
 		getInstanceStmt:              q.getInstanceStmt,
-		getInstanceExpireStmt:        q.getInstanceExpireStmt,
 		getInstanceInfoStmt:          q.getInstanceInfoStmt,
 		getNextInstanceToDeleteStmt:  q.getNextInstanceToDeleteStmt,
 		getTagsByChallengeStmt:       q.getTagsByChallengeStmt,

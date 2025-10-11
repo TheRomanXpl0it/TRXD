@@ -3,29 +3,50 @@ package challenges_all_get
 import (
 	"context"
 	"database/sql"
+	"strings"
 	"time"
 	"trxd/db"
 	"trxd/db/sqlc"
+	"trxd/utils/consts"
 )
 
 type Chall struct {
-	ID         int32    `json:"id"`
-	Name       string   `json:"name"`
-	Category   string   `json:"category"`
-	Difficulty string   `json:"difficulty"`
-	Instance   bool     `json:"instance"`
-	Hidden     bool     `json:"hidden"`
-	Points     int32    `json:"points"`
-	Solves     int32    `json:"solves"`
-	Tags       []string `json:"tags"`
-	Solved     bool     `json:"solved"`
-	FirstBlood bool     `json:"first_blood"`
-	Timeout    *int     `json:"timeout,omitempty"`
+	ID          int32          `json:"id"`
+	Name        string         `json:"name"`
+	Category    string         `json:"category"`
+	Description string         `json:"description"`
+	Difficulty  string         `json:"difficulty"`
+	Authors     []string       `json:"authors"`
+	Instance    bool           `json:"instance"`
+	Hidden      bool           `json:"hidden"`
+	Points      int            `json:"points"`
+	Solves      int            `json:"solves"`
+	FirstBlood  bool           `json:"first_blood"`
+	Host        string         `json:"host"`
+	Port        int            `json:"port"`
+	Attachments []string       `json:"attachments"`
+	Tags        []string       `json:"tags"`
+	Solved      bool           `json:"solved"`
+	MaxPoints   int            `json:"max_points"`
+	ScoreType   sqlc.ScoreType `json:"score_type"`
+	Timeout     int            `json:"timeout"`
 }
 
-func GetInstanceExpire(ctx context.Context, uid int32, challID int32) (*int, error) {
-	expiresAt, err := db.Sql.GetInstanceExpire(ctx, sqlc.GetInstanceExpireParams{
-		UserID:  uid,
+func IsChallengeSolved(ctx context.Context, id int32, uid int32) (bool, error) {
+	solved, err := db.Sql.IsChallengeSolved(ctx, sqlc.IsChallengeSolvedParams{
+		ChallID: id,
+		ID:      uid,
+	})
+	if err != nil {
+		return false, err
+	}
+
+	return solved, nil
+}
+
+func GetInstanceInfo(ctx context.Context, challID int32, teamID int32) (*sqlc.GetInstanceInfoRow, error) {
+	instance, err := db.Sql.GetInstanceInfo(ctx, sqlc.GetInstanceInfoParams{
+		TeamID:  teamID,
 		ChallID: challID,
 	})
 	if err != nil {
@@ -35,52 +56,84 @@ func GetInstanceExpire(ctx context.Context, uid int32, challID int32) (*int, err
 		return nil, err
 	}
 
-	lifetime := int(time.Until(expiresAt).Seconds())
-	if lifetime <= 0 {
-		lifetime = 0
-	}
-
-	return &lifetime, nil
+	return &instance, nil
 }
 
-func GetChallenges(ctx context.Context, uid int32, author bool) ([]*Chall, error) {
-	challPreviews, err := db.Sql.GetChallengesPreview(ctx, uid)
+func GetChallenge(ctx context.Context, challenge *sqlc.Challenge, uid int32, tid int32) (*Chall, error) {
+	tags, err := db.GetTagsByChallenge(ctx, challenge.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	solved, err := IsChallengeSolved(ctx, challenge.ID, uid)
+	if err != nil {
+		return nil, err
+	}
+
+	instance, err := GetInstanceInfo(ctx, challenge.ID, tid)
+	if err != nil {
+		return nil, err
+	}
+
+	chall := Chall{
+		ID:          challenge.ID,
+		Name:        challenge.Name,
+		Category:    challenge.Category,
+		Description: challenge.Description,
+		Difficulty:  challenge.Difficulty,
+		Authors:     []string{},
+		Instance:    challenge.Type != sqlc.DeployTypeNormal,
+		Hidden:      challenge.Hidden,
+		Points:      int(challenge.Points),
+		Solves:      int(challenge.Solves),
+		// TODO: first blood
+		Attachments: []string{},
+		Tags:        []string{},
+		Solved:      solved,
+		Host:        challenge.Host,      // TODO check this if nullable
+		Port:        int(challenge.Port), // TODO check this if nullable
+		MaxPoints:   int(challenge.MaxPoints),
+		ScoreType:   challenge.ScoreType,
+	}
+
+	if instance != nil {
+		chall.Host = instance.Host
+		if instance.Port.Valid {
+			chall.Port = int(instance.Port.Int32)
+		}
+		chall.Timeout = int(time.Until(instance.ExpiresAt).Seconds())
+		if chall.Timeout < 0 {
+			chall.Timeout = 0
+		}
+	}
+	if challenge.Authors != "" {
+		chall.Authors = strings.Split(challenge.Authors, consts.Separator)
+	}
+	if challenge.Attachments != "" {
+		chall.Attachments = strings.Split(challenge.Attachments, consts.Separator)
+	}
+	if tags != nil {
+		chall.Tags = tags
+	}
+
+	return &chall, nil
+}
+
+func GetChallenges(ctx context.Context, uid int32, tid int32, author bool) ([]*Chall, error) {
+	challenges, err := db.Sql.GetChallenges(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	challsData := make([]*Chall, 0)
-	for _, challenge := range challPreviews {
+	for _, challenge := range challenges {
 		if !author && challenge.Hidden {
 			continue
 		}
 
-		tags, err := db.GetTagsByChallenge(ctx, challenge.ID)
+		chall, err := GetChallenge(ctx, &challenge, uid, tid)
 		if err != nil {
 			return nil, err
-		}
-
-		lifetime, err := GetInstanceExpire(ctx, uid, challenge.ID)
-		if err != nil {
-			return nil, err
-		}
-
-		chall := &Chall{
-			ID:         challenge.ID,
-			Name:       challenge.Name,
-			Category:   challenge.Category,
-			Difficulty: challenge.Difficulty,
-			Instance:   challenge.Type != sqlc.DeployTypeNormal,
-			Hidden:     challenge.Hidden,
-			Points:     challenge.Points,
-			Solves:     challenge.Solves,
-			Tags:       []string{},
-			Solved:     challenge.Solved,
-			FirstBlood: challenge.FirstBlood,
-			Timeout:    lifetime,
-		}
-		if tags != nil {
-			chall.Tags = tags
 		}
 
 		challsData = append(challsData, chall)

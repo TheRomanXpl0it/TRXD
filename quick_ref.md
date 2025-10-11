@@ -8,7 +8,7 @@ envs:
 - `REDIS_PORT`: the redis port (default 6379)
 - `REDIS_PASSWORD`: the redis password (optional or empty if not needed)
 - `REDIS_DISABLE`: (optional) set to something different from empty string to disable redis
-- `TESTING`: set to "true" will disable rate-limiter and anti-panic
+- `TESTING`: set to "1" will disable rate-limiter and anti-panic
 - `PROJECT_NAME`: use to set the project name for the compose inside the backend (default is "trxd")
 
 flags:
