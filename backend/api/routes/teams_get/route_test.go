@@ -82,7 +82,7 @@ func TestRoute(t *testing.T) {
 	if body == nil {
 		t.Fatal("Expected body to not be nil")
 	}
-	test_utils.DeleteKeys(body, "id", "timestamp")
+	test_utils.DeleteKeys(body, "id", "timestamp", "user_id")
 	test_utils.Compare(t, expectedPlayer, body)
 
 	session = test_utils.NewApiTestSession(t, app)
@@ -92,7 +92,7 @@ func TestRoute(t *testing.T) {
 	if body == nil {
 		t.Fatal("Expected body to not be nil")
 	}
-	test_utils.DeleteKeys(body, "id", "timestamp")
+	test_utils.DeleteKeys(body, "id", "timestamp", "user_id")
 	test_utils.Compare(t, expectedPlayer, body)
 
 	expectedAdmin := JSON{
@@ -146,6 +146,6 @@ func TestRoute(t *testing.T) {
 	if body == nil {
 		t.Fatal("Expected body to not be nil")
 	}
-	test_utils.DeleteKeys(body, "id", "timestamp")
+	test_utils.DeleteKeys(body, "id", "timestamp", "user_id")
 	test_utils.Compare(t, expectedAdmin, body)
 }

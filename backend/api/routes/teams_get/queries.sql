@@ -4,7 +4,7 @@ SELECT id, name, role, score FROM users WHERE team_id = $1 ORDER BY id;
 
 -- name: GetTeamSolves :many
 -- Retrieve all challenges solved by a team's members
-SELECT challenges.id, challenges.name, challenges.category, submissions.timestamp
+SELECT challenges.id, challenges.name, challenges.category, submissions.timestamp, submissions.user_id
   FROM submissions
   JOIN users ON users.id = submissions.user_id
   JOIN teams ON users.team_id = teams.id

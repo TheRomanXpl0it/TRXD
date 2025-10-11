@@ -526,7 +526,7 @@ func (q *Queries) GetTeamMembers(ctx context.Context, teamID sql.NullInt32) ([]G
 }
 
 const getTeamSolves = `-- name: GetTeamSolves :many
-SELECT challenges.id, challenges.name, challenges.category, submissions.timestamp
+SELECT challenges.id, challenges.name, challenges.category, submissions.timestamp, submissions.user_id
   FROM submissions
   JOIN users ON users.id = submissions.user_id
   JOIN teams ON users.team_id = teams.id
@@ -542,6 +542,7 @@ type GetTeamSolvesRow struct {
 	Name      string    `json:"name"`
 	Category  string    `json:"category"`
 	Timestamp time.Time `json:"timestamp"`
+	UserID    int32     `json:"user_id"`
 }
 
 // Retrieve all challenges solved by a team's members
@@ -559,6 +560,7 @@ func (q *Queries) GetTeamSolves(ctx context.Context, id int32) ([]GetTeamSolvesR
 			&i.Name,
 			&i.Category,
 			&i.Timestamp,
+			&i.UserID,
 		); err != nil {
 			return nil, err
 		}
