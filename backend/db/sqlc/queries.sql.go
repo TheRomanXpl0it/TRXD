@@ -1155,14 +1155,16 @@ func (q *Queries) UpdateTag(ctx context.Context, arg UpdateTagParams) error {
 const updateTeam = `-- name: UpdateTeam :exec
 UPDATE teams
 SET
-  country = COALESCE($2, country),
-  image = COALESCE($3, image),
-  bio = COALESCE($4, bio)
+  name = COALESCE($2, name),
+  country = COALESCE($3, country),
+  image = COALESCE($4, image),
+  bio = COALESCE($5, bio)
 WHERE id = $1
 `
 
 type UpdateTeamParams struct {
 	ID      int32          `json:"id"`
+	Name    sql.NullString `json:"name"`
 	Country sql.NullString `json:"country"`
 	Image   sql.NullString `json:"image"`
 	Bio     sql.NullString `json:"bio"`
@@ -1172,6 +1174,7 @@ type UpdateTeamParams struct {
 func (q *Queries) UpdateTeam(ctx context.Context, arg UpdateTeamParams) error {
 	_, err := q.exec(ctx, q.updateTeamStmt, updateTeam,
 		arg.ID,
+		arg.Name,
 		arg.Country,
 		arg.Image,
 		arg.Bio,

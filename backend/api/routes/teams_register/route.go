@@ -34,7 +34,13 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusConflict, consts.AlreadyInTeam)
 	}
 
-	team, err = RegisterTeam(c.Context(), data.Name, data.Password, uid)
+	tx, err := db.BeginTx(c.Context())
+	if err != nil {
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorBeginningTransaction, err)
+	}
+	defer tx.Rollback()
+
+	team, err = RegisterTeam(c.Context(), tx, data.Name, data.Password, uid)
 	if err != nil {
 		if strings.HasPrefix(err.Error(), "[race condition]") {
 			return utils.Error(c, fiber.StatusConflict, consts.AlreadyInTeam)
@@ -43,6 +49,11 @@ func Route(c *fiber.Ctx) error {
 	}
 	if team == nil {
 		return utils.Error(c, fiber.StatusConflict, consts.TeamAlreadyExists)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorCommittingTransaction, err)
 	}
 
 	return c.SendStatus(fiber.StatusOK)

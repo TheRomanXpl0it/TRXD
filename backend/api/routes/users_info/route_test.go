@@ -47,5 +47,5 @@ func TestRoute(t *testing.T) {
 		t.Errorf("Expected team_id to be set, got nil")
 	}
 	test_utils.DeleteKeys(body, "team_id")
-	test_utils.Compare(t, body, JSON{"name": "test", "role": sqlc.UserRolePlayer})
+	test_utils.Compare(t, body, JSON{"name": "test", "role": sqlc.UserRolePlayer, "user_mode": false})
 }

@@ -25,14 +25,20 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, fmt.Errorf("user not found"))
 	}
 
+	userMode, err := db.GetConfig(c.Context(), "user-mode")
+	if err != nil {
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingConfig, err)
+	}
+
 	var teamID *int32
 	if user.TeamID.Valid {
 		teamID = &user.TeamID.Int32
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"id":      user.ID,
-		"name":    user.Name,
-		"role":    user.Role,
-		"team_id": teamID,
+		"id":        user.ID,
+		"name":      user.Name,
+		"role":      user.Role,
+		"team_id":   teamID,
+		"user_mode": userMode == "true",
 	})
 }

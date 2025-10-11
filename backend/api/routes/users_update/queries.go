@@ -10,8 +10,9 @@ import (
 	"github.com/lib/pq"
 )
 
-func UpdateUser(ctx context.Context, userID int32, name, country, image string) error {
-	err := db.Sql.UpdateUser(ctx, sqlc.UpdateUserParams{
+func UpdateUser(ctx context.Context, tx *sql.Tx, userID int32, name, country, image string) error {
+	sqlTx := db.Sql.WithTx(tx)
+	err := sqlTx.UpdateUser(ctx, sqlc.UpdateUserParams{
 		ID:      userID,
 		Name:    sql.NullString{String: name, Valid: name != ""},
 		Country: sql.NullString{String: country, Valid: country != ""},

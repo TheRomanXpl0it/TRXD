@@ -2,15 +2,17 @@ package teams_update
 
 import (
 	"trxd/api/validator"
+	"trxd/db"
 	"trxd/utils"
 	"trxd/utils/consts"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/lib/pq"
 )
 
 func Route(c *fiber.Ctx) error {
 	var data struct {
-		// TODO: change name
+		Name    string `json:"name" validate:"team_name"`
 		Country string `json:"country" validate:"team_country"`
 		Image   string `json:"image" validate:"team_image"`
 		Bio     string `json:"bio" validate:"team_bio"`
@@ -19,7 +21,7 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidJSON)
 	}
 
-	if data.Country == "" && data.Image == "" && data.Bio == "" {
+	if data.Name == "" && data.Country == "" && data.Image == "" && data.Bio == "" {
 		return utils.Error(c, fiber.StatusBadRequest, consts.MissingRequiredFields)
 	}
 	valid, err := validator.Struct(c, data)
@@ -27,10 +29,26 @@ func Route(c *fiber.Ctx) error {
 		return err
 	}
 
-	tid := c.Locals("tid").(int32)
-	err = UpdateTeam(c.Context(), tid, data.Country, data.Image, data.Bio)
+	tx, err := db.BeginTx(c.Context())
 	if err != nil {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorUpdatingUser, err)
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorBeginningTransaction, err)
+	}
+	defer tx.Rollback()
+
+	tid := c.Locals("tid").(int32)
+	err = UpdateTeam(c.Context(), tx, tid, data.Name, data.Country, data.Image, data.Bio)
+	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			if pqErr.Code == "23505" { // Unique violation error code
+				return utils.Error(c, fiber.StatusConflict, consts.NameAlreadyTaken)
+			}
+		}
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorUpdatingTeam, err)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorCommittingTransaction, err)
 	}
 
 	return c.SendStatus(fiber.StatusOK)

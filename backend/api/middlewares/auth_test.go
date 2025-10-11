@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"testing"
 	"trxd/api"
-	"trxd/api/routes/teams_register"
 	"trxd/db/sqlc"
 	"trxd/utils/test_utils"
 )
@@ -56,15 +55,11 @@ func TestAuthMiddlewares(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()
 
-	var err error
 	users := [6]*sqlc.User{}
 	users[1] = test_utils.RegisterUser(t, "spectator", "spectator@test.test", "testpass", sqlc.UserRoleSpectator)
 	users[2] = test_utils.RegisterUser(t, "player", "player@test.test", "testpass", sqlc.UserRolePlayer)
 	users[3] = test_utils.RegisterUser(t, "team_player", "team@test.test", "testpass", sqlc.UserRolePlayer)
-	_, err = teams_register.RegisterTeam(t.Context(), "team1", "teampass", users[3].ID)
-	if err != nil {
-		t.Fatalf("Failed to register team: %v", err)
-	}
+	test_utils.RegisterTeam(t, "team1", "teampass", users[3].ID)
 	users[4] = test_utils.RegisterUser(t, "author", "author@test.test", "testpass", sqlc.UserRoleAuthor)
 	users[5] = test_utils.RegisterUser(t, "admin", "admin@test.test", "testpass", sqlc.UserRoleAdmin)
 

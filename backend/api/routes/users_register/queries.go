@@ -2,6 +2,7 @@ package users_register
 
 import (
 	"context"
+	"database/sql"
 	"trxd/db"
 	"trxd/db/sqlc"
 	"trxd/utils/crypto_utils"
@@ -9,7 +10,7 @@ import (
 	"github.com/lib/pq"
 )
 
-func RegisterUser(ctx context.Context, name, email, password string, role ...sqlc.UserRole) (*sqlc.User, error) {
+func RegisterUser(ctx context.Context, tx *sql.Tx, name, email, password string, role ...sqlc.UserRole) (*sqlc.User, error) {
 	hash, salt, err := crypto_utils.Hash(password)
 	if err != nil {
 		return nil, err
@@ -19,7 +20,8 @@ func RegisterUser(ctx context.Context, name, email, password string, role ...sql
 		role = append(role, sqlc.UserRolePlayer)
 	}
 
-	user, err := db.Sql.RegisterUser(ctx, sqlc.RegisterUserParams{
+	sqlTx := db.Sql.WithTx(tx)
+	user, err := sqlTx.RegisterUser(ctx, sqlc.RegisterUserParams{
 		Name:         name,
 		Email:        email,
 		PasswordHash: hash,

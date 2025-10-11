@@ -97,13 +97,25 @@ func Flags() {
 			log.Fatal(err)
 		}
 
-		user, err := users_register.RegisterUser(context.Background(), name, email, password, sqlc.UserRoleAdmin)
+		tx, err := db.BeginTx(context.Background())
+		if err != nil {
+			log.Fatal("Error beginning transaction", "err", err)
+		}
+		defer tx.Rollback()
+
+		user, err := users_register.RegisterUser(context.Background(), tx, name, email, password, sqlc.UserRoleAdmin)
 		if err != nil {
 			log.Fatal("Error registering admin user", "err", err)
 		}
 		if user == nil {
 			log.Fatal("Failed to register admin user: user already exists")
 		}
+
+		err = tx.Commit()
+		if err != nil {
+			log.Fatal("Error committing transaction", "err", err)
+		}
+
 		log.Info("Admin user registered successfully")
 		os.Exit(0)
 	}

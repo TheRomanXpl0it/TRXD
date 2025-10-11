@@ -38,6 +38,8 @@ const (
 	DisabledInstances     = "Instances are disabled"
 	DisabledRegistrations = "Registrations are disabled"
 
+	ErrorBeginningTransaction   = "Error beginning transaction"
+	ErrorCommittingTransaction  = "Error committing transaction"
 	ErrorCreatingAttachmentsDir = "Error creating attachments directory"
 	ErrorCreatingCategory       = "Error creating category"
 	ErrorCreatingChallenge      = "Error creating challenge"
@@ -72,6 +74,7 @@ const (
 	ErrorUpdatingChallenge      = "Error updating challenge"
 	ErrorUpdatingConfig         = "Error updating configuration"
 	ErrorUpdatingTag            = "Error updating tag"
+	ErrorUpdatingTeam           = "Error updating team"
 	ErrorUpdatingUser           = "Error updating user"
 
 	InvalidChallengeID     = "Invalid challenge ID, must be non negative"

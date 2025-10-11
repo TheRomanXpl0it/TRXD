@@ -38,7 +38,13 @@ func Route(c *fiber.Ctx) error {
 		return err
 	}
 
-	user, err := RegisterUser(c.Context(), data.Name, data.Email, data.Password)
+	tx, err := db.BeginTx(c.Context())
+	if err != nil {
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorBeginningTransaction, err)
+	}
+	defer tx.Rollback()
+
+	user, err := RegisterUser(c.Context(), tx, data.Name, data.Email, data.Password)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorRegisteringUser, err)
 	}
@@ -48,13 +54,18 @@ func Route(c *fiber.Ctx) error {
 
 	// TODO: tests
 	if consts.DefaultConfigs["user-mode"].(bool) { // TODO: make it fetch from db/cache
-		team, err := teams_register.RegisterTeam(c.Context(), data.Name, data.Password, user.ID)
+		team, err := teams_register.RegisterTeam(c.Context(), tx, data.Name, data.Password, user.ID)
 		if err != nil {
 			return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorRegisteringTeam, err)
 		}
 		if team == nil {
 			return utils.Error(c, fiber.StatusInternalServerError, consts.TeamAlreadyExists, err)
 		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorCommittingTransaction, err)
 	}
 
 	sess, err := db.Store.Get(c)

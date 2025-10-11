@@ -97,7 +97,13 @@ func UpdateConfig(t *testing.T, name string, value string) {
 }
 
 func RegisterUser(t *testing.T, name, email, password string, role sqlc.UserRole) *sqlc.User {
-	user, err := users_register.RegisterUser(t.Context(), name, email, password, role)
+	tx, err := db.BeginTx(t.Context())
+	if err != nil {
+		t.Fatalf("Failed to begin transaction: %v", err)
+	}
+	defer tx.Rollback()
+
+	user, err := users_register.RegisterUser(t.Context(), tx, name, email, password, role)
 	if err != nil {
 		t.Fatalf("Failed to register user %s: %v", name, err)
 	}
@@ -105,16 +111,32 @@ func RegisterUser(t *testing.T, name, email, password string, role sqlc.UserRole
 		t.Fatalf("Registered user '%s' is nil", name)
 	}
 
+	err = tx.Commit()
+	if err != nil {
+		t.Fatalf("Failed to commit transaction: %v", err)
+	}
+
 	return user
 }
 
 func RegisterTeam(t *testing.T, name, password string, userID int32) *sqlc.Team {
-	team, err := teams_register.RegisterTeam(t.Context(), name, password, userID)
+	tx, err := db.BeginTx(t.Context())
+	if err != nil {
+		t.Fatalf("Failed to begin transaction: %v", err)
+	}
+	defer tx.Rollback()
+
+	team, err := teams_register.RegisterTeam(t.Context(), tx, name, password, userID)
 	if err != nil {
 		t.Fatalf("Failed to register team %s: %v", name, err)
 	}
 	if team == nil {
 		t.Fatalf("Registered team '%s' is nil", name)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		t.Fatalf("Failed to commit transaction: %v", err)
 	}
 
 	return team

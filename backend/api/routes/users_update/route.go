@@ -1,7 +1,9 @@
 package users_update
 
 import (
+	"trxd/api/routes/teams_update"
 	"trxd/api/validator"
+	"trxd/db"
 	"trxd/utils"
 	"trxd/utils/consts"
 
@@ -28,13 +30,32 @@ func Route(c *fiber.Ctx) error {
 
 	uid := c.Locals("uid").(int32)
 
-	// TODO: update team if in single user mode
-	err = UpdateUser(c.Context(), uid, data.Name, data.Country, data.Image)
+	tx, err := db.BeginTx(c.Context())
+	if err != nil {
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorBeginningTransaction, err)
+	}
+	defer tx.Rollback()
+
+	err = UpdateUser(c.Context(), tx, uid, data.Name, data.Country, data.Image)
 	if err != nil {
 		if err.Error() == "[name already taken]" {
 			return utils.Error(c, fiber.StatusConflict, consts.NameAlreadyTaken)
 		}
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorUpdatingUser, err)
+	}
+
+	// TODO: tests
+	if consts.DefaultConfigs["user-mode"].(bool) { // TODO: make it fetch from db/cache
+		tid := c.Locals("tid").(int32)
+		err = teams_update.UpdateTeam(c.Context(), tx, tid, data.Name, data.Country, data.Image, "")
+		if err != nil {
+			return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorUpdatingTeam, err)
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorCommittingTransaction, err)
 	}
 
 	return c.SendStatus(fiber.StatusOK)

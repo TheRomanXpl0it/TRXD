@@ -50,6 +50,16 @@ var testData = []struct {
 		expectedResponse: errorf("Bio must not exceed 10240"),
 	},
 	{
+		testBody:         JSON{"name": strings.Repeat("a", consts.MaxTeamNameLen+1)},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf("Name must not exceed 64"),
+	},
+	{
+		testBody:         JSON{"name": "A"},
+		expectedStatus:   http.StatusConflict,
+		expectedResponse: errorf(consts.NameAlreadyTaken),
+	},
+	{
 		testBody:       JSON{"country": "a", "image": "a", "bio": "a"},
 		expectedStatus: http.StatusOK,
 	},

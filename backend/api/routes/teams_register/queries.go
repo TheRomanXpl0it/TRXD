@@ -11,13 +11,14 @@ import (
 	"github.com/lib/pq"
 )
 
-func RegisterTeam(ctx context.Context, name, password string, userID int32) (*sqlc.Team, error) {
+func RegisterTeam(ctx context.Context, tx *sql.Tx, name, password string, userID int32) (*sqlc.Team, error) {
 	hash, salt, err := crypto_utils.Hash(password)
 	if err != nil {
 		return nil, err
 	}
 
-	err = db.Sql.RegisterTeam(ctx, sqlc.RegisterTeamParams{
+	sqlTx := db.Sql.WithTx(tx)
+	err = sqlTx.RegisterTeam(ctx, sqlc.RegisterTeamParams{
 		ID:           userID,
 		Name:         name,
 		PasswordHash: hash,
@@ -32,7 +33,7 @@ func RegisterTeam(ctx context.Context, name, password string, userID int32) (*sq
 		return nil, err
 	}
 
-	team, err := db.Sql.GetTeamByName(ctx, name)
+	team, err := sqlTx.GetTeamByName(ctx, name)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("[race condition] team %s not found", name)
