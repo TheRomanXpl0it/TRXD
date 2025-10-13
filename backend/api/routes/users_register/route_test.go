@@ -125,4 +125,19 @@ func TestRoute(t *testing.T) {
 		session.Post("/register", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
+
+	app2 := api.SetupApp()
+	defer app2.Shutdown()
+	test_utils.UpdateConfig(t, "user-mode", "true")
+	session = test_utils.NewApiTestSession(t, app2)
+	session.Post("/register", JSON{"name": "single", "email": "single@test.test", "password": "testpass"}, http.StatusOK)
+	session.CheckResponse(nil)
+	session.Get("/info", nil, http.StatusOK)
+	body := session.Body()
+	if body == nil {
+		t.Fatal("Expected body")
+	}
+	if body.(map[string]interface{})["team_id"] == nil {
+		t.Fatal("Expected team_id")
+	}
 }

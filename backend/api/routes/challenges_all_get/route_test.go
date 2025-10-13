@@ -288,6 +288,4 @@ func TestRoute(t *testing.T) {
 	}
 	test_utils.DeleteKeys(body, "id", "timeout")
 	test_utils.Compare(t, expectedAuthor, body)
-
-	// TODO: instance test
 }

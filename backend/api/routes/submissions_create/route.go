@@ -42,7 +42,7 @@ func Route(c *fiber.Ctx) error {
 	}
 
 	if first_blood {
-		discord.BroadcastFirstBlood(c.Context(), challenge, uid)
+		go discord.BroadcastFirstBlood(c.Context(), challenge, uid)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{

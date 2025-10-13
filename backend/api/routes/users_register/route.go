@@ -1,6 +1,7 @@
 package users_register
 
 import (
+	"fmt"
 	"trxd/api/routes/teams_register"
 	"trxd/api/validator"
 	"trxd/db"
@@ -8,6 +9,7 @@ import (
 	"trxd/utils/consts"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/tde-nico/log"
 )
 
 func Route(c *fiber.Ctx) error {
@@ -52,8 +54,12 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusConflict, consts.UserAlreadyExists)
 	}
 
-	// TODO: tests
-	if consts.DefaultConfigs["user-mode"].(bool) { // TODO: make it fetch from db/cache
+	mode, err := db.GetConfig(c.Context(), "user-mode")
+	if err != nil {
+		log.Error("Failed to get user-mode config:", "err", err)
+		mode = fmt.Sprint(consts.DefaultConfigs["user-mode"])
+	}
+	if mode == "true" {
 		team, err := teams_register.RegisterTeam(c.Context(), tx, data.Name, data.Password, user.ID)
 		if err != nil {
 			return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorRegisteringTeam, err)

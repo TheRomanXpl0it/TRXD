@@ -90,8 +90,8 @@ func GetChallenge(ctx context.Context, challenge *sqlc.Challenge, uid int32, tid
 		Attachments: []string{},
 		Tags:        []string{},
 		Solved:      solved,
-		Host:        challenge.Host,      // TODO check this if nullable
-		Port:        int(challenge.Port), // TODO check this if nullable
+		Host:        challenge.Host,
+		Port:        int(challenge.Port),
 		MaxPoints:   int(challenge.MaxPoints),
 		ScoreType:   challenge.ScoreType,
 	}

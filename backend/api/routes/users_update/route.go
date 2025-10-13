@@ -1,6 +1,7 @@
 package users_update
 
 import (
+	"fmt"
 	"trxd/api/routes/teams_update"
 	"trxd/api/validator"
 	"trxd/db"
@@ -8,6 +9,7 @@ import (
 	"trxd/utils/consts"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/tde-nico/log"
 )
 
 func Route(c *fiber.Ctx) error {
@@ -44,8 +46,12 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorUpdatingUser, err)
 	}
 
-	// TODO: tests
-	if consts.DefaultConfigs["user-mode"].(bool) { // TODO: make it fetch from db/cache
+	mode, err := db.GetConfig(c.Context(), "user-mode")
+	if err != nil {
+		log.Error("Failed to get user-mode config:", "err", err)
+		mode = fmt.Sprint(consts.DefaultConfigs["user-mode"])
+	}
+	if mode == "true" {
 		tid := c.Locals("tid").(int32)
 		err = teams_update.UpdateTeam(c.Context(), tx, tid, data.Name, data.Country, data.Image, "")
 		if err != nil {

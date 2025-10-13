@@ -26,7 +26,9 @@ func GetInstance(ctx context.Context, challID, teamID int32) (*sqlc.Instance, er
 	return &instance, nil
 }
 
-func dbCreateInstance(ctx context.Context, teamID, challID int32, expiresAt time.Time, hashDomain bool) (*sqlc.CreateInstanceRow, error) {
+func dbCreateInstance(ctx context.Context, teamID, challID int32,
+	expiresAt time.Time, hashDomain bool) (*sqlc.CreateInstanceRow, error) {
+
 	info, err := db.Sql.CreateInstance(ctx, sqlc.CreateInstanceParams{
 		TeamID:     teamID,
 		ChallID:    challID,

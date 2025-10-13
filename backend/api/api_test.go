@@ -93,6 +93,29 @@ func TestStatic(t *testing.T) {
 	session.Get("/static/countries.json", nil, http.StatusOK)
 }
 
+func TestUserMode(t *testing.T) {
+	test_utils.UpdateConfig(t, "user-mode", "true")
+	app := api.SetupApp()
+	defer app.Shutdown()
+
+	enpoints := []struct {
+		method string
+		route  string
+	}{
+		{method: http.MethodPost, route: "/teams/register"},
+		{method: http.MethodPost, route: "/teams/join"},
+		{method: http.MethodPatch, route: "/teams"},
+		{method: http.MethodPatch, route: "/teams/password"},
+		{method: http.MethodGet, route: "/teams"},
+		{method: http.MethodGet, route: "/teams/0"},
+	}
+	session := test_utils.NewApiTestSession(t, app)
+	for _, ep := range enpoints {
+		session.Request(ep.method, ep.route, nil, http.StatusNotFound)
+		session.CheckResponse(errorf(consts.NotFound))
+	}
+}
+
 func TestAttachments(t *testing.T) {
 	app := api.SetupApp()
 	defer app.Shutdown()

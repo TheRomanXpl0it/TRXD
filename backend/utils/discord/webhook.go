@@ -38,7 +38,6 @@ func BroadcastWebhook(url string, body interface{}) error {
 }
 
 func BroadcastFirstBlood(ctx context.Context, challenge *sqlc.Challenge, uid int32) {
-	// TODO: make this into a go routine
 	conf, err := db.GetConfig(ctx, "discord-webhook")
 	if err != nil {
 		log.Error("Failed to fetch webhook url:", "err", err)
@@ -54,7 +53,7 @@ func BroadcastFirstBlood(ctx context.Context, challenge *sqlc.Challenge, uid int
 		return
 	}
 
-	// TODO: not hardcoded format:(
+	// TODO: not hardcoded format (maybe into a config)
 	challengeName := strings.ReplaceAll(challenge.Name, "@", "@\u200b")
 	teamName := strings.ReplaceAll(team.Name, "@", "@\u200b")
 	msg := fmt.Sprintf("First blood for **%s** goes to **%s**! 🩸", challengeName, teamName)

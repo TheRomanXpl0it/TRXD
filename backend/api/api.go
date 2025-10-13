@@ -1,6 +1,8 @@
 package api
 
 import (
+	"context"
+	"fmt"
 	"time"
 	"trxd/api/middlewares"
 	"trxd/api/routes/categories_create"
@@ -138,8 +140,12 @@ func SetupApi(app *fiber.App) {
 	api.Get("/users", noAuth, users_all_get.Route)
 	api.Get("/users/:id", noAuth, users_get.Route)
 
-	// TODO: tests
-	if !consts.DefaultConfigs["user-mode"].(bool) { // TODO: make it fetch from db/cache
+	mode, err := db.GetConfig(context.Background(), "user-mode")
+	if err != nil {
+		log.Error("Failed to get user-mode config:", "err", err)
+		mode = fmt.Sprint(consts.DefaultConfigs["user-mode"])
+	}
+	if mode != "true" {
 		api.Post("/teams/register", player, teams_register.Route)
 		api.Post("/teams/join", player, teams_join.Route)
 		// api.Get("/teams/join/:token", player, teams_join_token.Route)

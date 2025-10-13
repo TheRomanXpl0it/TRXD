@@ -30,8 +30,7 @@ func InitInstancer() error {
 }
 
 func GetInterval() (time.Duration, error) {
-	ctx := context.Background()
-	conf, err := db.GetConfig(ctx, "reclaim-instance-interval")
+	conf, err := db.GetConfig(context.Background(), "reclaim-instance-interval")
 	if err != nil {
 		return 0, err
 	}
@@ -56,7 +55,18 @@ func ReclaimLoop() {
 	}
 	defer containers.CloseCli()
 
-	// TODO: make this a separate function with anti panic
+	reclaimLoop()
+}
+
+func reclaimLoop() {
+	defer func() {
+		r := recover()
+		if r == nil {
+			return
+		}
+		log.Critical("Panic recovered in reclaim loop:", "crit", r)
+		reclaimLoop()
+	}()
 
 	sleep, err := GetInterval()
 	if err != nil {
