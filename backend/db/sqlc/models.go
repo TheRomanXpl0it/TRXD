@@ -248,12 +248,13 @@ type Instance struct {
 }
 
 type Submission struct {
-	ID        int32            `json:"id"`
-	UserID    int32            `json:"user_id"`
-	ChallID   int32            `json:"chall_id"`
-	Status    SubmissionStatus `json:"status"`
-	Flag      string           `json:"flag"`
-	Timestamp time.Time        `json:"timestamp"`
+	ID         int32            `json:"id"`
+	UserID     int32            `json:"user_id"`
+	ChallID    int32            `json:"chall_id"`
+	Status     SubmissionStatus `json:"status"`
+	FirstBlood bool             `json:"first_blood"`
+	Flag       string           `json:"flag"`
+	Timestamp  time.Time        `json:"timestamp"`
 }
 
 type Tag struct {

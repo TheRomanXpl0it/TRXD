@@ -144,8 +144,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getUsersPreviewStmt, err = db.PrepareContext(ctx, getUsersPreview); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUsersPreview: %w", err)
 	}
-	if q.isChallengeSolvedStmt, err = db.PrepareContext(ctx, isChallengeSolved); err != nil {
-		return nil, fmt.Errorf("error preparing query IsChallengeSolved: %w", err)
+	if q.isChallengeFirstBloodStmt, err = db.PrepareContext(ctx, isChallengeFirstBlood); err != nil {
+		return nil, fmt.Errorf("error preparing query IsChallengeFirstBlood: %w", err)
 	}
 	if q.registerTeamStmt, err = db.PrepareContext(ctx, registerTeam); err != nil {
 		return nil, fmt.Errorf("error preparing query RegisterTeam: %w", err)
@@ -400,9 +400,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getUsersPreviewStmt: %w", cerr)
 		}
 	}
-	if q.isChallengeSolvedStmt != nil {
-		if cerr := q.isChallengeSolvedStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing isChallengeSolvedStmt: %w", cerr)
+	if q.isChallengeFirstBloodStmt != nil {
+		if cerr := q.isChallengeFirstBloodStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing isChallengeFirstBloodStmt: %w", cerr)
 		}
 	}
 	if q.registerTeamStmt != nil {
@@ -564,7 +564,7 @@ type Queries struct {
 	getUserByNameStmt            *sql.Stmt
 	getUserSolvesStmt            *sql.Stmt
 	getUsersPreviewStmt          *sql.Stmt
-	isChallengeSolvedStmt        *sql.Stmt
+	isChallengeFirstBloodStmt    *sql.Stmt
 	registerTeamStmt             *sql.Stmt
 	registerUserStmt             *sql.Stmt
 	resetTeamPasswordStmt        *sql.Stmt
@@ -627,7 +627,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getUserByNameStmt:            q.getUserByNameStmt,
 		getUserSolvesStmt:            q.getUserSolvesStmt,
 		getUsersPreviewStmt:          q.getUsersPreviewStmt,
-		isChallengeSolvedStmt:        q.isChallengeSolvedStmt,
+		isChallengeFirstBloodStmt:    q.isChallengeFirstBloodStmt,
 		registerTeamStmt:             q.registerTeamStmt,
 		registerUserStmt:             q.registerUserStmt,
 		resetTeamPasswordStmt:        q.resetTeamPasswordStmt,

@@ -368,12 +368,32 @@ BEGIN
   UPDATE challenges SET type='Compose' WHERE id=(SELECT id FROM challenges WHERE name='chall-test');
   PERFORM assert(count(d)=1, 'check 73') FROM docker_configs d WHERE d.chall_id=(SELECT id FROM challenges WHERE name='chall-test');
 
+  -- checks for the first bloods does not change on already blooded challs
+  PERFORM assert(count(s)=3, 'check 74') FROM submissions s WHERE s.first_blood=TRUE;
+  INSERT INTO users (name, email, password_hash, password_salt, role, team_id) VALUES ('c', 'c@c.c',
+    '41d65efe433e60755bef957e56ed6466b24c44a86b8ec595df4c9cdfa9c3aca9', '1a5e93869fa3c2ee04139db8834f8808',
+    'Player', (SELECT id FROM teams WHERE name='B'));
+  INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
+    (SELECT id FROM users WHERE name='c'),
+    (SELECT id FROM challenges WHERE name='chall-1'),
+    'Correct', 'flag');
+  PERFORM assert(count(s)=3, 'check 75') FROM submissions s WHERE s.first_blood=TRUE;
+  
+  -- checks that the first blood is transferred on delete of the first blood submission
+  PERFORM assert(count(s)=0, 'check 76') FROM submissions s WHERE s.first_blood=TRUE AND s.user_id=(SELECT id FROM users WHERE name='c');
+  DELETE FROM submissions s WHERE s.first_blood=TRUE AND s.chall_id=(SELECT id FROM challenges WHERE name='chall-1');
+  PERFORM assert(count(s)=3, 'check 77') FROM submissions s WHERE s.first_blood=TRUE;
+  PERFORM assert(count(s)=1, 'check 78') FROM submissions s WHERE s.first_blood=TRUE AND s.user_id=(SELECT id FROM users WHERE name='c');
+
 END;
 $$ LANGUAGE plpgsql;
 
 /*
-SELECT tests();
+SELECT delete_all();
+SELECT insert_mock_configs();
 SELECT insert_mock_data();
+SELECT insert_mock_submissions();
+SELECT tests();
 
 SELECT * FROM submissions;
 SELECT * FROM tags;

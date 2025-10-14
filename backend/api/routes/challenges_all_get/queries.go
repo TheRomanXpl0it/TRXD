@@ -21,27 +21,30 @@ type Chall struct {
 	Hidden      bool           `json:"hidden"`
 	Points      int            `json:"points"`
 	Solves      int            `json:"solves"`
+	Solved      bool           `json:"solved"`
 	FirstBlood  bool           `json:"first_blood"`
 	Host        string         `json:"host"`
 	Port        int            `json:"port"`
 	Attachments []string       `json:"attachments"`
 	Tags        []string       `json:"tags"`
-	Solved      bool           `json:"solved"`
 	MaxPoints   int            `json:"max_points"`
 	ScoreType   sqlc.ScoreType `json:"score_type"`
 	Timeout     int            `json:"timeout"`
 }
 
-func IsChallengeSolved(ctx context.Context, id int32, uid int32) (bool, error) {
-	solved, err := db.Sql.IsChallengeSolved(ctx, sqlc.IsChallengeSolvedParams{
+func IsChallengeSolved(ctx context.Context, id int32, uid int32) (bool, bool, error) {
+	first_blood, err := db.Sql.IsChallengeFirstBlood(ctx, sqlc.IsChallengeFirstBloodParams{
 		ChallID: id,
 		ID:      uid,
 	})
 	if err != nil {
-		return false, err
+		if err == sql.ErrNoRows {
+			return false, false, nil
+		}
+		return false, false, err
 	}
 
-	return solved, nil
+	return true, first_blood, nil
 }
 
 func GetInstanceInfo(ctx context.Context, challID int32, teamID int32) (*sqlc.GetInstanceInfoRow, error) {
@@ -65,7 +68,7 @@ func GetChallenge(ctx context.Context, challenge *sqlc.Challenge, uid int32, tid
 		return nil, err
 	}
 
-	solved, err := IsChallengeSolved(ctx, challenge.ID, uid)
+	solved, first_blood, err := IsChallengeSolved(ctx, challenge.ID, uid)
 	if err != nil {
 		return nil, err
 	}
@@ -86,10 +89,10 @@ func GetChallenge(ctx context.Context, challenge *sqlc.Challenge, uid int32, tid
 		Hidden:      challenge.Hidden,
 		Points:      int(challenge.Points),
 		Solves:      int(challenge.Solves),
-		// TODO: first blood
+		Solved:      solved,
+		FirstBlood:  first_blood,
 		Attachments: []string{},
 		Tags:        []string{},
-		Solved:      solved,
 		Host:        challenge.Host,
 		Port:        int(challenge.Port),
 		MaxPoints:   int(challenge.MaxPoints),

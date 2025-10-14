@@ -2,7 +2,6 @@ package submissions_create
 
 import (
 	"context"
-	"fmt"
 	"trxd/db"
 	"trxd/db/sqlc"
 )
@@ -31,9 +30,5 @@ func SubmitFlag(ctx context.Context, userID int32, challengeID int32, flag strin
 		return sqlc.SubmissionStatusInvalid, false, err
 	}
 
-	if !res.FirstBlood.Valid {
-		return sqlc.SubmissionStatusInvalid, false, fmt.Errorf("unexpected null value for first_blood: %v", res.FirstBlood)
-	}
-
-	return res.Status, res.FirstBlood.Bool, nil
+	return res.Status, res.FirstBlood, nil
 }

@@ -1,4 +1,3 @@
-- first blood into db as field
 - add first blood in users_get and teams_get
 - flush cache flag
 
@@ -20,7 +19,6 @@ ALPHA:
 	- DOCUMENTATION
 
 EXTRA:
-	- single user mode
 	- editable homepage & theme
 	- endpoint to get docker images list
 	- deletable instances (from admin)

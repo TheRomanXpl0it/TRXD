@@ -779,30 +779,28 @@ func (q *Queries) GetUsersPreview(ctx context.Context) ([]GetUsersPreviewRow, er
 	return items, nil
 }
 
-const isChallengeSolved = `-- name: IsChallengeSolved :one
-SELECT EXISTS(
-  SELECT 1
-    FROM submissions
-    JOIN users ON users.id = submissions.user_id
-    JOIN teams ON users.team_id = teams.id
-      AND teams.id = (SELECT team_id FROM users WHERE users.id = $2)
-    WHERE users.role = 'Player'
-      AND submissions.status = 'Correct'
-      AND submissions.chall_id = $1
-)
+const isChallengeFirstBlood = `-- name: IsChallengeFirstBlood :one
+SELECT first_blood
+  FROM submissions
+  JOIN users ON users.id = submissions.user_id
+  JOIN teams ON users.team_id = teams.id
+    AND teams.id = (SELECT team_id FROM users WHERE users.id = $2)
+  WHERE users.role = 'Player'
+    AND submissions.status = 'Correct'
+    AND submissions.chall_id = $1
 `
 
-type IsChallengeSolvedParams struct {
+type IsChallengeFirstBloodParams struct {
 	ChallID int32 `json:"chall_id"`
 	ID      int32 `json:"id"`
 }
 
-// Check if a challenge is solved by a user's team
-func (q *Queries) IsChallengeSolved(ctx context.Context, arg IsChallengeSolvedParams) (bool, error) {
-	row := q.queryRow(ctx, q.isChallengeSolvedStmt, isChallengeSolved, arg.ChallID, arg.ID)
-	var exists bool
-	err := row.Scan(&exists)
-	return exists, err
+// Check if a challenge is solved (and is a first blood) by a user's team
+func (q *Queries) IsChallengeFirstBlood(ctx context.Context, arg IsChallengeFirstBloodParams) (bool, error) {
+	row := q.queryRow(ctx, q.isChallengeFirstBloodStmt, isChallengeFirstBlood, arg.ChallID, arg.ID)
+	var first_blood bool
+	err := row.Scan(&first_blood)
+	return first_blood, err
 }
 
 const registerTeam = `-- name: RegisterTeam :exec
@@ -915,29 +913,22 @@ const submit = `-- name: Submit :one
 WITH challenge AS (
     SELECT challenges.id FROM challenges
     WHERE challenges.id = $2 FOR UPDATE
-  ),
-  inserted AS (
-    INSERT INTO submissions (user_id, chall_id, status, flag)
-    VALUES ($1, (SELECT id FROM challenge), $4, $3)
-    RETURNING status
-  ),
-  blood_check AS (
-    SELECT COUNT(*)=0 AS first_blood FROM submissions
-    WHERE chall_id = (SELECT id FROM challenge) AND status = 'Correct'
   )
-SELECT inserted.status, (blood_check.first_blood AND ($4 = 'Correct')) AS first_blood FROM inserted, blood_check
+INSERT INTO submissions (user_id, chall_id, status, flag)
+  VALUES ($1, (SELECT id FROM challenge), $4, $3)
+  RETURNING status, first_blood
 `
 
 type SubmitParams struct {
-	UserID int32       `json:"user_id"`
-	ID     int32       `json:"id"`
-	Flag   string      `json:"flag"`
-	Status interface{} `json:"status"`
+	UserID int32            `json:"user_id"`
+	ID     int32            `json:"id"`
+	Flag   string           `json:"flag"`
+	Status SubmissionStatus `json:"status"`
 }
 
 type SubmitRow struct {
 	Status     SubmissionStatus `json:"status"`
-	FirstBlood sql.NullBool     `json:"first_blood"`
+	FirstBlood bool             `json:"first_blood"`
 }
 
 // Insert a new submission
