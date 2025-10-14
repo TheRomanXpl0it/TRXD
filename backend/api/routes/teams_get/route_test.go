@@ -50,16 +50,19 @@ func TestRoute(t *testing.T) {
 		"score": 1498,
 		"solves": []JSON{
 			{
-				"category": "cat-1",
-				"name":     "chall-1",
+				"category":    "cat-1",
+				"first_blood": true,
+				"name":        "chall-1",
 			},
 			{
-				"category": "cat-1",
-				"name":     "chall-3",
+				"category":    "cat-1",
+				"first_blood": true,
+				"name":        "chall-3",
 			},
 			{
-				"category": "cat-1",
-				"name":     "chall-4",
+				"category":    "cat-1",
+				"first_blood": true,
+				"name":        "chall-4",
 			},
 		},
 	}
@@ -124,16 +127,19 @@ func TestRoute(t *testing.T) {
 		"score": 1498,
 		"solves": []JSON{
 			{
-				"category": "cat-1",
-				"name":     "chall-1",
+				"category":    "cat-1",
+				"first_blood": true,
+				"name":        "chall-1",
 			},
 			{
-				"category": "cat-1",
-				"name":     "chall-3",
+				"category":    "cat-1",
+				"first_blood": true,
+				"name":        "chall-3",
 			},
 			{
-				"category": "cat-1",
-				"name":     "chall-4",
+				"category":    "cat-1",
+				"first_blood": true,
+				"name":        "chall-4",
 			},
 		},
 	}

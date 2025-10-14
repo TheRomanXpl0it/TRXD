@@ -526,23 +526,24 @@ func (q *Queries) GetTeamMembers(ctx context.Context, teamID sql.NullInt32) ([]G
 }
 
 const getTeamSolves = `-- name: GetTeamSolves :many
-SELECT challenges.id, challenges.name, challenges.category, submissions.timestamp, submissions.user_id
-  FROM submissions
-  JOIN users ON users.id = submissions.user_id
-  JOIN teams ON users.team_id = teams.id
-  JOIN challenges ON challenges.id = submissions.chall_id
-  WHERE users.role = 'Player'
-    AND teams.id = $1
-    AND submissions.status = 'Correct'
-  ORDER BY submissions.timestamp DESC
+SELECT c.id, c.name, c.category, s.first_blood, s.timestamp, s.user_id
+  FROM submissions s
+  JOIN users u ON u.id = s.user_id
+  JOIN teams t ON u.team_id = t.id
+  JOIN challenges c ON c.id = s.chall_id
+  WHERE u.role = 'Player'
+    AND t.id = $1
+    AND s.status = 'Correct'
+  ORDER BY s.timestamp DESC
 `
 
 type GetTeamSolvesRow struct {
-	ID        int32     `json:"id"`
-	Name      string    `json:"name"`
-	Category  string    `json:"category"`
-	Timestamp time.Time `json:"timestamp"`
-	UserID    int32     `json:"user_id"`
+	ID         int32     `json:"id"`
+	Name       string    `json:"name"`
+	Category   string    `json:"category"`
+	FirstBlood bool      `json:"first_blood"`
+	Timestamp  time.Time `json:"timestamp"`
+	UserID     int32     `json:"user_id"`
 }
 
 // Retrieve all challenges solved by a team's members
@@ -559,6 +560,7 @@ func (q *Queries) GetTeamSolves(ctx context.Context, id int32) ([]GetTeamSolvesR
 			&i.ID,
 			&i.Name,
 			&i.Category,
+			&i.FirstBlood,
 			&i.Timestamp,
 			&i.UserID,
 		); err != nil {
@@ -688,7 +690,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 }
 
 const getUserSolves = `-- name: GetUserSolves :many
-SELECT c.id, c.name, c.category, s.timestamp
+SELECT c.id, c.name, c.category, s.first_blood, s.timestamp
   FROM submissions s
   JOIN challenges c ON s.chall_id = c.id
   WHERE s.user_id = $1
@@ -696,10 +698,11 @@ SELECT c.id, c.name, c.category, s.timestamp
 `
 
 type GetUserSolvesRow struct {
-	ID        int32     `json:"id"`
-	Name      string    `json:"name"`
-	Category  string    `json:"category"`
-	Timestamp time.Time `json:"timestamp"`
+	ID         int32     `json:"id"`
+	Name       string    `json:"name"`
+	Category   string    `json:"category"`
+	FirstBlood bool      `json:"first_blood"`
+	Timestamp  time.Time `json:"timestamp"`
 }
 
 // Retrieve all challenges solved by a user
@@ -716,6 +719,7 @@ func (q *Queries) GetUserSolves(ctx context.Context, userID int32) ([]GetUserSol
 			&i.ID,
 			&i.Name,
 			&i.Category,
+			&i.FirstBlood,
 			&i.Timestamp,
 		); err != nil {
 			return nil, err
