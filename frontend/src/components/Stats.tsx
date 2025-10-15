@@ -55,8 +55,8 @@ function BadgesCarousel({ badges }: { badges: Badge[] }) {
             </Card>
           </div>
         </CarouselItem>
-        {badges.map((badge) => (
-          <CarouselItem key={badge.id} className={ITEM_BASIS}>
+        {badges.map((badge, index) => (
+          <CarouselItem key={badge.id ? badge.id : index} className={ITEM_BASIS}>
             <div className="p-2">
               <Card
                 className={`w-full ${CARD_H} flex flex-col items-center justify-center p-4`}

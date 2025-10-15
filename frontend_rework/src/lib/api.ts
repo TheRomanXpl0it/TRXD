@@ -32,13 +32,8 @@ function getCookie(name: string): string | null {
 }
 
 function pickCsrfToken(): string | null {
-  // Try common names; adjust to match your backend if needed
   return (
-    getCookie('csrf_') ||        // seen in your request
-    getCookie('csrftoken') ||    // Django-style
-    getCookie('XSRF-TOKEN') ||   // many Node stacks
-    getCookie('cors_') ||        // your older naming
-    null
+    getCookie('csrf_') || null
   );
 }
 
@@ -54,11 +49,7 @@ export async function api<T>(
   // Mirror CSRF token from cookie into typical headers if caller didn’t set one
   const csrf = pickCsrfToken();
   if (csrf) {
-    if (!headers.has('X-CSRF-Token')) headers.set('X-CSRF-Token', csrf);
-    if (!headers.has('X-CSRFToken')) headers.set('X-CSRFToken', csrf);
-    if (!headers.has('X-XSRF-TOKEN')) headers.set('X-XSRF-TOKEN', csrf);
-    // keep legacy header if your backend used it
-    if (!headers.has('X-CORS')) headers.set('X-CORS', csrf);
+    if (!headers.has('X-Csrf-Token')) headers.set('X-Csrf-Token', csrf);
   }
 
   const res = await fetch(urlOf(path), {
@@ -69,9 +60,9 @@ export async function api<T>(
   });
 
   if (!res.ok) {
-    const body = await parse<any>(res).catch(() => undefined);
+    const body = await parse<any>(res).catch(() => { throw new Error(res.statusText) });
     throw new Error(typeof body === 'string' ? body : JSON.stringify(body ?? res.statusText));
   }
-
+  
   return parse<T>(res);
 }

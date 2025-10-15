@@ -6,7 +6,19 @@ export const authReady = writable(false);
 
 export async function loadUser(force = false) {
   if (!force && get(authReady)) return;
-  user.set(await getInfo());
+  const userfetched:any = await getInfo();
+  
+  if (userfetched === "OK"){
+    user.set(null);
+    authReady.set(true);
+    return;
+  }
+  
+  try{
+    user.set(userfetched);
+  } catch(e) {
+    user.set(null);
+  }
   authReady.set(true);
 }
 

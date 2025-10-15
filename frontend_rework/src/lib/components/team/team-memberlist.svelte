@@ -2,6 +2,7 @@
   import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
   import { Input } from "@/components/ui/input";
   import { Users } from "@lucide/svelte";
+  import { push } from "svelte-spa-router";
 
   let { team } = $props<{ team: any }>();
 
@@ -99,14 +100,14 @@
           <HoverCardTrigger>
             <button
               type="button"
-              class="group flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-muted dark:border-gray-700"
+              class="group flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-muted dark:border-gray-700 cursor-pointer"
             >
               <div class="flex h-10 w-10 items-center justify-center rounded-full bg-muted font-semibold">
                 {initials(m.name)}
               </div>
 
               <div class="min-w-0">
-                <p class="truncate text-sm font-medium">{m.name}</p>
+                <p class="truncate text-sm font-medium hover:underline cursor-pointer" onclick={() => {push(`/account/${m.id}`)}}>{m.name}</p>
                 <p class="truncate text-xs text-muted-foreground">{m.role}</p>
               </div>
 

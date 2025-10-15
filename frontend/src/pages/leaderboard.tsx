@@ -4,7 +4,6 @@ import type { ScoreboardEntry } from "@/components/Scores";
 import SettingContext from "@/context/SettingsProvider";
 import { useContext } from "react";
 import { getScoreboard } from "@/lib/backend-interaction";
-import { useNavigate } from "react-router-dom";
 type ApiBadge = { name: string; description: string };
 type ApiScoreboardEntry = {
   id: number;

@@ -22,10 +22,21 @@ export async function getInfo(): Promise<User | null> {
 export async function login(
   email: string,
   password: string
-): Promise<User> {
-  return api<User>('/login', {
+): Promise<any> {
+  return api<any>('/login', {
     method: 'POST',
     body: JSON.stringify({ email, password })
+  });
+}
+
+export async function register(
+  email: string,
+  password: string,
+  name: string,
+): Promise<User> {
+  return api<User>('/register', {
+    method: 'POST',
+    body: JSON.stringify({ email, password, name })
   });
 }
 

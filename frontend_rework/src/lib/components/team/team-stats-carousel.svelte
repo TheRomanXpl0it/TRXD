@@ -7,6 +7,7 @@
     CarouselPrevious,
   } from "@/components/ui/carousel";
   import { Trophy, Award, Users, Clock, CalendarClock, Crown, Star } from "@lucide/svelte";
+  import { push } from "svelte-spa-router";
 
   let { team } = $props<{ team: any }>();
 
@@ -111,8 +112,8 @@
                 <Star class="h-4 w-4" /> Top member
               </div>
               <div class="mt-1 flex items-center justify-between">
-                <p class="text-lg font-medium">{topMember.name}</p>
-                <p class="text-lg font-semibold">{topMember.score}</p>
+                <a class="text-lg font-medium cursor-pointer hover:underline" onclick={()=>push(`/account/${topMember.id}`)}>{topMember.name}</a>
+                <p class="text-lg font-semibold">{topMember.score}pts</p>
               </div>
             </div>
           {/if}
@@ -183,7 +184,7 @@
                         {i + 1}
                       </span>
                       <div>
-                        <p class="font-medium leading-tight">{m.name}</p>
+                        <a class="font-medium leading-tight hover:underline cursor-pointer" onclick={()=>{push(`/account/${m.id}`)}}>{m.name}</a>
                         <p class="text-xs text-muted-foreground">{m.role}</p>
                       </div>
                     </div>

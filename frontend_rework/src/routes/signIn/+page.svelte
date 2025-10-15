@@ -1,69 +1,113 @@
 <script lang="ts">
-  import { Card, Label, Input, Checkbox } from "flowbite-svelte";
-  import { Button } from "@/components/ui/button"
+  import * as Card from "$lib/components/ui/card/index.js";
+  import { Button } from "$lib/components/ui/button/index.js";
+  import { Label } from "$lib/components/ui/label/index.js";
+  import { Input } from "$lib/components/ui/input/index.js";
+  import { Checkbox } from "$lib/components/ui/checkbox/index.js";
+  import { toast } from "svelte-sonner";
+  
   import { login, type User } from "$lib/auth";
+  import { link, push } from "svelte-spa-router";
+  import { user } from "@/stores/auth";
 
-  let email = "";
-  let password = "";
-  let remember = false;
+  let email = ""
+  let password = ""
+  let remember = false
 
-  let loading = false;
-  let errorMsg: string | null = null;
+  let loading = false
+  let errorMsg: string | null = null
+
+  function getRedirect(): string {
+    const q = new URLSearchParams(location.search)
+    return q.get("redirect") || "/challenges"
+  }
 
   async function onSubmit(e: Event) {
-    e.preventDefault();
-    errorMsg = null;
-    loading = true;
+    e.preventDefault()
+    errorMsg = null
+    loading = true
     try {
-      const user: User = await login(email, password);
-
-      if (remember) {
-        localStorage.setItem("remember_me", "1");
-      } else {
-        localStorage.removeItem("remember_me");
+      const result =  await login(email, password)
+      if (result !== "OK") {
+        throw new Error("Login failed. Please try again.")
       }
-
-      location.assign("/challenges"); // change to your desired route
-    } catch (err) {
-      errorMsg = err instanceof Error ? err.message : "Login failed. Please try again.";
-    } finally {
-      loading = false;
+      loading = false
+      toast.success("Welcome back!")
+      await new Promise((r) => setTimeout(r, 500)) // wait a bit
+      const q = new URLSearchParams(location.search);
+      const dest = q.get("redirect") || "/challenges";
+      window.location.replace(dest); // or: window.location.assign(dest)
+    } catch (err: any) {
+      errorMsg = err?.message ?? "Login failed. Please try again."
+      loading=false
+      toast.error(errorMsg as string)
     }
   }
+
 </script>
 
-<div class="flex flex-col w-full h-full items-center justify-center mt-50">
-  <Card class="p-4 sm:p-6 md:p-8">
-    <form class="flex flex-col space-y-6" on:submit|preventDefault={onSubmit}>
-      <h3 class="text-xl font-medium text-gray-900 dark:text-white">Welcome back hacker.</h3>
-
-      <Label class="space-y-2">
-        <span>Email</span>
-        <Input type="email" name="email" bind:value={email} placeholder="name@email.com" required />
-      </Label>
-
-      <Label class="space-y-2">
-        <span>Your password</span>
-        <Input type="password" name="password" bind:value={password} placeholder="•••••" required />
-      </Label>
-
-      <div class="flex items-start gap-2">
-        <Checkbox bind:checked={remember}>Remember me</Checkbox>
-        <a href="/" class="text-primary-700 dark:text-primary-500 ms-auto text-sm hover:underline">Lost password?</a>
-      </div>
-
-      {#if errorMsg}
-        <p class="text-red-600 text-sm">{errorMsg}</p>
-      {/if}
-
-      <Button type="submit" class="w-full" disabled={loading}>
-        {#if loading}Signing in…{/if}
-        {#if !loading}Login to your account{/if}
+<Card.Root class="w-full flex flex-col h-full max-w-sm mx-auto mt-50">
+  <Card.Header>
+    <Card.Title>Welcome back hacker.</Card.Title>
+    <Card.Description>
+      Enter your email below to login to your account
+    </Card.Description>
+    <Card.Action>
+      <Button variant="link" class="cursor-pointer" type="button" onclick={() => push("/signup")}>
+        Sign Up
       </Button>
+    </Card.Action>
+  </Card.Header>
 
-      <div class="text-sm font-medium text-gray-500 dark:text-gray-300">
-        Not registered? <a href="/" class="text-primary-700 dark:text-primary-500 hover:underline">Create account</a>
+  <!-- Wrap Content + Footer in one form so the submit button works -->
+  <form on:submit|preventDefault={onSubmit}>
+    <Card.Content>
+      <div class="flex flex-col gap-6">
+        <div class="grid gap-2">
+          <Label for="email">Email</Label>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="m@example.com"
+            bind:value={email}
+            required
+          />
+        </div>
+
+        <div class="grid gap-2">
+          <div class="flex items-center">
+            <Label for="password">Password</Label>
+            <a
+              use:link
+              href="/forgot"
+              class="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+            >
+              Forgot your password?
+            </a>
+          </div>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="********"
+            bind:value={password}
+            required
+          />
+        </div>
+
+        <!-- Remember me (native checkbox to avoid extra deps) -->
+        <div class="flex items-center gap-2 select-none text-sm mb-5">
+          <Checkbox id="terms" bind:checked={remember} />
+          <Label for="terms">Remember me</Label>
+        </div>
       </div>
-    </form>
-  </Card>
-</div>
+    </Card.Content>
+
+    <Card.Footer class="flex-col gap-2">
+      <Button type="submit" class="w-full cursor-pointer" disabled={loading}>
+        {#if loading}Signing in…{:else}Sign in{/if}
+      </Button>
+    </Card.Footer>
+  </form>
+</Card.Root>
