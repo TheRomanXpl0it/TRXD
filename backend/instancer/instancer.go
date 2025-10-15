@@ -8,6 +8,7 @@ import (
 	"trxd/db"
 	"trxd/instancer/composes"
 	"trxd/instancer/containers"
+	"trxd/instancer/networks"
 	"trxd/utils/consts"
 
 	"github.com/tde-nico/log"
@@ -54,6 +55,11 @@ func ReclaimLoop() {
 		log.Fatal("Failed to initialize instancer:", "err", err)
 	}
 	defer containers.CloseCli()
+
+	_, err = networks.CreateNetwork(context.Background(), "trxd-shared", true)
+	if err != nil {
+		log.Fatal("Failed to initialize instancer:", "err", err)
+	}
 
 	reclaimLoop()
 }

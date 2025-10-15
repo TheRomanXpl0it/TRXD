@@ -97,6 +97,11 @@ func setupContainerConf(info *infos.ContainerInfo) (*container.Config, *containe
 			HostIP:   "0.0.0.0",
 			HostPort: info.ExternalPortStr,
 		}}
+		networkingConfig = &network.NetworkingConfig{
+			EndpointsConfig: map[string]*network.EndpointSettings{
+				info.NetID: {},
+			},
+		}
 	} else {
 		networkingConfig = &network.NetworkingConfig{
 			EndpointsConfig: map[string]*network.EndpointSettings{

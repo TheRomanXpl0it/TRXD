@@ -9,7 +9,7 @@ import (
 	"github.com/docker/docker/api/types/network"
 )
 
-func CreateNetwork(ctx context.Context, name string) (string, error) {
+func CreateNetwork(ctx context.Context, name string, disableICC bool) (string, error) {
 	if containers.Cli == nil {
 		return "", nil
 	}
@@ -27,13 +27,23 @@ func CreateNetwork(ctx context.Context, name string) (string, error) {
 	if len(summary) == 1 {
 		netID = summary[0].ID
 	} else {
+		options := make(map[string]string)
+		if disableICC {
+			options["com.docker.network.bridge.enable_icc"] = "false"
+		}
+
 		net, err := containers.Cli.NetworkCreate(ctx, name, network.CreateOptions{
-			Internal: true,
+			Internal: !disableICC,
+			Options:  options,
 		})
 		if err != nil {
 			return "", err
 		}
 		netID = net.ID
+	}
+
+	if disableICC {
+		return netID, nil
 	}
 
 	nginxID, err := containers.FetchNginxID(ctx)

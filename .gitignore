@@ -33,6 +33,7 @@ redis_data/
 .redis_data/
 attachments/
 .attachments/
+.data/
 
 # Other files
 *.bashrc

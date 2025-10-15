@@ -1,7 +1,6 @@
-- add first blood in users_get and teams_get
-- flush cache flag
 
 QOS:
+	- flush cache flag
 	- verify no comunication between instances on standard default bridge network
 	- change csrf token name
 	- error generator for tests

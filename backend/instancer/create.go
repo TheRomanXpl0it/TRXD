@@ -38,8 +38,11 @@ func CreateInstance(ctx context.Context, tid, challID int32, internalPort *int32
 
 	if !conf.HashDomain && info.Port.Valid {
 		instanceInfo.ExternalPort = &info.Port.Int32
+		if deployType == sqlc.DeployTypeContainer {
+			instanceInfo.NetID = "trxd-shared"
+		}
 	} else {
-		netID, err := networks.CreateNetwork(ctx, instanceInfo.NetName)
+		netID, err := networks.CreateNetwork(ctx, instanceInfo.NetName, false)
 		if err != nil {
 			return "", nil, err
 		}
