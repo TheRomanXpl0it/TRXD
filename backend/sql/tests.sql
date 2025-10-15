@@ -63,9 +63,9 @@ BEGIN
 services:
   chall:
     image: echo-server:latest
-    container_name: chall_333333333333
+    container_name: ${CONTAINER_NAME}
     ports:
-      - "1337:1337"
+      - "${INSTANCE_PORT}:1337"
     environment:
       - ECHO_MESSAGE=Hello from app
       - INSTANCE_PORT=${INSTANCE_PORT}

@@ -33,6 +33,8 @@ func SetupComposeInfo(projectName string, composeBody string, info *InstanceInfo
 	composeInfo.Env["INSTANCE_HOST"] = info.Host
 	if len(info.Host) > 0 {
 		composeInfo.Env["CONTAINER_NAME"] = "chall_" + strings.Split(info.Host, ".")[0]
+	} else {
+		composeInfo.Env["CONTAINER_NAME"] = projectName
 	}
 	if info.ExternalPort != nil {
 		composeInfo.Env["INSTANCE_PORT"] = strconv.Itoa(int(*info.ExternalPort))
