@@ -14,6 +14,7 @@ export default {
   '/signUp': SignUp,
   '/challenges': requireAuth(Challenges),
   '/team': requireAuth(Team),
+  '/team/:id': requireAuth(Team),
   '/account': requireAuth(Profile),
   '/account/:id': requireAuth(Profile),
   

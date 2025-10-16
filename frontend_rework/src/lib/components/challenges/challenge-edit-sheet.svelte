@@ -9,8 +9,8 @@
   import CategorySelect from "$lib/components/challenges/category-select.svelte";
   import { toast } from "svelte-sonner";
   import * as Accordion from "$lib/components/ui/accordion/index.js";
-  import { updateChallenge, getChallenge } from "$lib/challenges";
-  import { Check, Cpu, MemoryStick, Clock } from "@lucide/svelte";
+  import { updateChallengeMultipart, getChallenge } from "$lib/challenges";
+  import { Check, Cpu, MemoryStick, Clock, X } from "@lucide/svelte";
 
   // --- CodeMirror imports (YAML + theming) ---
   import { EditorState, Compartment } from "@codemirror/state";
@@ -53,7 +53,7 @@
   let dynamicScoring = $state(true);
   let host           = $state("");
   let portStr        = $state("");
-  let attachments    = $state("");
+  let attachments:any    = $state([]);
   let authorsCsv     = $state("");
   let hashDomain     = $state(false);
   let imageName      = $state("");
@@ -62,6 +62,9 @@
   let maxRam         = $state("");
   let lifetime       = $state("");
   let envs           = $state("");
+  let flags:any = $state([])
+  let flagsRegex:any = $state([]);
+  let tags:any          = $state([]);
 
   let saving = $state(false);
 
@@ -133,9 +136,12 @@
         host        = String(challenge?.host ?? "");
         portStr     = challenge?.port != null ? String(challenge.port) : "";
         attachments = Array.isArray(challenge?.attachments)
-          ? challenge.attachments.join(", ")
-          : String(challenge?.attachments ?? "");
+          ? challenge.attachments
+          : [];
 
+        tags = Array.isArray(challenge?.tags)
+          ? challenge.tags.map((t: any) => String(t))
+          : [];
         hashDomain  = Boolean(challenge?.hash_domain ?? false);
         imageName   = String(challenge?.docker_config?.image ?? "");
         composeFile = String(challenge?.docker_config?.compose ?? "");
@@ -143,6 +149,11 @@
         maxRam      = String(challenge?.docker_config?.max_memory ?? "");
         lifetime    = String(challenge?.docker_config?.lifetime ?? "");
         envs        = String(challenge?.docker_config?.envs ?? "");
+        for (const flag in challenge?.flags || [{}] ){
+          flags = [...flags, flag.flag]
+          flagsRegex = [...flagsRegex, flag.regex]
+        }
+        flags       = Array.isArray(challenge?.flags) ? challenge.flags : []
       } catch {
         /* noop */
       }
@@ -154,38 +165,72 @@
   async function onSave(e: Event) {
     e.preventDefault();
     if (saving || !challenge?.id) return;
-
+  
     if (!category.trim()) {
       toast.error("Please select a category.");
       return;
     }
-
+  
     const portNum = portStr.trim() ? Number(portStr) : undefined;
     if (portStr.trim() && !Number.isFinite(portNum)) {
       toast.error("Port must be a number.");
       return;
     }
-
-    const payload: any = {
-      ChallID:     challenge.id,
-      Name:        name.trim(),
-      Category:    category.trim(),
-      Description: description.trim(),
-      Difficulty:  toTitleCase(difficulty),
-      Authors:     parseCsv(authorsCsv),
-      Type:        type,
-      Hidden:      hidden,
-      MaxPoints:   maxPoints,
-      ScoreType:   dynamicScoring ? "DYNAMIC" : "STATIC",
-      Host:        host.trim(),
-      Port:        portNum,
-      Attachments: parseCsv(attachments)
-      // Add docker config fields if needed
+  
+    // helpers
+    const toNum = (x: any) => {
+      const n = Number(x);
+      return Number.isFinite(n) ? n : undefined;
     };
-
+    const str = (x: any) => {
+      const s = String(x ?? "").trim();
+      return s || undefined;
+    };
+  
+    // build the fields exactly as backend expects (snake_case)
+    const fields: any = {
+      chall_id:   challenge.id,
+      name:       name.trim(),
+      category:   category.trim(),
+      description: str(description),
+      difficulty:  toTitleCase(difficulty),           // "Easy" | "Medium" | ...
+      authors:     (authorsCsv || "")
+                      .split(",")
+                      .map((a) => a.trim())
+                      .filter(Boolean),
+      type,
+      hidden,
+      score_type:  (dynamicScoring ? "DYNAMIC" : "STATIC"),
+      host:        str(host),
+      port:        portNum,
+  
+      // arrays from UI
+      attachments: Array.isArray(attachments)
+        ? attachments.map((a: any) => String(a)).filter(Boolean)
+        : undefined,
+  
+      // container/compose specifics
+      image:     type === "Container" ? str(imageName)   : undefined,
+      compose:   type === "Compose"   ? str(composeFile) : undefined,
+      hash_domain: hashDomain,
+  
+      // performance / limits — only include if > 0
+      max_points: toNum(maxPoints) && maxPoints > 0 ? maxPoints : undefined,
+      lifetime:   toNum(lifetime)   && Number(lifetime) > 0 ? Number(lifetime) : undefined,
+      max_memory: toNum(maxRam)     && Number(maxRam) > 0 ? Number(maxRam) : undefined,
+  
+      // misc docker
+      envs:     str(envs),
+      max_cpu:  str(maxCPU),
+    };
+  
+    // strip empty arrays so we don't send meaningless fields
+    if (Array.isArray(fields.authors) && fields.authors.length === 0) delete fields.authors;
+    if (Array.isArray(fields.attachments) && fields.attachments.length === 0) delete fields.attachments;
+  
     saving = true;
     try {
-      await updateChallenge(payload);
+      await updateChallengeMultipart(fields); // <-- no :id in path; chall_id in form
       toast.success("Challenge updated.");
       open = false;
     } catch (err: any) {
@@ -348,6 +393,33 @@ services:
               <Label for="ch-points" class="mb-1 block">Max Points: {maxPoints}</Label>
               <Slider id="ch-points" type="single" bind:value={maxPoints} min={0} max={1500} step={25} />
             </div>
+            <div class="mt-5">
+                <Label for="ch-flags" class="mb-1 block">Flags</Label>
+                <div class="flex flex-col gap-2">
+                    {#each flags as flag, index (index)}
+                    <div class="flex items-center gap-2">
+                        <Input
+                        bind:value={flags[index].flag}
+                        placeholder="Flag value"
+                        class="flex-1"
+                        />
+                        <Checkbox id="flag-{index}" bind:checked={flags[index].regex} />
+                        <Label for="flag-{index}">Regex</Label>
+                        
+                        <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        onclick={() => flags = flags.filter((_:any, i:any) => i !== index)}
+                        >
+                        <X class="h-4 w-4" />
+                        </Button>
+                    </div>
+                    {/each}
+                    <Button type="button" variant="outline" size="sm" onclick={() => flags = [...flags, {flag:"",regex:false}]}>
+                    Add Flag
+                    </Button>
+            </div>
           </Accordion.Content>
         </Accordion.Item>
 
@@ -368,21 +440,78 @@ services:
                 <CategorySelect id="ch-cat" items={categories} bind:value={category} placeholder="Select a category…" />
               </div>
             </div>
+            <div class="mt-3">
+              <Label class="mb-1 block">Tags</Label>
+              {#each tags as tag, index (index)}
+                <div class="flex items-center gap-2 mb-2">
+                  <Input
+                    bind:value={tags[index]}
+                    placeholder="Tag"
+                    class="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    onclick={() => tags = tags.filter((_:any, i:any) => i !== index)}
+                    aria-label="Remove tag"
+                    title="Remove tag"
+                  >
+                    <X class="h-4 w-4" />
+                  </Button>
+                </div>
+              {/each}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onclick={() => tags = [...tags, ""]}
+              >
+                Add Tag
+              </Button>
+            </div>
           </Accordion.Content>
         </Accordion.Item>
 
         <Accordion.Item value="Authors">
-          <Accordion.Trigger class="text-xl font-semibold tracking-tight cursor-pointer">Authors and tags</Accordion.Trigger>
+          <Accordion.Trigger class="text-xl font-semibold tracking-tight cursor-pointer">Authors and attatchments</Accordion.Trigger>
           <Accordion.Content>
             <div class="flex flex-col">
               <div>
                 <Label for="ch-auth" class="mb-1 block">Authors</Label>
                 <Input id="ch-auth" bind:value={authorsCsv} placeholder="alice, bob" />
               </div>
-              <div class="mt-3">
-                <Label for="ch-att" class="mb-1 block">Attachments</Label>
-                <Input id="ch-att" bind:value={attachments} placeholder="url1, url2" />
-              </div>
+                <div class="mt-3">
+                    <Label class="mb-1 block">Attachments</Label>
+                {#each attachments, index (index)}
+                    <div class="flex items-center gap-2 mt-3">
+                    <Input
+                        bind:value={attachments[index]}
+                        placeholder="Attachment path"
+                        class="flex-1"
+                    />
+                    <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        onclick={() => attachments = attachments.filter((_:any, i:any) => i !== index)}
+                        aria-label="Remove attachment"
+                        title="Remove attachment"
+                    >
+                        <X class="h-4 w-4" />
+                    </Button>
+                    </div>
+                {/each}
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        class="mt-3"
+                        onclick={() => attachments = [...attachments, ""]}
+                    >
+                        Add Attachment
+                    </Button>
+                </div>
             </div>
           </Accordion.Content>
         </Accordion.Item>
@@ -396,13 +525,15 @@ services:
                   <Label for="ch-host" class="mb-1 block">Host</Label>
                   <Input id="ch-host" bind:value={host} placeholder="e.g. challenge.trxd.cc" />
                 </div>
-                <div>
-                  <Label for="ch-port" class="mb-1 block">Port</Label>
-                  <Input id="ch-port" bind:value={portStr} placeholder="e.g. 31337" />
-                </div>
-                <div class="mt-3 flex flex-row items-center">
-                  <Checkbox id="ch-hashdomain" bind:checked={hashDomain} />
-                  <Label for="ch-hashdomain" class="ml-2">Hash domain</Label>
+                <div class="flex flex-row mt-3 justify-between items-center">
+                    <div class="flex flex-row items-center">
+                        <Checkbox id="ch-hashdomain" bind:checked={hashDomain} />
+                        <Label for="ch-hashdomain" class="ml-2">Hash domain</Label>
+                    </div>
+                    <div>
+                        <Label for="ch-port" class="mb-1 block" aria-disabled={hashDomain}>Port</Label>
+                        <Input id="ch-port" bind:value={portStr} placeholder="e.g. 31337" disabled={hashDomain} />
+                    </div>
                 </div>
               </div>
             </Accordion.Content>
@@ -418,6 +549,11 @@ services:
                 <div class="mt-3 flex flex-row items-center">
                   <Checkbox id="com-hashdomain" bind:checked={hashDomain} />
                   <Label for="com-hashdomain" class="ml-1">Hash Domain</Label>
+                </div>
+                <div class="mt-3">
+                    <Label for="com-envs" class="mb-1 block">Envs</Label>
+                    <Input id="com-envs" bind:value={envs} placeholder="LD_PRELOAD=..." />
+                    
                 </div>
               </div>
             </Accordion.Content>
@@ -441,6 +577,10 @@ services:
                     <Label for="ho-port">Port</Label>
                     <Input id="ho-port" bind:value={portStr} placeholder="e.g. 31337" disabled={hashDomain} />
                   </div>
+                </div>
+                <div class="mt-3">
+                    <Label for="con-envs" class="mb-1 block">Envs</Label>
+                    <Input id="con-envs" bind:value={envs} placeholder="LD_PRELOAD=..." />
                 </div>
               </div>
             </Accordion.Content>

@@ -9,10 +9,7 @@
     AwardSolid,
     ExclamationCircleSolid
   } from 'flowbite-svelte-icons';
-  import {
-    Card,
-    Badge
-  } from 'flowbite-svelte';
+  import { Card, Badge } from 'flowbite-svelte';
   import { Button } from '@/components/ui/button';
   import { Textarea } from "@/components/ui/textarea/index.js";
   import { Container, Droplet, NotebookPenIcon, X } from '@lucide/svelte';
@@ -21,26 +18,21 @@
   import SolveListSheet from '$lib/components/challenges/solvelist-sheet.svelte';
   import ChallengeEditSheet from '$lib/components/challenges/challenge-edit-sheet.svelte';
   import { Spinner } from "$lib/components/ui/spinner/index.js";
-    import { Slider } from "$lib/components/ui/slider/index.js";
+  import { Slider } from "$lib/components/ui/slider/index.js";
   import { push } from 'svelte-spa-router';
   import { Input } from "$lib/components/ui/input/index.js";
-  
-  // 🔁 Services (no fetch arg now)
-  import { getChallenges,createChallenge } from '$lib/challenges';
+  import { getChallenges, createChallenge, deleteChallenge } from '$lib/challenges';
   import { startInstance, stopInstance } from '$lib/instances';
-  import { submitFlag } from '$lib/challenges'; // if submitFlag is in challenges.ts; otherwise adjust import
+  import { submitFlag } from '$lib/challenges';
   import { Checkbox } from "$lib/components/ui/checkbox/index.js";
-
-  // 🔐 Global auth store replaces { user } from parent layout
   import { user as authUser } from '$lib/stores/auth';
   import { onMount } from 'svelte';
   import * as Tooltip from "$lib/components/ui/tooltip/index.js";
-  
   import MultiSelect from "$lib/components/challenges/category-select.svelte";
   import Label from '@/components/ui/label/label.svelte';
 
   // ──────────────────────────────────────────────────────────────────────────────
-  // Local state (Svelte 5 runes)
+  // Local state
   // ──────────────────────────────────────────────────────────────────────────────
   let loading = $state(true);
   let error   = $state<string | null>(null);
@@ -49,7 +41,6 @@
   let challenges = $state<any[]>([]);
   let categories = $state<any[]>([]);
   let selected: any | null = $state(null);
-  // seconds remaining per challenge id
   let countdowns: Record<string, number> = $state({});
   
   let points:number = $state(500);
@@ -66,6 +57,11 @@
   let flag = $state('');
   let submittingFlag = $state(false);
   let flagError = $state(false);
+
+  // NEW: delete confirmation modal state
+  let confirmDeleteOpen = $state(false);
+  let deleting = $state(false);
+  let toDelete: any = $state(null);
   
   const challengeTypes = [
     { value: 'Container', label: 'Container' },
@@ -99,16 +95,12 @@
       await createChallenge(trimmedName, category, challengeDescription.trim(), challengeType, points, scoretype);
       toast.success('Challenge created!');
       createChallengeOpen = false;
-  
-      // optional: clear fields
       challengeName = '';
       challengeDescription = '';
       category = null;
       challengeType = 'Container';
       dynamicScore = false;
       points = 500;
-  
-      // optional: refresh list
       await loadChallenges();
     } catch (err: any) {
       const msg = err?.message ?? 'Failed to create challenge.';
@@ -118,18 +110,13 @@
     }
   }
 
-  // ──────────────────────────────────────────────────────────────────────────────
-  // Data loading (replaces +page.ts load)
-  // ──────────────────────────────────────────────────────────────────────────────
   async function loadChallenges() {
     loading = true; error = null;
     try {
       challenges = await getChallenges();
       const next: Record<string, number> = {};
       for (const c of challenges ?? []) {
-        if (typeof c?.timeout === 'number' && c.timeout > 0) {
-          next[c.id] = c.timeout;
-        }
+        if (typeof c?.timeout === 'number' && c.timeout > 0) next[c.id] = c.timeout;
       }
       countdowns = next;
       const uniq = new Map<string, { value: string; label: string }>();
@@ -138,23 +125,14 @@
         const list = Array.isArray(rawCat) ? rawCat : [rawCat];
         for (const item of list) {
           if (!item) continue;
-          const label =
-            typeof item === 'string'
-              ? item
-              : (item?.name ?? 'Uncategorized');
+          const label = typeof item === 'string' ? item : (item?.name ?? 'Uncategorized');
           const trimmed = String(label).trim();
           if (!trimmed) continue;
-          const value = trimmed.toLowerCase(); // stable key
+          const value = trimmed.toLowerCase();
           if (!uniq.has(value)) uniq.set(value, { value, label: trimmed });
         }
       }
-  
-      // assign sorted by label
-      categories = Array.from(uniq.values()).sort((a, b) =>
-        a.label.localeCompare(b.label)
-      );
-      // ─────────────────────────────────────────────────────────────────
-  
+      categories = Array.from(uniq.values()).sort((a, b) => a.label.localeCompare(b.label));
     } catch (e: any) {
       error = e?.message ?? 'Failed to load challenges';
       toast.error('You need to join a team first!');
@@ -164,32 +142,22 @@
     }
   }
 
-
-  // run once when component mounts
   onMount(() => {
     loadChallenges();
     const timer = setInterval(() => {
-      for (const id in countdowns) {
-        if (countdowns[id] > 0) countdowns[id] = countdowns[id] - 1;
-      }
+      for (const id in countdowns) if (countdowns[id] > 0) countdowns[id] = countdowns[id] - 1;
     }, 1000);
     return () => clearInterval(timer);
   });
-
 
   $effect(() => {
     if (typeof window === 'undefined') return;
     const timer = setInterval(() => {
-      for (const id in countdowns) {
-        if (countdowns[id] > 0) countdowns[id] = countdowns[id] - 1;
-      }
+      for (const id in countdowns) if (countdowns[id] > 0) countdowns[id] = countdowns[id] - 1;
     }, 1000);
     return () => clearInterval(timer);
   });
 
-  // ──────────────────────────────────────────────────────────────────────────────
-  // Helpers
-  // ──────────────────────────────────────────────────────────────────────────────
   function groupByCategory(list: any[]) {
     const map: Record<string, any[]> = {};
     for (const c of list ?? []) {
@@ -198,10 +166,7 @@
     }
     return Object.entries(map)
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([cat, items]) => [
-        cat,
-        items.sort((x, y) => String(x.title || '').localeCompare(String(y.title || '')))
-      ]) as [string, any[]][];
+      .map(([cat, items]) => [cat, items.sort((x, y) => String(x.title || '').localeCompare(String(y.title || '')))]) as [string, any[]][];
   }
   const grouped = $derived(groupByCategory(challenges));
 
@@ -223,9 +188,7 @@
   $effect(() => { if (!openModal) selected = null; });
 
   function modifyChallenge(ch: any) {
-    return () => {
-      editOpen = true;
-    };
+    return () => { editOpen = true; };
   }
 
   function copyToClipboard(text: string) {
@@ -236,18 +199,11 @@
       .catch(() => toast.error('Failed to copy to clipboard.'));
   }
 
-  // ──────────────────────────────────────────────────────────────────────────────
-  // Instance controls (no fetch arg)
-  // ──────────────────────────────────────────────────────────────────────────────
   async function createInstance(ch: any) {
     try {
       const { host, port, timeout } = await startInstance(ch.id);
-      ch.remote = host;
-      ch.port = port;
-      ch.timeout = timeout;
-      if (typeof ch.timeout === 'number') {
-        countdowns[ch.id] = Math.max(0, ch.timeout);
-      }
+      ch.remote = host; ch.port = port; ch.timeout = timeout;
+      if (typeof ch.timeout === 'number') countdowns[ch.id] = Math.max(0, ch.timeout);
       toast.success('Created instance!');
     } catch (err: any) {
       console.error(err);
@@ -258,9 +214,7 @@
   async function destroyInstance(ch: any) {
     try {
       await stopInstance(ch.id);
-      ch.remote = null;
-      ch.port = null;
-      ch.timeout = null;
+      ch.remote = null; ch.port = null; ch.timeout = null;
       countdowns[ch.id] = 0;
       toast.success('Stopped instance!');
     } catch (err: any) {
@@ -269,9 +223,6 @@
     }
   }
 
-  // ──────────────────────────────────────────────────────────────────────────────
-  // Flag submission (no fetch arg)
-  // ──────────────────────────────────────────────────────────────────────────────
   async function onSubmitFlag(ev: SubmitEvent) {
     ev.preventDefault();
     if (!selected?.id) {
@@ -293,9 +244,7 @@
       } else {
         toast.success('Correct flag!');
       }
-
       flag = '';
-      // mark solved locally
       selected.solved = true;
       const idx = challenges.findIndex((c: any) => c.id === selected!.id);
       if (idx !== -1) challenges[idx] = { ...challenges[idx], solved: true };
@@ -303,6 +252,28 @@
       toast.error(e?.message ?? 'Flag submission failed');
     } finally {
       submittingFlag = false;
+    }
+  }
+
+  // NEW: delete flow
+  function requestDelete(ch: any) {
+    toDelete = ch;
+    confirmDeleteOpen = true;
+  }
+  async function confirmDelete() {
+    if (!toDelete?.id) return;
+    deleting = true;
+    try {
+      await deleteChallenge(toDelete.id);
+      toast.success('Challenge deleted.');
+      confirmDeleteOpen = false;
+      openModal = false;
+      toDelete = null;
+      await loadChallenges();
+    } catch (err: any) {
+      toast.error(err?.message ?? 'Failed to delete challenge.');
+    } finally {
+      deleting = false;
     }
   }
 </script>
@@ -316,8 +287,8 @@
 {#if $authUser?.role === 'Admin'}
   <div class="fixed right-15 bottom-35 z-50">
     <Button variant="outline" onclick={()=> createChallengeOpen = true} class="cursor-pointer">
-        <NotebookPenIcon class="mr-2 h-5 w-5" />
-        Create Challenge
+      <NotebookPenIcon class="mr-2 h-5 w-5" />
+      Create Challenge
     </Button>
   </div>
 {/if}
@@ -343,7 +314,6 @@
             ${ch.hidden ? 'border-2 border-dashed !border-gray-300 dark:!border-gray-600' : ''}`}
             onclick={() => openChallenge(ch)}
           >
-            <!-- First row, name with tags-->
             <div class="p-4">
               <p class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">{ch.name}</p>
               {#each ch.tags as tag}
@@ -351,7 +321,6 @@
               {/each}
             </div>
 
-            <!-- Bottom row, points, solved and dockerized-->
             <div class="mt-auto flex">
               {#if ch.solved}
                 <Badge color="green" class="mr-auto">{ch.points}</Badge>
@@ -392,8 +361,9 @@
           >
             <PenSolid />
           </Button>
+          <!-- REPLACED: open confirm modal instead of deleting directly -->
           <Button
-            onclick={modifyChallenge(selected)}
+            onclick={() => requestDelete(selected)}
             variant="destructive"
             size="sm"
             class="hover:cursor-pointer mr-5"
@@ -504,38 +474,83 @@
     <div class="mt-4 flex w-full items-center justify-between">
       <form class="mt-4 flex w-full items-center gap-2" class:justify-center={selected?.solved} onsubmit={onSubmitFlag}>
         {#if !selected?.solved}
+          <div class="relative flex-1">
+            {#if flagError}
+              <ExclamationCircleSolid
+                class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-red-500"
+                aria-hidden="true"
+              />
+            {:else}
+              <FlagSolid
+                class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500 dark:text-gray-400"
+                aria-hidden="true"
+              />
+            {/if}
             <Input
-            class="ps-9 flex-1"
-            placeholder="TRX{'...'}"
-            bind:value={flag}
-            color={flagError ? 'red' : 'gray'}
-            oninput={() => (flagError = false)}
-            >
-            {#snippet left()}
-                {#if flagError}
-                <ExclamationCircleSolid class="h-5 w-5" />
-                {:else}
-                <FlagSolid class="h-5 w-5" />
-                {/if}
-            {/snippet}
-            </Input>
-            <Button
+              class="pl-10"
+              placeholder="TRX{'...'}"
+              bind:value={flag}
+              oninput={() => flagError = false}
+              aria-invalid={flagError}
+              data-error={flagError}
+            />
+          </div>
+
+          <Button
             type="submit"
             color="primary"
             class="h-full"
             disabled={submittingFlag || !flag.trim() || flagError}
-            >
-                {#if submittingFlag}
-                    <Spinner />
-                    Submitting...
-                {:else}
-                    Submit
-                {/if}
-            </Button>
+          >
+            {#if submittingFlag}
+              <Spinner />
+              Submitting...
+            {:else}
+              Submit
+            {/if}
+          </Button>
         {:else}
-            <Badge color="green" class="flex items-center">Challenge solved</Badge>
+          <Badge color="green" class="flex items-center">Challenge solved</Badge>
         {/if}
       </form>
+    </div>
+  </Dialog.Content>
+</Dialog.Root>
+
+<!-- Delete Confirmation Modal -->
+<Dialog.Root bind:open={confirmDeleteOpen}>
+  <Dialog.Overlay />
+  <Dialog.Content class="sm:max-w-[520px]">
+    <Dialog.Header class="pb-2">
+      <Dialog.Title>Delete challenge?</Dialog.Title>
+      <Dialog.Description>
+        You’re about to permanently delete <b>{toDelete?.name ?? 'this challenge'}</b>. This action cannot be undone.
+      </Dialog.Description>
+    </Dialog.Header>
+
+    <div class="mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-300">
+      <p>All related data (like attachments and configuration) may be removed.</p>
+      <p>Please confirm to proceed.</p>
+    </div>
+
+    <div class="mt-6 flex justify-end gap-2">
+      <Dialog.Close>
+        <Button variant="outline" class="cursor-pointer" type="button" disabled={deleting}>
+          Cancel
+        </Button>
+      </Dialog.Close>
+      <Button
+        variant="destructive"
+        class="cursor-pointer"
+        disabled={deleting}
+        onclick={confirmDelete}
+      >
+        {#if deleting}
+          <Spinner class="mr-2" /> Deleting…
+        {:else}
+          Delete
+        {/if}
+      </Button>
     </div>
   </Dialog.Content>
 </Dialog.Root>
@@ -547,65 +562,53 @@
     <Dialog.Header class="pb-2">
       <Dialog.Title>Create Challenge</Dialog.Title>
       <Dialog.Description>
-          Create the barebones skeleton of the challenge, to upload files, set the docker instance parameters and decide more advanced options, edit it later.
+        Create the barebones skeleton of the challenge, to upload files, set the docker instance parameters and decide more advanced options, edit it later.
       </Dialog.Description>
     </Dialog.Header>
 
-    <!-- Put your form/fields here -->
     <div class="mt-2 space-y-4">
-        <form onsubmit={submitCreateChallenge}>
-            <Label for="name" class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Challenge Name*</Label>
-            <Input id="name" type="text" bind:value={challengeName} required class="mb-4 w-full" />
-            <Label for="description" class="mb-2 block text-sm font-medium text-gray-900 dark:text-white mt-4">Description</Label>
-            <Textarea id="description" bind:value={challengeDescription} class="mb-4 w-full" />
-            <div class="flex flex-row items-center justify-between">
-                <div class="flex flex-col">
-                    <Label for="category" class="block text-sm font-medium text-gray-900 dark:text-white mt-4  mb-2">Category*</Label>
-                    <MultiSelect
-                        id="category"
-                        items={categories}
-                        bind:value={category}
-                        placeholder="Select a category…"
-                        />
-                </div>
-                <div class="flex flex-col">
-                    <Label for="type" class="block text-sm font-medium text-gray-900 dark:text-white mt-4 mb-2">Type*</Label>
-                    <MultiSelect id="type" items={challengeTypes} bind:value={challengeType} challengeType="Select type..."/>
-                </div>
-                <div class="flex flex-col">
-                    <Tooltip.Provider>
-                      <Tooltip.Root>
-                        <Tooltip.Trigger>
-                            <Label for="scoretype" class="block text-sm font-medium text-gray-900 dark:text-white mt-4  mb-2">Dynamic score*</Label>
-                            <div class="flex flex-row"> 
-                                <Checkbox id="scoretype" class="mb-4 mt-2" bind:checked={dynamicScore} />
-                            </div>
-                        </Tooltip.Trigger>
-                        <Tooltip.Content>
-                          <p>Dynamic scoring decays challenge point over the number of solves.</p>
-                        </Tooltip.Content>
-                      </Tooltip.Root>
-                    </Tooltip.Provider>
-                </div>
-            </div>
-            <div>
-                <Label for="points" class="block text-sm font-medium text-gray-900 dark:text-white mt-4">Points: {points}</Label>
-                <Slider id="points" type="single" bind:value={points} max={1500} step={25} />
-            </div>
-            
-            
-            
-            
-        <div class="mt-6 flex justify-end gap-2">
-            <Dialog.Close>
-                <Button variant="outline" class="cursor-pointer" type="button">Cancel</Button>
-            </Dialog.Close>
-            <!-- Hook this up to your own handler if/when needed -->
-            <Button type="submit" class="cursor-pointer">
-                Create
-            </Button>
+      <form onsubmit={submitCreateChallenge}>
+        <Label for="name" class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Challenge Name*</Label>
+        <Input id="name" type="text" bind:value={challengeName} required class="mb-4 w-full" />
+        <Label for="description" class="mb-2 block text-sm font-medium text-gray-900 dark:text-white mt-4">Description</Label>
+        <Textarea id="description" bind:value={challengeDescription} class="mb-4 w-full" />
+        <div class="flex flex-row items-center justify-between">
+          <div class="flex flex-col">
+            <Label for="category" class="block text-sm font-medium text-gray-900 dark:text-white mt-4  mb-2">Category*</Label>
+            <MultiSelect id="category" items={categories} bind:value={category} placeholder="Select a category…" />
+          </div>
+          <div class="flex flex-col">
+            <Label for="type" class="block text-sm font-medium text-gray-900 dark:text-white mt-4 mb-2">Type*</Label>
+            <MultiSelect id="type" items={challengeTypes} bind:value={challengeType} challengeType="Select type..."/>
+          </div>
+          <div class="flex flex-col">
+            <Tooltip.Provider>
+              <Tooltip.Root>
+                <Tooltip.Trigger>
+                  <Label for="scoretype" class="block text-sm font-medium text-gray-900 dark:text-white mt-4  mb-2">Dynamic score*</Label>
+                  <div class="flex flex-row">
+                    <Checkbox id="scoretype" class="mb-4 mt-2" bind:checked={dynamicScore} />
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content>
+                  <p>Dynamic scoring decays challenge point over the number of solves.</p>
+                </Tooltip.Content>
+              </Tooltip.Root>
+            </Tooltip.Provider>
+          </div>
         </div>
-        </form>
+        <div>
+          <Label for="points" class="block text-sm font-medium text-gray-900 dark:text-white mt-4">Points: {points}</Label>
+          <Slider id="points" type="single" bind:value={points} max={1500} step={25} />
+        </div>
+
+        <div class="mt-6 flex justify-end gap-2">
+          <Dialog.Close>
+            <Button variant="outline" class="cursor-pointer" type="button">Cancel</Button>
+          </Dialog.Close>
+          <Button type="submit" class="cursor-pointer">Create</Button>
+        </div>
+      </form>
     </div>
   </Dialog.Content>
 </Dialog.Root>

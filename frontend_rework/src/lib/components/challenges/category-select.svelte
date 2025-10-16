@@ -17,7 +17,8 @@
     searchPlaceholder = "Search category…",
     groupLabel = "categories",
     className = "",
-    widthClass = "w-[220px]"
+    widthClass = "w-[220px]",
+    id = ""
   } = $props<{
     items?: Item[];
     value?: string;                // now bindable thanks to $bindable above
@@ -26,12 +27,13 @@
     groupLabel?: string;
     className?: string;
     widthClass?: string;
+    id?: string;
   }>();
 
   let open = $state(false);
   let triggerRef = $state<HTMLButtonElement>(null!);
 
-  const selectedLabel = $derived(items.find((i) => i.value === value)?.label);
+  const selectedLabel = $derived(items.find((i:any) => i.value === value)?.label);
 
   function closeAndFocusTrigger() {
     open = false;
@@ -55,7 +57,7 @@
     {/snippet}
   </Popover.Trigger>
 
-  <Popover.Content class={cn(widthClass, "p-1")}>
+  <Popover.Content class={cn(widthClass, "p-1")} id={id}>
     <Command.Root>
       <Command.Input placeholder={searchPlaceholder} class="border-0 shadow-none ring-0 focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:outline-none" />
       <Command.List>
