@@ -20,6 +20,7 @@ export async function submitFlag(
   flag: string
 ): Promise<{status: string }> {
   return await  api<{ first_blood: boolean; status: string }>(`/submissions`, {
+    headers: { "content-type": "application/json" },
     method: 'POST',
     body: JSON.stringify({ flag,chall_id })
   });
@@ -31,6 +32,7 @@ export async function getCategories(): Promise<any[]> {
 
 export async function createCategory(name: string,icon:string): Promise<any> {
   return api<any>('/categories', {
+    headers: { "content-type": "application/json" },
     method: 'POST',
     body: JSON.stringify({ name, icon })
   });
@@ -45,6 +47,7 @@ export async function createChallenge(
 		score_type:   string,
 ): Promise<any> {
   return api<any>('/challenges', {
+    headers: { "content-type": "application/json" },
     method: 'POST',
     body: JSON.stringify({ name, category, description, type, max_points, score_type })
   });
@@ -52,6 +55,7 @@ export async function createChallenge(
 
 export async function deleteChallenge(chall_id: string): Promise<any> {
   return api<any>(`/challenges`, {
+    headers: { "content-type": "application/json" },
     method: 'DELETE',
     body: JSON.stringify({ chall_id })
   });

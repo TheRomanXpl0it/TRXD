@@ -12,6 +12,7 @@
   import * as Accordion from "$lib/components/ui/accordion/index.js";
   import { updateChallengeMultipart, getChallenge } from "$lib/challenges";
   import { createTagsForChallenge, deleteTagsFromChallenge } from "@/tags";
+  import { createFlags, deleteFlags } from '@/flags';
   import { Check, Cpu, MemoryStick, Clock, X } from "@lucide/svelte";
 
   // --- CodeMirror imports (YAML + theming) ---
@@ -41,7 +42,7 @@
     challenge_user,
     categories = [] as Item[],
     all_tags,
-  } = $props<{ open?: boolean; challenge_user: any; categories?: Item[], all_tags?: any[] }>();
+  } = $props<{ open?: boolean; challenge_user: any; categories?: Item[], all_tags?: string[] }>();
 
   let challenge = $state<any>(null);
 
@@ -65,15 +66,25 @@
   let maxRam         = $state("");
   let lifetime       = $state("");
   let envs           = $state("");
-  let flags:any = $state([])
-  let flagsRegex:any = $state([]);
-  let tags:any          = $state(all_tags ?? []);
-  
-  const tagItems = $derived(
-    (Array.isArray(all_tags) ? all_tags : []).map((t: any) => {
-      const v = typeof t === "string" ? t : (t?.value ?? t?.name ?? t?.label ?? "");
-      return { value: String(v), label: String(v) };
-    })
+
+  let flags_og = $state<any[]>([]);
+  let flags:any = $state<any[]>([]);
+  let flagsRegex:any = $state<any[]>([]);
+
+  // 👇 Deduped tags as **strings**
+  const uniqAllTags = $derived(
+    Array.from(
+      new Set(
+        (Array.isArray(all_tags) ? all_tags : [])
+          .map((t) => String(t ?? "").trim())
+          .filter(Boolean)
+      )
+    )
+  );
+
+  // Current selected tags, as **strings**, deduped
+  let tags = $state<string[]>(
+    Array.from(new Set((Array.isArray(all_tags) ? all_tags : []).map(String)))
   );
 
   let saving = $state(false);
@@ -117,6 +128,8 @@
         challenge = { ...(fetched ?? {}), ...(challenge_user ?? {}) };
         if (cancelled || !challenge) return;
 
+        flags_og = Array.isArray(challenge?.flags) ? challenge.flags : [];
+
         name        = String(challenge?.name ?? "");
         const rawCat = challenge?.category;
         category    = rawCat
@@ -145,13 +158,17 @@
 
         host        = String(challenge?.host ?? "");
         portStr     = challenge?.port != null ? String(challenge.port) : "";
-        attachments = Array.isArray(challenge?.attachments)
-          ? challenge.attachments
-          : [];
+        attachments = Array.isArray(challenge?.attachments) ? challenge.attachments : [];
 
-        tags = Array.isArray(challenge?.tags)
-          ? challenge.tags.map((t: any) => String(t))
-          : [];
+        // 👇 Keep tags as strings; normalize + dedupe
+        tags = Array.from(
+          new Set(
+            (Array.isArray(challenge?.tags) ? challenge.tags : [])
+              .map((t:any) => String(t ?? "").trim())
+              .filter(Boolean)
+          )
+        );
+
         hashDomain  = Boolean(challenge?.hash_domain ?? false);
         imageName   = String(challenge?.docker_config?.image ?? "");
         composeFile = String(challenge?.docker_config?.compose ?? "");
@@ -159,11 +176,14 @@
         maxRam      = String(challenge?.docker_config?.max_memory ?? "");
         lifetime    = String(challenge?.docker_config?.lifetime ?? "");
         envs        = String(challenge?.docker_config?.envs ?? "");
-        for (const flag in challenge?.flags || [{}] ){
-          flags = [...flags, flag.flag]
-          flagsRegex = [...flagsRegex, flag.regex]
-        }
-        flags       = Array.isArray(challenge?.flags) ? challenge.flags : []
+
+        // ✅ Properly map flags array (no for..in on arrays)
+        flags = Array.isArray(challenge?.flags)
+          ? challenge.flags.map((f:any) => ({
+              flag: String(f?.flag ?? ""),
+              regex: Boolean(f?.regex)
+            }))
+          : [];
       } catch {
         /* noop */
       }
@@ -175,18 +195,18 @@
   async function onSave(e: Event) {
     e.preventDefault();
     if (saving || !challenge?.id) return;
-  
+
     if (!category.trim()) {
       toast.error("Please select a category.");
       return;
     }
-  
+
     const portNum = portStr.trim() ? Number(portStr) : undefined;
     if (portStr.trim() && !Number.isFinite(portNum)) {
       toast.error("Port must be a number.");
       return;
     }
-  
+
     // helpers
     const toNum = (x: any) => {
       const n = Number(x);
@@ -196,7 +216,7 @@
       const s = String(x ?? "").trim();
       return s || undefined;
     };
-  
+
     // build the fields exactly as backend expects (snake_case)
     const fields: any = {
       chall_id:   challenge.id,
@@ -213,56 +233,61 @@
       score_type:  (dynamicScoring ? "Dynamic" : "Static"),
       host:        str(host),
       port:        portNum,
-      
-  
+
       // arrays from UI
       attachments: Array.isArray(attachments)
         ? attachments.map((a: any) => String(a)).filter(Boolean)
         : undefined,
-  
+
       // container/compose specifics
       image:     type === "Container" ? str(imageName)   : undefined,
       compose:   type === "Compose"   ? str(composeFile) : undefined,
       hash_domain: hashDomain,
-  
+
       // performance / limits — only include if > 0
       max_points: toNum(maxPoints) && maxPoints > 0 ? maxPoints : undefined,
       lifetime:   toNum(lifetime)   && Number(lifetime) > 0 ? Number(lifetime) : undefined,
       max_memory: toNum(maxRam)     && Number(maxRam) > 0 ? Number(maxRam) : undefined,
-  
+
       // misc docker
       envs:     str(envs),
       max_cpu:  str(maxCPU),
     };
-  
-    // strip empty arrays so we don't send meaningless fields
+
+    // strip empty arrays
     if (Array.isArray(fields.authors) && fields.authors.length === 0) delete fields.authors;
     if (Array.isArray(fields.attachments) && fields.attachments.length === 0) delete fields.attachments;
-  
+
     saving = true;
-    
-    /* filter out all the new tags from the challenge tags and remove deleted tags*/
-    /* Deleted tags are tags that were in the original challenge tags but are not inside the tags array anymore */
-    const prev = Array.from(challenge_user.tags ?? []); // original tags
-    const curr = Array.from(tags ?? []);                // current tags
-    
-    // Option A: simple includes
-    const deletedTags = prev.filter(t => !curr.includes(t));
-    const newTags     = curr.filter(t => !prev.includes(t));
-    
-    
+
+    // tags diffs
+    const prev = Array.from(challenge_user.tags ?? []);
+    const curr = Array.from(tags ?? []);
+    const deletedTags = prev.filter((t:string) => !curr.includes(t));
+    const newTags     = curr.filter((t:string) => !prev.includes(t));
+
+    // flags diffs
+    const prevFlags = Array.from(flags_og ?? []);
+    const currFlags = Array.from(flags ?? []);
+    const deletedFlags = prevFlags.filter((pf:any) =>
+      !currFlags.some((cf:any) => cf.flag === pf.flag && !!cf.regex === !!pf.regex)
+    );
+    const newFlags = currFlags.filter((cf:any) =>
+      !prevFlags.some((pf:any) => cf.flag === pf.flag && !!cf.regex === !!pf.regex)
+    );
+
     try {
-      await Promise.all([ 
+      await Promise.all([
         updateChallengeMultipart(fields),
         deleteTagsFromChallenge(deletedTags,challenge_user.id),
         createTagsForChallenge(newTags,challenge_user.id),
-      ])
+        createFlags(newFlags,challenge_user.id),
+        deleteFlags(deletedFlags,challenge_user.id)
+      ]);
       open = false;
-    
-      // Wait 0.5s, then show success toast and reload
+
       setTimeout(() => {
         toast.success("Challenge updated.");
-        // Reload the whole page to reflect changes everywhere
         window.location.reload();
       }, 500);
     } catch (err: any) {
@@ -276,7 +301,7 @@
   let cmComposeHost: HTMLDivElement | undefined;
   let cmComposeView: EditorView | null = null;
 
-  // Theme compartment + light theme that plays nice with your UI
+  // Theme compartment + light theme
   const themeComp = new Compartment();
   function lightTheme() {
     return EditorView.theme(
@@ -289,7 +314,6 @@
         ".cm-gutters": {
           backgroundColor: "transparent",
           borderRight: "none",
-          /* slate-500-ish for light mode line numbers */
           color: "rgb(100 116 139)"
         },
         "&.cm-editor": { borderRadius: "0.5rem" },
@@ -299,7 +323,6 @@
     );
   }
 
-  // Create/destroy editor depending on section visibility
   $effect(() => {
     if (type === "Compose" && cmComposeHost && !cmComposeView) {
       cmComposeView = new EditorView({
@@ -319,9 +342,8 @@ services:
             history(),
             keymap.of([indentWithTab, ...defaultKeymap, ...historyKeymap]),
             yaml(),
-            /* crucial for colors when not using basicSetup */
             syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
-            themeComp.of(lightTheme()), // start light; we swap below if needed
+            themeComp.of(lightTheme()),
             EditorView.theme({ "&": { minHeight: "180px", borderRadius: "0.5rem" } }),
             EditorView.updateListener.of((u) => {
               if (u.docChanged) composeFile = u.state.doc.toString();
@@ -337,7 +359,6 @@ services:
     }
   });
 
-  // Keep editor in sync with external composeFile changes
   $effect(() => {
     if (!cmComposeView) return;
     const current = cmComposeView.state.doc.toString();
@@ -348,7 +369,6 @@ services:
     }
   });
 
-  // Auto-switch theme (Tailwind .dark or system)
   $effect(() => {
     if (!cmComposeView) return;
 
@@ -364,15 +384,12 @@ services:
       });
     };
 
-    // initial apply
     apply();
 
-    // listen to system changes
     const mq = window.matchMedia?.("(prefers-color-scheme: dark)");
     const mqHandler = () => apply();
     mq?.addEventListener?.("change", mqHandler);
 
-    // listen to Tailwind's .dark class toggles
     const obs = new MutationObserver(apply);
     obs.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
 
@@ -426,31 +443,28 @@ services:
               <Slider id="ch-points" type="single" bind:value={maxPoints} min={0} max={1500} step={25} />
             </div>
             <div class="mt-5">
-                <Label for="ch-flags" class="mb-1 block">Flags</Label>
-                <div class="flex flex-col gap-2">
-                    {#each flags as flag, index (index)}
-                    <div class="flex items-center gap-2">
-                        <Input
-                        bind:value={flags[index].flag}
-                        placeholder="Flag value"
-                        class="flex-1"
-                        />
-                        <Checkbox id="flag-{index}" bind:checked={flags[index].regex} />
-                        <Label for="flag-{index}">Regex</Label>
-                        
-                        <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        onclick={() => flags = flags.filter((_:any, i:any) => i !== index)}
-                        >
-                        <X class="h-4 w-4" />
-                        </Button>
-                    </div>
-                    {/each}
-                    <Button type="button" variant="outline" size="sm" onclick={() => flags = [...flags, {flag:"",regex:false}]}>
-                    Add Flag
+              <Label for="ch-flags" class="mb-1 block">Flags</Label>
+              <div class="flex flex-col gap-2">
+                {#each flags as flag, index (index)}
+                  <div class="flex items-center gap-2">
+                    <Input bind:value={flags[index].flag} placeholder="Flag value" class="flex-1" />
+                    <Checkbox id={"flag-" + index} bind:checked={flags[index].regex} />
+                    <Label for={"flag-" + index}>Regex</Label>
+
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      onclick={() => (flags = flags.filter((_:any, i:any) => i !== index))}
+                    >
+                      <X class="h-4 w-4" />
                     </Button>
+                  </div>
+                {/each}
+                <Button type="button" variant="outline" size="sm" onclick={() => (flags = [...flags, { flag: "", regex: false }])}>
+                  Add Flag
+                </Button>
+              </div>
             </div>
           </Accordion.Content>
         </Accordion.Item>
@@ -473,15 +487,16 @@ services:
               </div>
             </div>
             <div class="mt-3">
-                <Label class="mb-1 block">Tags</Label>
-                <TagMultiSelect
-                  items={tagItems}
-                  bind:value={tags}
-                  on:create={(e) => {
-                    const newTag = e.detail;
-                    if (!tags.includes(newTag)) tags = [...tags, newTag];
-                  }}
-                />
+              <Label class="mb-1 block">Tags</Label>
+              <!-- 👇 Pass **strings** + deduped -->
+              <TagMultiSelect
+                all_tags={uniqAllTags}
+                bind:value={tags}
+                on:create={(e) => {
+                  const newTag = String(e.detail ?? "").trim();
+                  if (newTag && !tags.includes(newTag)) tags = [...tags, newTag];
+                }}
+              />
             </div>
           </Accordion.Content>
         </Accordion.Item>
@@ -494,37 +509,33 @@ services:
                 <Label for="ch-auth" class="mb-1 block">Authors</Label>
                 <Input id="ch-auth" bind:value={authorsCsv} placeholder="alice, bob" />
               </div>
-                <div class="mt-3">
-                    <Label class="mb-1 block">Attachments</Label>
+              <div class="mt-3">
+                <Label class="mb-1 block">Attachments</Label>
                 {#each attachments, index (index)}
-                    <div class="flex items-center gap-2 mt-3">
-                    <Input
-                        bind:value={attachments[index]}
-                        placeholder="Attachment path"
-                        class="flex-1"
-                    />
+                  <div class="flex items-center gap-2 mt-3">
+                    <Input bind:value={attachments[index]} placeholder="Attachment path" class="flex-1" />
                     <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        onclick={() => attachments = attachments.filter((_:any, i:any) => i !== index)}
-                        aria-label="Remove attachment"
-                        title="Remove attachment"
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      onclick={() => (attachments = attachments.filter((_:any, i:any) => i !== index))}
+                      aria-label="Remove attachment"
+                      title="Remove attachment"
                     >
-                        <X class="h-4 w-4" />
+                      <X class="h-4 w-4" />
                     </Button>
-                    </div>
+                  </div>
                 {/each}
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        class="mt-3"
-                        onclick={() => attachments = [...attachments, ""]}
-                    >
-                        Add Attachment
-                    </Button>
-                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  class="mt-3"
+                  onclick={() => (attachments = [...attachments, ""])}
+                >
+                  Add Attachment
+                </Button>
+              </div>
             </div>
           </Accordion.Content>
         </Accordion.Item>
@@ -539,14 +550,14 @@ services:
                   <Input id="ch-host" bind:value={host} placeholder="e.g. challenge.trxd.cc" />
                 </div>
                 <div class="flex flex-row mt-3 justify-between items-center">
-                    <div class="flex flex-row items-center">
-                        <Checkbox id="ch-hashdomain" bind:checked={hashDomain} />
-                        <Label for="ch-hashdomain" class="ml-2">Hash domain</Label>
-                    </div>
-                    <div>
-                        <Label for="ch-port" class="mb-1 block" aria-disabled={hashDomain}>Port</Label>
-                        <Input id="ch-port" bind:value={portStr} placeholder="e.g. 31337" disabled={hashDomain} />
-                    </div>
+                  <div class="flex flex-row items-center">
+                    <Checkbox id="ch-hashdomain" bind:checked={hashDomain} />
+                    <Label for="ch-hashdomain" class="ml-2">Hash domain</Label>
+                  </div>
+                  <div>
+                    <Label for="ch-port" class="mb-1 block" aria-disabled={hashDomain}>Port</Label>
+                    <Input id="ch-port" bind:value={portStr} placeholder="e.g. 31337" disabled={hashDomain} />
+                  </div>
                 </div>
               </div>
             </Accordion.Content>
@@ -564,9 +575,8 @@ services:
                   <Label for="com-hashdomain" class="ml-1">Hash Domain</Label>
                 </div>
                 <div class="mt-3">
-                    <Label for="com-envs" class="mb-1 block">Envs</Label>
-                    <Input id="com-envs" bind:value={envs} placeholder="LD_PRELOAD=..." />
-                    
+                  <Label for="com-envs" class="mb-1 block">Envs</Label>
+                  <Input id="com-envs" bind:value={envs} placeholder="LD_PRELOAD=..." />
                 </div>
               </div>
             </Accordion.Content>
@@ -592,8 +602,8 @@ services:
                   </div>
                 </div>
                 <div class="mt-3">
-                    <Label for="con-envs" class="mb-1 block">Envs</Label>
-                    <Input id="con-envs" bind:value={envs} placeholder="LD_PRELOAD=..." />
+                  <Label for="con-envs" class="mb-1 block">Envs</Label>
+                  <Input id="con-envs" bind:value={envs} placeholder="LD_PRELOAD=..." />
                 </div>
               </div>
             </Accordion.Content>

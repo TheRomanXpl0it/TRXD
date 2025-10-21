@@ -120,9 +120,7 @@
       for (const c of challenges ?? []) {
         if (typeof c?.timeout === 'number' && c.timeout > 0) next[c.id] = c.timeout;
         for (const t of c.tags ?? []){
-          if (!(t in all_tags)){
-            all_tags.push(t)
-          }
+            if (!(t in all_tags))all_tags.push(t);
         }
       }
       countdowns = next;

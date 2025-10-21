@@ -1,162 +1,103 @@
 <script lang="ts">
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
-  import { Input } from "$lib/components/ui/input/index.js";
   import { Checkbox } from "$lib/components/ui/checkbox/index.js";
   import { X } from "@lucide/svelte";
   import { createEventDispatcher } from "svelte";
 
-  export type Item = { value: string; label: string };
-
-  // Props (runes)
   let {
-    items = [] as Item[],
+    all_tags = [] as string[],
     placeholder = "Select tags…",
     value = $bindable<string[]>([])
-  } = $props<{ items?: Item[]; placeholder?: string; value?: string[] }>();
+  } = $props<{ all_tags?: string[]; placeholder?: string; value?: string[] }>();
 
   const dispatch = createEventDispatcher<{ create: string }>();
 
-  // Local state
   let open   = $state(false);
   let query  = $state("");
-  let active = $state(0); // highlighted index in filtered list
+  let active = $state(0);
+  let custom = $state<string[]>([]); // newly created tags (raw strings)
 
-  // Keep locally-created tags so they appear immediately
-  let custom = $state<string[]>([]);
+  const available = $derived([...(all_tags ?? []), ...(custom ?? [])]);
 
-  // Normalized + available
-  const normalized = $derived(items.map(i => ({ value: String(i.value), label: String(i.label) })));
-  const available  = $derived([
-    ...normalized,
-    ...custom.map(v => ({ value: v, label: v }))
-  ]);
+  // filter (raw, case-sensitive); empty query -> show everything
+  const filtered = $derived(query ? available.filter(v => String(v).includes(query)) : available);
 
-  const q       = $derived(query.trim());
-  const qLower  = $derived(q.toLowerCase());
-  const filtered = $derived(
-    q
-      ? available.filter(i =>
-          i.label.toLowerCase().includes(qLower) || i.value.toLowerCase().includes(qLower)
-        )
-      : available
-  );
-
-  const labelMap        = $derived(new Map(available.map(i => [i.value, i.label] as const)));
-  const availableLower  = $derived(new Set(available.map(i => i.value.toLowerCase())));
-  const selectedLower   = $derived(new Set(value.map(v => v.toLowerCase())));
-  const canCreate       = $derived(q.length > 0 && !availableLower.has(qLower));
+  const canCreate = $derived(query.length > 0 && !available.includes(query));
 
   const summary = $derived(
-    value.length === 0
-      ? placeholder
-      : value.length === 1
-      ? (labelMap.get(value[0]) ?? value[0])
-      : `${value.length} tags selected`
+    Array.isArray(value) && value.length > 0 ? `${value.length} selected` : placeholder
   );
 
   function toggle(v: string) {
-    const set = new Set(value);
-    set.has(v) ? set.delete(v) : set.add(v);
-    value = Array.from(set);
+    const arr = Array.isArray(value) ? [...value] : [];
+    const idx = arr.indexOf(v);
+    if (idx !== -1) arr.splice(idx, 1);
+    else arr.push(v);
+    value = arr;
   }
 
   function remove(v: string) {
-    value = value.filter(x => x !== v);
+    value = (Array.isArray(value) ? value : []).filter(x => x !== v);
   }
 
   function createTagFromQuery() {
     if (!canCreate) return;
-    custom = Array.from(new Set([...custom, q]));
-    if (!selectedLower.has(qLower)) value = [...value, q];
-    dispatch("create", q);
+    const tag = query;
+    custom = [...custom, tag];
+    if (!value.includes(tag)) value = [...value, tag];
+    dispatch("create", tag);
     query = "";
     active = 0;
   }
 
-  // Adopt unknown selected tags so they render
+  // focus search when opened
+  let searchEl: HTMLInputElement | null = null;
   $effect(() => {
-    // use availableLower so this effect re-runs when available changes
-    const _dep = availableLower;
-    const unknown = value.filter(v => !availableLower.has(v.toLowerCase()));
-    if (unknown.length) custom = Array.from(new Set([...custom, ...unknown]));
+    if (open) queueMicrotask(() => searchEl?.focus());
   });
 
-  // Reset highlight when the search query changes
+  // reset highlight on query change
   $effect(() => {
-    const _q = q; // dependency
+    const _ = query; // just to trigger
     active = 0;
   });
 
-  // Clamp active when filtered length changes (no second arg!)
-  $effect(() => {
-    const len = filtered.length; // dependency
-    if (len === 0) {
-      active = 0;
-    } else if (active >= len) {
-      active = len - 1;
-    } else if (active < 0) {
-      active = 0;
-    }
-  });
-
-  // Autofocus search when opened
-  let searchEl: HTMLInputElement | null = null;
-  $effect(() => {
-    const _open = open; // dependency
-    if (!_open) return;
-    queueMicrotask(() => searchEl?.focus());
-  });
-
+  // keyboard navigation + create on Enter
   function onSearchKeydown(e: KeyboardEvent) {
-    // Prevent outer form submit
-    if (e.key === "Enter") e.preventDefault();
-
-    if (e.key === "Escape") {
-      open = false;
-      return;
-    }
-
-    if (e.key === "Tab" && canCreate) {
-      e.preventDefault();
-      createTagFromQuery();
-      return;
-    }
-
+    if (e.key === "Escape") { open = false; return; }
     if (e.key === "ArrowDown") {
       e.preventDefault();
       if (filtered.length) active = (active + 1) % filtered.length;
       return;
     }
-
     if (e.key === "ArrowUp") {
       e.preventDefault();
       if (filtered.length) active = (active - 1 + filtered.length) % filtered.length;
       return;
     }
-
     if (e.key === "Enter") {
-      if (canCreate) {
-        createTagFromQuery();
-      } else if (filtered.length > 0) {
-        const i = Math.max(0, Math.min(active, filtered.length - 1));
-        toggle(filtered[i].value);
+      e.preventDefault();
+      if (canCreate) createTagFromQuery();
+      else if (filtered.length) {
+        const idx = Math.max(0, Math.min(active, filtered.length - 1));
+        toggle(filtered[idx]);
       }
     }
   }
 </script>
 
 <div class="flex flex-col gap-2">
-  {#if value.length > 0}
+  {#if Array.isArray(value) && value.length > 0}
     <div class="flex flex-wrap gap-2">
       {#each value as v (v)}
         <span class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-sm">
-          {labelMap.get(v) ?? v}
+          {v}
           <button
             type="button"
             class="ml-1 opacity-70 hover:opacity-100"
-            on:click={() => remove(v)}
-            aria-label={`Remove ${labelMap.get(v) ?? v}`}
+            onclick={() => remove(v)}
+            aria-label={`Remove ${v}`}
             title="Remove"
           >
             <X class="h-4 w-4" />
@@ -175,21 +116,24 @@
 
     <Popover.Content class="w-80 p-3">
       <div class="flex flex-col gap-3">
-        <Input
+        <input
           placeholder="Search or create…"
           bind:this={searchEl}
           bind:value={query}
           autocomplete="off"
           onkeydown={onSearchKeydown}
+          class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm
+                 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2
+                 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         />
 
         {#if canCreate}
           <button
             type="button"
             class="flex w-full items-center gap-2 px-2 py-1.5 rounded border border-dashed hover:bg-accent text-left"
-            on:click={createTagFromQuery}
+            onclick={createTagFromQuery}
           >
-            + Create tag “{q}”
+            + Create tag “{query}”
           </button>
         {/if}
 
@@ -197,15 +141,15 @@
           {#if filtered.length === 0 && !canCreate}
             <div class="text-sm text-muted-foreground px-2 py-1.5">No results</div>
           {:else}
-            {#each filtered as it, i (it.value)}
+            {#each filtered as v, i (i)}
               <button
                 type="button"
                 class={`flex w-full items-center gap-2 px-2 py-1.5 rounded hover:bg-accent text-left ${i === active ? 'bg-accent/60' : ''}`}
-                on:click={() => toggle(it.value)}
+                onclick={() => toggle(v)}
                 aria-selected={i === active}
               >
-                <Checkbox checked={value.includes(it.value)} />
-                <span class="truncate">{it.label}</span>
+                <Checkbox checked={(value ?? []).includes(v)} />
+                <span class="truncate">{v}</span>
               </button>
             {/each}
           {/if}
