@@ -3,7 +3,7 @@
   import './App.css';
 
   import { MoonIcon, SunIcon } from '@lucide/svelte';
-  import favicon from '$lib/assets/favicon.svg';
+  import favicon from '$lib/assets/favicon.ico';
 
   import * as Sidebar from '$lib/components/ui/sidebar/index.js';
   import AppSidebar from '$lib/components/app-sidebar.svelte';

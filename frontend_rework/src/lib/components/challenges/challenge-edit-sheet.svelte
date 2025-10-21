@@ -13,7 +13,7 @@
   import { updateChallengeMultipart, getChallenge } from "$lib/challenges";
   import { createTagsForChallenge, deleteTagsFromChallenge } from "@/tags";
   import { createFlags, deleteFlags } from '@/flags';
-  import { Check, Cpu, MemoryStick, Clock, X } from "@lucide/svelte";
+  import { Check, Cpu, MemoryStick, Clock, X, Tags, UserPen,FileDown } from "@lucide/svelte";
 
   // --- CodeMirror imports (YAML + theming) ---
   import { EditorState, Compartment } from "@codemirror/state";
@@ -475,11 +475,11 @@ services:
             <div class="flex flex-row justify-between">
               <div>
                 <Label for="ch-diff" class="mb-1 block">Difficulty</Label>
-                <CategorySelect id="ch-diff" items={difficultyOptions} bind:value={difficulty} placeholder="Select difficulty…" />
+                <CategorySelect id="ch-diff" items={difficultyOptions} bind:value={difficulty} placeholder="Select difficulty…"  searchPlaceholder="Search difficulty"/>
               </div>
               <div>
                 <Label for="ch-type" class="mb-1 block">Type</Label>
-                <CategorySelect id="ch-type" items={typeOptions} bind:value={type} placeholder="Select type…" />
+                <CategorySelect id="ch-type" items={typeOptions} bind:value={type} placeholder="Select type…" searchPlaceholder="Search type" />
               </div>
               <div>
                 <Label for="ch-cat" class="mb-1 block">Category</Label>
@@ -505,36 +505,42 @@ services:
           <Accordion.Trigger class="text-xl font-semibold tracking-tight cursor-pointer">Authors and attatchments</Accordion.Trigger>
           <Accordion.Content>
             <div class="flex flex-col">
-              <div>
-                <Label for="ch-auth" class="mb-1 block">Authors</Label>
-                <Input id="ch-auth" bind:value={authorsCsv} placeholder="alice, bob" />
-              </div>
-              <div class="mt-3">
-                <Label class="mb-1 block">Attachments</Label>
-                {#each attachments, index (index)}
-                  <div class="flex items-center gap-2 mt-3">
-                    <Input bind:value={attachments[index]} placeholder="Attachment path" class="flex-1" />
+                <div class="flex flex-row items-center">
+                    <UserPen class="mr-2"/>
+                    <div>
+                        <Label for="ch-auth" class="mb-1 block">Authors</Label>
+                        <Input id="ch-auth" bind:value={authorsCsv} placeholder="alice, bob" />
+                    </div>
+                </div>
+              <div class="mt-3 flex flex-row">
+                <FileDown class="mr-2"/>
+                <div >
+                    <Label class="mb-1 block">Attachments</Label>
+                    {#each attachments, index (index)}
+                    <div class="flex items-center gap-2 mt-3">
+                        <Input bind:value={attachments[index]} placeholder="Attachment path" class="flex-1" />
+                        <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        onclick={() => (attachments = attachments.filter((_:any, i:any) => i !== index))}
+                        aria-label="Remove attachment"
+                        title="Remove attachment"
+                        >
+                        <X class="h-4 w-4" />
+                        </Button>
+                    </div>
+                    {/each}
                     <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      onclick={() => (attachments = attachments.filter((_:any, i:any) => i !== index))}
-                      aria-label="Remove attachment"
-                      title="Remove attachment"
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    class="mt-3"
+                    onclick={() => (attachments = [...attachments, ""])}
                     >
-                      <X class="h-4 w-4" />
+                    Add Attachment
                     </Button>
-                  </div>
-                {/each}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  class="mt-3"
-                  onclick={() => (attachments = [...attachments, ""])}
-                >
-                  Add Attachment
-                </Button>
+                </div>
               </div>
             </div>
           </Accordion.Content>
