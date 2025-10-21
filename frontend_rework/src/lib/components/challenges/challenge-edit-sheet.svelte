@@ -7,9 +7,11 @@
   import { Slider } from "$lib/components/ui/slider/index.js";
   import Label from "$lib/components/ui/label/label.svelte";
   import CategorySelect from "$lib/components/challenges/category-select.svelte";
+  import TagMultiSelect from "$lib/components/challenges/tag-multiselect.svelte";
   import { toast } from "svelte-sonner";
   import * as Accordion from "$lib/components/ui/accordion/index.js";
   import { updateChallengeMultipart, getChallenge } from "$lib/challenges";
+  import { createTagsForChallenge, deleteTagsFromChallenge } from "@/tags";
   import { Check, Cpu, MemoryStick, Clock, X } from "@lucide/svelte";
 
   // --- CodeMirror imports (YAML + theming) ---
@@ -37,8 +39,9 @@
   let {
     open = $bindable(false),
     challenge_user,
-    categories = [] as Item[]
-  } = $props<{ open?: boolean; challenge_user: any; categories?: Item[] }>();
+    categories = [] as Item[],
+    all_tags,
+  } = $props<{ open?: boolean; challenge_user: any; categories?: Item[], all_tags?: any[] }>();
 
   let challenge = $state<any>(null);
 
@@ -64,7 +67,14 @@
   let envs           = $state("");
   let flags:any = $state([])
   let flagsRegex:any = $state([]);
-  let tags:any          = $state([]);
+  let tags:any          = $state(all_tags ?? []);
+  
+  const tagItems = $derived(
+    (Array.isArray(all_tags) ? all_tags : []).map((t: any) => {
+      const v = typeof t === "string" ? t : (t?.value ?? t?.name ?? t?.label ?? "");
+      return { value: String(v), label: String(v) };
+    })
+  );
 
   let saving = $state(false);
 
@@ -130,8 +140,8 @@
           ? Number(challenge.points)
           : 500;
 
-        const st = String(challenge?.score_type ?? challenge?.scoreType ?? "STATIC").toUpperCase();
-        dynamicScoring = st === "DYNAMIC";
+        const st = String(challenge?.score_type ?? challenge?.scoreType ?? "Static");
+        dynamicScoring = st === "Dynamic";
 
         host        = String(challenge?.host ?? "");
         portStr     = challenge?.port != null ? String(challenge.port) : "";
@@ -200,9 +210,10 @@
                       .filter(Boolean),
       type,
       hidden,
-      score_type:  (dynamicScoring ? "DYNAMIC" : "STATIC"),
+      score_type:  (dynamicScoring ? "Dynamic" : "Static"),
       host:        str(host),
       port:        portNum,
+      
   
       // arrays from UI
       attachments: Array.isArray(attachments)
@@ -229,10 +240,31 @@
     if (Array.isArray(fields.attachments) && fields.attachments.length === 0) delete fields.attachments;
   
     saving = true;
+    
+    /* filter out all the new tags from the challenge tags and remove deleted tags*/
+    /* Deleted tags are tags that were in the original challenge tags but are not inside the tags array anymore */
+    const prev = Array.from(challenge_user.tags ?? []); // original tags
+    const curr = Array.from(tags ?? []);                // current tags
+    
+    // Option A: simple includes
+    const deletedTags = prev.filter(t => !curr.includes(t));
+    const newTags     = curr.filter(t => !prev.includes(t));
+    
+    
     try {
-      await updateChallengeMultipart(fields); // <-- no :id in path; chall_id in form
-      toast.success("Challenge updated.");
+      await Promise.all([ 
+        updateChallengeMultipart(fields),
+        deleteTagsFromChallenge(deletedTags,challenge_user.id),
+        createTagsForChallenge(newTags,challenge_user.id),
+      ])
       open = false;
+    
+      // Wait 0.5s, then show success toast and reload
+      setTimeout(() => {
+        toast.success("Challenge updated.");
+        // Reload the whole page to reflect changes everywhere
+        window.location.reload();
+      }, 500);
     } catch (err: any) {
       toast.error(err?.message ?? "Failed to update challenge.");
     } finally {
@@ -441,34 +473,15 @@ services:
               </div>
             </div>
             <div class="mt-3">
-              <Label class="mb-1 block">Tags</Label>
-              {#each tags as tag, index (index)}
-                <div class="flex items-center gap-2 mb-2">
-                  <Input
-                    bind:value={tags[index]}
-                    placeholder="Tag"
-                    class="flex-1"
-                  />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon"
-                    onclick={() => tags = tags.filter((_:any, i:any) => i !== index)}
-                    aria-label="Remove tag"
-                    title="Remove tag"
-                  >
-                    <X class="h-4 w-4" />
-                  </Button>
-                </div>
-              {/each}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onclick={() => tags = [...tags, ""]}
-              >
-                Add Tag
-              </Button>
+                <Label class="mb-1 block">Tags</Label>
+                <TagMultiSelect
+                  items={tagItems}
+                  bind:value={tags}
+                  on:create={(e) => {
+                    const newTag = e.detail;
+                    if (!tags.includes(newTag)) tags = [...tags, newTag];
+                  }}
+                />
             </div>
           </Accordion.Content>
         </Accordion.Item>

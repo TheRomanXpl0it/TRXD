@@ -5,6 +5,7 @@ import Team from './routes/team/+page.svelte';
 import Profile from './routes/account/+page.svelte';
 import SignOut from './routes/signOut/+page.svelte';
 import SignUp from './routes/signUp/+page.svelte';
+import Writeups from './routes/writeups/+page.svelte'
 import { requireAuth } from './guards';
 
 export default {
@@ -12,6 +13,7 @@ export default {
   '/signIn': SignIn,
   '/signOut': SignOut,
   '/signUp': SignUp,
+  '/writeups' : Writeups,
   '/challenges': requireAuth(Challenges),
   '/team': requireAuth(Team),
   '/team/:id': requireAuth(Team),

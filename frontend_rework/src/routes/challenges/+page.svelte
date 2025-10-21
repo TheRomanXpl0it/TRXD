@@ -43,6 +43,8 @@
   let selected: any | null = $state(null);
   let countdowns: Record<string, number> = $state({});
   
+  let all_tags = $state<any[]>([]);
+  
   let points:number = $state(500);
   let category: any = $state(null);
   let challengeType = $state('Container');
@@ -117,6 +119,11 @@
       const next: Record<string, number> = {};
       for (const c of challenges ?? []) {
         if (typeof c?.timeout === 'number' && c.timeout > 0) next[c.id] = c.timeout;
+        for (const t of c.tags ?? []){
+          if (!(t in all_tags)){
+            all_tags.push(t)
+          }
+        }
       }
       countdowns = next;
       const uniq = new Map<string, { value: string; label: string }>();
@@ -615,4 +622,4 @@
 
 <!-- All sheets that are imported -->
 <SolveListSheet bind:open={solvesOpen} challenge={selected}/>
-<ChallengeEditSheet bind:open={editOpen} challenge_user={selected}/>
+<ChallengeEditSheet bind:open={editOpen} challenge_user={selected} all_tags={all_tags}/>
