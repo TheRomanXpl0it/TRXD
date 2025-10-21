@@ -288,7 +288,7 @@
 
       setTimeout(() => {
         toast.success("Challenge updated.");
-        window.location.reload();
+        //window.location.reload();
       }, 500);
     } catch (err: any) {
       toast.error(err?.message ?? "Failed to update challenge.");
