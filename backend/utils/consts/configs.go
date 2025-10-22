@@ -18,4 +18,5 @@ var DefaultConfigs = map[string]any{
 	"discord-webhook":           "",
 	"project-name":              "trxd",
 	"user-mode":                 false,
+	"scoreboard-top":            3,
 }

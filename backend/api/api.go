@@ -31,6 +31,7 @@ import (
 	"trxd/api/routes/teams_password"
 	"trxd/api/routes/teams_register"
 	"trxd/api/routes/teams_scoreboard"
+	"trxd/api/routes/teams_scoreboard_graph"
 	"trxd/api/routes/teams_update"
 	"trxd/api/routes/users_all_get"
 	"trxd/api/routes/users_get"
@@ -134,6 +135,7 @@ func SetupApi(app *fiber.App) {
 	api.Post("/logout", noAuth, users_logout.Route)
 	api.Get("/info", noAuth, users_info.Route)
 	api.Get("/scoreboard", noAuth, teams_scoreboard.Route)
+	api.Get("/scoreboard/graph", noAuth, teams_scoreboard_graph.Route)
 
 	api.Patch("/users", player, users_update.Route)
 	api.Patch("/users/password", admin, users_password.Route)

@@ -665,6 +665,56 @@ func (q *Queries) GetTeamsScoreboard(ctx context.Context) ([]GetTeamsScoreboardR
 	return items, nil
 }
 
+const getTeamsScoreboardGraph = `-- name: GetTeamsScoreboardGraph :many
+SELECT t.id AS team_id, c.id AS chall_id, c.points, s.first_blood, s."timestamp" FROM (
+	SELECT id, name, password_hash, password_salt, score, country, image, bio FROM teams t
+        ORDER BY t.score DESC
+        LIMIT CAST((SELECT value FROM configs WHERE key='scoreboard-top') AS INT)) AS t
+  JOIN users u ON u.team_id = t.id
+  JOIN submissions s ON s.user_id = u.id
+  JOIN challenges c ON c.id = s.chall_id
+  WHERE s.status = 'Correct'
+  ORDER BY s."timestamp" ASC
+`
+
+type GetTeamsScoreboardGraphRow struct {
+	TeamID     int32     `json:"team_id"`
+	ChallID    int32     `json:"chall_id"`
+	Points     int32     `json:"points"`
+	FirstBlood bool      `json:"first_blood"`
+	Timestamp  time.Time `json:"timestamp"`
+}
+
+// Get the top N teams along with their correct submissions and challenge points for scoreboard graphing
+func (q *Queries) GetTeamsScoreboardGraph(ctx context.Context) ([]GetTeamsScoreboardGraphRow, error) {
+	rows, err := q.query(ctx, q.getTeamsScoreboardGraphStmt, getTeamsScoreboardGraph)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTeamsScoreboardGraphRow
+	for rows.Next() {
+		var i GetTeamsScoreboardGraphRow
+		if err := rows.Scan(
+			&i.TeamID,
+			&i.ChallID,
+			&i.Points,
+			&i.FirstBlood,
+			&i.Timestamp,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT id, name, email, password_hash, password_salt, created_at, score, role, team_id, country, image FROM users WHERE email = $1
 `

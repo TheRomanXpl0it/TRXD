@@ -129,6 +129,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getTeamsScoreboardStmt, err = db.PrepareContext(ctx, getTeamsScoreboard); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTeamsScoreboard: %w", err)
 	}
+	if q.getTeamsScoreboardGraphStmt, err = db.PrepareContext(ctx, getTeamsScoreboardGraph); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTeamsScoreboardGraph: %w", err)
+	}
 	if q.getUserByEmailStmt, err = db.PrepareContext(ctx, getUserByEmail); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserByEmail: %w", err)
 	}
@@ -375,6 +378,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getTeamsScoreboardStmt: %w", cerr)
 		}
 	}
+	if q.getTeamsScoreboardGraphStmt != nil {
+		if cerr := q.getTeamsScoreboardGraphStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTeamsScoreboardGraphStmt: %w", cerr)
+		}
+	}
 	if q.getUserByEmailStmt != nil {
 		if cerr := q.getUserByEmailStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getUserByEmailStmt: %w", cerr)
@@ -559,6 +567,7 @@ type Queries struct {
 	getTeamSolvesStmt            *sql.Stmt
 	getTeamsPreviewStmt          *sql.Stmt
 	getTeamsScoreboardStmt       *sql.Stmt
+	getTeamsScoreboardGraphStmt  *sql.Stmt
 	getUserByEmailStmt           *sql.Stmt
 	getUserByIDStmt              *sql.Stmt
 	getUserByNameStmt            *sql.Stmt
@@ -622,6 +631,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getTeamSolvesStmt:            q.getTeamSolvesStmt,
 		getTeamsPreviewStmt:          q.getTeamsPreviewStmt,
 		getTeamsScoreboardStmt:       q.getTeamsScoreboardStmt,
+		getTeamsScoreboardGraphStmt:  q.getTeamsScoreboardGraphStmt,
 		getUserByEmailStmt:           q.getUserByEmailStmt,
 		getUserByIDStmt:              q.getUserByIDStmt,
 		getUserByNameStmt:            q.getUserByNameStmt,
