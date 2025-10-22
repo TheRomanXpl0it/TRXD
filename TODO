@@ -1,3 +1,4 @@
+- change name of challs, network and so on, with $PROJECT_NAME prefix
 
 QOS:
 	- flush cache flag
@@ -6,8 +7,6 @@ QOS:
 	- error generator for tests
 	- split main.go flag function
 	- resolve TODOs left into the code
-	- change api/db names
-	- change attachments system to its own table in db
 
 ALPHA:
 	- dockerize 🙏
@@ -15,17 +14,18 @@ ALPHA:
 	- integration tests (for generic behaviour)
 	- tests for distributed functioning
 	- role configuraion endpoint
+	- dropdown menu categories
+	- dropdown menu container
 	- DOCUMENTATION
 
 EXTRA:
 	- editable homepage & theme
-	- endpoint to get docker images list
 	- deletable instances (from admin)
 	- deletable submissions (from admin)
 	- link to join team
 	- endpoint + cli cmd to parse a category/challenge file (maybe yaml) with all infos
 	- extract data for ctftime
-	- scoreboard freeze
+	- scoreboard freeze (idea: use a table or a view to take a snapshot of the scoreboard, update it every time someone solves if not in freeze time (or just prefetch and compute if not exists))
 	- telegram bot for first bloods
 	- when finished endpoints, review needed data and revome `RETURNING *;` and similar when not needed
 	- hash verifier flag or script
@@ -42,5 +42,3 @@ BONUS IDEAS:
 	- timeout on endpoints
 	- optional mail server
 	- endpoint to store image files (like badges and pfp)
-	- dropdown menu categories
-	- dropdown menu container

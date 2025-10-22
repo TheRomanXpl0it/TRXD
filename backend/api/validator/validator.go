@@ -46,6 +46,8 @@ func init() {
 
 	validate.RegisterAlias("tag_name", fmt.Sprintf("max=%d", consts.MaxTagNameLen))
 
+	// TODO: join passwords, countries, images in one alias
+
 	validate.RegisterAlias("team_id", "min=0")
 	validate.RegisterAlias("team_name", fmt.Sprintf("max=%d", consts.MaxTeamNameLen))
 	validate.RegisterAlias("team_password", fmt.Sprintf("min=%d,max=%d", consts.MinPasswordLen, consts.MaxPasswordLen))

@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS challenges (
   category VARCHAR(32) NOT NULL,
   description VARCHAR(1024) NOT NULL,
   difficulty VARCHAR(16) NOT NULL DEFAULT '',
-  authors TEXT NOT NULL DEFAULT '',
+  authors TEXT NOT NULL DEFAULT '', -- TODO: use a list
   type deploy_type NOT NULL,
   hidden BOOLEAN NOT NULL DEFAULT TRUE,
 
@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS challenges (
 
   host TEXT NOT NULL DEFAULT '',
   port INTEGER NOT NULL CHECK (port >= 0 AND port <= 65535) DEFAULT 0,
-  attachments TEXT NOT NULL DEFAULT '', -- List of attachments separated by nullbytes
+  attachments TEXT NOT NULL DEFAULT '', -- TODO: use a list (maybe a table)
 
   FOREIGN KEY(category) REFERENCES categories(name),
   PRIMARY KEY(id)
