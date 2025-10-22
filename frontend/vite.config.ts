@@ -1,17 +1,14 @@
-import path from "path"
-import tailwindcss from "@tailwindcss/vite"
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
+import tailwindcss from '@tailwindcss/vite';
+import path from 'path';
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [
-    react(),
-    tailwindcss(),
-  ],
+  plugins: [tailwindcss(), svelte()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      $lib: path.resolve(__dirname, 'src/lib'),
+      '@': path.resolve(__dirname, 'src/lib'), // so "@/components/..." works
     },
   },
   server: {
@@ -19,9 +16,17 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:1337',
         changeOrigin: true,
-      },
-    },
+        secure: false,
+      }
+    }
   },
-})
-
-
+  ssr: {
+    noExternal: [
+      'bits-ui',
+      'vaul-svelte',
+      'svelte-sonner',
+      'svelte-motion',
+      'paneforge',
+    ]
+  }
+});
