@@ -24,6 +24,7 @@ export async function login(
   password: string
 ): Promise<any> {
   return api<any>('/login', {
+    headers: { "content-type": "application/json" },
     method: 'POST',
     body: JSON.stringify({ email, password })
   });
@@ -35,6 +36,7 @@ export async function register(
   name: string,
 ): Promise<User> {
   return api<User>('/register', {
+    headers: { "content-type": "application/json" },
     method: 'POST',
     body: JSON.stringify({ email, password, name })
   });

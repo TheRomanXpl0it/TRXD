@@ -130,11 +130,21 @@
 			}
 
 			// Use raw score values (backend already provides total scores)
+			// Add cumulative points for each solve
 			for (const s of solves) {
 				points.push({ x: new Date(s.ts), y: Number(s?.points ?? 0) });
 			}
 
-			//console.log(`Team ${name} points:`, $state.snapshot(points));
+			// Extend line to current time to show score persistence
+			if (points.length > 0) {
+				const lastPoint = points[points.length - 1];
+				const now = new Date();
+				if (lastPoint.x < now) {
+					points.push({ x: now, y: lastPoint.y });
+				}
+			}
+
+			console.log(`Team ${name} points:`, $state.snapshot(points));
 
 			if (points.length === 0) {
 				//console.log(`No points for team ${name}, skipping`);
@@ -228,13 +238,14 @@
 						}
 					},
 					tooltip: {
-						mode: 'index' as const,
-						intersect: false,
+						mode: 'point' as const,
+						intersect: true,
 						backgroundColor: 'rgba(255, 255, 255, 0.95)',
 						titleColor: '#374151',
 						bodyColor: '#374151',
 						borderColor: '#d1d5db',
 						borderWidth: 1,
+
 						callbacks: {
 							title: function (context: any) {
 								if (context.length > 0) {
@@ -251,51 +262,13 @@
 							},
 							label: function (context: any) {
 								return `${context.dataset.label}: ${context.parsed.y} pts`;
-							},
-							afterBody: function (context: any) {
-								// Show if any of the points at this time are first bloods
-								const timestamp = context[0].parsed.x;
-								let firstBloods: string[] = [];
-
-								// Check each dataset for first bloods at this timestamp
-								context.forEach((item: any) => {
-									const datasetIndex = item.datasetIndex;
-									const pointIndex = item.dataIndex;
-									const dataset = chart?.data.datasets[datasetIndex];
-
-									if (dataset && dataset.label) {
-										// Find corresponding team data
-										const arr = Array.isArray(data) ? data : [];
-										const ranked = [...arr]
-											.map((e: any) => ({ ...e, total: totalPoints(e) }))
-											.sort((a: any, b: any) => (b.total || 0) - (a.total || 0))
-											.slice(0, topN);
-
-										const team = ranked[datasetIndex];
-										if (team) {
-											const solves = normalizeTeam(team)
-												.filter((s: any) => Number.isFinite(s?.ts))
-												.sort((a: any, b: any) => a.ts - b.ts);
-
-											const solveIndex = pointIndex - 1; // -1 for starting point
-											if (solveIndex >= 0 && solveIndex < solves.length && solves[solveIndex].fb) {
-												firstBloods.push(dataset.label);
-											}
-										}
-									}
-								});
-
-								if (firstBloods.length > 0) {
-									return [``, `🩸 First Blood: ${firstBloods.join(', ')}`];
-								}
-								return [];
 							}
 						}
 					}
 				},
 				interaction: {
-					mode: 'index' as const,
-					intersect: false
+					mode: 'point' as const,
+					intersect: true
 				},
 				elements: {
 					point: {
