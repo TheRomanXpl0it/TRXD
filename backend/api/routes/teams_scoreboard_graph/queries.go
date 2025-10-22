@@ -61,7 +61,7 @@ func QueryTeamScoreboardGraph(ctx context.Context) ([]Top, error) {
 		}
 		a, b := subsA[len(subsA)-1], subsB[len(subsB)-1]
 		if a.Score == b.Score {
-			return a.Timestamp.After(b.Timestamp)
+			return a.Timestamp.Before(b.Timestamp)
 		}
 		return a.Score > b.Score
 	})
