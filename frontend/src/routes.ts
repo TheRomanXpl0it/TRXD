@@ -8,6 +8,7 @@ import SignUp from './routes/signUp/+page.svelte';
 import Writeups from './routes/writeups/+page.svelte';
 import NotFound from './routes/404/+page.svelte';
 import Scoreboard from './routes/scoreboard/+page.svelte'
+import Configs from './routes/configs/+page.svelte'
 import { requireAuth } from './guards';
 
 export default {
@@ -22,5 +23,6 @@ export default {
 	'/team/:id': requireAuth(Team),
 	'/account': requireAuth(Profile),
 	'/account/:id': requireAuth(Profile),
+	'/configs': requireAuth(Configs),
 	'*': NotFound
 };

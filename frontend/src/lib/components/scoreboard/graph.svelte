@@ -12,9 +12,10 @@
 		timeMin?: number;
 		timeMax?: number;
 		teamNames?: Record<string, string>;
+		userMode?: boolean;
 	}
 
-	let { data = [], topN = 5, timeMin, timeMax, teamNames }: Props = $props();
+	let { data = [], topN = 5, timeMin, timeMax, teamNames, userMode = false }: Props = $props();
 
 	let canvas: HTMLCanvasElement;
 	let chart: Chart | null = null;
@@ -293,7 +294,7 @@
 
 <div class="w-full p-3">
 	<div class="mb-2 flex items-center justify-between">
-		<h3 class="text-lg font-semibold">Top {topN} Teams — Score Chart</h3>
+		<h3 class="text-lg font-semibold">Top {topN} {userMode ? 'Players' : 'Teams'} — Score Chart</h3>
 	</div>
 
 	<div class="h-96 w-full p-4">

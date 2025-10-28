@@ -3,7 +3,16 @@
 	import { Avatar } from 'flowbite-svelte';
 	import { BugOutline } from 'flowbite-svelte-icons';
 	import { link, push } from 'svelte-spa-router';
-	import { HouseIcon, Joystick, ShieldHalf, Trophy, BookText, LogOut, LogIn } from '@lucide/svelte';
+	import {
+		HouseIcon,
+		Joystick,
+		ShieldHalf,
+		Trophy,
+		BookText,
+		LogOut,
+		LogIn,
+		Settings
+	} from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { getUserData } from '$lib/user';
 
@@ -19,7 +28,8 @@
 
 	console.log(user);
 
-	const baseItems = [
+	type NavItem = { title: string; url: string; icon: typeof HouseIcon };
+	const baseItems: NavItem[] = [
 		{ title: 'Home', url: '/', icon: HouseIcon },
 		{ title: 'Scoreboard', url: '/scoreboard', icon: Trophy },
 		{ title: 'Challenges', url: '/challenges', icon: Joystick }
@@ -27,10 +37,16 @@
 	];
 
 	// Team item shown only when userMode is false
-	const teamItem = { title: 'Team', url: '/team', icon: ShieldHalf };
+	const teamItem: NavItem = { title: 'Team', url: '/team', icon: ShieldHalf };
 
-	// Combine items based on userMode
-	const allItems = $derived(userMode ? baseItems : [...baseItems, teamItem]);
+	// Admin-only visibility
+	const isAdmin = $derived((user as any)?.role === 'Admin');
+	const configsItem: NavItem = { title: 'Configs', url: '/configs', icon: Settings };
+
+	// Combine items based on userMode and role
+	const allItems: NavItem[] = $derived(
+		(userMode ? [...baseItems] : [...baseItems, teamItem]).concat(isAdmin ? [configsItem] : [])
+	);
 
 	// Enrich user data to ensure profile image is available in `image`
 	let enrichedUser = $state<any>(null);

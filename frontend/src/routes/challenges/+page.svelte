@@ -33,6 +33,7 @@
 	import * as Command from '$lib/components/ui/command/index.js';
 	import Label from '@/components/ui/label/label.svelte';
 	import { config } from '$lib/env';
+	import { createCategory as createCategoryApi } from '$lib/categories';
 
 	// ──────────────────────────────────────────────────────────────────────────────
 	// Local state
@@ -55,6 +56,39 @@
 	let challengeDescription = $state('');
 	let dynamicScore = $state(false);
 	let createLoading = $state(false);
+
+	// Admin: new category popover state
+	let catPopoverOpen = $state(false);
+	let newCategoryName = $state('');
+	let newCategoryIcon = $state('');
+	let creatingCat = $state(false);
+
+	async function submitCreateCategory(ev?: SubmitEvent) {
+		ev?.preventDefault();
+		const name = newCategoryName.trim();
+		const icon = newCategoryIcon.trim();
+		if (!name || !icon) {
+			toast.error('Please enter a category name and an icon.');
+			return;
+		}
+		creatingCat = true;
+		try {
+			await createCategoryApi(name, icon);
+			toast.success('Category created!');
+			// Optimistically add to local categories list so it appears in selectors
+			const value = name.toLowerCase();
+			if (!categories.some((c: any) => c.value === value)) {
+				categories = [...categories, { value, label: name }];
+			}
+			newCategoryName = '';
+			newCategoryIcon = '';
+			catPopoverOpen = false;
+		} catch (e: any) {
+			toast.error(e?.message ?? 'Failed to create category.');
+		} finally {
+			creatingCat = false;
+		}
+	}
 
 	let openModal = $state(false);
 	let solvesOpen = $state(false);
@@ -384,10 +418,56 @@
 
 {#if $authUser?.role === 'Admin'}
 	<div class="right-15 bottom-35 fixed z-50">
-		<Button variant="outline" onclick={() => (createChallengeOpen = true)} class="cursor-pointer">
-			<NotebookPenIcon class="mr-2 h-5 w-5" />
-			Create Challenge
-		</Button>
+		<div class="flex items-center gap-2">
+			<Popover.Root bind:open={catPopoverOpen}>
+				<Popover.Trigger>
+					{#snippet child({ props })}
+						<Button {...props} variant="outline" class="flex items-center gap-2 cursor-pointer">
+							<Shapes class="h-5 w-5" />
+							New Category
+						</Button>
+					{/snippet}
+				</Popover.Trigger>
+				<Popover.Content class="w-[320px] p-3">
+					<form class="space-y-3" onsubmit={submitCreateCategory}>
+						<div>
+							<Label for="cat-name" class="mb-1 block text-sm">Category name</Label>
+							<Input id="cat-name" placeholder="e.g. Forensics" bind:value={newCategoryName} />
+						</div>
+						<div>
+							<Label for="cat-icon" class="mb-1 block text-sm">Icon (lucide component name)</Label>
+							<Input
+								id="cat-icon"
+								placeholder="e.g. Bug, Shield, Lock"
+								bind:value={newCategoryIcon}
+							/>
+							<p class="mt-1 text-xs text-gray-500">Use any lucide-svelte icon component name.</p>
+						</div>
+						<div class="flex justify-end gap-2">
+							<Button
+								type="button"
+								variant="outline"
+								class="cursor-pointer"
+								onclick={() => (catPopoverOpen = false)}>Cancel</Button
+							>
+							<Button
+								type="submit"
+								class="cursor-pointer"
+								disabled={creatingCat || !newCategoryName.trim() || !newCategoryIcon.trim()}
+							>
+								{#if creatingCat}<Spinner class="mr-2" />{/if}
+								Create
+							</Button>
+						</div>
+					</form>
+				</Popover.Content>
+			</Popover.Root>
+
+			<Button variant="outline" onclick={() => (createChallengeOpen = true)} class="cursor-pointer">
+				<NotebookPenIcon class="mr-2 h-5 w-5" />
+				Create Challenge
+			</Button>
+		</div>
 	</div>
 {/if}
 
@@ -396,7 +476,7 @@
 	<Popover.Root bind:open={categoriesOpen}>
 		<Popover.Trigger>
 			{#snippet child({ props })}
-				<Button {...props} variant="outline" class="flex items-center gap-2">
+				<Button {...props} variant="outline" class="flex items-center gap-2 cursor-pointer">
 					<Shapes class="h-4 w-4" />
 					Categories
 					{#if filterCategories.length > 0}
@@ -439,7 +519,7 @@
 	<Popover.Root bind:open={tagsOpen}>
 		<Popover.Trigger>
 			{#snippet child({ props })}
-				<Button {...props} variant="outline" class="flex items-center gap-2">
+				<Button {...props} variant="outline" class="flex items-center gap-2 cursor-pointer">
 					<Filter class="h-4 w-4" />
 					Tags
 					{#if filterTags.length > 0}
@@ -488,6 +568,7 @@
 		<Button
 			variant="ghost"
 			size="sm"
+			class="cursor-pointer"
 			onclick={() => {
 				filterCategories = [];
 				filterTags = [];

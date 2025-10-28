@@ -59,7 +59,7 @@
 </div>
 
 <div>
-	<ScoreHistory data={graphData} topN={10} {teamNames} />
+	<ScoreHistory data={graphData} topN={10} {teamNames} userMode={$userMode} />
 </div>
 
 <div class="mx-auto w-full max-w-4xl px-4">
