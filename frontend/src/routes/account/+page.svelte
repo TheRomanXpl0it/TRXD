@@ -106,14 +106,9 @@
 
 	<div class="justify-center">
 		{#if userVerboseData?.image}
-			<Avatar
-				src={userVerboseData.image}
-				class="mx-auto mb-4 h-24 w-24 border-2 border-gray-200 shadow-lg dark:border-gray-600"
-			/>
+			<Avatar src={userVerboseData.image} class="mx-auto mb-4 h-24 w-24" />
 		{:else}
-			<Avatar
-				class="mx-auto mb-4 h-24 w-24 border-2 border-gray-200 shadow-lg dark:border-gray-600"
-			>
+			<Avatar class="mx-auto mb-4 h-24 w-24">
 				<BugOutline class="h-12 w-12 text-gray-400" />
 			</Avatar>
 		{/if}

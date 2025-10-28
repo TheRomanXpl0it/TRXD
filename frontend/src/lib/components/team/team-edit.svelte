@@ -4,48 +4,50 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import Label from '$lib/components/ui/label/label.svelte';
-	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import * as Accordion from '$lib/components/ui/accordion/index.js';
 	import { toast } from 'svelte-sonner';
 	import Icon from '@iconify/svelte';
 	import { Avatar } from 'flowbite-svelte';
 	import * as Select from '$lib/components/ui/select/index.js';
+	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import countries from '$lib/data/countries.json';
 	/* Your provided function */
-	import { updateUser } from '$lib/user';
+	import { updateTeam } from '$lib/team';
 
-	let { open = $bindable(false), user } = $props<{
+	let { open = $bindable(false), team } = $props<{
 		open?: boolean;
-		user?: { id: number; name?: string; country?: string; image?: string };
+		team?: { id: number; name?: string; country?: string; image?: string; bio?: string };
 	}>();
 
-	// Initialize form fields with current user data
+	// Initialize form fields with current team data
 	let name = $state('');
+	let bio = $state('');
 	let imageUrl = $state('');
 	let countryCode = $state<string>('');
 	let saving = $state(false);
-	let confirmTeamPropagation = $state(true);
 
 	type Country = { name: string; iso2: string; iso3?: string; emoji?: string };
 	const countryItems = (countries as Country[])
 		.map((c) => ({ value: c.iso2.toUpperCase(), label: c.name }))
 		.sort((a, b) => a.label.localeCompare(b.label));
 
-	// Watch for user changes and update form fields
+	// Watch for team changes and update form fields
 	$effect(() => {
-		if (user) {
-			name = user.name ?? '';
-			imageUrl = user.image ?? '';
-			countryCode = user.country?.toUpperCase?.() ?? '';
+		if (team) {
+			name = team.name ?? '';
+			bio = team.bio ?? '';
+			imageUrl = team.image ?? '';
+			countryCode = team.country?.toUpperCase?.() ?? '';
 		}
 	});
 
 	// Reset form when sheet opens
 	$effect(() => {
-		if (open && user) {
-			name = user.name ?? '';
-			imageUrl = user.image ?? '';
-			countryCode = user.country?.toUpperCase?.() ?? '';
+		if (open && team) {
+			name = team.name ?? '';
+			bio = team.bio ?? '';
+			imageUrl = team.image ?? '';
+			countryCode = team.country?.toUpperCase?.() ?? '';
 		}
 	});
 
@@ -63,12 +65,13 @@
 		e.preventDefault();
 		if (saving) return;
 
-		const id = user?.id ?? 0;
+		const id = team?.id ?? 0;
 		const n = name.trim();
+		const b = bio.trim();
 		const c = countryCode.trim();
 		const i = imageUrl.trim();
 
-		if (!n && !c && !i) {
+		if (!n && !b && !c && !i) {
 			toast.error('Please fill at least one field.');
 			return;
 		}
@@ -80,15 +83,15 @@
 
 		try {
 			saving = true;
-			await updateUser(id, n, c, i);
+			await updateTeam(id, n, b, i, c);
 			open = false;
-			toast.success('Profile updated.');
+			toast.success('Team updated.');
 			// Reload page to show changes immediately
 			setTimeout(() => {
 				window.location.reload();
 			}, 1000);
 		} catch (err: any) {
-			toast.error(err?.message ?? 'Failed to update profile.');
+			toast.error(err?.message ?? 'Failed to update team.');
 		} finally {
 			saving = false;
 		}
@@ -98,32 +101,43 @@
 <Sheet.Root bind:open>
 	<Sheet.Content side="right" class="px-5 sm:max-w-[640px]">
 		<Sheet.Header>
-			<Sheet.Title>Update Profile</Sheet.Title>
-			<Sheet.Description
-				>Change your display name, nationality, and profile image.</Sheet.Description
-			>
+			<Sheet.Title>Update Team</Sheet.Title>
+			<Sheet.Description>Change your team name, country, bio, and profile image.</Sheet.Description>
 		</Sheet.Header>
 
 		<form class="mt-3 space-y-6" onsubmit={onSave}>
 			<Accordion.Root type="single" value="identity">
 				<Accordion.Item value="identity">
 					<Accordion.Trigger class="cursor-pointer text-xl font-semibold tracking-tight">
-						Identity
+						Team
 					</Accordion.Trigger>
 					<Accordion.Content>
 						<div class="grid grid-cols-1 gap-4">
 							<div>
-								<Label for="pf-name" class="mb-1 block">Display name</Label>
-								<Input id="pf-name" bind:value={name} placeholder={user?.name || 'Your name'} />
-								{#if user?.name && user.name !== name}
+								<Label for="pf-name" class="mb-1 block">Team name</Label>
+								<Input id="pf-name" bind:value={name} placeholder={team?.name || 'Team name'} />
+								{#if team?.name && team.name !== name}
 									<p class="text-muted-foreground mt-1 text-sm">
-										Current: {user.name}
+										Current: {team.name}
 									</p>
 								{/if}
 							</div>
 
 							<div>
-								<Label for="pf-country" class="mb-1 block">Nationality</Label>
+								<Label for="pf-bio" class="mb-1 block">Bio</Label>
+								<Textarea
+									id="pf-bio"
+									bind:value={bio}
+									rows={5}
+									placeholder={team?.bio || 'Tell us about your team'}
+								/>
+								{#if team?.bio && team.bio !== bio}
+									<p class="text-muted-foreground mt-1 text-sm">Current bio will be replaced</p>
+								{/if}
+							</div>
+
+							<div>
+								<Label for="pf-country" class="mb-1 block">Country</Label>
 
 								<!-- Country Select -->
 								<Select.Root
@@ -162,14 +176,14 @@
 									</Select.Content>
 								</Select.Root>
 
-								{#if user?.country && user.country.toUpperCase() !== countryCode}
+								{#if team?.country && team.country.toUpperCase() !== countryCode}
 									<div class="text-muted-foreground mt-1 flex items-center gap-2 text-sm">
 										<Icon
-											icon={`circle-flags:${user.country.toLowerCase()}`}
+											icon={`circle-flags:${team.country.toLowerCase()}`}
 											width="16"
 											height="16"
 										/>
-										<span>Current: {user.country.toUpperCase()}</span>
+										<span>Current: {team.country.toUpperCase()}</span>
 									</div>
 								{/if}
 							</div>
@@ -179,9 +193,9 @@
 								<Input
 									id="pf-image"
 									bind:value={imageUrl}
-									placeholder={user?.image || 'https://…/avatar.png'}
+									placeholder={team?.image || 'https://…/avatar.png'}
 								/>
-								{#if user?.image && user.image !== imageUrl}
+								{#if team?.image && team.image !== imageUrl}
 									<p class="text-muted-foreground mt-1 text-sm">Current image will be replaced</p>
 								{/if}
 								{#if imageUrl && isLikelyUrl(imageUrl)}
@@ -191,27 +205,15 @@
 											<Avatar src={imageUrl} class="h-24 w-24" />
 										</div>
 									</div>
-								{:else if user?.image && isLikelyUrl(user.image)}
+								{:else if team?.image && isLikelyUrl(team.image)}
 									<div class="mt-3">
 										<Label class="mb-1 block">Current Image</Label>
 										<div>
-											<Avatar src={user.image} class="h-24 w-24" />
+											<Avatar src={team.image} class="h-24 w-24" />
 										</div>
 									</div>
 								{/if}
 							</div>
-						</div>
-					</Accordion.Content>
-				</Accordion.Item>
-
-				<Accordion.Item value="advanced">
-					<Accordion.Trigger class="cursor-pointer text-xl font-semibold tracking-tight">
-						Advanced
-					</Accordion.Trigger>
-					<Accordion.Content>
-						<div class="flex items-center gap-2">
-							<Checkbox id="pf-propagate" bind:checked={confirmTeamPropagation} />
-							<Label for="pf-propagate">Also update team display (if enabled by admins)</Label>
 						</div>
 					</Accordion.Content>
 				</Accordion.Item>

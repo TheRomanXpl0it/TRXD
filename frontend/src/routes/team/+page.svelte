@@ -4,18 +4,22 @@
 	import { push } from 'svelte-spa-router';
 	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
 	import { Avatar } from 'flowbite-svelte';
-	import { ShieldHalf, Globe, Users } from '@lucide/svelte';
+	import { ShieldHalf, Globe, Users, Edit } from '@lucide/svelte';
 	import Icon from '@iconify/svelte';
 
 	import TeamStatsCarousel from '$lib/components/team/team-stats-carousel.svelte';
 	import SolveListTable from '$lib/components/team/team-scoreboard.svelte';
 	import TeamMembers from '$lib/components/team/team-memberlist.svelte';
 	import TeamJoinCreate from '$lib/components/team/team-join-create.svelte';
+	import TeamEdit from '$lib/components/team/team-edit.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import { getTeam } from '$lib/team';
 
 	let loading = $state(false);
 	let teamError: string | null = $state(null);
 	let team: any = $state(null);
+	let teamEditOpen = $state(false);
+	const isOwnTeam = $derived($authUser && team && String($authUser.team_id) === String(team.id));
 
 	// race guard
 	let lastKey: string | null = $state(null);
@@ -103,11 +107,11 @@
 	{:else}
 		<!-- Team header -->
 		<div class="flex flex-row">
-			{#if team.profileImage}
-				<Avatar src={team.profileImage} class="mx-auto mb-4 h-24 w-24" />
+			{#if team?.image || team?.profileImage}
+				<Avatar src={team.image ?? team.profileImage} class="mx-auto mb-4 h-24 w-24" />
 			{:else}
 				<Avatar class="mx-auto mb-4 h-24 w-24">
-					<ShieldHalf />
+					<ShieldHalf class="h-12 w-12 text-gray-400" />
 				</Avatar>
 			{/if}
 		</div>
@@ -132,11 +136,31 @@
 					{team.country}
 				{/if}
 			</div>
-			<div class="flex flex-row text-gray-500">
-				<Users class="mr-1" />
-				{team.members?.length}
-				{team.members?.length === 1 ? ' member' : ' members'}
+			<div class="flex flex-col items-end gap-2">
+				{#if isOwnTeam}
+					<Button
+						variant="outline"
+						size="sm"
+						onclick={() => (teamEditOpen = true)}
+						class="flex items-center gap-2"
+					>
+						<Edit class="h-4 w-4" />
+						Edit Team
+					</Button>
+				{/if}
+				<div class="flex flex-row text-gray-500">
+					<Users class="mr-1" />
+					{team.members?.length}
+					{team.members?.length === 1 ? ' member' : ' members'}
+				</div>
 			</div>
+		</div>
+
+		<!-- Description -->
+		<div class="mt-3 flex flex-row items-center justify-center">
+			<p class="text-center text-lg italic text-gray-500 dark:text-gray-400">
+				{team.bio}
+			</p>
 		</div>
 
 		<!-- Stats -->
@@ -155,3 +179,4 @@
 		</div>
 	{/if}
 </div>
+<TeamEdit bind:open={teamEditOpen} {team} />
