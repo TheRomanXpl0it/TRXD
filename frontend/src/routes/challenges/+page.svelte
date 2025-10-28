@@ -12,7 +12,7 @@
 	import { Card, Badge } from 'flowbite-svelte';
 	import { Button } from '@/components/ui/button';
 	import { Textarea } from '@/components/ui/textarea/index.js';
-	import { Container, Download, Droplet, NotebookPenIcon, X } from '@lucide/svelte';
+	import { Container, Download, Droplet, NotebookPenIcon, X, Filter, Shapes } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import SolveListSheet from '$lib/components/challenges/solvelist-sheet.svelte';
@@ -29,6 +29,8 @@
 	import { onMount } from 'svelte';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import MultiSelect from '$lib/components/challenges/category-select.svelte';
+	import * as Popover from '$lib/components/ui/popover/index.js';
+	import * as Command from '$lib/components/ui/command/index.js';
 	import Label from '@/components/ui/label/label.svelte';
 	import { config } from '$lib/env';
 
@@ -60,6 +62,75 @@
 	let flag = $state('');
 	let submittingFlag = $state(false);
 	let flagError = $state(false);
+
+	// Filters
+	let filterCategories = $state<string[]>([]);
+	let filterTags = $state<string[]>([]);
+	let search = $state('');
+	let tagsOpen = $state(false);
+	let categoriesOpen = $state(false);
+
+	// Fuzzy search helpers
+	function norm(s: any) {
+		return String(s ?? '')
+			.trim()
+			.toLowerCase();
+	}
+	function fuzzyScore(text: string, query: string) {
+		const t = norm(text),
+			q = norm(query);
+		if (!q) return 1e9;
+		if (t === q) return 1e6;
+		if (t.startsWith(q)) return 5e5;
+		if (t.includes(q)) return 3e5;
+		let ti = 0,
+			qi = 0,
+			penalty = 0;
+		while (ti < t.length && qi < q.length) {
+			if (t[ti] === q[qi]) qi++;
+			else penalty++;
+			ti++;
+		}
+		return qi === q.length ? 1e5 - penalty : -Infinity;
+	}
+
+	const allTags = $derived(
+		Array.from(
+			new Set<string>(
+				(challenges ?? []).flatMap((ch: any) => (ch?.tags ?? []).map((t: any) => String(t)))
+			)
+		).sort((a, b) => a.localeCompare(b))
+	);
+
+	const filteredChallenges = $derived(
+		(challenges ?? [])
+			.filter((c: any) => {
+				if (!filterCategories || filterCategories.length === 0) return true;
+				const cat = c?.category?.name ?? c?.category ?? '';
+				return filterCategories.some((fc: string) => norm(cat) === norm(fc));
+			})
+			.filter((c: any) => {
+				if (!filterTags || filterTags.length === 0) return true;
+				const tags = (c?.tags ?? []).map((t: any) => String(t));
+				return filterTags.every((t: string) => tags.includes(t));
+			})
+			.filter((c: any) => {
+				const q = search.trim();
+				if (!q) return true;
+				const cat = c?.category?.name ?? c?.category ?? '';
+				const tags = (c?.tags ?? []).map((t: any) => String(t));
+				const name = c?.name ?? c?.title ?? '';
+				return (
+					fuzzyScore(name, q) > -Infinity ||
+					fuzzyScore(cat, q) > -Infinity ||
+					tags.some((t: string) => fuzzyScore(t, q) > -Infinity)
+				);
+			})
+	);
+
+	const activeFiltersCount = $derived(
+		(filterCategories?.length ?? 0) + (filterTags?.length ?? 0) + (search.trim() ? 1 : 0)
+	);
 
 	// NEW: delete confirmation modal state
 	let confirmDeleteOpen = $state(false);
@@ -185,7 +256,7 @@
 				items.sort((x, y) => String(x.title || '').localeCompare(String(y.title || '')))
 			]) as [string, any[]][];
 	}
-	const grouped = $derived(groupByCategory(challenges));
+	const grouped = $derived(groupByCategory(filteredChallenges));
 
 	function fmtTimeLeft(total: number | undefined): string {
 		if (!total || total < 0) total = 0;
@@ -319,6 +390,112 @@
 		</Button>
 	</div>
 {/if}
+
+<!-- Filters -->
+<div class="mb-4 flex flex-wrap items-center gap-3">
+	<Popover.Root bind:open={categoriesOpen}>
+		<Popover.Trigger>
+			{#snippet child({ props })}
+				<Button {...props} variant="outline" class="flex items-center gap-2">
+					<Shapes class="h-4 w-4" />
+					Categories
+					{#if filterCategories.length > 0}
+						<span class="bg-primary text-primary-foreground ml-1 rounded px-2 py-0.5 text-xs"
+							>{filterCategories.length}</span
+						>
+					{/if}
+				</Button>
+			{/snippet}
+		</Popover.Trigger>
+		<Popover.Content class="w-[260px] p-1">
+			<Command.Root>
+				<Command.Input
+					placeholder="Search categories…"
+					class="border-0 shadow-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
+				/>
+				<Command.List>
+					<Command.Empty>No categories.</Command.Empty>
+					<Command.Group value="categories">
+						{#each categories as c (c.value)}
+							<Command.Item
+								value={c.value}
+								onSelect={() => {
+									if (filterCategories.includes(c.value)) {
+										filterCategories = filterCategories.filter((x) => x !== c.value);
+									} else {
+										filterCategories = [...filterCategories, c.value];
+									}
+								}}
+							>
+								<Checkbox checked={filterCategories.includes(c.value)} />
+								<span class="ml-2">{c.label}</span>
+							</Command.Item>
+						{/each}
+					</Command.Group>
+				</Command.List>
+			</Command.Root>
+		</Popover.Content>
+	</Popover.Root>
+	<Popover.Root bind:open={tagsOpen}>
+		<Popover.Trigger>
+			{#snippet child({ props })}
+				<Button {...props} variant="outline" class="flex items-center gap-2">
+					<Filter class="h-4 w-4" />
+					Tags
+					{#if filterTags.length > 0}
+						<span class="bg-primary text-primary-foreground ml-1 rounded px-2 py-0.5 text-xs"
+							>{filterTags.length}</span
+						>
+					{/if}
+				</Button>
+			{/snippet}
+		</Popover.Trigger>
+		<Popover.Content class="w-[260px] p-1">
+			<Command.Root>
+				<Command.Input
+					placeholder="Search tags…"
+					class="border-0 shadow-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
+				/>
+				<Command.List>
+					<Command.Empty>No tags.</Command.Empty>
+					<Command.Group value="tags">
+						{#each allTags as t (t)}
+							<Command.Item
+								value={t}
+								onSelect={() => {
+									if (filterTags.includes(t)) {
+										filterTags = filterTags.filter((x) => x !== t);
+									} else {
+										filterTags = [...filterTags, t];
+									}
+								}}
+							>
+								<Checkbox checked={filterTags.includes(t)} />
+								<span class="ml-2">{t}</span>
+							</Command.Item>
+						{/each}
+					</Command.Group>
+				</Command.List>
+			</Command.Root>
+		</Popover.Content>
+	</Popover.Root>
+
+	<div class="ml-auto flex items-center gap-2">
+		<Input id="search" placeholder="Search challenges…" bind:value={search} class="w-[260px]" />
+		{#if activeFiltersCount > 0}
+			<Badge color="cyan">{activeFiltersCount}</Badge>
+		{/if}
+		<Button
+			variant="ghost"
+			size="sm"
+			onclick={() => {
+				filterCategories = [];
+				filterTags = [];
+				search = '';
+			}}>Clear</Button
+		>
+	</div>
+</div>
 
 {#if loading}
 	<div class="p-4">Loading challenges…</div>
