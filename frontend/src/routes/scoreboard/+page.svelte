@@ -6,6 +6,7 @@
 	import { getGraphData, getScoreboard } from '@/scoreboard';
 	import { onMount } from 'svelte';
 	import { link, push } from 'svelte-spa-router';
+	import { userMode } from '$lib/stores/auth';
 
 	let scoreboardData: any[] = $state([]);
 	let teamNames: Record<string, string> = $state({});
@@ -42,9 +43,10 @@
 		return '';
 	}
 
-	// If using hash routing (default), use "#/team/ID". For history mode, drop the "#".
-	const hrefForTeam = (id: number | string) => `#/team/${id}`;
-	const pushTeam = (id: number | string) => push(`/team/${id}`);
+	// Conditional navigation based on userMode
+	const hrefForItem = (id: number | string) => ($userMode ? `#/account/${id}` : `#/team/${id}`);
+	const pushItem = (id: number | string) =>
+		$userMode ? push(`/account/${id}`) : push(`/team/${id}`);
 </script>
 
 <!-- Left-aligned heading/quote (unchanged) -->
@@ -74,7 +76,7 @@
 					<Table.Header>
 						<Table.Row>
 							<Table.Head class="w-20">Rank</Table.Head>
-							<Table.Head>Team</Table.Head>
+							<Table.Head>{$userMode ? 'Player' : 'Team'}</Table.Head>
 							<Table.Head class="text-right">Score</Table.Head>
 							<Table.Head class="w-40">Badges</Table.Head>
 						</Table.Row>
@@ -84,7 +86,7 @@
 						{#if pageRows.length === 0}
 							<Table.Row>
 								<Table.Cell colspan={4} class="py-8 text-center text-gray-500">
-									No teams yet.
+									{$userMode ? 'No players yet.' : 'No teams yet.'}
 								</Table.Cell>
 							</Table.Row>
 						{:else}
@@ -103,14 +105,14 @@
 									<Table.Cell>
 										<!-- svelte-spa-router in-page navigation -->
 										<a
-											href={hrefForTeam(row.id)}
+											href={hrefForItem(row.id)}
 											use:link
 											onclick={(e) => {
 												e.preventDefault();
-												pushTeam(row.id);
+												pushItem(row.id);
 											}}
 											class="text-primary cursor-pointer underline-offset-2 hover:underline"
-											title={`View team ${row.name}`}
+											title={`View ${$userMode ? 'player' : 'team'} ${row.name}`}
 										>
 											{row.name}
 										</a>

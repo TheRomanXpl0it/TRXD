@@ -11,8 +11,6 @@
 	import { toast } from 'svelte-sonner';
 	import * as Accordion from '$lib/components/ui/accordion/index.js';
 	import { updateChallengeMultipart, getChallenge } from '$lib/challenges';
-	import { createTagsForChallenge, deleteTagsFromChallenge } from '@/tags';
-	import { createFlags, deleteFlags } from '@/flags';
 	import { Check, Cpu, MemoryStick, Clock, X, Tags, UserPen, FileDown } from '@lucide/svelte';
 
 	// --- CodeMirror imports (YAML + theming) ---
@@ -35,9 +33,8 @@
 	let {
 		open = $bindable(false),
 		challenge_user,
-		categories = [] as Item[],
 		all_tags
-	} = $props<{ open?: boolean; challenge_user: any; categories?: Item[]; all_tags?: string[] }>();
+	} = $props<{ open?: boolean; challenge_user: any; all_tags?: string[] }>();
 
 	let challenge = $state<any>(null);
 
@@ -394,7 +391,9 @@
 
 			setTimeout(() => {
 				toast.success('Challenge updated.');
-			}, 500);
+			}, 1000);
+			// Reload the page to reflect the changes
+			window.location.reload();
 		} catch (err: any) {
 			toast.error(err?.message ?? 'Failed to update challenge.');
 		} finally {
@@ -620,12 +619,7 @@ services:
 							</div>
 							<div>
 								<Label for="ch-cat" class="mb-1 block">Category</Label>
-								<CategorySelect
-									id="ch-cat"
-									items={categories}
-									bind:value={category}
-									placeholder="Select a category…"
-								/>
+								<Input id="ch-cat" bind:value={category} placeholder="Enter category" />
 							</div>
 						</div>
 						<div class="mt-3">

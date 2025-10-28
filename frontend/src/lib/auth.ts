@@ -11,9 +11,9 @@ export type User = {
   // add fields you actually return
 };
 
-export async function getInfo(): Promise<User | null> {
+export async function getInfo(): Promise<any | null> {
   try {
-    return await api<User>('/info');
+    return await api<any>('/info');
   } catch {
     return null;
   }

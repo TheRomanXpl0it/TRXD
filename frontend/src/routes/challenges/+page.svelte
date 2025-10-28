@@ -12,7 +12,7 @@
 	import { Card, Badge } from 'flowbite-svelte';
 	import { Button } from '@/components/ui/button';
 	import { Textarea } from '@/components/ui/textarea/index.js';
-	import { Container, Droplet, NotebookPenIcon, X } from '@lucide/svelte';
+	import { Container, Download, Droplet, NotebookPenIcon, X } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import SolveListSheet from '$lib/components/challenges/solvelist-sheet.svelte';
@@ -30,6 +30,7 @@
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import MultiSelect from '$lib/components/challenges/category-select.svelte';
 	import Label from '@/components/ui/label/label.svelte';
+	import { config } from '$lib/env';
 
 	// ──────────────────────────────────────────────────────────────────────────────
 	// Local state
@@ -119,40 +120,41 @@
 		}
 	}
 
-  async function loadChallenges() {
-    loading = true; error = null;
-    try {
-      challenges = await getChallenges();
-      const next: Record<string, number> = {};
-      for (const c of challenges ?? []) {
-        if (typeof c?.timeout === 'number' && c.timeout > 0) next[c.id] = c.timeout;
-        for (const t of c.tags ?? []){
-            if (!(t in all_tags))all_tags.push(t);
-        }
-      }
-      countdowns = next;
-      const uniq = new Map<string, { value: string; label: string }>();
-      for (const ch of challenges ?? []) {
-        const rawCat = ch?.category;
-        const list = Array.isArray(rawCat) ? rawCat : [rawCat];
-        for (const item of list) {
-          if (!item) continue;
-          const label = typeof item === 'string' ? item : (item?.name ?? 'Uncategorized');
-          const trimmed = String(label).trim();
-          if (!trimmed) continue;
-          const value = trimmed.toLowerCase();
-          if (!uniq.has(value)) uniq.set(value, { value, label: trimmed });
-        }
-      }
-      categories = Array.from(uniq.values()).sort((a, b) => a.label.localeCompare(b.label));
-    } catch (e: any) {
-      error = e?.message ?? 'Failed to load challenges';
-      toast.error('You need to join a team first!');
-      push('/team');
-    } finally {
-      loading = false;
-    }
-  }
+	async function loadChallenges() {
+		loading = true;
+		error = null;
+		try {
+			challenges = await getChallenges();
+			const next: Record<string, number> = {};
+			for (const c of challenges ?? []) {
+				if (typeof c?.timeout === 'number' && c.timeout > 0) next[c.id] = c.timeout;
+				for (const t of c.tags ?? []) {
+					if (!(t in all_tags)) all_tags.push(t);
+				}
+			}
+			countdowns = next;
+			const uniq = new Map<string, { value: string; label: string }>();
+			for (const ch of challenges ?? []) {
+				const rawCat = ch?.category;
+				const list = Array.isArray(rawCat) ? rawCat : [rawCat];
+				for (const item of list) {
+					if (!item) continue;
+					const label = typeof item === 'string' ? item : (item?.name ?? 'Uncategorized');
+					const trimmed = String(label).trim();
+					if (!trimmed) continue;
+					const value = trimmed.toLowerCase();
+					if (!uniq.has(value)) uniq.set(value, { value, label: trimmed });
+				}
+			}
+			categories = Array.from(uniq.values()).sort((a, b) => a.label.localeCompare(b.label));
+		} catch (e: any) {
+			error = e?.message ?? 'Failed to load challenges';
+			toast.error('You need to join a team first!');
+			push('/team');
+		} finally {
+			loading = false;
+		}
+	}
 
 	onMount(() => {
 		loadChallenges();
@@ -220,83 +222,87 @@
 			.catch(() => toast.error('Failed to copy to clipboard.'));
 	}
 
-  async function createInstance(ch: any) {
-    try {
-      const { host, port, timeout } = await startInstance(ch.id);
-      ch.remote = host; ch.port = port; ch.timeout = timeout;
-      if (typeof ch.timeout === 'number') countdowns[ch.id] = Math.max(0, ch.timeout);
-      toast.success('Created instance!');
-    } catch (err: any) {
-      console.error(err);
-      toast.error(`Failed to create instance: ${err?.message ?? err}`);
-    }
-  }
+	async function createInstance(ch: any) {
+		try {
+			const { host, port, timeout } = await startInstance(ch.id);
+			ch.remote = host;
+			ch.port = port;
+			ch.timeout = timeout;
+			if (typeof ch.timeout === 'number') countdowns[ch.id] = Math.max(0, ch.timeout);
+			toast.success('Created instance!');
+		} catch (err: any) {
+			console.error(err);
+			toast.error(`Failed to create instance: ${err?.message ?? err}`);
+		}
+	}
 
-  async function destroyInstance(ch: any) {
-    try {
-      await stopInstance(ch.id);
-      ch.remote = null; ch.port = null; ch.timeout = null;
-      countdowns[ch.id] = 0;
-      toast.success('Stopped instance!');
-    } catch (err: any) {
-      console.error(err);
-      toast.error(`Failed to stop instance: ${err?.message ?? err}`);
-    }
-  }
+	async function destroyInstance(ch: any) {
+		try {
+			await stopInstance(ch.id);
+			ch.remote = null;
+			ch.port = null;
+			ch.timeout = null;
+			countdowns[ch.id] = 0;
+			toast.success('Stopped instance!');
+		} catch (err: any) {
+			console.error(err);
+			toast.error(`Failed to stop instance: ${err?.message ?? err}`);
+		}
+	}
 
-  async function onSubmitFlag(ev: SubmitEvent) {
-    ev.preventDefault();
-    if (!selected?.id) {
-      toast.error('No challenge selected');
-      return;
-    }
-    const value = flag.trim();
-    if (!value) return;
+	async function onSubmitFlag(ev: SubmitEvent) {
+		ev.preventDefault();
+		if (!selected?.id) {
+			toast.error('No challenge selected');
+			return;
+		}
+		const value = flag.trim();
+		if (!value) return;
 
-    submittingFlag = true;
-    try {
-      const res = await submitFlag(selected.id, value);
-      if ((res as any).status === 'Wrong') {
-        flagError = true;
-        toast.error('Incorrect flag');
-        return;
-      } else if ((res as any).first_blood) {
-        toast.success('First blood! 🎉');
-      } else {
-        toast.success('Correct flag!');
-      }
-      flag = '';
-      selected.solved = true;
-      const idx = challenges.findIndex((c: any) => c.id === selected!.id);
-      if (idx !== -1) challenges[idx] = { ...challenges[idx], solved: true };
-    } catch (e: any) {
-      toast.error(e?.message ?? 'Flag submission failed');
-    } finally {
-      submittingFlag = false;
-    }
-  }
+		submittingFlag = true;
+		try {
+			const res = await submitFlag(selected.id, value);
+			if ((res as any).status === 'Wrong') {
+				flagError = true;
+				toast.error('Incorrect flag');
+				return;
+			} else if ((res as any).first_blood) {
+				toast.success('First blood! 🎉');
+			} else {
+				toast.success('Correct flag!');
+			}
+			flag = '';
+			selected.solved = true;
+			const idx = challenges.findIndex((c: any) => c.id === selected!.id);
+			if (idx !== -1) challenges[idx] = { ...challenges[idx], solved: true };
+		} catch (e: any) {
+			toast.error(e?.message ?? 'Flag submission failed');
+		} finally {
+			submittingFlag = false;
+		}
+	}
 
-  // NEW: delete flow
-  function requestDelete(ch: any) {
-    toDelete = ch;
-    confirmDeleteOpen = true;
-  }
-  async function confirmDelete() {
-    if (!toDelete?.id) return;
-    deleting = true;
-    try {
-      await deleteChallenge(toDelete.id);
-      toast.success('Challenge deleted.');
-      confirmDeleteOpen = false;
-      openModal = false;
-      toDelete = null;
-      await loadChallenges();
-    } catch (err: any) {
-      toast.error(err?.message ?? 'Failed to delete challenge.');
-    } finally {
-      deleting = false;
-    }
-  }
+	// NEW: delete flow
+	function requestDelete(ch: any) {
+		toDelete = ch;
+		confirmDeleteOpen = true;
+	}
+	async function confirmDelete() {
+		if (!toDelete?.id) return;
+		deleting = true;
+		try {
+			await deleteChallenge(toDelete.id);
+			toast.success('Challenge deleted.');
+			confirmDeleteOpen = false;
+			openModal = false;
+			toDelete = null;
+			await loadChallenges();
+		} catch (err: any) {
+			toast.error(err?.message ?? 'Failed to delete challenge.');
+		} finally {
+			deleting = false;
+		}
+	}
 </script>
 
 <p class="mt-5 text-3xl font-bold text-gray-800 dark:text-gray-100">Challenges</p>
@@ -342,25 +348,25 @@
 							{/each}
 						</div>
 
-            <div class="mt-auto flex">
-              {#if ch.solved}
-                <Badge color="green" class="mr-auto">{ch.points}</Badge>
-                <CheckCircleSolid class="mr-2 mb-2 text-green-500" />
-              {:else}
-                <Badge color="secondary" class="mb-1 ml-1">{ch.points}</Badge>
-              {/if}
-              {#if ch.instance}
-                <Container class="mr-2 mb-2 {ch.solved? '':'ml-auto'}" />
-                {#if countdowns[ch.id] > 0}
-                  <Badge color="blue">{fmtTimeLeft(countdowns[ch.id])}</Badge>
-                {/if}
-              {/if}
-            </div>
-          </Card>
-        {/each}
-      </div>
-    </section>
-  {/each}
+						<div class="mt-auto flex">
+							{#if ch.solved}
+								<Badge color="green" class="mr-auto">{ch.points}</Badge>
+								<CheckCircleSolid class="mb-2 mr-2 text-green-500" />
+							{:else}
+								<Badge color="secondary" class="mb-1 ml-1">{ch.points}</Badge>
+							{/if}
+							{#if ch.instance}
+								<Container class="mb-2 mr-2 {ch.solved ? '' : 'ml-auto'}" />
+								{#if countdowns[ch.id] > 0}
+									<Badge color="blue">{fmtTimeLeft(countdowns[ch.id])}</Badge>
+								{/if}
+							{/if}
+						</div>
+					</Card>
+				{/each}
+			</div>
+		</section>
+	{/each}
 {/if}
 
 <!-- One global dialog (not inside the loop) -->
@@ -442,40 +448,56 @@
 			{selected?.description}
 		</div>
 
-    <!-- Instance / remote -->
-    <div class="mt-1 flex w-full flex-row items-center justify-center px-6">
-      {#if selected?.instance}
-        {#if countdowns[selected?.id] > 0}
-          <Button
-            size="sm"
-            style="background-color:#779ecb;"
-            disabled
-            class="hover:cursor-pointer w-full mr-2"
-          >
-            <Container class="mr-1" />
-            <span>Instance Running ({fmtTimeLeft(countdowns[selected?.id])})</span>
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onclick={() => destroyInstance(selected)}
-            class="hover:cursor-pointer"
-          >
-            <X />
-          </Button>
-        {:else}
-          <Button
-            style="background-color:#779ecb;"
-            size="sm"
-            onclick={() => createInstance(selected)}
-            class="hover:cursor-pointer"
-          >
-            <Container class="mr-1" />
-            <span>Start challenge instance</span>
-          </Button>
-        {/if}
-      {/if}
-    </div>
+		<!-- Attatchments  -->
+		<div class="mt-3 flex flex-row items-center">
+			{#each selected?.attachments as attatchment}
+				<a
+					href={config.getBackendUrl(attatchment)}
+					target="_blank"
+					rel="external"
+					download
+					class="mr-2 flex cursor-pointer items-center gap-1 rounded bg-gray-100 px-2 py-1 text-sm hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
+				>
+					<Download class="h-3 w-3" />
+					{attatchment.split('/').pop()}
+				</a>
+			{/each}
+		</div>
+
+		<!-- Instance / remote -->
+		<div class="mt-1 flex w-full flex-row items-center justify-center px-6">
+			{#if selected?.instance}
+				{#if countdowns[selected?.id] > 0}
+					<Button
+						size="sm"
+						style="background-color:#779ecb;"
+						disabled
+						class="mr-2 w-full hover:cursor-pointer"
+					>
+						<Container class="mr-1" />
+						<span>Instance Running ({fmtTimeLeft(countdowns[selected?.id])})</span>
+					</Button>
+					<Button
+						variant="destructive"
+						size="sm"
+						onclick={() => destroyInstance(selected)}
+						class="hover:cursor-pointer"
+					>
+						<X />
+					</Button>
+				{:else}
+					<Button
+						style="background-color:#779ecb;"
+						size="sm"
+						onclick={() => createInstance(selected)}
+						class="hover:cursor-pointer"
+					>
+						<Container class="mr-1" />
+						<span>Start challenge instance</span>
+					</Button>
+				{/if}
+			{/if}
+		</div>
 
 		<div class="mt-1 flex flex-row items-center justify-center">
 			{#if selected?.remote}
@@ -627,7 +649,7 @@
 							id="type"
 							items={challengeTypes}
 							bind:value={challengeType}
-							challengeType="Select type..."
+							placeholder="Select type..."
 						/>
 					</div>
 					<div class="flex flex-col">

@@ -1,31 +1,9 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import {
-		Chart,
-		LineController,
-		LineElement,
-		PointElement,
-		LinearScale,
-		TimeScale,
-		Title,
-		Tooltip,
-		Legend,
-		CategoryScale
-	} from 'chart.js';
+	import Chart from 'chart.js/auto';
 	import 'chartjs-adapter-date-fns';
 
-	// Register Chart.js components
-	Chart.register(
-		LineController,
-		LineElement,
-		PointElement,
-		LinearScale,
-		TimeScale,
-		Title,
-		Tooltip,
-		Legend,
-		CategoryScale
-	);
+	// Chart.js/auto automatically registers all components, no need for manual registration
 
 	// Props interface
 	interface Props {
