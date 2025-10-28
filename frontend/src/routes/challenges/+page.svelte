@@ -422,7 +422,7 @@
 			<Popover.Root bind:open={catPopoverOpen}>
 				<Popover.Trigger>
 					{#snippet child({ props })}
-						<Button {...props} variant="outline" class="flex items-center gap-2 cursor-pointer">
+						<Button {...props} variant="outline" class="flex cursor-pointer items-center gap-2">
 							<Shapes class="h-5 w-5" />
 							New Category
 						</Button>
@@ -476,7 +476,7 @@
 	<Popover.Root bind:open={categoriesOpen}>
 		<Popover.Trigger>
 			{#snippet child({ props })}
-				<Button {...props} variant="outline" class="flex items-center gap-2 cursor-pointer">
+				<Button {...props} variant="outline" class="flex cursor-pointer items-center gap-2">
 					<Shapes class="h-4 w-4" />
 					Categories
 					{#if filterCategories.length > 0}
@@ -519,7 +519,7 @@
 	<Popover.Root bind:open={tagsOpen}>
 		<Popover.Trigger>
 			{#snippet child({ props })}
-				<Button {...props} variant="outline" class="flex items-center gap-2 cursor-pointer">
+				<Button {...props} variant="outline" class="flex cursor-pointer items-center gap-2">
 					<Filter class="h-4 w-4" />
 					Tags
 					{#if filterTags.length > 0}
@@ -932,9 +932,23 @@
 				</div>
 				<div>
 					<Label for="points" class="mt-4 block text-sm font-medium text-gray-900 dark:text-white"
-						>Points: {points}</Label
+						>Points</Label
 					>
-					<Slider id="points" type="single" bind:value={points} max={1500} step={25} />
+					<Input
+						id="points"
+						type="number"
+						inputmode="numeric"
+						min="0"
+						max="1500"
+						step="1"
+						bind:value={points}
+						oninput={(e) => {
+							const v = (e.currentTarget as HTMLInputElement).valueAsNumber;
+							const n = Number.isFinite(v) ? Math.max(0, Math.floor(v)) : 0;
+							points = n;
+							e.currentTarget.value = String(n);
+						}}
+					/>
 				</div>
 
 				<div class="mt-6 flex justify-end gap-2">

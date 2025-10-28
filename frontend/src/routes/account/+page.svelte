@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { params } from 'svelte-spa-router';
-	import { user, authReady } from '$lib/stores/auth';
+	import { user, authReady, userMode } from '$lib/stores/auth';
 	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
 	import { Avatar } from 'flowbite-svelte';
 	import { BugOutline } from 'flowbite-svelte-icons';
@@ -50,7 +50,9 @@
 
 			userVerboseData = userData ?? null;
 
-			if (userVerboseData?.team_id != null) {
+			if ($userMode) {
+				team = null;
+			} else if (userVerboseData?.team_id != null) {
 				const t = await getTeam(userVerboseData.team_id);
 				if (mySeq !== reqSeq) return; // race guard again
 				team = t ?? null;
@@ -157,16 +159,18 @@
 		</div>
 	</div>
 
-	{#if !team}
-		<p>This use has not joined a team yet.</p>
-	{:else}
-		<div class="mt-6">
-			<Solvelist
-				solves={Array.isArray(team?.solves)
-					? team.solves.filter((s: any) => String(s.user_id) === String(userVerboseData?.id))
-					: []}
-			/>
-		</div>
+	{#if !$userMode}
+		{#if !team}
+			<p>This use has not joined a team yet.</p>
+		{:else}
+			<div class="mt-6">
+				<Solvelist
+					solves={Array.isArray(team?.solves)
+						? team.solves.filter((s: any) => String(s.user_id) === String(userVerboseData?.id))
+						: []}
+				/>
+			</div>
+		{/if}
 	{/if}
 {/if}
 

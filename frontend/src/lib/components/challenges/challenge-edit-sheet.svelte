@@ -209,9 +209,9 @@
 							.filter(Boolean)
 					)
 				);
-
-				hashDomain = Boolean(challenge?.hash_domain ?? false);
 				imageName = String(challenge?.docker_config?.image ?? '');
+				console.log('Hash Domain:', challenge?.docker_config?.hash_domain);
+				hashDomain = Boolean(challenge?.docker_config?.hash_domain ?? false);
 				composeFile = String(challenge?.docker_config?.compose ?? '');
 				maxCPU = String(challenge?.docker_config?.max_cpu ?? '');
 				maxRam = String(challenge?.docker_config?.max_memory ?? '');
@@ -428,19 +428,19 @@
 	}
 
 	$effect(() => {
-		if (type === 'Compose' && cmComposeHost && !cmComposeView) {
+		// Destroy editor when sheet closes or type changes away from Compose
+		if ((!open || type !== 'Compose') && cmComposeView) {
+			cmComposeView.destroy();
+			cmComposeView = null;
+			if (cmComposeHost) cmComposeHost.innerHTML = '';
+		}
+
+		// Create editor when sheet is open and type is Compose
+		if (open && type === 'Compose' && cmComposeHost && !cmComposeView) {
 			cmComposeView = new EditorView({
 				parent: cmComposeHost,
 				state: EditorState.create({
-					doc:
-						composeFile ||
-						`version: '3'
-services:
-  web:
-    image: TRX-Chall-1
-    ports:
-      - "31337:31337"
-`,
+					doc: composeFile && composeFile.length ? composeFile : '\n',
 					extensions: [
 						lineNumbers(),
 						highlightActiveLineGutter(),
@@ -458,19 +458,15 @@ services:
 				})
 			});
 		}
-
-		if (type !== 'Compose' && cmComposeView) {
-			cmComposeView.destroy();
-			cmComposeView = null;
-		}
 	});
 
 	$effect(() => {
 		if (!cmComposeView) return;
 		const current = cmComposeView.state.doc.toString();
-		if (composeFile !== current) {
+		const desired = composeFile && composeFile.length ? composeFile : '\n';
+		if (desired !== current) {
 			cmComposeView.dispatch({
-				changes: { from: 0, to: current.length, insert: composeFile }
+				changes: { from: 0, to: current.length, insert: desired }
 			});
 		}
 	});
@@ -550,13 +546,20 @@ services:
 						</div>
 						<div class="mt-5">
 							<Label for="ch-points" class="mb-1 block">Max Points: {maxPoints}</Label>
-							<Slider
+							<Input
 								id="ch-points"
-								type="single"
+								type="number"
+								inputmode="numeric"
+								min="0"
+								max="1500"
+								step="1"
 								bind:value={maxPoints}
-								min={0}
-								max={1500}
-								step={25}
+								oninput={(e) => {
+									const v = (e.currentTarget as HTMLInputElement).valueAsNumber;
+									const n = Number.isFinite(v) ? Math.max(0, Math.floor(v)) : 0;
+									maxPoints = n;
+									e.currentTarget.value = String(n);
+								}}
 							/>
 						</div>
 						<div class="mt-5">
@@ -762,10 +765,6 @@ services:
 									<Input id="ch-host" bind:value={host} placeholder="e.g. challenge.trxd.cc" />
 								</div>
 								<div class="mt-3 flex flex-row items-center justify-between">
-									<div class="flex flex-row items-center">
-										<Checkbox id="ch-hashdomain" bind:checked={hashDomain} />
-										<Label for="ch-hashdomain" class="ml-2">Hash domain</Label>
-									</div>
 									<div>
 										<Label for="ch-port" class="mb-1 block" aria-disabled={hashDomain}>Port</Label>
 										<Input
@@ -787,7 +786,7 @@ services:
 						<Accordion.Content>
 							<div class="flex flex-col">
 								<Label>Compose.yaml</Label>
-								<div bind:this={cmComposeHost} class="min-h-45 mt-3 rounded border" />
+								<div bind:this={cmComposeHost} class="min-h-45 mt-3 rounded border"></div>
 								<div class="mt-3 flex flex-row items-center">
 									<Checkbox id="com-hashdomain" bind:checked={hashDomain} />
 									<Label for="com-hashdomain" class="ml-1">Hash Domain</Label>
