@@ -11,29 +11,68 @@
 	} from 'flowbite-svelte-icons';
 	import { Card, Badge } from 'flowbite-svelte';
 	import { Button } from '@/components/ui/button';
-	import { Textarea } from '@/components/ui/textarea/index.js';
-	import { Container, Download, Droplet, NotebookPenIcon, X, Filter, Shapes } from '@lucide/svelte';
+	import * as Popover from '$lib/components/ui/popover/index.js';
+	import * as Command from '$lib/components/ui/command/index.js';
+	import { Container, Download, Droplet, X, Filter, Shapes } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import SolveListSheet from '$lib/components/challenges/solvelist-sheet.svelte';
-	import ChallengeEditSheet from '$lib/components/challenges/challenge-edit-sheet.svelte';
 	import { Spinner } from '$lib/components/ui/spinner/index.js';
-	import { Slider } from '$lib/components/ui/slider/index.js';
 	import { push } from 'svelte-spa-router';
 	import { Input } from '$lib/components/ui/input/index.js';
-	import { getChallenges, createChallenge, deleteChallenge } from '$lib/challenges';
+	import { getChallenges, getCategories, deleteChallenge } from '$lib/challenges';
 	import { startInstance, stopInstance } from '$lib/instances';
 	import { submitFlag } from '$lib/challenges';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import { user as authUser } from '$lib/stores/auth';
 	import { onMount } from 'svelte';
-	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
-	import MultiSelect from '$lib/components/challenges/category-select.svelte';
-	import * as Popover from '$lib/components/ui/popover/index.js';
-	import * as Command from '$lib/components/ui/command/index.js';
-	import Label from '@/components/ui/label/label.svelte';
+
 	import { config } from '$lib/env';
-	import { createCategory as createCategoryApi } from '$lib/categories';
+
+	// Lazy-loaded component handles
+	type Cmp = typeof import('svelte').SvelteComponent;
+	let AdminControlsCmp: Cmp | null = $state(null);
+	let CreateModalCmp: Cmp | null = $state(null);
+	let DeleteDialogCmp: Cmp | null = $state(null);
+	let ChallengeEditSheetCmp: Cmp | null = $state(null);
+
+	// Load admin controls once for admins (small, cheap wrapper)
+	$effect(async () => {
+		if ($authUser?.role === 'Admin' && !AdminControlsCmp) {
+			const mod = await import('$lib/components/challenges/admin-controls.svelte');
+			AdminControlsCmp = mod.default;
+		}
+	});
+
+	// Open “Create Challenge” (lazy-load modal on first use)
+	async function openCreate() {
+		if (!CreateModalCmp) {
+			const mod = await import('$lib/components/challenges/create-challenge-modal.svelte');
+			CreateModalCmp = mod.default;
+		}
+		createChallengeOpen = true;
+	}
+
+	// Open “Delete challenge” (lazy-load dialog on first use)
+	async function requestDelete(ch: any) {
+		toDelete = ch;
+		if (!DeleteDialogCmp) {
+			const mod = await import('$lib/components/challenges/delete-challenge-dialog.svelte');
+			DeleteDialogCmp = mod.default;
+		}
+		confirmDeleteOpen = true;
+	}
+
+	// Open “Edit challenge” (lazy-load sheet on first use)
+	function modifyChallenge(ch: any) {
+		return async () => {
+			if (!ChallengeEditSheetCmp) {
+				const mod = await import('$lib/components/challenges/challenge-edit-sheet.svelte');
+				ChallengeEditSheetCmp = mod.default;
+			}
+			editOpen = true;
+		};
+	}
 
 	// ──────────────────────────────────────────────────────────────────────────────
 	// Local state
@@ -57,38 +96,7 @@
 	let dynamicScore = $state(false);
 	let createLoading = $state(false);
 
-	// Admin: new category popover state
-	let catPopoverOpen = $state(false);
-	let newCategoryName = $state('');
-	let newCategoryIcon = $state('');
-	let creatingCat = $state(false);
-
-	async function submitCreateCategory(ev?: SubmitEvent) {
-		ev?.preventDefault();
-		const name = newCategoryName.trim();
-		const icon = newCategoryIcon.trim();
-		if (!name || !icon) {
-			toast.error('Please enter a category name and an icon.');
-			return;
-		}
-		creatingCat = true;
-		try {
-			await createCategoryApi(name, icon);
-			toast.success('Category created!');
-			// Optimistically add to local categories list so it appears in selectors
-			const value = name.toLowerCase();
-			if (!categories.some((c: any) => c.value === value)) {
-				categories = [...categories, { value, label: name }];
-			}
-			newCategoryName = '';
-			newCategoryIcon = '';
-			catPopoverOpen = false;
-		} catch (e: any) {
-			toast.error(e?.message ?? 'Failed to create category.');
-		} finally {
-			creatingCat = false;
-		}
-	}
+	// Admin controls moved to dedicated component (admin-controls.svelte)
 
 	let openModal = $state(false);
 	let solvesOpen = $state(false);
@@ -229,7 +237,14 @@
 		loading = true;
 		error = null;
 		try {
+		    
+		    const prevSelectedId = selected?.id; 
 			challenges = await getChallenges();
+			if (prevSelectedId != null) {
+			//refresh the open modal
+              const newer = challenges.find((c: any) => c.id === prevSelectedId);
+              if (newer) selected = newer;
+            }
 			const next: Record<string, number> = {};
 			for (const c of challenges ?? []) {
 				if (typeof c?.timeout === 'number' && c.timeout > 0) next[c.id] = c.timeout;
@@ -313,12 +328,6 @@
 		if (!openModal) selected = null;
 	});
 
-	function modifyChallenge(ch: any) {
-		return () => {
-			editOpen = true;
-		};
-	}
-
 	function copyToClipboard(text: string) {
 		if (typeof navigator === 'undefined') return;
 		navigator.clipboard
@@ -330,7 +339,7 @@
 	async function createInstance(ch: any) {
 		try {
 			const { host, port, timeout } = await startInstance(ch.id);
-			ch.remote = host;
+			ch.host = host;
 			ch.port = port;
 			ch.timeout = timeout;
 			if (typeof ch.timeout === 'number') countdowns[ch.id] = Math.max(0, ch.timeout);
@@ -344,7 +353,7 @@
 	async function destroyInstance(ch: any) {
 		try {
 			await stopInstance(ch.id);
-			ch.remote = null;
+			ch.host = null;
 			ch.port = null;
 			ch.timeout = null;
 			countdowns[ch.id] = 0;
@@ -387,11 +396,6 @@
 		}
 	}
 
-	// NEW: delete flow
-	function requestDelete(ch: any) {
-		toDelete = ch;
-		confirmDeleteOpen = true;
-	}
 	async function confirmDelete() {
 		if (!toDelete?.id) return;
 		deleting = true;
@@ -416,60 +420,13 @@
 	"A man who loves to walk will walk more than a man who loves his destination"
 </p>
 
-{#if $authUser?.role === 'Admin'}
-	<div class="right-15 bottom-35 fixed z-50">
-		<div class="flex items-center gap-2">
-			<Popover.Root bind:open={catPopoverOpen}>
-				<Popover.Trigger>
-					{#snippet child({ props })}
-						<Button {...props} variant="outline" class="flex cursor-pointer items-center gap-2">
-							<Shapes class="h-5 w-5" />
-							New Category
-						</Button>
-					{/snippet}
-				</Popover.Trigger>
-				<Popover.Content class="w-[320px] p-3">
-					<form class="space-y-3" onsubmit={submitCreateCategory}>
-						<div>
-							<Label for="cat-name" class="mb-1 block text-sm">Category name</Label>
-							<Input id="cat-name" placeholder="e.g. Forensics" bind:value={newCategoryName} />
-						</div>
-						<div>
-							<Label for="cat-icon" class="mb-1 block text-sm">Icon (lucide component name)</Label>
-							<Input
-								id="cat-icon"
-								placeholder="e.g. Bug, Shield, Lock"
-								bind:value={newCategoryIcon}
-							/>
-							<p class="mt-1 text-xs text-gray-500">Use any lucide-svelte icon component name.</p>
-						</div>
-						<div class="flex justify-end gap-2">
-							<Button
-								type="button"
-								variant="outline"
-								class="cursor-pointer"
-								onclick={() => (catPopoverOpen = false)}>Cancel</Button
-							>
-							<Button
-								type="submit"
-								class="cursor-pointer"
-								disabled={creatingCat || !newCategoryName.trim() || !newCategoryIcon.trim()}
-							>
-								{#if creatingCat}<Spinner class="mr-2" />{/if}
-								Create
-							</Button>
-						</div>
-					</form>
-				</Popover.Content>
-			</Popover.Root>
-
-			<Button variant="outline" onclick={() => (createChallengeOpen = true)} class="cursor-pointer">
-				<NotebookPenIcon class="mr-2 h-5 w-5" />
-				Create Challenge
-			</Button>
-		</div>
-	</div>
+{#if $authUser?.role === 'Admin' && AdminControlsCmp}
+  <AdminControlsCmp
+    on:open-create={openCreate}
+    on:category-created={() => loadChallenges()}
+  />
 {/if}
+
 
 <!-- Filters -->
 <div class="mb-4 flex flex-wrap items-center gap-3">
@@ -608,15 +565,15 @@
 
 						<div class="mt-auto flex">
 							{#if ch.solved}
-								<Badge color="green" class="mr-auto">{ch.points}</Badge>
-								<CheckCircleSolid class="mb-2 mr-2 text-green-500" />
+								<Badge color="green" class="ml-1.5 mr-auto self-center">{ch.points}</Badge>
+								<CheckCircleSolid class="mb-2 mr-2 self-center text-green-500" />
 							{:else}
-								<Badge color="secondary" class="mb-1 ml-1">{ch.points}</Badge>
+								<Badge color="secondary" class="mb-1.5 ml-1.5 self-center">{ch.points}</Badge>
 							{/if}
 							{#if ch.instance}
-								<Container class="mb-2 mr-2 {ch.solved ? '' : 'ml-auto'}" />
+								<Container class="mb-2 mr-2 self-center {ch.solved ? '' : 'ml-auto'}" />
 								{#if countdowns[ch.id] > 0}
-									<Badge color="blue">{fmtTimeLeft(countdowns[ch.id])}</Badge>
+									<Badge color="blue" class="self-center mr-1.5">{fmtTimeLeft(countdowns[ch.id])}</Badge>
 								{/if}
 							{/if}
 						</div>
@@ -635,28 +592,24 @@
 				<Dialog.Title class="text-xl font-semibold text-gray-900 dark:text-white">
 					{selected?.name}
 				</Dialog.Title>
-				<BugSolid class="ml-auto h-6 w-6 text-gray-800" />
+				<BugSolid class="ml-auto mr-auto h-6 w-6 text-gray-800" />
 				{#if $authUser?.role === 'Admin'}
 					<Button
+						variant="ghost"
+						size="icon"
+						class="cursor-pointer"
 						onclick={modifyChallenge(selected)}
-						aria-label="Modify this challenge"
-						variant="outline"
-						size="sm"
-						class="ml-auto hover:cursor-pointer"
 					>
-						<PenSolid />
+						<PenSolid class="h-5 w-5" />
 					</Button>
-					<!-- REPLACED: open confirm modal instead of deleting directly -->
 					<Button
+						variant="ghost"
+						size="icon"
+						class="cursor-pointer mr-5"
 						onclick={() => requestDelete(selected)}
-						variant="destructive"
-						size="sm"
-						class="mr-5 hover:cursor-pointer"
 					>
-						<TrashBinSolid />
+						<TrashBinSolid class="h-5 w-5" />
 					</Button>
-				{:else}
-					<div class="ml-auto"></div>
 				{/if}
 			</div>
 			<Dialog.Description class="sr-only">Challenge details</Dialog.Description>
@@ -732,7 +685,7 @@
 						disabled
 						class="mr-2 w-full hover:cursor-pointer"
 					>
-						<Container class="mr-1" />
+						<Container class="mr-1 " />
 						<span>Instance Running ({fmtTimeLeft(countdowns[selected?.id])})</span>
 					</Button>
 					<Button
@@ -758,14 +711,14 @@
 		</div>
 
 		<div class="mt-1 flex flex-row items-center justify-center">
-			{#if selected?.remote}
+			{#if selected?.host}
 				<Badge
 					color="gray"
 					class="cursor-pointer"
 					onclick={() =>
-						copyToClipboard(`${selected?.remote}${selected?.port ? `:${selected?.port}` : ''}`)}
+						copyToClipboard(`${selected?.host}${selected?.port ? `:${selected?.port}` : ''}`)}
 				>
-					<p class="text-lg">{selected?.remote}{selected?.port ? ` ${selected?.port}` : ''}</p>
+					<p class="text-lg">{selected?.host}{selected?.port ? ` ${selected?.port}` : ''}</p>
 				</Badge>
 			{/if}
 		</div>
@@ -821,147 +774,42 @@
 	</Dialog.Content>
 </Dialog.Root>
 
+<!-- Solve list -->
+<SolveListSheet bind:open={solvesOpen} challenge={selected} />
+
+
 <!-- Delete Confirmation Modal -->
-<Dialog.Root bind:open={confirmDeleteOpen}>
-	<Dialog.Overlay />
-	<Dialog.Content class="sm:max-w-[520px]">
-		<Dialog.Header class="pb-2">
-			<Dialog.Title>Delete challenge?</Dialog.Title>
-			<Dialog.Description>
-				You’re about to permanently delete <b>{toDelete?.name ?? 'this challenge'}</b>. This action
-				cannot be undone.
-			</Dialog.Description>
-		</Dialog.Header>
-
-		<div class="mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-300">
-			<p>All related data (like attachments and configuration) may be removed.</p>
-			<p>Please confirm to proceed.</p>
-		</div>
-
-		<div class="mt-6 flex justify-end gap-2">
-			<Dialog.Close>
-				<Button variant="outline" class="cursor-pointer" type="button" disabled={deleting}>
-					Cancel
-				</Button>
-			</Dialog.Close>
-			<Button
-				variant="destructive"
-				class="cursor-pointer"
-				disabled={deleting}
-				onclick={confirmDelete}
-			>
-				{#if deleting}
-					<Spinner class="mr-2" /> Deleting…
-				{:else}
-					Delete
-				{/if}
-			</Button>
-		</div>
-	</Dialog.Content>
-</Dialog.Root>
+{#if DeleteDialogCmp}
+  <DeleteDialogCmp
+    bind:open={confirmDeleteOpen}
+    {toDelete}
+    {deleting}
+    on:confirm={confirmDelete}
+  />
+{/if}
 
 <!-- Create Challenge Modal -->
-<Dialog.Root bind:open={createChallengeOpen}>
-	<Dialog.Overlay />
-	<Dialog.Content class="sm:max-w-[720px]">
-		<Dialog.Header class="pb-2">
-			<Dialog.Title>Create Challenge</Dialog.Title>
-			<Dialog.Description>
-				Create the barebones skeleton of the challenge, to upload files, set the docker instance
-				parameters and decide more advanced options, edit it later.
-			</Dialog.Description>
-		</Dialog.Header>
-
-		<div class="mt-2 space-y-4">
-			<form onsubmit={submitCreateChallenge}>
-				<Label for="name" class="mb-2 block text-sm font-medium text-gray-900 dark:text-white"
-					>Challenge Name*</Label
-				>
-				<Input id="name" type="text" bind:value={challengeName} required class="mb-4 w-full" />
-				<Label
-					for="description"
-					class="mb-2 mt-4 block text-sm font-medium text-gray-900 dark:text-white"
-					>Description</Label
-				>
-				<Textarea id="description" bind:value={challengeDescription} class="mb-4 w-full" />
-				<div class="flex flex-row items-center justify-between">
-					<div class="flex flex-col">
-						<Label
-							for="category"
-							class="mb-2 mt-4 block text-sm font-medium text-gray-900  dark:text-white"
-							>Category*</Label
-						>
-						<MultiSelect
-							id="category"
-							items={categories}
-							bind:value={category}
-							placeholder="Select a category…"
-						/>
-					</div>
-					<div class="flex flex-col">
-						<Label
-							for="type"
-							class="mb-2 mt-4 block text-sm font-medium text-gray-900 dark:text-white">Type*</Label
-						>
-						<MultiSelect
-							id="type"
-							items={challengeTypes}
-							bind:value={challengeType}
-							placeholder="Select type..."
-						/>
-					</div>
-					<div class="flex flex-col">
-						<Tooltip.Provider>
-							<Tooltip.Root>
-								<Tooltip.Trigger>
-									<Label
-										for="scoretype"
-										class="mb-2 mt-4 block text-sm font-medium text-gray-900  dark:text-white"
-										>Dynamic score*</Label
-									>
-									<div class="flex flex-row">
-										<Checkbox id="scoretype" class="mb-4 mt-2" bind:checked={dynamicScore} />
-									</div>
-								</Tooltip.Trigger>
-								<Tooltip.Content>
-									<p>Dynamic scoring decays challenge point over the number of solves.</p>
-								</Tooltip.Content>
-							</Tooltip.Root>
-						</Tooltip.Provider>
-					</div>
-				</div>
-				<div>
-					<Label for="points" class="mt-4 block text-sm font-medium text-gray-900 dark:text-white"
-						>Points</Label
-					>
-					<Input
-						id="points"
-						type="number"
-						inputmode="numeric"
-						min="0"
-						max="1500"
-						step="1"
-						bind:value={points}
-						oninput={(e) => {
-							const v = (e.currentTarget as HTMLInputElement).valueAsNumber;
-							const n = Number.isFinite(v) ? Math.max(0, Math.floor(v)) : 0;
-							points = n;
-							e.currentTarget.value = String(n);
-						}}
-					/>
-				</div>
-
-				<div class="mt-6 flex justify-end gap-2">
-					<Dialog.Close>
-						<Button variant="outline" class="cursor-pointer" type="button">Cancel</Button>
-					</Dialog.Close>
-					<Button type="submit" class="cursor-pointer">Create</Button>
-				</div>
-			</form>
-		</div>
-	</Dialog.Content>
-</Dialog.Root>
+{#if CreateModalCmp}
+  <CreateModalCmp
+    bind:open={createChallengeOpen}
+    bind:challengeName
+    bind:challengeDescription
+    bind:category
+    bind:challengeType
+    bind:points
+    bind:dynamicScore
+    bind:categories={categories}
+    challengeTypes={challengeTypes}
+    on:created={loadChallenges}
+  />
+{/if}
 
 <!-- All sheets that are imported -->
-<SolveListSheet bind:open={solvesOpen} challenge={selected} />
-<ChallengeEditSheet bind:open={editOpen} challenge_user={selected} {all_tags} />
+{#if ChallengeEditSheetCmp}
+  <ChallengeEditSheetCmp
+    bind:open={editOpen}
+    challenge_user={selected}
+    on:updated={() => loadChallenges()}
+    {all_tags}
+  />
+{/if}

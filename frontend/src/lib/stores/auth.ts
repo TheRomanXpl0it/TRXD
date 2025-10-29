@@ -5,7 +5,7 @@ export const user = writable<Awaited<ReturnType<typeof getInfo>>>(null);
 export const authReady = writable(false);
 export const userMode = writable(true);
 
-export async function loadUser(force = false) {
+export async function loadUser(force = true) {
   if (!force && get(authReady)) return;
   const userfetched:any = await getInfo();
   //console.log(userfetched);
@@ -23,6 +23,14 @@ export async function loadUser(force = false) {
     user.set(null);
   }
   authReady.set(true);
+}
+
+export function clearUser(force = true){
+  if(!authReady && !force){
+    return
+  }
+  user.set(null);
+  authReady.set(false);
 }
 
 export function currentUser() { return get(user); }

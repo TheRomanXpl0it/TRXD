@@ -179,4 +179,4 @@
 		</div>
 	{/if}
 </div>
-<TeamEdit bind:open={teamEditOpen} {team} />
+<TeamEdit bind:open={teamEditOpen} {team} on:updated={() => loadTeamByKey(team.id)} />

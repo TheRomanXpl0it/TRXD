@@ -8,21 +8,21 @@ import SignUp from './routes/signUp/+page.svelte';
 import Writeups from './routes/writeups/+page.svelte';
 import NotFound from './routes/404/+page.svelte';
 import Scoreboard from './routes/scoreboard/+page.svelte'
-import Configs from './routes/configs/+page.svelte'
-import { requireAuth } from './guards';
+import { requireAuth, requireGuest, AdminConfigs } from './guards';
 
 export default {
 	'/': Home,
-	'/signIn': SignIn,
-	'/signOut': SignOut,
-	'/signUp': SignUp,
 	'/writeups': Writeups,
 	'/scoreboard': Scoreboard,
+	'/signIn': requireGuest(SignIn),
+	'/signUp': requireGuest(SignUp),
+	'/signOut': requireAuth(SignOut),
 	'/challenges': requireAuth(Challenges),
 	'/team': requireAuth(Team),
 	'/team/:id': requireAuth(Team),
 	'/account': requireAuth(Profile),
 	'/account/:id': requireAuth(Profile),
-	'/configs': requireAuth(Configs),
+	'/configs': AdminConfigs,
 	'*': NotFound
 };
+

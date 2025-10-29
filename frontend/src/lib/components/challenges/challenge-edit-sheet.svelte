@@ -12,6 +12,9 @@
 	import * as Accordion from '$lib/components/ui/accordion/index.js';
 	import { updateChallengeMultipart, getChallenge } from '$lib/challenges';
 	import { Check, Cpu, MemoryStick, Clock, X, Tags, UserPen, FileDown } from '@lucide/svelte';
+    import { createEventDispatcher } from 'svelte';
+    
+    const dispatch = createEventDispatcher();
 
 	// --- CodeMirror imports (YAML + theming) ---
 	import { EditorState, Compartment } from '@codemirror/state';
@@ -383,17 +386,12 @@
 				fd.append('new_flags', JSON.stringify(newFlags));
 			}
 
-			// ---- Submit ----
-			console.log('Multipartform:', fd);
 			await updateChallengeMultipart(fd);
 
+			dispatch('updated', {id: challenge_user.id})
 			open = false;
-
-			setTimeout(() => {
-				toast.success('Challenge updated.');
-			}, 1000);
-			// Reload the page to reflect the changes
-			window.location.reload();
+			toast.success('Challenge updated.');
+			
 		} catch (err: any) {
 			toast.error(err?.message ?? 'Failed to update challenge.');
 		} finally {

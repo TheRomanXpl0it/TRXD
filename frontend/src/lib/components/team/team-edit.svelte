@@ -13,6 +13,9 @@
 	import countries from '$lib/data/countries.json';
 	/* Your provided function */
 	import { updateTeam } from '$lib/team';
+    import { createEventDispatcher } from 'svelte';
+        
+    const dispatch = createEventDispatcher();
 
 	let { open = $bindable(false), team } = $props<{
 		open?: boolean;
@@ -85,11 +88,8 @@
 			saving = true;
 			await updateTeam(id, n, b, i, c);
 			open = false;
+			dispatch('updated', {id: id})
 			toast.success('Team updated.');
-			// Reload page to show changes immediately
-			setTimeout(() => {
-				window.location.reload();
-			}, 1000);
 		} catch (err: any) {
 			toast.error(err?.message ?? 'Failed to update team.');
 		} finally {

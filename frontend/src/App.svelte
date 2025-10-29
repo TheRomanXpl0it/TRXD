@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import './App.css';
 
 	import { MoonIcon, SunIcon } from '@lucide/svelte';
@@ -15,11 +14,7 @@
 	import Router from 'svelte-spa-router';
 	import routes from './routes';
 
-	import { user, authReady, loadUser, userMode } from '$lib/stores/auth';
-
-	onMount(() => {
-		loadUser(); // no const, don't shadow `user`
-	});
+	import { user, userMode } from '$lib/stores/auth';
 </script>
 
 <svelte:head>
@@ -32,17 +27,12 @@
 <Sidebar.Provider>
 	<!-- pass the actual store value -->
 	<AppSidebar user={$user} userMode={$userMode ?? false} />
-	
 
 	<main class="flex h-full w-full">
 		<Sidebar.Trigger size="lg" />
 
 		<div class="mr-15 ml-10 flex h-full w-full flex-col">
-			{#if $authReady}
-				<Router {routes} useHash={false} />
-			{:else}
-				<div class="p-4">Loading…</div>
-			{/if}
+			<Router {routes} useHash={true} />
 		</div>
 
 		<Button

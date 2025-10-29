@@ -12,10 +12,6 @@
 	import { link, push } from 'svelte-spa-router';
 	import { user } from '@/stores/auth';
 
-	$: if ($user) {
-		toast.success('already logged in!');
-		push('/challenges');
-	}
 	let name = '';
 	let email = '';
 	let password = '';
@@ -37,11 +33,6 @@
 		return null;
 	}
 
-	function getRedirect(): string {
-		const q = new URLSearchParams(location.search);
-		return q.get('redirect') || '/challenges';
-	}
-
 	async function onSubmit(e: Event) {
 		e.preventDefault();
 		errorMsg = validate();
@@ -52,10 +43,8 @@
 			const _user: User = await register(email, password, name);
 			loading = false;
 			toast.success('Welcome aboard!');
-			await new Promise((r) => setTimeout(r, 500)); // wait a bit
-			const q = new URLSearchParams(location.search);
-			const dest = q.get('redirect') || '/challenges';
-			window.location.replace(dest); // or: window.location.assign(dest)
+			await new Promise((r) => setTimeout(r, 1000)); // wait a bit\
+			push('/challenges')
 		} catch (err: any) {
 			errorMsg = err?.message ?? 'Registration failed. Please try again.';
 			toast.error(errorMsg as string);

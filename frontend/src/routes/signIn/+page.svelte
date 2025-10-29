@@ -8,23 +8,13 @@
 
 	import { login, type User } from '$lib/auth';
 	import { link, push } from 'svelte-spa-router';
-	import { user } from '@/stores/auth';
-
-	$: if ($user) {
-		toast.success('already logged in!');
-		push('/challenges');
-	}
+	import { user, loadUser } from '@/stores/auth';
 	let email = '';
 	let password = '';
 	let remember = false;
 
 	let loading = false;
 	let errorMsg: string | null = null;
-
-	function getRedirect(): string {
-		const q = new URLSearchParams(location.search);
-		return q.get('redirect') || '/challenges';
-	}
 
 	async function onSubmit(e: Event) {
 		e.preventDefault();
@@ -37,10 +27,7 @@
 			}
 			loading = false;
 			toast.success('Welcome back!');
-			await new Promise((r) => setTimeout(r, 500)); // wait a bit
-			const q = new URLSearchParams(location.search);
-			const dest = q.get('redirect') || '/challenges';
-			window.location.replace(dest); // or: window.location.assign(dest)
+			push('/challenges')
 		} catch (err: any) {
 			errorMsg = err?.message ?? 'Login failed. Please try again.';
 			loading = false;
@@ -54,7 +41,7 @@
 		<Card.Title>Welcome back hacker.</Card.Title>
 		<Card.Description>Enter your email below to login to your account</Card.Description>
 		<Card.Action>
-			<Button variant="link" class="cursor-pointer" type="button" onclick={() => push('/signup')}>
+			<Button variant="link" class="cursor-pointer" type="button" onclick={() => push('/signUp')}>
 				Sign Up
 			</Button>
 		</Card.Action>

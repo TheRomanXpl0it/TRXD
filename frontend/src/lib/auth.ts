@@ -43,5 +43,5 @@ export async function register(
 }
 
 export async function logout(): Promise<void> {
-  await api<void>('/logout', { method: 'POST' });
+  await api<any>('/logout', { method: 'POST' });
 }

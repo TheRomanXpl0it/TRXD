@@ -174,4 +174,4 @@
 	{/if}
 {/if}
 
-<UserUpdate bind:open={editSheetOpen} user={userVerboseData} />
+<UserUpdate bind:open={editSheetOpen} user={userVerboseData} on:updated={() => loadUserAndTeamByKey(userVerboseData?.id)}/>

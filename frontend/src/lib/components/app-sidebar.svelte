@@ -26,7 +26,6 @@
 		userMode: boolean;
 	}>();
 
-	console.log(user);
 
 	type NavItem = { title: string; url: string; icon: typeof HouseIcon };
 	const baseItems: NavItem[] = [
@@ -53,15 +52,15 @@
 	const displayImage = $derived(enrichedUser?.image ?? user?.image ?? user?.profileImage ?? null);
 
 	$effect(() => {
-		const id = (user as any)?.id;
+		const id = user?.id
 		if (!id) {
+		    console.log("id was supposed to be undefined:",id)
 			enrichedUser = null;
 			return;
 		}
-		const apiKey = /^\d+$/.test(String(id)) ? Number(id) : id;
 		(async () => {
 			try {
-				enrichedUser = await getUserData(apiKey);
+				enrichedUser = await getUserData(id);
 			} catch {
 				// leave enrichedUser as null on failure
 			}
