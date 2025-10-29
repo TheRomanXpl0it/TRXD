@@ -711,7 +711,7 @@
 		</div>
 
 		<div class="mt-1 flex flex-row items-center justify-center">
-			{#if selected?.host}
+			{#if selected?.host && (!selected.instance || selected.timeout !== 0)}
 				<Badge
 					color="gray"
 					class="cursor-pointer"
