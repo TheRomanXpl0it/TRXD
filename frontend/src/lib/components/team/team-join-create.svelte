@@ -10,6 +10,10 @@
 	import joinTeamImg from '$lib/assets/joinTeam.png?url';
 	import { joinTeam, createTeam } from '@/team';
 	import { toast } from 'svelte-sonner';
+	
+	import { createEventDispatcher } from 'svelte';
+        
+    const dispatch = createEventDispatcher();
 
 	// Modal state
 	let joinOpen = $state(false);
@@ -37,18 +41,15 @@
 		joinLoading = true;
 		try {
 			const result = await joinTeam(joinName, joinPassword);
-
+			console.log("Result:",result)
 			// Success case - api function only returns on success (200)
 			joinOpen = false;
 			// reset fields after close
 			joinName = '';
 			joinPassword = '';
 
+			dispatch('joined', {joinName: joinName})
 			toast.success('Team Joined, welcome aboard!');
-			await new Promise((r) => setTimeout(r, 500)); // wait a bit
-			const q = new URLSearchParams(location.search);
-			const dest = q.get('redirect') || '/team';
-			window.location.replace(dest);
 		} catch (err: any) {
 			joinError = err?.message ?? 'Failed to join team.';
 			toast.error(joinError??"Error");
@@ -81,18 +82,15 @@
 		registerLoading = true;
 		try {
 			const result = await createTeam(registerName, registerPassword);
-
+			 console.log("create result:",result)
 			// Success case - api function only returns on success (200)
 			registerOpen = false;
 			// reset fields after close
 			registerName = '';
 			registerPassword = '';
 
+			dispatch('created', {registerName: registerName})
 			toast.success('Team Created!');
-			await new Promise((r) => setTimeout(r, 500)); // wait a bit
-			const q = new URLSearchParams(location.search);
-			const dest = q.get('redirect') || '/team';
-			window.location.replace(dest);
 		} catch (err: any) {
 			registerError = err?.message ?? 'Failed to register team.';
 			toast.error(registerError as string);

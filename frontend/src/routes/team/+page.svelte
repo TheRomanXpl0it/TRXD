@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { params } from 'svelte-spa-router';
-	import { user as authUser, authReady, userMode } from '$lib/stores/auth';
+	import { user as authUser, authReady, userMode, loadUser } from '$lib/stores/auth';
 	import { push } from 'svelte-spa-router';
 	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
 	import { Avatar } from 'flowbite-svelte';
@@ -30,12 +30,6 @@
 		return s ? s : null;
 	}
 
-	// Strongest source of truth: URL path /team/:id
-	function routeIdFromLocation(): string | null {
-		if (typeof window === 'undefined') return null;
-		const m = window.location.pathname.match(/^\/team\/([^/]+)\/?$/);
-		return m?.[1] ? m[1] : null;
-	}
 
 	async function loadTeamByKey(key: string) {
 		const mySeq = ++reqSeq;
@@ -67,12 +61,10 @@
 			return;
 		}
 
-		// Prefer explicit :id from the URL path; then params store; finally fallback to user's team_id
-		const hardRouteKey = normalizeKey(routeIdFromLocation());
 		const softRouteKey = normalizeKey($params?.id);
 		const fallbackKey = normalizeKey($authUser?.team_id);
 
-		const effectiveKey = hardRouteKey ?? softRouteKey ?? fallbackKey;
+		const effectiveKey = softRouteKey ?? fallbackKey;
 
 		if (!effectiveKey) {
 			lastKey = null;
@@ -103,7 +95,7 @@
 	{:else if teamError}
 		<p class="text-sm text-red-600">{teamError}</p>
 	{:else if !team}
-		<TeamJoinCreate />
+		<TeamJoinCreate on:created={() => loadUser()} on:joined={()=>loadUser()} />
 	{:else}
 		<!-- Team header -->
 		<div class="flex flex-row">
