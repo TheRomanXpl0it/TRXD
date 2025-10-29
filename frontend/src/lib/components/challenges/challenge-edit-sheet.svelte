@@ -13,6 +13,7 @@
 	import { updateChallengeMultipart, getChallenge } from '$lib/challenges';
 	import { Check, Cpu, MemoryStick, Clock, X, Tags, UserPen, FileDown } from '@lucide/svelte';
     import { createEventDispatcher } from 'svelte';
+    import { createTagsForChallenge, deleteTagsFromChallenge} from '$lib/tags'
     
     const dispatch = createEventDispatcher();
 
@@ -371,13 +372,7 @@
 				fd.append('attachments[]', f, f.name);
 			}
 
-			// 5) Tags / Flags diffs
-			if (deletedTags.length) {
-				fd.append('deleted_tags', JSON.stringify(deletedTags));
-			}
-			if (newTags.length) {
-				fd.append('new_tags', JSON.stringify(newTags));
-			}
+
 			if (deletedFlags.length) {
 				fd.append('deleted_flags', JSON.stringify(deletedFlags));
 			}
@@ -385,7 +380,9 @@
 				fd.append('new_flags', JSON.stringify(newFlags));
 			}
 
-			await updateChallengeMultipart(fd);
+			await updateChallengeMultipart(fd)
+			await createTagsForChallenge(newTags,challenge_user?.id )
+			await deleteTagsFromChallenge(deletedTags,challenge_user?.id )
 
 			dispatch('updated', {id: challenge_user.id})
 			open = false;
@@ -789,6 +786,10 @@
 									<Label for="com-hashdomain" class="ml-1">Hash Domain</Label>
 								</div>
 								<div class="mt-3">
+									<Label for="ch-host" class="mb-1 block">Host</Label>
+									<Input id="ch-host" bind:value={host} placeholder="e.g. challenge.trxd.cc" />
+								</div>
+								<div class="mt-3">
 									<Label for="com-envs" class="mb-1 block">Envs</Label>
 									<Input id="com-envs" bind:value={envs} placeholder="LD_PRELOAD=..." />
 								</div>
@@ -810,6 +811,10 @@
 									<div class="mt-3 flex flex-row items-center">
 										<Checkbox id="ho-hashdomain" bind:checked={hashDomain} />
 										<Label for="ho-hashdomain" class="ml-2">Hash domain</Label>
+									</div>
+									<div>
+										<Label for="ch-host" class="mb-1 block">Host</Label>
+										<Input id="ch-host" bind:value={host} placeholder="e.g. challenge.trxd.cc" />
 									</div>
 									<div class="mt-3">
 										<Label for="ho-port">Port</Label>
