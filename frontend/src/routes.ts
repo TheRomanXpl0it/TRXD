@@ -1,28 +1,30 @@
-import Home from './routes/+page.svelte';
 import SignIn from './routes/signIn/+page.svelte';
-import Challenges from './routes/challenges/+page.svelte';
-import Team from './routes/team/+page.svelte';
-import Profile from './routes/account/+page.svelte';
-import SignOut from './routes/signOut/+page.svelte';
 import SignUp from './routes/signUp/+page.svelte';
-import Writeups from './routes/writeups/+page.svelte';
-import NotFound from './routes/404/+page.svelte';
-import Scoreboard from './routes/scoreboard/+page.svelte'
-import { requireAuth, requireGuest, AdminConfigs } from './guards';
+import SignOut from './routes/signOut/+page.svelte';
+
+import NotFound from './routes/404/+page.svelte'; // can be lazy too if you want
+
+import { requireGuest, requireAuth, requireAuthLazy, requireAdminLazy } from './guards';
 
 export default {
-	'/': Home,
-	'/writeups': Writeups,
-	'/scoreboard': Scoreboard,
-	'/signIn': requireGuest(SignIn),
-	'/signUp': requireGuest(SignUp),
-	'/signOut': requireAuth(SignOut),
-	'/challenges': requireAuth(Challenges),
-	'/team': requireAuth(Team),
-	'/team/:id': requireAuth(Team),
-	'/account': requireAuth(Profile),
-	'/account/:id': requireAuth(Profile),
-	'/configs': AdminConfigs,
-	'*': NotFound
-};
+  // Auth pages: user lands on these pages so i want to load them statically
+  '/signIn': requireGuest(SignIn),
+  '/signUp': requireGuest(SignUp),
+  '/signOut': requireAuth(SignOut),
 
+  // Everything else: LAZY + protected as needed
+  '/':        requireAuthLazy(() => import('./routes/+page.svelte')),
+  '/writeups': requireAuthLazy(() => import('./routes/writeups/+page.svelte')),
+  '/scoreboard': requireAuthLazy(() => import('./routes/scoreboard/+page.svelte')),
+  '/challenges': requireAuthLazy(() => import('./routes/challenges/+page.svelte')),
+  '/team':       requireAuthLazy(() => import('./routes/team/+page.svelte')),
+  '/team/:id':   requireAuthLazy(() => import('./routes/team/+page.svelte')),
+  '/account':    requireAuthLazy(() => import('./routes/account/+page.svelte')),
+  '/account/:id':requireAuthLazy(() => import('./routes/account/+page.svelte')),
+
+  // Admin-only lazy route
+  '/configs': requireAdminLazy(() => import('./routes/configs/+page.svelte')),
+
+  // 404 (do not lazy load this)
+  '*': NotFound
+};
