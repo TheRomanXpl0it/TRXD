@@ -54,7 +54,6 @@
 	$effect(() => {
 		const id = user?.id
 		if (!id) {
-		    console.log("id was supposed to be undefined:",id)
 			enrichedUser = null;
 			return;
 		}

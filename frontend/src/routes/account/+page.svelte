@@ -50,9 +50,7 @@
 
 			userVerboseData = userData ?? null;
 
-			if ($userMode) {
-				team = null;
-			} else if (userVerboseData?.team_id != null) {
+			if (userVerboseData?.team_id != null) {
 				const t = await getTeam(userVerboseData.team_id);
 				if (mySeq !== reqSeq) return; // race guard again
 				team = t ?? null;
@@ -159,19 +157,19 @@
 		</div>
 	</div>
 
-	{#if !$userMode}
-		{#if !team}
-			<p>This use has not joined a team yet.</p>
-		{:else}
-			<div class="mt-6">
-				<Solvelist
-					solves={Array.isArray(team?.solves)
-						? team.solves.filter((s: any) => String(s.user_id) === String(userVerboseData?.id))
-						: []}
-				/>
-			</div>
-		{/if}
+
+	{#if !team}
+		<p>This user has not joined a team yet.</p>
+	{:else}
+		<div class="mt-6">
+			<Solvelist
+				solves={Array.isArray(team?.solves)
+					? team.solves.filter((s: any) => String(s.user_id) === String(userVerboseData?.id))
+					: []}
+			/>
+		</div>
 	{/if}
+
 {/if}
 
 <UserUpdate bind:open={editSheetOpen} user={userVerboseData} on:updated={() => loadUserAndTeamByKey(userVerboseData?.id)}/>

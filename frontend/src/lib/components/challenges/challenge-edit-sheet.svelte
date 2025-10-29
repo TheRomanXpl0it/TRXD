@@ -213,7 +213,6 @@
 					)
 				);
 				imageName = String(challenge?.docker_config?.image ?? '');
-				console.log('Hash Domain:', challenge?.docker_config?.hash_domain);
 				hashDomain = Boolean(challenge?.docker_config?.hash_domain ?? false);
 				composeFile = String(challenge?.docker_config?.compose ?? '');
 				maxCPU = String(challenge?.docker_config?.max_cpu ?? '');

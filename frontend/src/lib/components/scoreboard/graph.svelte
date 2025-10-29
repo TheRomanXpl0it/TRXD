@@ -81,7 +81,6 @@
 
 	function buildChartData() {
 		const arr = Array.isArray(data) ? data : [];
-		//console.log('Raw data:', $state.snapshot(arr));
 		const n = Number(topN ?? 5) || 5;
 
 		const ranked = [...arr]
@@ -123,7 +122,6 @@
 				}
 			}
 
-			console.log(`Team ${name} points:`, $state.snapshot(points));
 
 			if (points.length === 0) {
 				//console.log(`No points for team ${name}, skipping`);

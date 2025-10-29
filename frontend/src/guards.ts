@@ -9,7 +9,6 @@ export const requireAuth = (component: any) =>
   wrap({
     component,
     conditions: [async (detail) => {
-      console.log(detail)
       await loadUser();                    // no-op if already ready
       if (currentUser()) return true;
       push("/signIn")
@@ -21,7 +20,6 @@ export const requireGuest = (component: any) =>
   wrap({
     component,
     conditions: [async (detail) => {
-      console.log(detail)
       await loadUser();                    // no-op if already ready
       if (currentUser()){
         push("/challenges")

@@ -43,7 +43,6 @@
 			const _user: User = await register(email, password, name);
 			loading = false;
 			toast.success('Welcome aboard!');
-			await new Promise((r) => setTimeout(r, 1000)); // wait a bit\
 			push('/challenges')
 		} catch (err: any) {
 			errorMsg = err?.message ?? 'Registration failed. Please try again.';
