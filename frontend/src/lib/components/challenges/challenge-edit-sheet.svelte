@@ -505,6 +505,7 @@
 			</Sheet.Description>
 		</Sheet.Header>
 
+	 <div class="overflow-auto">
 		<form class="mt-3 space-y-5" onsubmit={onSave}>
 			<Accordion.Root type="single">
 				<Accordion.Item value="Naming">
@@ -882,5 +883,6 @@
 				</Button>
 			</div>
 		</form>
+	</div>
 	</Sheet.Content>
 </Sheet.Root>
