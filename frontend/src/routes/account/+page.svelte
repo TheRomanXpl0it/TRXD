@@ -29,7 +29,7 @@
 		return s ? s : null;
 	}
 
-	async function loadUserAndTeamByKey(key: string, inUserMode: boolean) {
+	async function loadUserAndTeamByKey(key: string) {
 		const mySeq = ++reqSeq;
 
 		loading = true;
@@ -44,7 +44,7 @@
 			userVerboseData = userData ?? null;
 
 			// if we're in userMode, stops here
-			if (inUserMode) {
+			if ($userMode) {
 				team = null;
 				return;
 			}
@@ -236,7 +236,7 @@
 		const effectiveId = userVerboseData?.id;
 		if (effectiveId) {
 			// reload with CURRENT mode, but do it once, not via $effect
-			void loadUserAndTeamByKey(String(effectiveId), !!$userMode);
+			void loadUserAndTeamByKey(String(effectiveId));
 		}
 	}}
 />
