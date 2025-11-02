@@ -29,36 +29,42 @@
 		return s ? s : null;
 	}
 
-	async function loadUserAndTeamByKey(key: string) {
-		// increment request sequence and capture this request's id
+	// now takes userMode flag
+	async function loadUserAndTeamByKey(key: string, inUserMode: boolean) {
 		const mySeq = ++reqSeq;
 
 		loading = true;
 		teamError = null;
 
-		// Optimistically clear to avoid showing stale data while loading a new profile
+		// clear old data
 		userVerboseData = null;
 		team = null;
 
 		try {
-			// If your API expects numeric IDs, convert numeric-looking keys to numbers
 			const apiKey = /^\d+$/.test(key) ? Number(key) : (key as any);
 			const userData = await getUserData(apiKey);
 
-			// If a newer request started, drop this response (race guard)
+			// race guard
 			if (mySeq !== reqSeq) return;
 
 			userVerboseData = userData ?? null;
 
+			// if we're in userMode, solves are already in the user payload
+			if (inUserMode) {
+				team = null; // make sure
+				return;
+			}
+
+			// otherwise keep old behavior
 			if (userVerboseData?.team_id != null) {
 				const t = await getTeam(userVerboseData.team_id);
-				if (mySeq !== reqSeq) return; // race guard again
+				if (mySeq !== reqSeq) return;
 				team = t ?? null;
 			} else {
 				team = null;
 			}
 		} catch (e: any) {
-			if (mySeq !== reqSeq) return; // if stale, ignore errors too
+			if (mySeq !== reqSeq) return;
 			teamError = e?.message ?? 'Failed to load team';
 			userVerboseData = null;
 			team = null;
@@ -67,7 +73,7 @@
 		}
 	}
 
-	// React whenever route param OR auth (fallback) changes
+	// React whenever route param OR auth OR userMode changes
 	$effect(() => {
 		const ready = $authReady;
 		if (!ready) return;
@@ -77,11 +83,19 @@
 		const effectiveKey = routeKey ?? fallbackKey;
 
 		if (!effectiveKey) return;
-		if (effectiveKey === lastKey) return;
 
-		lastKey = effectiveKey;
-		// Fire and forget; race guard is inside
-		void loadUserAndTeamByKey(effectiveKey);
+		// also react if userMode changes
+		const inUserMode = !!$userMode;
+
+		// we need lastKey to track only the identity, not the mode
+		// but since userMode changes what we load, we must always reload on mode change
+		if (effectiveKey !== lastKey) {
+			lastKey = effectiveKey;
+			void loadUserAndTeamByKey(effectiveKey, inUserMode);
+		} else {
+			// same user but mode changed -> reload
+			void loadUserAndTeamByKey(effectiveKey, inUserMode);
+		}
 	});
 
 	// Check if the displayed user is the authenticated user
@@ -157,19 +171,40 @@
 		</div>
 	</div>
 
-
-	{#if !team}
-		<p>This user has not joined a team yet.</p>
-	{:else}
+	{#if $userMode}
+		<!-- userMode = true → solves are already on userVerboseData -->
 		<div class="mt-6">
-			<Solvelist
-				solves={Array.isArray(team?.solves)
-					? team.solves.filter((s: any) => String(s.user_id) === String(userVerboseData?.id))
-					: []}
-			/>
+			<Solvelist solves={Array.isArray(userVerboseData?.solves) ? userVerboseData.solves : []} />
 		</div>
-	{/if}
+	{:else}
+		<!-- old behavior -->
+		{#if teamError}
+			<p class="mt-4 text-sm text-red-500">{teamError}</p>
+		{/if}
 
+		{#if !team}
+			<p class="mt-6 text-gray-500">This user has not joined a team yet.</p>
+		{:else}
+			<div class="mt-6">
+				<Solvelist
+					solves={Array.isArray(team?.solves)
+						? team.solves.filter((s: any) => String(s.user_id) === String(userVerboseData?.id))
+						: []}
+				/>
+			</div>
+		{/if}
+	{/if}
 {/if}
 
-<UserUpdate bind:open={editSheetOpen} user={userVerboseData} on:updated={() => loadUserAndTeamByKey(userVerboseData?.id)}/>
+<!-- keep the update sheet; reload should respect userMode too -->
+<UserUpdate
+	bind:open={editSheetOpen}
+	user={userVerboseData}
+	on:updated={() => {
+		// re-fetch with current mode
+		const effectiveId = userVerboseData?.id;
+		if (effectiveId) {
+			void loadUserAndTeamByKey(String(effectiveId), !!$userMode);
+		}
+	}}
+/>
