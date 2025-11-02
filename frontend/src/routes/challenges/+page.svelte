@@ -185,54 +185,6 @@
 		{ value: 'Normal', label: 'Normal' }
 	];
 
-	async function submitCreateChallenge(ev: SubmitEvent) {
-		ev.preventDefault();
-		if (createLoading) return;
-		const trimmedName = challengeName.trim();
-		if (!trimmedName) {
-			toast.error('Please enter a challenge name.');
-			return;
-		}
-		if (!category) {
-			toast.error('Please select a category.');
-			return;
-		}
-		if (!challengeType) {
-			toast.error('Please select a challenge type.');
-			return;
-		}
-		if (typeof points !== 'number' || Number.isNaN(points) || points < 0) {
-			toast.error('Please choose a valid points value.');
-			return;
-		}
-		createLoading = true;
-		const scoretype = dynamicScore ? 'Dynamic' : 'Static';
-		try {
-			await createChallenge(
-				trimmedName,
-				category,
-				challengeDescription.trim(),
-				challengeType,
-				points,
-				scoretype
-			);
-			toast.success('Challenge created!');
-			createChallengeOpen = false;
-			challengeName = '';
-			challengeDescription = '';
-			category = null;
-			challengeType = 'Container';
-			dynamicScore = false;
-			points = 500;
-			await loadChallenges();
-		} catch (err: any) {
-			const msg = err?.message ?? 'Failed to create challenge.';
-			toast.error(msg);
-		} finally {
-			createLoading = false;
-		}
-	}
-
 	async function loadChallenges() {
 		loading = true;
 		error = null;
@@ -262,7 +214,7 @@
 					const label = typeof item === 'string' ? item : (item?.name ?? 'Uncategorized');
 					const trimmed = String(label).trim();
 					if (!trimmed) continue;
-					const value = trimmed.toLowerCase();
+					const value = trimmed;
 					if (!uniq.has(value)) uniq.set(value, { value, label: trimmed });
 				}
 			}
