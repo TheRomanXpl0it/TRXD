@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { params } from 'svelte-spa-router';
 	import { user, authReady, userMode } from '$lib/stores/auth';
 	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
@@ -20,8 +21,7 @@
 	let userVerboseData: any = $state(null);
 	let team: any = $state(null);
 
-	// Track which identity we last loaded and a request sequence to avoid races
-	let lastKey: string | null = $state(null);
+	// to avoid races
 	let reqSeq = $state(0);
 
 	function normalizeKey(x: unknown): string | null {
@@ -29,33 +29,26 @@
 		return s ? s : null;
 	}
 
-	// now takes userMode flag
 	async function loadUserAndTeamByKey(key: string, inUserMode: boolean) {
 		const mySeq = ++reqSeq;
 
 		loading = true;
 		teamError = null;
-
-		// clear old data
 		userVerboseData = null;
 		team = null;
 
 		try {
 			const apiKey = /^\d+$/.test(key) ? Number(key) : (key as any);
 			const userData = await getUserData(apiKey);
-
-			// race guard
 			if (mySeq !== reqSeq) return;
-
 			userVerboseData = userData ?? null;
 
-			// if we're in userMode, solves are already in the user payload
+			// if we're in userMode, stops here
 			if (inUserMode) {
-				team = null; // make sure
+				team = null;
 				return;
 			}
 
-			// otherwise keep old behavior
 			if (userVerboseData?.team_id != null) {
 				const t = await getTeam(userVerboseData.team_id);
 				if (mySeq !== reqSeq) return;
@@ -73,32 +66,74 @@
 		}
 	}
 
-	// React whenever route param OR auth OR userMode changes
-	$effect(() => {
-		const ready = $authReady;
-		if (!ready) return;
+	// manual wiring so scoreboard updates don't re-run the fetch
+	onMount(() => {
+		let currentKey: string | null = null;
+		let currentMode = false;
+		let currentReady = false;
 
-		const routeKey = normalizeKey($params?.id);
-		const fallbackKey = normalizeKey($user?.id);
-		const effectiveKey = routeKey ?? fallbackKey;
+		const unsubParams = params.subscribe(($p) => {
+			const routeKey = normalizeKey($p?.id);
+			maybeReload(routeKey, currentMode, currentReady);
+		});
 
-		if (!effectiveKey) return;
+		const unsubAuth = authReady.subscribe(($ready) => {
+			currentReady = $ready;
+			// re-evaluate with last known route/user
+			const routeKey = normalizeKey(get(params)?.id); // small helper below
+			maybeReload(routeKey, currentMode, currentReady);
+		});
 
-		// also react if userMode changes
-		const inUserMode = !!$userMode;
+		const unsubUser = user.subscribe(($u) => {
+			// if no route param, we fallback to user.id
+			const routeKey = normalizeKey(get(params)?.id);
+			const fallbackKey = normalizeKey($u?.id);
+			const effectiveKey = routeKey ?? fallbackKey;
+			maybeReload(effectiveKey, currentMode, get(authReady));
+		});
 
-		// we need lastKey to track only the identity, not the mode
-		// but since userMode changes what we load, we must always reload on mode change
-		if (effectiveKey !== lastKey) {
-			lastKey = effectiveKey;
-			void loadUserAndTeamByKey(effectiveKey, inUserMode);
-		} else {
-			// same user but mode changed -> reload
-			void loadUserAndTeamByKey(effectiveKey, inUserMode);
+		const unsubMode = userMode.subscribe(($m) => {
+			currentMode = !!$m;
+			const routeKey = normalizeKey(get(params)?.id);
+			const fallbackKey = normalizeKey(get(user)?.id);
+			const effectiveKey = routeKey ?? fallbackKey;
+			maybeReload(effectiveKey, currentMode, get(authReady));
+		});
+
+		// helper to re-load only when the identity or mode really changed
+		function maybeReload(nextKey: string | null, nextMode: boolean, ready: boolean) {
+			if (!ready) return;
+			// fallback to current user if no route key
+			if (!nextKey) {
+				const fallbackKey = normalizeKey(get(user)?.id);
+				nextKey = fallbackKey;
+			}
+			if (!nextKey) return;
+
+			// if key OR mode changed → load
+			if (nextKey !== currentKey || nextMode !== currentMode) {
+				currentKey = nextKey;
+				currentMode = nextMode;
+				void loadUserAndTeamByKey(nextKey, nextMode);
+			}
 		}
+
+		// small util to get latest value of a store
+		function get<T>(store: any): T {
+			let v: T;
+			store.subscribe((x: T) => (v = x))();
+			return v!;
+		}
+
+		return () => {
+			unsubParams();
+			unsubAuth();
+			unsubUser();
+			unsubMode();
+		};
 	});
 
-	// Check if the displayed user is the authenticated user
+	// derived: is it my profile?
 	const isOwnProfile = $derived(
 		$user && userVerboseData && String($user.id) === String(userVerboseData.id)
 	);
@@ -172,16 +207,14 @@
 	</div>
 
 	{#if $userMode}
-		<!-- userMode = true → solves are already on userVerboseData -->
+		<!-- solves are in user payload -->
 		<div class="mt-6">
 			<Solvelist solves={Array.isArray(userVerboseData?.solves) ? userVerboseData.solves : []} />
 		</div>
 	{:else}
-		<!-- old behavior -->
 		{#if teamError}
 			<p class="mt-4 text-sm text-red-500">{teamError}</p>
 		{/if}
-
 		{#if !team}
 			<p class="mt-6 text-gray-500">This user has not joined a team yet.</p>
 		{:else}
@@ -196,14 +229,13 @@
 	{/if}
 {/if}
 
-<!-- keep the update sheet; reload should respect userMode too -->
 <UserUpdate
 	bind:open={editSheetOpen}
 	user={userVerboseData}
 	on:updated={() => {
-		// re-fetch with current mode
 		const effectiveId = userVerboseData?.id;
 		if (effectiveId) {
+			// reload with CURRENT mode, but do it once, not via $effect
 			void loadUserAndTeamByKey(String(effectiveId), !!$userMode);
 		}
 	}}

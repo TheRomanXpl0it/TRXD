@@ -42,6 +42,7 @@ const (
 	ErrorCommittingTransaction   = "Error committing transaction"
 	ErrorCreatingAttachmentsDir  = "Error creating attachments directory"
 	ErrorCreatingCategory        = "Error creating category"
+	ErrorGettingCategories       = "Error getting categories"
 	ErrorCreatingChallenge       = "Error creating challenge"
 	ErrorCreatingFlag            = "Error creating flag"
 	ErrorCreatingInstance        = "Error creating instance"
