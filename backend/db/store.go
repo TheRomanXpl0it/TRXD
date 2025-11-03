@@ -2,17 +2,19 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"time"
 	"trxd/utils/consts"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
-	"github.com/gofiber/storage/redis/v3"
+	fiberRedis "github.com/gofiber/storage/redis/v3"
+	"github.com/redis/go-redis/v9"
 	"github.com/tde-nico/log"
 )
 
-var redisStorage *redis.Storage
+var rdb *redis.Client
 var Store *session.Store
 
 func initStorage(host string, port int, password string) {
@@ -23,15 +25,13 @@ func initStorage(host string, port int, password string) {
 	}
 
 	if os.Getenv("REDIS_DISABLE") == "" {
-		redisStorage = redis.New(redis.Config{
-			Host:      host,
-			Port:      port,
+		rdb = redis.NewClient(&redis.Options{
+			Addr:      fmt.Sprintf("%s:%d", host, port),
 			Password:  password,
-			Database:  0,
-			Reset:     false,
+			DB:        0,
 			TLSConfig: nil,
 		})
-		storeConf.Storage = redisStorage
+		storeConf.Storage = fiberRedis.NewFromConnection(rdb)
 	} else if !consts.Testing {
 		log.Warn("Redis storage disabled")
 	}
@@ -40,14 +40,11 @@ func initStorage(host string, port int, password string) {
 }
 
 func StorageSet(ctx context.Context, key string, val string) error {
-	if redisStorage == nil {
+	if rdb == nil {
 		return nil
 	}
 
-	if val == "" {
-		val = "\x00"
-	}
-	err := redisStorage.SetWithContext(ctx, key, []byte(val), 0)
+	err := rdb.Set(ctx, key, []byte(val), 0).Err()
 	if err != nil {
 		return err
 	}
@@ -55,13 +52,38 @@ func StorageSet(ctx context.Context, key string, val string) error {
 	return nil
 }
 
+// var mapSetNX map[string]string
+// var lockMapSetNX sync.RWMutex
+
+// func StorageSetNX(ctx context.Context, key string, val string) (bool, error) {
+// 	if rdb == nil {
+// 		lockMapSetNX.Lock()
+// 		defer lockMapSetNX.Unlock()
+// 		if _, ok := mapSetNX[key]; ok {
+// 			return false, nil
+// 		}
+// 		mapSetNX[key] = val
+// 		return true, nil
+// 	}
+
+// 	res, err := rdb.SetNX(ctx, key, []byte(val), 0).Result()
+// 	if err != nil {
+// 		return false, err
+// 	}
+
+// 	return res, nil
+// }
+
 func StorageGet(ctx context.Context, key string) (*string, error) {
-	if redisStorage == nil {
+	if rdb == nil {
 		return nil, nil
 	}
 
-	val, err := redisStorage.GetWithContext(ctx, key)
+	val, err := rdb.Get(ctx, key).Bytes()
 	if err != nil {
+		if err == redis.Nil {
+			return nil, nil
+		}
 		return nil, err
 	}
 	if val == nil {
@@ -69,19 +91,15 @@ func StorageGet(ctx context.Context, key string) (*string, error) {
 	}
 
 	strVal := string(val)
-	if strVal == "\x00" {
-		strVal = ""
-	}
-
 	return &strVal, nil
 }
 
 func StorageFlush() error {
-	if redisStorage == nil {
+	if rdb == nil {
 		return nil
 	}
 
-	err := redisStorage.Reset()
+	err := rdb.FlushAll(context.Background()).Err()
 	if err != nil {
 		return err
 	}

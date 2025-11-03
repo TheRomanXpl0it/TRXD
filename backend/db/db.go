@@ -61,8 +61,8 @@ func ConnectDB(info *utils.DBInfo, test ...bool) error {
 }
 
 func CloseDB() {
-	if redisStorage != nil {
-		redisStorage.Close()
+	if rdb != nil {
+		rdb.Close()
 	}
 	if Sql != nil {
 		Sql.Close()
