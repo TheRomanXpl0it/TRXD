@@ -56,6 +56,18 @@ var testData = []struct {
 		testBody:       JSON{"key": "allow-register", "value": "true"},
 		expectedStatus: http.StatusOK,
 	},
+	{
+		testBody:       JSON{"key": "domain", "value": ""},
+		expectedStatus: http.StatusOK,
+	},
+	{
+		testBody:       JSON{"key": "domain", "value": ""},
+		expectedStatus: http.StatusOK,
+	},
+	{
+		testBody:       JSON{"key": "domain", "value": "test.com"},
+		expectedStatus: http.StatusOK,
+	},
 }
 
 func TestRoute(t *testing.T) {
@@ -69,5 +81,23 @@ func TestRoute(t *testing.T) {
 		session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
 		session.Patch("/configs", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
+
+		if test.expectedStatus != http.StatusOK {
+			continue
+		}
+
+		session.Get("/configs", nil, http.StatusOK)
+		body := session.Body()
+		if body == nil {
+			t.Fatal("Expected response body to be non-nil")
+		}
+		for _, itemInt := range body.([]interface{}) {
+			item := itemInt.(map[string]interface{})
+			if item["key"] == test.testBody.(JSON)["key"] {
+				if test.testBody.(JSON)["value"] != item["value"] {
+					t.Fatalf("Values of config '%s', differs: %v != %v", item["key"], item["value"], test.testBody.(JSON)["value"])
+				}
+			}
+		}
 	}
 }
