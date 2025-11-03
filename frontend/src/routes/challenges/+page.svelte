@@ -236,13 +236,6 @@
 		return () => clearInterval(timer);
 	});
 
-	$effect(() => {
-		if (typeof window === 'undefined') return;
-		const timer = setInterval(() => {
-			for (const id in countdowns) if (countdowns[id] > 0) countdowns[id] = countdowns[id] - 1;
-		}, 1000);
-		return () => clearInterval(timer);
-	});
 
 	function groupByCategory(list: any[]) {
 		const map: Record<string, any[]> = {};
