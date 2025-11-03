@@ -4,6 +4,7 @@ import (
 	"strings"
 	"trxd/api/validator"
 	"trxd/db"
+	"trxd/db/sqlc"
 	"trxd/utils"
 	"trxd/utils/consts"
 	"trxd/utils/discord"
@@ -34,6 +35,11 @@ func Route(c *fiber.Ctx) error {
 	}
 
 	uid := c.Locals("uid").(int32)
+	role := c.Locals("role").(sqlc.UserRole)
+	if role == sqlc.UserRolePlayer && challenge.Hidden {
+		return utils.Error(c, fiber.StatusNotFound, consts.ChallengeNotFound)
+	}
+
 	data.Flag = strings.TrimSpace(data.Flag)
 
 	status, first_blood, err := SubmitFlag(c.Context(), uid, *data.ChallID, data.Flag)

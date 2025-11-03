@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 	"trxd/api/routes/challenges_create"
+	"trxd/api/routes/challenges_update"
 	"trxd/api/routes/teams_register"
 	"trxd/api/routes/users_register"
 	"trxd/db"
@@ -163,6 +164,17 @@ func TryCreateChallenge(t *testing.T, name string, category string, description 
 	}
 
 	return chall
+}
+
+func UnveilChallenge(t *testing.T, id int32) {
+	False := false
+	err := challenges_update.UpdateChallenge(t.Context(), &challenges_update.UpdateChallParams{
+		ChallID: &id,
+		Hidden:  &False,
+	})
+	if err != nil {
+		t.Fatalf("Failed to update challenge %d: %v", id, err)
+	}
 }
 
 func GetTeamByName(t *testing.T, name string) *sqlc.Team {

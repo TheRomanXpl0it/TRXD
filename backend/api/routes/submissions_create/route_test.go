@@ -125,7 +125,26 @@ func TestRoute(t *testing.T) {
 	session.Post("/login", JSON{"email": "test3@test.test", "password": "testpass"}, http.StatusOK)
 	session.Post("/categories", JSON{"name": "cat", "icon": "icon"}, http.StatusOK)
 	chall := test_utils.CreateChallenge(t, "chall", "cat", "test-desc", sqlc.DeployTypeNormal, 1, sqlc.ScoreTypeDynamic)
+	test_utils.UnveilChallenge(t, chall.ID)
 	session.Post("/flags", JSON{"chall_id": chall.ID, "flag": "flag{test}", "regex": false}, http.StatusOK)
+
+	session = test_utils.NewApiTestSession(t, app)
+	session.Post("/login", JSON{"email": "test-2@test.test", "password": "testpass"}, http.StatusOK)
+	session.Get("/challenges", nil, http.StatusOK)
+	body := session.Body()
+	if body == nil {
+		t.Fatal("Expected body to not be nil")
+	}
+	var challID5 int32
+	for _, chall := range body.([]interface{}) {
+		if chall.(map[string]interface{})["name"] == "chall-5" {
+			challID5 = int32(chall.(map[string]interface{})["id"].(float64))
+		}
+	}
+	session = test_utils.NewApiTestSession(t, app)
+	session.Post("/login", JSON{"email": "test-2@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/submissions", JSON{"chall_id": challID5, "flag": "flag{test}"}, http.StatusNotFound)
+	session.CheckResponse(errorf(consts.ChallengeNotFound))
 
 	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
