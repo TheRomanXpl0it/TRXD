@@ -14,6 +14,7 @@
 	import { Check, Cpu, MemoryStick, Clock, X, Tags, UserPen, FileDown } from '@lucide/svelte';
     import { createEventDispatcher } from 'svelte';
     import { createTagsForChallenge, deleteTagsFromChallenge} from '$lib/tags'
+    import { createFlags, deleteFlags } from '$lib/flags'
     
     const dispatch = createEventDispatcher();
 
@@ -372,17 +373,11 @@
 				fd.append('attachments[]', f, f.name);
 			}
 
-
-			if (deletedFlags.length) {
-				fd.append('deleted_flags', JSON.stringify(deletedFlags));
-			}
-			if (newFlags.length) {
-				fd.append('new_flags', JSON.stringify(newFlags));
-			}
-
 			await updateChallengeMultipart(fd)
 			await createTagsForChallenge(newTags,challenge_user?.id )
 			await deleteTagsFromChallenge(deletedTags,challenge_user?.id )
+			await createFlags(newFlags,challenge_user?.id)
+			await deleteFlags(deletedFlags,challenge_user?.id)
 
 			dispatch('updated', {id: challenge_user.id})
 			open = false;
