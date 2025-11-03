@@ -1,4 +1,10 @@
 - change name of challs, network and so on, with $PROJECT_NAME prefix
+- batch updates for configs / challs or whatever
+- single user mode, send user id instead of team id (ex scoreboard)
+- no submission on hidden chall
+- cleanup hook for failed instances
+- optimize badge queries
+- instance data validation (maybe)
 
 QOS:
 	- flush cache flag

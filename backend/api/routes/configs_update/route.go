@@ -11,8 +11,8 @@ import (
 
 func Route(c *fiber.Ctx) error {
 	var data struct {
-		Key   string `json:"key" validate:"required"`
-		Value string `json:"value" validate:"required"`
+		Key   string  `json:"key" validate:"required"`
+		Value *string `json:"value" validate:"required"`
 	}
 	if err := c.BodyParser(&data); err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidJSON)
@@ -23,19 +23,19 @@ func Route(c *fiber.Ctx) error {
 		return err
 	}
 
-	conf, err := db.GetConfig(c.Context(), data.Key)
+	conf, err := db.GetCompleteConfig(c.Context(), data.Key)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorUpdatingConfig, err)
 	}
-	if conf == "" {
+	if conf == nil {
 		return utils.Error(c, fiber.StatusNotFound, consts.ConfigNotFound)
 	}
 
-	if conf == data.Value {
-		return c.SendStatus(fiber.StatusOK) // No change needed
+	if conf.Value == *data.Value { // No change needed
+		return c.SendStatus(fiber.StatusOK)
 	}
 
-	err = db.UpdateConfig(c.Context(), data.Key, data.Value)
+	err = db.UpdateConfig(c.Context(), data.Key, *data.Value)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorUpdatingConfig, err)
 	}
