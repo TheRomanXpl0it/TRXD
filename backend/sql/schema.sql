@@ -23,6 +23,11 @@ CREATE TYPE submission_status AS ENUM (
   'Invalid'
 );
 
+-- CREATE TYPE conn_type AS ENUM (
+--   'TCP',
+--   'HTTP',
+-- );
+
 CREATE TABLE IF NOT EXISTS configs (
   key TEXT NOT NULL,
   type TEXT NOT NULL DEFAULT 'text',
@@ -101,6 +106,7 @@ CREATE TABLE IF NOT EXISTS challenges (
   points INTEGER NOT NULL,
   solves INTEGER NOT NULL DEFAULT 0,
 
+  -- conn_type conn_type NOT NULL DEFAULT 'TCP'
   host TEXT NOT NULL DEFAULT '',
   port INTEGER NOT NULL CHECK (port >= 0 AND port <= 65535) DEFAULT 0,
   attachments TEXT NOT NULL DEFAULT '', -- TODO: use a list (maybe a table)
@@ -136,7 +142,7 @@ CREATE TABLE IF NOT EXISTS instances (
   expires_at TIMESTAMP NOT NULL,
   host TEXT NOT NULL,
   port INTEGER UNIQUE CHECK (port >= 0 AND port <= 65535),
-  docker_id VARCHAR(64), -- Docker container ID
+  docker_id VARCHAR(64), -- Docker instance ID (container ID or compose project name)
   FOREIGN KEY(team_id) REFERENCES teams(id) ON DELETE CASCADE,
   FOREIGN KEY(chall_id) REFERENCES challenges(id) ON DELETE CASCADE,
   PRIMARY KEY(team_id, chall_id)

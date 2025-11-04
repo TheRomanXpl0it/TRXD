@@ -34,6 +34,12 @@ UPDATE instances
   SET docker_id = $3
   WHERE team_id = $1 AND chall_id = $2;
 
+-- name: UpdateInstanceExpire :exec
+-- Update an instance expiration time
+UPDATE instances
+  SET expires_at = $3
+  WHERE team_id = $1 AND chall_id = $2;
+
 -- name: DeleteInstance :exec
 -- Delete an instance
 DELETE FROM instances

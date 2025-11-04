@@ -1,10 +1,10 @@
+- change name of chall containers from chall_PORT to chall_TID_CID
+- change name from _TID_CID to _CID_TID
 - change name of challs, network and so on, with $PROJECT_NAME prefix
-- batch updates for configs / challs or whatever
 - single user mode, send user id instead of team id (ex scoreboard)
-- no submission on hidden chall
-- cleanup hook for failed instances
 - optimize badge queries
-- instance data validation (maybe)
+- add no-redis mode tests
+- tests with removal of trxd-shared (and fault tolerance)
 
 QOS:
 	- flush cache flag

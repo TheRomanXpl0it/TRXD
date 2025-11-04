@@ -3,11 +3,28 @@ package networks
 import (
 	"context"
 	"strings"
+	"trxd/db"
 	"trxd/instancer/containers"
 
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/network"
 )
+
+func internalCreateNetwork(ctx context.Context, netID string) error {
+	nginxID, err := containers.FetchNginxID(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = containers.Cli.NetworkConnect(ctx, netID, nginxID, nil)
+	if err != nil {
+		if !strings.Contains(err.Error(), "already exists in network") {
+			return err
+		}
+	}
+
+	return nil
+}
 
 func CreateNetwork(ctx context.Context, name string, disableICC bool) (string, error) {
 	if containers.Cli == nil {
@@ -46,14 +63,19 @@ func CreateNetwork(ctx context.Context, name string, disableICC bool) (string, e
 		return netID, nil
 	}
 
-	nginxID, err := containers.FetchNginxID(ctx)
+	err = internalCreateNetwork(ctx, netID)
 	if err != nil {
-		return "", err
-	}
+		if !strings.Contains(err.Error(), "No such container") {
+			return "", err
+		}
 
-	err = containers.Cli.NetworkConnect(ctx, netID, nginxID, nil)
-	if err != nil {
-		if !strings.Contains(err.Error(), "already exists in network") {
+		err := db.StorageDelete(ctx, "nginx-id")
+		if err != nil {
+			return "", err
+		}
+
+		err = internalCreateNetwork(ctx, netID)
+		if err != nil {
 			return "", err
 		}
 	}

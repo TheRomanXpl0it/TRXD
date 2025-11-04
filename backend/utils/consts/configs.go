@@ -10,8 +10,8 @@ var DefaultConfigs = map[string]any{
 	"reclaim-instance-interval": 5 * 60,  // 5 minutes
 	"instance-max-memory":       512,
 	"instance-max-cpu":          "1.0",
-	"min-port":                  20000,
-	"max-port":                  30000,
+	"min-port":                  10000,
+	"max-port":                  20000,
 	"hash-len":                  12,
 	"secret":                    "",
 	"domain":                    "",

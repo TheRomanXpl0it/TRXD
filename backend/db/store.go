@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sync"
 	"time"
 	"trxd/utils/consts"
 
@@ -15,6 +16,8 @@ import (
 )
 
 var rdb *redis.Client
+var storage map[string]string
+var storageRWMutex sync.RWMutex
 var Store *session.Store
 
 func initStorage(host string, port int, password string) {
@@ -24,6 +27,7 @@ func initStorage(host string, port int, password string) {
 		CookieSameSite: fiber.CookieSameSiteLaxMode,
 	}
 
+	storage = make(map[string]string)
 	if os.Getenv("REDIS_DISABLE") == "" {
 		rdb = redis.NewClient(&redis.Options{
 			Addr:      fmt.Sprintf("%s:%d", host, port),
@@ -41,6 +45,9 @@ func initStorage(host string, port int, password string) {
 
 func StorageSet(ctx context.Context, key string, val string) error {
 	if rdb == nil {
+		storageRWMutex.Lock()
+		defer storageRWMutex.Unlock()
+		storage[key] = val
 		return nil
 	}
 
@@ -52,31 +59,34 @@ func StorageSet(ctx context.Context, key string, val string) error {
 	return nil
 }
 
-// var mapSetNX map[string]string
-// var lockMapSetNX sync.RWMutex
+func StorageSetNX(ctx context.Context, key string, val string) (bool, error) {
+	if rdb == nil {
+		storageRWMutex.Lock()
+		defer storageRWMutex.Unlock()
+		if _, ok := storage[key]; ok {
+			return false, nil
+		}
+		storage[key] = val
+		return true, nil
+	}
 
-// func StorageSetNX(ctx context.Context, key string, val string) (bool, error) {
-// 	if rdb == nil {
-// 		lockMapSetNX.Lock()
-// 		defer lockMapSetNX.Unlock()
-// 		if _, ok := mapSetNX[key]; ok {
-// 			return false, nil
-// 		}
-// 		mapSetNX[key] = val
-// 		return true, nil
-// 	}
+	res, err := rdb.SetNX(ctx, key, []byte(val), 0).Result()
+	if err != nil {
+		return false, err
+	}
 
-// 	res, err := rdb.SetNX(ctx, key, []byte(val), 0).Result()
-// 	if err != nil {
-// 		return false, err
-// 	}
-
-// 	return res, nil
-// }
+	return res, nil
+}
 
 func StorageGet(ctx context.Context, key string) (*string, error) {
 	if rdb == nil {
-		return nil, nil
+		storageRWMutex.RLock()
+		defer storageRWMutex.RUnlock()
+		val, ok := storage[key]
+		if !ok {
+			return nil, nil
+		}
+		return &val, nil
 	}
 
 	val, err := rdb.Get(ctx, key).Bytes()
@@ -94,8 +104,27 @@ func StorageGet(ctx context.Context, key string) (*string, error) {
 	return &strVal, nil
 }
 
+func StorageDelete(ctx context.Context, key string) error {
+	if rdb == nil {
+		storageRWMutex.Lock()
+		defer storageRWMutex.Unlock()
+		delete(storage, key)
+		return nil
+	}
+
+	err := rdb.Del(ctx, key).Err()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func StorageFlush() error {
 	if rdb == nil {
+		storageRWMutex.Lock()
+		defer storageRWMutex.Unlock()
+		storage = make(map[string]string)
 		return nil
 	}
 

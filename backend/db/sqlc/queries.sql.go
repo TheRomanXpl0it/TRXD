@@ -431,7 +431,7 @@ func (q *Queries) GetInstance(ctx context.Context, arg GetInstanceParams) (Insta
 }
 
 const getInstanceInfo = `-- name: GetInstanceInfo :one
-SELECT expires_at, host, port FROM instances WHERE team_id = $1 AND chall_id = $2
+SELECT expires_at, host, port, docker_id FROM instances WHERE team_id = $1 AND chall_id = $2
 `
 
 type GetInstanceInfoParams struct {
@@ -440,16 +440,22 @@ type GetInstanceInfoParams struct {
 }
 
 type GetInstanceInfoRow struct {
-	ExpiresAt time.Time     `json:"expires_at"`
-	Host      string        `json:"host"`
-	Port      sql.NullInt32 `json:"port"`
+	ExpiresAt time.Time      `json:"expires_at"`
+	Host      string         `json:"host"`
+	Port      sql.NullInt32  `json:"port"`
+	DockerID  sql.NullString `json:"docker_id"`
 }
 
 // Retrieve the instance associated with a challenge and team
 func (q *Queries) GetInstanceInfo(ctx context.Context, arg GetInstanceInfoParams) (GetInstanceInfoRow, error) {
 	row := q.queryRow(ctx, q.getInstanceInfoStmt, getInstanceInfo, arg.TeamID, arg.ChallID)
 	var i GetInstanceInfoRow
-	err := row.Scan(&i.ExpiresAt, &i.Host, &i.Port)
+	err := row.Scan(
+		&i.ExpiresAt,
+		&i.Host,
+		&i.Port,
+		&i.DockerID,
+	)
 	return i, err
 }
 
@@ -1148,24 +1154,6 @@ func (q *Queries) UpdateFlag(ctx context.Context, arg UpdateFlagParams) error {
 	return err
 }
 
-const updateInstance = `-- name: UpdateInstance :exec
-UPDATE instances
-  SET expires_at = $3
-  WHERE team_id = $1 AND chall_id = $2
-`
-
-type UpdateInstanceParams struct {
-	TeamID    int32     `json:"team_id"`
-	ChallID   int32     `json:"chall_id"`
-	ExpiresAt time.Time `json:"expires_at"`
-}
-
-// Update an instance expiration time
-func (q *Queries) UpdateInstance(ctx context.Context, arg UpdateInstanceParams) error {
-	_, err := q.exec(ctx, q.updateInstanceStmt, updateInstance, arg.TeamID, arg.ChallID, arg.ExpiresAt)
-	return err
-}
-
 const updateInstanceDockerID = `-- name: UpdateInstanceDockerID :exec
 UPDATE instances
   SET docker_id = $3
@@ -1181,6 +1169,24 @@ type UpdateInstanceDockerIDParams struct {
 // Adds the container ID to the instance
 func (q *Queries) UpdateInstanceDockerID(ctx context.Context, arg UpdateInstanceDockerIDParams) error {
 	_, err := q.exec(ctx, q.updateInstanceDockerIDStmt, updateInstanceDockerID, arg.TeamID, arg.ChallID, arg.DockerID)
+	return err
+}
+
+const updateInstanceExpire = `-- name: UpdateInstanceExpire :exec
+UPDATE instances
+  SET expires_at = $3
+  WHERE team_id = $1 AND chall_id = $2
+`
+
+type UpdateInstanceExpireParams struct {
+	TeamID    int32     `json:"team_id"`
+	ChallID   int32     `json:"chall_id"`
+	ExpiresAt time.Time `json:"expires_at"`
+}
+
+// Update an instance expiration time
+func (q *Queries) UpdateInstanceExpire(ctx context.Context, arg UpdateInstanceExpireParams) error {
+	_, err := q.exec(ctx, q.updateInstanceExpireStmt, updateInstanceExpire, arg.TeamID, arg.ChallID, arg.ExpiresAt)
 	return err
 }
 

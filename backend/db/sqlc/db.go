@@ -183,11 +183,11 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateFlagStmt, err = db.PrepareContext(ctx, updateFlag); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateFlag: %w", err)
 	}
-	if q.updateInstanceStmt, err = db.PrepareContext(ctx, updateInstance); err != nil {
-		return nil, fmt.Errorf("error preparing query UpdateInstance: %w", err)
-	}
 	if q.updateInstanceDockerIDStmt, err = db.PrepareContext(ctx, updateInstanceDockerID); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateInstanceDockerID: %w", err)
+	}
+	if q.updateInstanceExpireStmt, err = db.PrepareContext(ctx, updateInstanceExpire); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateInstanceExpire: %w", err)
 	}
 	if q.updateTagStmt, err = db.PrepareContext(ctx, updateTag); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateTag: %w", err)
@@ -468,14 +468,14 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateFlagStmt: %w", cerr)
 		}
 	}
-	if q.updateInstanceStmt != nil {
-		if cerr := q.updateInstanceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing updateInstanceStmt: %w", cerr)
-		}
-	}
 	if q.updateInstanceDockerIDStmt != nil {
 		if cerr := q.updateInstanceDockerIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateInstanceDockerIDStmt: %w", cerr)
+		}
+	}
+	if q.updateInstanceExpireStmt != nil {
+		if cerr := q.updateInstanceExpireStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateInstanceExpireStmt: %w", cerr)
 		}
 	}
 	if q.updateTagStmt != nil {
@@ -585,8 +585,8 @@ type Queries struct {
 	updateConfigStmt             *sql.Stmt
 	updateDockerConfigsStmt      *sql.Stmt
 	updateFlagStmt               *sql.Stmt
-	updateInstanceStmt           *sql.Stmt
 	updateInstanceDockerIDStmt   *sql.Stmt
+	updateInstanceExpireStmt     *sql.Stmt
 	updateTagStmt                *sql.Stmt
 	updateTeamStmt               *sql.Stmt
 	updateUserStmt               *sql.Stmt
@@ -649,8 +649,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		updateConfigStmt:             q.updateConfigStmt,
 		updateDockerConfigsStmt:      q.updateDockerConfigsStmt,
 		updateFlagStmt:               q.updateFlagStmt,
-		updateInstanceStmt:           q.updateInstanceStmt,
 		updateInstanceDockerIDStmt:   q.updateInstanceDockerIDStmt,
+		updateInstanceExpireStmt:     q.updateInstanceExpireStmt,
 		updateTagStmt:                q.updateTagStmt,
 		updateTeamStmt:               q.updateTeamStmt,
 		updateUserStmt:               q.updateUserStmt,

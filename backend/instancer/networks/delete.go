@@ -3,6 +3,7 @@ package networks
 import (
 	"context"
 	"strings"
+	"trxd/db"
 	"trxd/instancer/containers"
 
 	"github.com/docker/docker/api/types/filters"
@@ -28,13 +29,26 @@ func NetworkDelete(ctx context.Context, name string) error {
 
 	nginxID, err := containers.FetchNginxID(ctx)
 	if err != nil {
-		return err
+		if !strings.HasPrefix(err.Error(), "container not found") {
+			return err
+		}
+		nginxID = ""
 	}
 
-	err = containers.Cli.NetworkDisconnect(ctx, summary[0].ID, nginxID, true)
-	if err != nil {
-		if !strings.Contains(err.Error(), "is not connected") {
-			return err
+	if nginxID != "" {
+		err = containers.Cli.NetworkDisconnect(ctx, summary[0].ID, nginxID, true)
+		if err != nil {
+			not_found := strings.Contains(err.Error(), "not found")
+			if not_found {
+				err := db.StorageDelete(ctx, "nginx-id")
+				if err != nil {
+					return err
+				}
+			}
+			if !strings.Contains(err.Error(), "is not connected") &&
+				!not_found { // endpoint NGINX_ID not found
+				return err
+			}
 		}
 	}
 

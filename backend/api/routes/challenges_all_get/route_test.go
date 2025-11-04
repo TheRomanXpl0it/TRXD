@@ -199,7 +199,7 @@ func TestRoute(t *testing.T) {
 			"difficulty":  "Hard",
 			"first_blood": true,
 			"hidden":      false,
-			"host":        "f6735eddbadf.chall-3.test.com",
+			"host":        "chall-3.test.com",
 			"instance":    true,
 			"max_points":  500,
 			"name":        "chall-3",

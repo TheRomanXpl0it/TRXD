@@ -2,9 +2,11 @@ package instancer
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"time"
+	"trxd/db"
 	"trxd/db/sqlc"
 	"trxd/instancer/composes"
 	"trxd/instancer/containers"
@@ -16,6 +18,42 @@ import (
 
 func CreateInstance(ctx context.Context, tid, challID int32, internalPort *int32, expires_at time.Time,
 	deployType sqlc.DeployType, conf *sqlc.GetDockerConfigsByIDRow) (string, *int32, error) {
+	var dockerID string
+	success := false
+	inst_lock := fmt.Sprintf("inst_lock_%d_%d", tid, challID)
+
+	status, err := db.StorageSetNX(ctx, inst_lock, "true")
+	if err != nil {
+		return "", nil, err
+	}
+	if !status {
+		return "", nil, errors.New("[race condition]")
+	}
+
+	defer func() {
+		err := db.StorageDelete(ctx, inst_lock)
+		if err != nil {
+			log.Error("Failed to release instance lock", "team", tid, "challenge", challID, "err", err)
+		}
+
+		if success {
+			return
+		}
+
+		err = DeleteInstance(ctx, tid, challID, sql.NullString{String: dockerID, Valid: dockerID != ""})
+		if err == nil {
+			return
+		}
+		log.Error("Failed to cleanup instance after creation failure", "team", tid, "challenge", challID, "err", err)
+
+		err = UpdateInstanceExpire(ctx, tid, challID, time.Now().Add(-1*time.Second))
+		if err == nil {
+			return
+		}
+		log.Error("Failed to expire instance after creation failure", "team", tid, "challenge", challID, "err", err)
+	}()
+
+	log.Info("Creating instance:", "team", tid, "challenge", challID)
 
 	info, err := dbCreateInstance(ctx, tid, challID, expires_at, conf.HashDomain)
 	if err != nil {
@@ -24,8 +62,6 @@ func CreateInstance(ctx context.Context, tid, challID int32, internalPort *int32
 	if info == nil {
 		return "", nil, errors.New("[race condition]")
 	}
-
-	log.Info("Creating instance:", "team", tid, "challenge", challID)
 
 	instanceInfo := &infos.InstanceInfo{
 		Host:         info.Host,
@@ -49,12 +85,11 @@ func CreateInstance(ctx context.Context, tid, challID int32, internalPort *int32
 		instanceInfo.NetID = netID
 	}
 
-	var res string
 	if deployType == sqlc.DeployTypeContainer && conf.Image != "" {
-		res, err = containers.CreateContainer(ctx, conf.Image, instanceInfo)
+		dockerID, err = containers.CreateContainer(ctx, conf.Image, instanceInfo)
 	} else if deployType == sqlc.DeployTypeCompose && conf.Compose != "" {
 		projectName := fmt.Sprintf("chall_%d_%d", tid, challID)
-		res, err = composes.CreateCompose(ctx, projectName, conf.Compose, instanceInfo)
+		dockerID, err = composes.CreateCompose(ctx, projectName, conf.Compose, instanceInfo)
 	} else {
 		return "", nil, errors.New("[no image or compose]")
 	}
@@ -62,10 +97,12 @@ func CreateInstance(ctx context.Context, tid, challID int32, internalPort *int32
 		return "", nil, err
 	}
 
-	err = UpdateInstanceDockerID(ctx, tid, challID, res)
+	err = dbUpdateInstanceDockerID(ctx, tid, challID, dockerID)
 	if err != nil {
 		return "", nil, err
 	}
+
+	success = true
 
 	return instanceInfo.Host, instanceInfo.ExternalPort, nil
 }

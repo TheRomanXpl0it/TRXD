@@ -1,11 +1,12 @@
 package instances_update
 
 import (
-	"fmt"
+	"errors"
 	"time"
 	"trxd/api/validator"
 	"trxd/db"
 	"trxd/db/sqlc"
+	"trxd/instancer"
 	"trxd/utils"
 	"trxd/utils/consts"
 
@@ -56,12 +57,12 @@ func Route(c *fiber.Ctx) error {
 	}
 
 	if chall.DockerConfig.Lifetime == 0 {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.MissingLifetime, fmt.Errorf(consts.MissingLifetime))
+		return utils.Error(c, fiber.StatusInternalServerError, consts.MissingLifetime, errors.New(consts.MissingLifetime))
 	}
 	lifetime := time.Second * time.Duration(chall.DockerConfig.Lifetime.(int64))
 	expires_at := time.Now().Add(lifetime)
 
-	err = UpdateInstance(c.Context(), tid, *data.ChallID, expires_at)
+	err = instancer.UpdateInstanceExpire(c.Context(), tid, *data.ChallID, expires_at)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorCreatingInstance, err)
 	}

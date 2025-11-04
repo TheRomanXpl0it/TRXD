@@ -50,11 +50,24 @@ func dbCreateInstance(ctx context.Context, teamID, challID int32,
 	return &info, nil
 }
 
-func UpdateInstanceDockerID(ctx context.Context, teamID, challID int32, dockerID string) error {
+func dbUpdateInstanceDockerID(ctx context.Context, teamID, challID int32, dockerID string) error {
 	err := db.Sql.UpdateInstanceDockerID(ctx, sqlc.UpdateInstanceDockerIDParams{
 		TeamID:   teamID,
 		ChallID:  challID,
 		DockerID: sql.NullString{String: dockerID, Valid: dockerID != ""},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func UpdateInstanceExpire(ctx context.Context, tid int32, challID int32, expiresAt time.Time) error {
+	err := db.Sql.UpdateInstanceExpire(ctx, sqlc.UpdateInstanceExpireParams{
+		TeamID:    tid,
+		ChallID:   challID,
+		ExpiresAt: expiresAt,
 	})
 	if err != nil {
 		return err

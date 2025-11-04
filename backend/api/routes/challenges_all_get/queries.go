@@ -100,9 +100,11 @@ func GetChallenge(ctx context.Context, challenge *sqlc.Challenge, uid int32, tid
 	}
 
 	if instance != nil {
-		chall.Host = instance.Host
-		if instance.Port.Valid {
-			chall.Port = int(instance.Port.Int32)
+		if instance.DockerID.Valid { // TODO: tests
+			chall.Host = instance.Host
+			if instance.Port.Valid {
+				chall.Port = int(instance.Port.Int32)
+			}
 		}
 		chall.Timeout = int(time.Until(instance.ExpiresAt).Seconds())
 		if chall.Timeout < 0 {
