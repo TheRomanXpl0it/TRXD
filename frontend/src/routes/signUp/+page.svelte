@@ -47,6 +47,7 @@
 		} catch (err: any) {
 			errorMsg = err?.message ?? 'Registration failed. Please try again.';
 			toast.error(errorMsg as string);
+			loading = false;
 		}
 	}
 
