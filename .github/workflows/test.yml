@@ -89,6 +89,10 @@ jobs:
 
     - name: Run Go Unit tests
       run: |
+        REDIS_DISABLE=true go test -v ./...
+    
+    - name: Run Go Unit tests
+      run: |
         go test -p=1 -v ./...
 
     - name: Run Python Integration tests

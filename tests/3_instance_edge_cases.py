@@ -5,7 +5,6 @@ from urllib.parse import urlparse
 import socket
 import json
 import os
-import time
 
 
 url = 'http://localhost:1337/api'
