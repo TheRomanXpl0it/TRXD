@@ -591,7 +591,7 @@
 			</span>
 			<span class="ml-auto flex flex-row">
 				<UserEditSolid class="mr-1" />
-				<span class="flex flex-row">
+				<span class="flex flex-wrap">
 					{#each selected?.authors as author, i (author)}
 						{author}{i < (selected?.authors?.length ?? 0) - 1 ? ', ' : ''}
 					{/each}
@@ -605,14 +605,14 @@
 		</div>
 
 		<!-- Attatchments  -->
-		<div class="mt-3 flex flex-row items-center">
+		<div class="mt-3 flex flex-wrap items-center">
 			{#each selected?.attachments as attatchment}
 				<a
 					href={config.getBackendUrl(attatchment)}
 					target="_blank"
 					rel="external"
 					download
-					class="mr-2 flex cursor-pointer items-center gap-1 rounded bg-gray-100 px-2 py-1 text-sm hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
+					class="mr-2 mb-2 flex cursor-pointer items-center gap-1 rounded bg-gray-100 px-2 py-1 text-sm hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
 				>
 					<Download class="h-3 w-3" />
 					{attatchment.split('/').pop()}
