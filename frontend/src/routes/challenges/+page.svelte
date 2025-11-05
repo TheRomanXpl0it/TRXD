@@ -537,7 +537,7 @@
 				<Dialog.Title class="text-xl font-semibold text-gray-900 dark:text-white">
 					{selected?.name}
 				</Dialog.Title>
-				<BugSolid class="ml-auto mr-auto h-6 w-6 text-gray-800 dark:text-shadow-white" />
+				<BugSolid class="ml-auto mr-auto h-6 w-6" />
 				{#if $authUser?.role === 'Admin'}
 					<Button
 						variant="ghost"
