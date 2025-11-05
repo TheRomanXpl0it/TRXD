@@ -64,14 +64,12 @@
 	}
 
 	// Open “Edit challenge” (lazy-load sheet on first use)
-	function modifyChallenge(ch: any) {
-		return async () => {
-			if (!ChallengeEditSheetCmp) {
-				const mod = await import('$lib/components/challenges/challenge-edit-sheet.svelte');
-				ChallengeEditSheetCmp = mod.default;
-			}
-			editOpen = true;
-		};
+	async function modifyChallenge(ch: any) {
+     	if (!ChallengeEditSheetCmp) {
+      		const mod = await import('$lib/components/challenges/challenge-edit-sheet.svelte');
+      		ChallengeEditSheetCmp = mod.default;
+     	}
+     	editOpen = true;
 	}
 
 	// ──────────────────────────────────────────────────────────────────────────────
