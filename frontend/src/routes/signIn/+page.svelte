@@ -36,66 +36,49 @@
 	}
 </script>
 
-<Card.Root class="mt-50 mx-auto flex h-full w-full max-w-sm flex-col">
-	<Card.Header>
-		<Card.Title>Welcome back hacker.</Card.Title>
-		<Card.Description>Enter your email below to login to your account</Card.Description>
-		<Card.Action>
-			<Button variant="link" class="cursor-pointer" type="button" onclick={() => push('/signUp')}>
-				Sign Up
-			</Button>
-		</Card.Action>
-	</Card.Header>
+<div class="min-h-svh flex items-center justify-center">
+	<Card.Root class="mx-auto w-full max-w-sm flex flex-col">
+		<Card.Header>
+			<Card.Title>Welcome back hacker.</Card.Title>
+			<Card.Description>Enter your email below to login to your account</Card.Description>
+			<Card.Action>
+				<Button variant="link" class="cursor-pointer" type="button" onclick={() => push('/signUp')}>
+					Sign Up
+				</Button>
+			</Card.Action>
+		</Card.Header>
 
-	<!-- Wrap Content + Footer in one form so the submit button works -->
-	<form on:submit|preventDefault={onSubmit}>
-		<Card.Content>
-			<div class="flex flex-col gap-6">
-				<div class="grid gap-2">
-					<Label for="email">Email</Label>
-					<Input
-						id="email"
-						name="email"
-						type="email"
-						placeholder="m@example.com"
-						bind:value={email}
-						required
-					/>
-				</div>
-
-				<div class="grid gap-2">
-					<div class="flex items-center">
-						<Label for="password">Password</Label>
-						<a
-							use:link
-							href="/forgot"
-							class="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-						>
-							Forgot your password?
-						</a>
+		<form on:submit|preventDefault={onSubmit}>
+			<Card.Content>
+				<div class="flex flex-col gap-6">
+					<div class="grid gap-2">
+						<Label for="email">Email</Label>
+						<Input id="email" name="email" type="email" placeholder="m@example.com" bind:value={email} required />
 					</div>
-					<Input
-						id="password"
-						name="password"
-						type="password"
-						placeholder="********"
-						bind:value={password}
-						required
-					/>
-				</div>
 
-				<!-- Remember me (native checkbox to avoid extra deps) -->
-				<div class="mb-5 flex select-none items-center gap-2 text-sm">
-					<Checkbox id="terms" bind:checked={remember} />
-					<Label for="terms">Remember me</Label>
-				</div>
-			</div>
-		</Card.Content>
+					<div class="grid gap-2">
+						<div class="flex items-center">
+							<Label for="password">Password</Label>
+							<a use:link href="/forgot" class="ml-auto inline-block text-sm underline-offset-4 hover:underline">
+								Forgot your password?
+							</a>
+						</div>
+						<Input id="password" name="password" type="password" placeholder="********" bind:value={password} required />
+					</div>
 
-		<Card.Footer class="flex-col gap-2">
-			<Button type="submit" class="w-full cursor-pointer" disabled={loading}>
-				{#if loading}Signing in…{:else}Sign in{/if}
-			</Button>
-		</Card.Footer>
-	</form>
-</Card.Root>
+					<div class="mb-5 flex select-none items-center gap-2 text-sm">
+						<Checkbox id="terms" bind:checked={remember} />
+						<Label for="terms">Remember me</Label>
+					</div>
+				</div>
+			</Card.Content>
+
+			<Card.Footer class="flex-col gap-2">
+				<Button type="submit" class="w-full cursor-pointer" disabled={loading}>
+					{#if loading}Signing in…{:else}Sign in{/if}
+				</Button>
+			</Card.Footer>
+		</form>
+	</Card.Root>
+</div>
+

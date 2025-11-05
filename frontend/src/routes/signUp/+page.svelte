@@ -57,105 +57,107 @@
 	}
 </script>
 
-<Card.Root class="mt-50 mx-auto w-full max-w-sm">
-	<Card.Header>
-		<Card.Title>Create your account</Card.Title>
-		<Card.Description>Join TRXD and start hacking.</Card.Description>
-		<Card.Action>
-			<div>
-				<Button variant="link" class="cursor-pointer" type="button" onclick={() => push('/signIn')}>
-					Sign in
-				</Button>
-			</div>
-		</Card.Action>
-	</Card.Header>
-
-	<!-- Wrap form so submit button works -->
-	<form onsubmit={onSubmit}>
-		<Card.Content>
-			<div class="flex flex-col gap-6">
-				<div class="grid gap-2">
-					<Label for="name">Username</Label>
-					<Input
-						id="name"
-						name="name"
-						type="text"
-						placeholder="Your username"
-						bind:value={name}
-						required
-					/>
-				</div>
-
-				<div class="grid gap-2">
-					<Label for="email">Email</Label>
-					<Input
-						id="email"
-						name="email"
-						type="email"
-						placeholder="name@email.com"
-						bind:value={email}
-						required
-					/>
-				</div>
-
-				<div class="grid gap-2">
-					<Label for="password">Password</Label>
-					<Input
-						id="password"
-						name="password"
-						type="password"
-						placeholder="********"
-						minlength={8}
-						bind:value={password}
-						required
-					/>
-					<p class="text-xs text-gray-500 dark:text-gray-400">At least 8 characters.</p>
-				</div>
-
-				<div class="grid gap-2">
-					<Label for="confirm">Confirm password</Label>
-					<Input
-						id="confirm"
-						name="confirm"
-						type="password"
-						placeholder="********"
-						minlength={8}
-						bind:value={confirm}
-						required
-					/>
-				</div>
-
-				<div class="mb-5 flex select-none items-start gap-2 text-sm">
-					<Checkbox id="agree" class="mt-0.5" bind:checked={agree} />
-					<Label for="agree" class="!mb-0">
-						I agree to the&nbsp;
-						<button
-							type="button"
-							class="cursor-pointer underline underline-offset-4 hover:opacity-80"
-							onclick={() => (termsOpen = true)}
-						>
-							Terms &amp; Conditions
-						</button>
-					</Label>
-				</div>
-
-				{#if errorMsg}
-					<p class="text-sm text-red-600">{errorMsg}</p>
-				{/if}
-			</div>
-		</Card.Content>
-
-		<Card.Footer class="flex-col gap-2">
-			<Button type="submit" class="w-full cursor-pointer" disabled={loading}>
-				{#if loading}
-					<span class="inline-flex items-center gap-2"><Spinner /> Signing up…</span>
-				{:else}
-					Sign up
-				{/if}
-			</Button>
-		</Card.Footer>
-	</form>
-</Card.Root>
+<div class="min-h-svh flex items-center justify-center">  
+    <Card.Root class="mx-auto w-full max-w-sm">
+    	<Card.Header>
+    		<Card.Title>Create your account</Card.Title>
+    		<Card.Description>Join TRXD and start hacking.</Card.Description>
+    		<Card.Action>
+    			<div>
+    				<Button variant="link" class="cursor-pointer" type="button" onclick={() => push('/signIn')}>
+    					Sign in
+    				</Button>
+    			</div>
+    		</Card.Action>
+    	</Card.Header>
+    
+    	<!-- Wrap form so submit button works -->
+    	<form onsubmit={onSubmit}>
+    		<Card.Content>
+    			<div class="flex flex-col gap-6">
+    				<div class="grid gap-2">
+    					<Label for="name">Username</Label>
+    					<Input
+    						id="name"
+    						name="name"
+    						type="text"
+    						placeholder="Your username"
+    						bind:value={name}
+    						required
+    					/>
+    				</div>
+    
+    				<div class="grid gap-2">
+    					<Label for="email">Email</Label>
+    					<Input
+    						id="email"
+    						name="email"
+    						type="email"
+    						placeholder="name@email.com"
+    						bind:value={email}
+    						required
+    					/>
+    				</div>
+    
+    				<div class="grid gap-2">
+    					<Label for="password">Password</Label>
+    					<Input
+    						id="password"
+    						name="password"
+    						type="password"
+    						placeholder="********"
+    						minlength={8}
+    						bind:value={password}
+    						required
+    					/>
+    					<p class="text-xs text-gray-500 dark:text-gray-400">At least 8 characters.</p>
+    				</div>
+    
+    				<div class="grid gap-2">
+    					<Label for="confirm">Confirm password</Label>
+    					<Input
+    						id="confirm"
+    						name="confirm"
+    						type="password"
+    						placeholder="********"
+    						minlength={8}
+    						bind:value={confirm}
+    						required
+    					/>
+    				</div>
+    
+    				<div class="mb-5 flex select-none items-start gap-2 text-sm">
+    					<Checkbox id="agree" class="mt-0.5" bind:checked={agree} />
+    					<Label for="agree" class="!mb-0">
+    						I agree to the&nbsp;
+    						<button
+    							type="button"
+    							class="cursor-pointer underline underline-offset-4 hover:opacity-80"
+    							onclick={() => (termsOpen = true)}
+    						>
+    							Terms &amp; Conditions
+    						</button>
+    					</Label>
+    				</div>
+    
+    				{#if errorMsg}
+    					<p class="text-sm text-red-600">{errorMsg}</p>
+    				{/if}
+    			</div>
+    		</Card.Content>
+    
+    		<Card.Footer class="flex-col gap-2">
+    			<Button type="submit" class="w-full cursor-pointer" disabled={loading}>
+    				{#if loading}
+    					<span class="inline-flex items-center gap-2"><Spinner /> Signing up…</span>
+    				{:else}
+    					Sign up
+    				{/if}
+    			</Button>
+    		</Card.Footer>
+    	</form>
+    </Card.Root>
+</div>
 
 <!-- Terms & Conditions Modal -->
 <Dialog.Root bind:open={termsOpen}>

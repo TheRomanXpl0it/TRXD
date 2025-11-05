@@ -31,7 +31,7 @@
 	<main class="flex h-full w-full">
 		<Sidebar.Trigger size="lg" />
 
-		<div class="mr-15 ml-10 flex h-full w-full flex-col">
+		<div class="md:mr-15 md:ml-10 flex h-full w-full flex-col">
 			<Router {routes} useHash={true} />
 		</div>
 
