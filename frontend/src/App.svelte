@@ -29,8 +29,8 @@
 	<AppSidebar user={$user} userMode={$userMode ?? false} />
 
 	<main class="flex h-full w-full">
-	    <Sidebar.Trigger size="lg"/>
-		<div class="xl:mr-15 xl:ml-10 flex h-full w-full flex-col">
+	    <Sidebar.Trigger size="lg" class="fixed"/>
+		<div class="ml-3 mr-3 flex h-full w-full flex-col">
 			<Router {routes} useHash={true} />
 		</div>
 

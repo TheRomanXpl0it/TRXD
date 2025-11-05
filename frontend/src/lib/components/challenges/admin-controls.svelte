@@ -44,44 +44,42 @@
   }
 </script>
 
-<div class="right-15 bottom-35 fixed z-50">
-  <div class="flex items-center gap-2">
+<div class="flex flex-wrap items-center gap-2 fixed right-4 bottom-15">
     <Popover.Root bind:open={catPopoverOpen}>
-      <Popover.Trigger>
+        <Popover.Trigger>
         {#snippet child({ props })}
-          <Button {...props} variant="outline" class="flex cursor-pointer items-center gap-2">
+            <Button {...props} variant="outline" class="flex cursor-pointer items-center gap-2">
             <Shapes class="h-5 w-5" />
             New Category
-          </Button>
+            </Button>
         {/snippet}
-      </Popover.Trigger>
-      <Popover.Content class="w-[320px] p-3">
+        </Popover.Trigger>
+        <Popover.Content class="w-[320px] p-3">
         <form class="space-y-3" onsubmit={submitCreateCategory}>
-          <div>
+            <div>
             <Label for="cat-name" class="mb-1 block text-sm">Category name</Label>
             <Input id="cat-name" placeholder="e.g. Forensics" bind:value={newCategoryName} />
-          </div>
-          <div>
+            </div>
+            <div>
             <Label for="cat-icon" class="mb-1 block text-sm">Icon (lucide component name)</Label>
             <Input id="cat-icon" placeholder="e.g. Bug, Shield, Lock" bind:value={newCategoryIcon} />
             <p class="mt-1 text-xs text-gray-500">Use any lucide-svelte icon component name.</p>
-          </div>
-          <div class="flex justify-end gap-2">
+            </div>
+            <div class="flex justify-end gap-2">
             <Button type="button" variant="outline" class="cursor-pointer" onclick={() => (catPopoverOpen = false)}>
-              Cancel
+                Cancel
             </Button>
             <Button type="submit" class="cursor-pointer" disabled={creatingCat || !newCategoryName.trim() || !newCategoryIcon.trim()}>
-              {#if creatingCat}<Spinner class="mr-2" />{/if}
-              Create
+                {#if creatingCat}<Spinner class="mr-2" />{/if}
+                Create
             </Button>
-          </div>
+            </div>
         </form>
-      </Popover.Content>
+        </Popover.Content>
     </Popover.Root>
-
+    
     <Button variant="outline" onclick={() => dispatch('open-create')} class="cursor-pointer">
-      <NotebookPenIcon class="mr-2 h-5 w-5" />
-      Create Challenge
+        <NotebookPenIcon class="mr-2 h-5 w-5" />
+        Create Challenge
     </Button>
-  </div>
 </div>

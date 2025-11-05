@@ -374,7 +374,7 @@
 
 
 <!-- Filters -->
-<div class="mb-4 flex flex-wrap items-center gap-3">
+<div class="mb-4 flex flex-wrap items-left gap-3">
 	<Popover.Root bind:open={categoriesOpen}>
 		<Popover.Trigger>
 			{#snippet child({ props })}
@@ -462,13 +462,13 @@
 		</Popover.Content>
 	</Popover.Root>
 
-	<div class="ml-auto flex items-center gap-2">
+	<div class="xl:ml-auto flex items-center gap-2">
 		<Input id="search" placeholder="Search challenges…" bind:value={search} class="w-[260px]" />
 		{#if activeFiltersCount > 0}
 			<Badge color="cyan">{activeFiltersCount}</Badge>
 		{/if}
 		<Button
-			variant="ghost"
+			variant="outline"
 			size="sm"
 			class="cursor-pointer"
 			onclick={() => {
@@ -529,36 +529,44 @@
 	{/each}
 {/if}
 
-<!-- One global dialog (not inside the loop) -->
 <Dialog.Root bind:open={openModal}>
 	<Dialog.Content class="sm:max-w-[720px]">
-		<Dialog.Header class="pb-3">
-			<div class="flex items-center gap-3">
-				<Dialog.Title class="text-xl font-semibold text-gray-900 dark:text-white">
-					{selected?.name}
-				</Dialog.Title>
-				<BugSolid class="ml-auto mr-auto h-6 w-6" />
-				{#if $authUser?.role === 'Admin'}
-					<Button
-						variant="ghost"
-						size="icon"
-						class="cursor-pointer"
-						onclick={modifyChallenge(selected)}
-					>
-						<PenSolid class="h-5 w-5" />
-					</Button>
-					<Button
-						variant="ghost"
-						size="icon"
-						class="cursor-pointer mr-5"
-						onclick={() => requestDelete(selected)}
-					>
-						<TrashBinSolid class="h-5 w-5" />
-					</Button>
-				{/if}
-			</div>
-			<Dialog.Description class="sr-only">Challenge details</Dialog.Description>
-		</Dialog.Header>
+    	<Dialog.Header class="pb-3">
+            <div class="grid grid-cols-3 items-center gap-2">
+                <!-- Left: title (wraps onto new lines if needed) -->
+                <Dialog.Title
+                class="text-xl font-semibold text-gray-900 dark:text-white break-words"
+                >
+                {selected?.name}
+                </Dialog.Title>
+            
+                <!-- Center: bug icon (always centered horizontally) -->
+                <BugSolid class="justify-self-center h-6 w-6" />
+            
+                <!-- Right: actions (always right-aligned) -->
+                <div class="justify-self-end flex items-center gap-2">
+                {#if $authUser?.role === 'Admin'}
+                    <Button
+                    variant="ghost"
+                    size="icon"
+                    class="cursor-pointer"
+                    onclick={() => modifyChallenge(selected)}
+                    >
+                    <PenSolid class="h-5 w-5" />
+                    </Button>
+                    <Button
+                    variant="ghost"
+                    size="icon"
+                    class="cursor-pointer"
+                    onclick={() => requestDelete(selected)}
+                    >
+                    <TrashBinSolid class="h-5 w-5" />
+                    </Button>
+                {/if}
+                </div>
+            </div>
+            <Dialog.Description class="sr-only">Challenge details</Dialog.Description>
+        </Dialog.Header>
 
 		<!-- Tags -->
 		<div class="mb-4 flex flex-row">
