@@ -561,7 +561,7 @@
 		</Dialog.Header>
 
 		<!-- Tags -->
-		<div class="mb-4">
+		<div class="mb-4 flex flex-row">
 			{#each selected?.tags as tag}
 				<Badge class="mr-1" color="cyan">{tag}</Badge>
 			{/each}
@@ -591,7 +591,7 @@
 			</span>
 			<span class="ml-auto flex flex-row">
 				<UserEditSolid class="mr-1" />
-				<span>
+				<span class="flex flex-row">
 					{#each selected?.authors as author, i (author)}
 						{author}{i < (selected?.authors?.length ?? 0) - 1 ? ', ' : ''}
 					{/each}

@@ -290,12 +290,12 @@
 	});
 </script>
 
-<div class="w-full p-3">
+<div class="w-full md:p-3">
 	<div class="mb-2 flex items-center justify-between">
 		<h3 class="text-lg font-semibold">Top {topN} {userMode ? 'Players' : 'Teams'} — Score Chart</h3>
 	</div>
 
-	<div class="h-96 w-full p-4">
+	<div class="h-96 w-full md:p-4">
 		<canvas bind:this={canvas}></canvas>
 	</div>
 </div>
