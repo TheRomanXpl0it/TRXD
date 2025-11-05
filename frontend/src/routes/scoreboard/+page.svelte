@@ -62,7 +62,7 @@
 	<ScoreHistory data={graphData} topN={10} {teamNames} userMode={$userMode} />
 </div>
 
-<div class="w-full px-4">
+<div class="w-full">
 	<Pagination.Root {count} {perPage} class="flex w-full flex-col">
 		{#snippet children({ pages, currentPage })}
 			{@const startIndex = (currentPage - 1) * perPage}

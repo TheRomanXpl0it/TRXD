@@ -291,7 +291,7 @@
 </script>
 
 <div class="w-full md:p-3">
-	<div class="mb-2 flex items-center justify-between">
+	<div class="mb-2 flex flex-wrap">
 		<h3 class="text-lg font-semibold">Top {topN} {userMode ? 'Players' : 'Teams'} — Score Chart</h3>
 	</div>
 
