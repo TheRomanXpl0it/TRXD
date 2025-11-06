@@ -21,6 +21,9 @@ func initTranslation() {
 	registerTranslation("max", consts.MaxError)
 	registerTranslation("oneof", consts.OneofError)
 	registerTranslation("email", consts.InvalidEmail)
+
+	registerTranslation("image", consts.InvalidHttpUrl)
+	registerTranslation("country", consts.InvalidCountry)
 	registerTranslation("challenge_envs", consts.InvalidEnvs)
 	registerTranslation("challenge_max_cpu", consts.InvalidMaxCpu)
 }

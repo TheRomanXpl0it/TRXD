@@ -35,14 +35,19 @@ var testData = []struct {
 		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
 	{
-		testBody:         JSON{"country": strings.Repeat("a", consts.MaxCountryLen+1)},
+		testBody:         JSON{"country": "a"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("Country must not exceed 3"),
+		expectedResponse: errorf(consts.InvalidCountry),
 	},
 	{
-		testBody:         JSON{"image": strings.Repeat("a", consts.MaxImageLen+1)},
+		testBody:         JSON{"image": "a"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("Image must not exceed 1024"),
+		expectedResponse: errorf(consts.InvalidHttpUrl),
+	},
+	{
+		testBody:         JSON{"image": "file://example.com/image.png"},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.InvalidHttpUrl),
 	},
 	{
 		testBody:         JSON{"bio": strings.Repeat("a", consts.MaxBioLen+1)},
@@ -60,15 +65,23 @@ var testData = []struct {
 		expectedResponse: errorf(consts.NameAlreadyTaken),
 	},
 	{
-		testBody:       JSON{"country": "a", "image": "a", "bio": "a"},
+		testBody:       JSON{"country": "USA", "image": "http://example.com/image.png", "bio": "a"},
 		expectedStatus: http.StatusOK,
 	},
 	{
-		testBody:       JSON{"country": "b", "image": "b"},
+		testBody:       JSON{"country": "USA", "image": "https://example.com/image.png", "bio": "a"},
 		expectedStatus: http.StatusOK,
 	},
 	{
-		testBody:       JSON{"country": "c"},
+		testBody:       JSON{"country": "", "image": "", "bio": ""},
+		expectedStatus: http.StatusOK,
+	},
+	{
+		testBody:       JSON{"country": "JPN", "image": "https://example.com/image.png"},
+		expectedStatus: http.StatusOK,
+	},
+	{
+		testBody:       JSON{"country": "ITA"},
 		expectedStatus: http.StatusOK,
 	},
 }
