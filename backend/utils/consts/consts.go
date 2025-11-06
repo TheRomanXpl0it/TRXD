@@ -52,6 +52,7 @@ const (
 	ErrorDeletingInstance        = "Error deleting instance"
 	ErrorDeletingTag             = "Error deleting tag"
 	ErrorDestroyingSession       = "Error destroying session"
+	ErrorFetchingCategories      = "Error fetching categories"
 	ErrorFetchingCategory        = "Error fetching category"
 	ErrorFetchingChallenge       = "Error fetching challenge"
 	ErrorFetchingChallenges      = "Error fetching challenges"

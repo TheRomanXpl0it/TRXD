@@ -7,6 +7,7 @@ import (
 	"trxd/api/middlewares"
 	"trxd/api/routes/categories_create"
 	"trxd/api/routes/categories_delete"
+	"trxd/api/routes/categories_get"
 	"trxd/api/routes/categories_update"
 	"trxd/api/routes/challenges_all_get"
 	"trxd/api/routes/challenges_create"
@@ -160,6 +161,7 @@ func SetupApi(app *fiber.App) {
 	api.Post("/categories", author, categories_create.Route)
 	api.Patch("/categories", author, categories_update.Route)
 	api.Delete("/categories", author, categories_delete.Route)
+	api.Get("/categories", player, team, categories_get.Route)
 
 	api.Post("/challenges", author, challenges_create.Route)
 	api.Patch("/challenges", author, challenges_update.Route)
