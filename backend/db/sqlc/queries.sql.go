@@ -775,7 +775,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 }
 
 const getUserSolves = `-- name: GetUserSolves :many
-SELECT c.id, c.name, c.category, s.first_blood, s.timestamp
+SELECT c.id, c.name, c.category, c.points, s.first_blood, s.timestamp
   FROM submissions s
   JOIN challenges c ON s.chall_id = c.id
   WHERE s.user_id = $1
@@ -786,6 +786,7 @@ type GetUserSolvesRow struct {
 	ID         int32     `json:"id"`
 	Name       string    `json:"name"`
 	Category   string    `json:"category"`
+	Points     int32     `json:"points"`
 	FirstBlood bool      `json:"first_blood"`
 	Timestamp  time.Time `json:"timestamp"`
 }
@@ -804,6 +805,7 @@ func (q *Queries) GetUserSolves(ctx context.Context, userID int32) ([]GetUserSol
 			&i.ID,
 			&i.Name,
 			&i.Category,
+			&i.Points,
 			&i.FirstBlood,
 			&i.Timestamp,
 		); err != nil {

@@ -5,6 +5,8 @@
 - optimize badge queries
 - tests with removal of trxd-shared (and fault tolerance)
 - https://doc.traefik.io/traefik/expose/docker/
+- password reset for players
+- change image pfp system
 
 QOS:
 	- flush cache flag
