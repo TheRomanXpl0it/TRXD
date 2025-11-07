@@ -22,15 +22,18 @@ func CreateInstance(ctx context.Context, tid, challID int32, internalPort *int32
 	success := false
 	inst_lock := fmt.Sprintf("inst_lock_%d_%d", tid, challID)
 
+	// TODO: verify lock
 	status, err := db.StorageSetNX(ctx, inst_lock, "true")
 	if err != nil {
 		return "", nil, err
 	}
 	if !status {
-		return "", nil, errors.New("[race condition]")
+		return "", nil, errors.New("[race condition]") //TODO: verify not-cleanup
 	}
 
 	defer func() {
+		// TODO: anti panic recover
+
 		err := db.StorageDelete(ctx, inst_lock)
 		if err != nil {
 			log.Error("Failed to release instance lock", "team", tid, "challenge", challID, "err", err)

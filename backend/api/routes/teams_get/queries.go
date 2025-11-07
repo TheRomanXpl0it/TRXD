@@ -59,13 +59,17 @@ func GetTeam(ctx context.Context, teamID int32, admin bool) (*TeamData, error) {
 
 	solves, err := db.Sql.GetTeamSolves(ctx, teamID)
 	if err != nil {
-		return nil, err
+		if err != sql.ErrNoRows {
+			return nil, err
+		}
 	}
 	teamData.Solves = solves
 
-	badges, err := db.GetBadgesFromTeam(ctx, teamID)
+	badges, err := db.Sql.GetBadgesFromTeam(ctx, teamID)
 	if err != nil {
-		return nil, err
+		if err != sql.ErrNoRows {
+			return nil, err
+		}
 	}
 	teamData.Badges = badges
 
