@@ -10,7 +10,7 @@ import (
 	"github.com/docker/docker/api/types/network"
 )
 
-func internalCreateNetwork(ctx context.Context, netID string) error {
+func proxyConnect(ctx context.Context, netID string) error {
 	nginxID, err := containers.FetchNginxID(ctx)
 	if err != nil {
 		return err
@@ -63,7 +63,7 @@ func CreateNetwork(ctx context.Context, name string, disableICC bool) (string, e
 		return netID, nil
 	}
 
-	err = internalCreateNetwork(ctx, netID)
+	err = proxyConnect(ctx, netID)
 	if err != nil {
 		if !strings.Contains(err.Error(), "No such container") {
 			return "", err
@@ -74,7 +74,7 @@ func CreateNetwork(ctx context.Context, name string, disableICC bool) (string, e
 			return "", err
 		}
 
-		err = internalCreateNetwork(ctx, netID)
+		err = proxyConnect(ctx, netID)
 		if err != nil {
 			return "", err
 		}

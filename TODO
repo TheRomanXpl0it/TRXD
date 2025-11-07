@@ -7,6 +7,7 @@
 - https://doc.traefik.io/traefik/expose/docker/
 - password reset for players
 - change image pfp system
+- configs changable by env
 
 QOS:
 	- flush cache flag

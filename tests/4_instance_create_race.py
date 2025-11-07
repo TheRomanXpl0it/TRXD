@@ -124,3 +124,5 @@ if counter["instanced"] != N:
 	sys.exit(1)
 else:
 	print(f"Test passed: Exactly {N} valid instance.")
+
+# TODO: add same team race
