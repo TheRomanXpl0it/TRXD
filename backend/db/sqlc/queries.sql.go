@@ -612,9 +612,25 @@ func (q *Queries) GetTeamSolves(ctx context.Context, id int32) ([]GetTeamSolvesR
 }
 
 const getTeamsPreview = `-- name: GetTeamsPreview :many
-SELECT id, name, score, country, image
-  FROM teams
-  ORDER BY id
+SELECT
+    t.id,
+    t.name,
+    t.score,
+    t.country,
+    t.image,
+    COALESCE(
+      JSON_AGG(
+        JSON_BUILD_OBJECT(
+          'name', b.name,
+          'description', b.description
+        )
+      ) FILTER (WHERE b.name IS NOT NULL),
+      '[]'
+    ) AS badges
+  FROM teams t
+  LEFT JOIN badges b ON b.team_id = t.id
+  GROUP BY t.id, t.name, t.score, t.country, t.image
+  ORDER BY t.id
 `
 
 type GetTeamsPreviewRow struct {
@@ -623,6 +639,7 @@ type GetTeamsPreviewRow struct {
 	Score   int32          `json:"score"`
 	Country sql.NullString `json:"country"`
 	Image   sql.NullString `json:"image"`
+	Badges  interface{}    `json:"badges"`
 }
 
 // Retrieve all teams
@@ -641,6 +658,7 @@ func (q *Queries) GetTeamsPreview(ctx context.Context) ([]GetTeamsPreviewRow, er
 			&i.Score,
 			&i.Country,
 			&i.Image,
+			&i.Badges,
 		); err != nil {
 			return nil, err
 		}
@@ -656,9 +674,25 @@ func (q *Queries) GetTeamsPreview(ctx context.Context) ([]GetTeamsPreviewRow, er
 }
 
 const getTeamsScoreboard = `-- name: GetTeamsScoreboard :many
-SELECT id, name, score, country, image
-  FROM teams
-  ORDER BY score DESC
+SELECT
+    t.id,
+    t.name,
+    t.score,
+    t.country,
+    t.image,
+    COALESCE(
+      JSON_AGG(
+        JSON_BUILD_OBJECT(
+          'name', b.name,
+          'description', b.description
+        )
+      ) FILTER (WHERE b.name IS NOT NULL),
+      '[]'
+    ) AS badges
+  FROM teams t
+  LEFT JOIN badges b ON b.team_id = t.id
+  GROUP BY t.id, t.name, t.score, t.country, t.image
+  ORDER BY t.score DESC
 `
 
 type GetTeamsScoreboardRow struct {
@@ -667,6 +701,7 @@ type GetTeamsScoreboardRow struct {
 	Score   int32          `json:"score"`
 	Country sql.NullString `json:"country"`
 	Image   sql.NullString `json:"image"`
+	Badges  interface{}    `json:"badges"`
 }
 
 // Retrieve all teams
@@ -685,6 +720,7 @@ func (q *Queries) GetTeamsScoreboard(ctx context.Context) ([]GetTeamsScoreboardR
 			&i.Score,
 			&i.Country,
 			&i.Image,
+			&i.Badges,
 		); err != nil {
 			return nil, err
 		}
