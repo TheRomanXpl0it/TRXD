@@ -19,7 +19,7 @@ services:
     networks:
       - default
       - internal
-    # command: ["tail", "-f", "/dev/null"] #! Debugging
+    command: ["tail", "-f", "/dev/null"] #! Debugging
 
   postgres:
     image: postgres:18rc1-alpine
