@@ -18,6 +18,7 @@
  - Add custom buttons for first/second/third bloods?
  - Improve challenge creation procedure
  - Write tests
+ - Add frontend testing to the gh workflow
 
 ## QoS
  - flush cache flag
