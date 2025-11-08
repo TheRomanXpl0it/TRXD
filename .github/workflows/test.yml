@@ -47,17 +47,21 @@ jobs:
     - name: Check for frontend changes
       id: frontend-changes
       run: |
-        if [ "${{ github.event_name }}" == "pull_request" ]; then
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
           git fetch origin ${{ github.base_ref }}
           CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
         else
-          CHANGED_FILES=$(git diff --name-only HEAD^..HEAD)
+          # On push, diff the whole pushed range
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
         fi
-        
-        if echo "$CHANGED_FILES" | grep -q "^frontend/"; then
-          echo "changed=true" >> $GITHUB_OUTPUT
+
+        echo "Changed files:"
+        echo "$CHANGED_FILES"
+
+        if echo "$CHANGED_FILES" | grep -q '^frontend/'; then
+          echo "changed=true" >> "$GITHUB_OUTPUT"
         else
-          echo "changed=false" >> $GITHUB_OUTPUT
+          echo "changed=false" >> "$GITHUB_OUTPUT"
         fi
 
     - name: Set up Node.js
