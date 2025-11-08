@@ -11,11 +11,13 @@
 	import * as Select from '$lib/components/ui/select/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import countries from '$lib/data/countries.json';
-	/* Your provided function */
+
 	import { updateTeam } from '$lib/team';
     import { createEventDispatcher } from 'svelte';
+	import { useQueryClient } from '@tanstack/svelte-query';
         
     const dispatch = createEventDispatcher();
+	const queryClient = useQueryClient();
 
 	let { open = $bindable(false), team } = $props<{
 		open?: boolean;
@@ -96,6 +98,10 @@
 			saving = true;
 			await updateTeam(id, n, b, i, c);
 			open = false;
+			
+			// Invalidate teams cache so the teams page updates
+			queryClient.invalidateQueries({ queryKey: ['teams'] });
+			
 			dispatch('updated', {id: id})
 			toast.success('Team updated.');
 		} catch (err: any) {

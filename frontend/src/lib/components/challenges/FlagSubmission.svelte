@@ -38,7 +38,7 @@
 				toast.error('Incorrect flag');
 				return;
 			} else if ((res as any).first_blood) {
-				toast.success('First blood! 🎉');
+				toast.success('First blood!');
 			} else {
 				toast.success('Correct flag!');
 			}

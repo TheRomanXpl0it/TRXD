@@ -17,6 +17,7 @@
  - Improve "Team join" page on smaller screens
  - Add custom buttons for first/second/third bloods?
  - Improve challenge creation procedure
+ - Write tests
 
 ## QoS
  - flush cache flag

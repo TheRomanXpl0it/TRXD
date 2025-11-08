@@ -422,8 +422,8 @@
 			if (cmComposeHost) cmComposeHost.innerHTML = '';
 		}
 
-		// Create editor when sheet is open, type is Compose, on deployment tab, and host exists
-		if (open && type === 'Compose' && activeTab === 'deployment' && cmComposeHost && !cmComposeView) {
+		// Create editor when sheet is open, type is Compose, on deployment tab, host exists, and challenge data is loaded
+		if (open && type === 'Compose' && activeTab === 'deployment' && cmComposeHost && !cmComposeView && challenge) {
 			cmComposeView = new EditorView({
 				parent: cmComposeHost,
 				state: EditorState.create({
