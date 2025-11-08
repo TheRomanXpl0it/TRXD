@@ -11,17 +11,16 @@
 
   let {
     items = [] as Item[],
-    // 👇 make this bindable so parent can use `bind:value`
     value = $bindable<string>(""),
-    placeholder = "Select a category…",
-    searchPlaceholder = "Search category…",
+    placeholder = "Select a category...",
+    searchPlaceholder = "Search category...",
     groupLabel = "categories",
     className = "",
     widthClass = "w-[220px]",
     id = ""
   } = $props<{
     items?: Item[];
-    value?: string;                // now bindable thanks to $bindable above
+    value?: string;
     placeholder?: string;
     searchPlaceholder?: string;
     groupLabel?: string;
@@ -67,7 +66,7 @@
             <Command.Item
               value={item.value}
               onSelect={() => {
-                value = item.value;       // updates parent via binding
+                value = item.value;
                 closeAndFocusTrigger();
               }}
             >

@@ -5,6 +5,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import { toast } from 'svelte-sonner';
+	import ErrorMessage from '$lib/components/ui/error-message.svelte';
 
 	import { login, type User } from '$lib/auth';
 	import { link, push } from 'svelte-spa-router';
@@ -25,13 +26,30 @@
 			if (result !== 'OK') {
 				throw new Error('Login failed. Please try again.');
 			}
+			await loadUser();
 			loading = false;
 			toast.success('Welcome back!');
-			push('/challenges')
+			// Check if user has a team, redirect accordingly
+			if ($user?.team_id) {
+				push('/challenges');
+			} else {
+				push('/team');
+			}
 		} catch (err: any) {
-			errorMsg = err?.message ?? 'Login failed. Please try again.';
+			// TODO: Refactor this
+			// Extract error message from JSON response if present
+			let message = 'Login failed. Please try again.';
+			if (err?.message) {
+				try {
+					const parsed = JSON.parse(err.message);
+					message = parsed.error || message;
+				} catch {
+					message = err.message;
+				}
+			}
+			errorMsg = message;
 			loading = false;
-			toast.error(errorMsg as string);
+			toast.error(message);
 		}
 	}
 </script>
@@ -66,16 +84,22 @@
 						<Input id="password" name="password" type="password" placeholder="********" bind:value={password} required />
 					</div>
 
-					<div class="mb-5 flex select-none items-center gap-2 text-sm">
+					<div class="flex select-none items-center gap-2 text-sm">
 						<Checkbox id="terms" bind:checked={remember} />
 						<Label for="terms">Remember me</Label>
+					</div>
+
+					<div class="min-h-5">
+						{#if errorMsg}
+							<p class="text-sm text-red-600 dark:text-red-400">{errorMsg}</p>
+						{/if}
 					</div>
 				</div>
 			</Card.Content>
 
 			<Card.Footer class="flex-col gap-2">
 				<Button type="submit" class="w-full cursor-pointer" disabled={loading}>
-					{#if loading}Signing in…{:else}Sign in{/if}
+					{#if loading}Signing in...{:else}Sign in{/if}
 				</Button>
 			</Card.Footer>
 		</form>

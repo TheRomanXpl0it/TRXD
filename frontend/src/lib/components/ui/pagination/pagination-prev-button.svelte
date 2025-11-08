@@ -14,7 +14,7 @@
 
 {#snippet Fallback()}
 	<ChevronLeftIcon class="size-4" />
-	<span>Previous</span>
+	<span class="hidden sm:inline">Previous</span>
 {/snippet}
 
 <PaginationPrimitive.PrevButton
@@ -24,7 +24,7 @@
 		buttonVariants({
 			size: "default",
 			variant: "ghost",
-			class: "gap-1 px-2.5 sm:pl-2.5",
+			class: "cursor-pointer gap-1 px-2.5 sm:pl-2.5",
 		}),
 		className
 	)}

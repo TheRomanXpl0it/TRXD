@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
 export default defineConfig({
+	publicDir: 'static',
 	plugins: [tailwindcss(), svelte()],
 	resolve: {
 		alias: {

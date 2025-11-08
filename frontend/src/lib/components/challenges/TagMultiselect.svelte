@@ -7,7 +7,7 @@
 
   let {
     all_tags = [] as string[],
-    placeholder = "Select tags…",
+    placeholder = "Select tags...",
     value = $bindable<string[]>([])
   } = $props<{ all_tags?: string[]; placeholder?: string; value?: string[] }>();
 
@@ -117,7 +117,7 @@
     <Popover.Content class="w-80 p-3">
       <div class="flex flex-col gap-3">
         <input
-          placeholder="Search or create…"
+          placeholder="Search or create..."
           bind:this={searchEl}
           bind:value={query}
           autocomplete="off"
@@ -146,7 +146,7 @@
                 type="button"
                 class={`flex w-full items-center gap-2 px-2 py-1.5 rounded hover:bg-accent text-left ${i === active ? 'bg-accent/60' : ''}`}
                 onclick={() => toggle(v)}
-                aria-selected={i === active}
+                aria-pressed={(value ?? []).includes(v)}
               >
                 <Checkbox checked={(value ?? []).includes(v)} />
                 <span class="truncate">{v}</span>

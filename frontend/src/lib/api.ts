@@ -1,4 +1,3 @@
-import { config } from '$lib/env';
 
 const BASE = '/api';
 
@@ -23,7 +22,6 @@ async function parse<T>(res: Response): Promise<T> {
 	return (await res.text()) as unknown as T;
 }
 
-// --- Safe cookie helpers (no regex) ---
 function getCookie(name: string): string | null {
 	if (typeof document === 'undefined') return null;
 	const prefix = `${encodeURIComponent(name)}=`;
@@ -40,7 +38,6 @@ function pickCsrfToken(): string | null {
 	return getCookie('csrf_') || null;
 }
 
-// Type guards for BodyInit detection
 const isFormData = (v: unknown): v is FormData =>
 	typeof FormData !== 'undefined' && v instanceof FormData;
 
@@ -52,7 +49,6 @@ const isBlob = (v: unknown): v is Blob => typeof Blob !== 'undefined' && v insta
 const isReadableStream = (v: unknown): v is ReadableStream =>
 	typeof ReadableStream !== 'undefined' && v instanceof ReadableStream;
 
-// Plain object = not null, typeof 'object', and not any BodyInit
 function isPlainObject(v: unknown): v is Record<string, unknown> {
 	if (v === null || typeof v !== 'object') return false;
 	return !(
@@ -60,7 +56,7 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
 		isURLSearchParams(v) ||
 		isBlob(v) ||
 		isReadableStream(v) ||
-		ArrayBuffer.isView(v) || // BufferSource (TypedArrays/DataView)
+		ArrayBuffer.isView(v) ||
 		v instanceof ArrayBuffer
 	);
 }

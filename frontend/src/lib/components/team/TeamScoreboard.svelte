@@ -10,26 +10,31 @@
   } from "@/components/ui/table";
   import { ChartLine } from "@lucide/svelte";
 
-  // Props: only solves[]
-  let { solves } = $props<{ solves: any[] | undefined }>();
+  // Prop (team contains solves[] and members[])
+  let { team } = $props<{ team: any }>();
+  let solves = $state(team?.solves);
 
-  type SortKey = 'name' | 'category' | 'points' | 'timestamp';
+  // Map of memberId -> memberName for quick lookup
+  let memberNameById: Record<string, string> = $state({});
+
+  // State
+  type SortKey = 'name' | 'category' | 'points' | 'timestamp' | 'solver';
   let sortKey = $state<SortKey>('timestamp');
   let sortDir = $state<'asc' | 'desc'>('desc');
   let rows: any[] = $state([]);          // what we actually render
   let totalPoints = $state(0);
 
   // Helpers
-  const getPoints = (s: any) => Number(s?.points ?? s?.score ?? 0);
+  const getPoints = (s: any) => Number(s?.points ?? s?.value ?? s?.score ?? 0);
 
   const fmtDate = (iso?: string) => {
-    if (!iso) return '—';
+    if (!iso) return '-';
     const d = new Date(iso);
-    return Number.isNaN(+d) ? '—' : d.toLocaleString();
+    return Number.isNaN(+d) ? '-' : d.toLocaleString();
   };
 
   const timeSince = (iso?: string) => {
-    if (!iso) return '—';
+    if (!iso) return '-';
     const sec = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
     const h = Math.floor(sec / 3600);
     const m = Math.floor((sec % 3600) / 60);
@@ -45,6 +50,23 @@
   }
   const arrow = (key: SortKey | string) =>
     (sortKey === key ? (sortDir === 'asc' ? ' ▲' : ' ▼') : '');
+
+  // Build member lookup map whenever team.members changes
+  $effect(() => {
+    const src = Array.isArray(team?.members) ? team.members : [];
+    const map: Record<string, string> = {};
+    for (const m of src) {
+      const id = String(m?.id ?? m?.user_id ?? '');
+      if (!id) continue;
+      map[id] = String(m?.name ?? m?.username ?? m?.displayName ?? 'Unknown');
+    }
+    memberNameById = map;
+  });
+
+  const solverName = (uid: any) => {
+    const key = uid == null ? '' : String(uid);
+    return memberNameById[key] ?? '-';
+  };
 
   // Compute rows reactively (robust against undefined / late props)
   $effect(() => {
@@ -63,6 +85,9 @@
         case 'timestamp':
           av = new Date(a?.timestamp ?? 0).getTime();
           bv = new Date(b?.timestamp ?? 0).getTime(); break;
+        case 'solver':
+          av = solverName(a?.user_id) ?? '';
+          bv = solverName(b?.user_id) ?? ''; break;
       }
       if (av < bv) return sortDir === 'asc' ? -1 : 1;
       if (av > bv) return sortDir === 'asc' ?  1 : -1;
@@ -75,30 +100,30 @@
 </script>
 
 <div class="flex flex-col w-full">
-  <div class="flex items-center gap-2">
-    <ChartLine class="h-5 w-5 opacity-70" />
-    <h3 class="text-xl font-semibold">Solves</h3>
-  </div>
-
   <Table class="w-full">
     <TableCaption class="text-sm">
-      {rows.length} solve{rows.length === 1 ? '' : 's'}
-      {#if totalPoints > 0} · {totalPoints} pts total{/if}
+      {#if totalPoints > 0}{totalPoints} pts total{/if}
     </TableCaption>
 
     <TableHeader>
       <TableRow>
-        <TableHead class="w-[40%] cursor-pointer" on:click={() => toggleSort('name')}>
+        <TableHead class="w-[28%] cursor-pointer" onclick={() => toggleSort('name')}>
           Challenge {arrow('name')}
         </TableHead>
-        <TableHead class="w-[20%] cursor-pointer" on:click={() => toggleSort('category')}>
+        <TableHead class="w-[16%] cursor-pointer" onclick={() => toggleSort('category')}>
           Category {arrow('category')}
         </TableHead>
-        <TableHead class="w-[15%] text-right cursor-pointer" on:click={() => toggleSort('points')}>
+        <TableHead class="w-[12%] text-right cursor-pointer" onclick={() => toggleSort('points')}>
           Points {arrow('points')}
         </TableHead>
-        <TableHead class="w-[25%] cursor-pointer text-right sm:text-left" on:click={() => toggleSort('timestamp')}>
+        <TableHead class="w-[18%] cursor-pointer" onclick={() => toggleSort('solver')}>
+          Solved by {arrow('solver')}
+        </TableHead>
+        <TableHead class="w-[16%] cursor-pointer" onclick={() => toggleSort('timestamp')}>
           Solved at {arrow('timestamp')}
+        </TableHead>
+        <TableHead class="w-[10%] text-right">
+          Ago
         </TableHead>
       </TableRow>
     </TableHeader>
@@ -106,26 +131,23 @@
     <TableBody>
       {#if rows.length === 0}
         <TableRow>
-          <TableCell colspan={4} class="py-10 text-center text-muted-foreground">
+          <TableCell colspan={6} class="py-10 text-center text-muted-foreground">
             No solves yet.
           </TableCell>
         </TableRow>
       {:else}
         {#each rows as s (s.id ?? s.timestamp ?? s.name ?? Math.random())}
           <TableRow>
-            <TableCell class="font-medium">{s.name ?? '—'}</TableCell>
+            <TableCell class="font-medium">{s.name ?? '-'}</TableCell>
             <TableCell>
               <span class="inline-flex items-center rounded border px-2 py-0.5 text-xs dark:border-gray-700">
-                {s.category ?? '—'}
+                {s.category ?? '-'}
               </span>
             </TableCell>
             <TableCell class="text-right">{getPoints(s)}</TableCell>
-            <TableCell class="text-right sm:text-left">
-              <div class="flex items-center justify-end sm:justify-start gap-2">
-                <span>{fmtDate(s.timestamp)}</span>
-                <span class="text-xs text-muted-foreground">({timeSince(s.timestamp)} ago)</span>
-              </div>
-            </TableCell>
+            <TableCell>{solverName(s.user_id)}</TableCell>
+            <TableCell>{fmtDate(s.timestamp)}</TableCell>
+            <TableCell class="text-right">{timeSince(s.timestamp)}</TableCell>
           </TableRow>
         {/each}
       {/if}

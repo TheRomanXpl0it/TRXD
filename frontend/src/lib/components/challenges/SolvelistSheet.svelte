@@ -50,14 +50,14 @@
 </script>
 
 <Sheet.Root bind:open>
-	<Sheet.Content side="left" class="px-5 sm:max-w-[640px]">
+	<Sheet.Content side="left" class="w-full px-5 sm:max-w-[640px]">
 		<Sheet.Header>
 			<Sheet.Title>Solves</Sheet.Title>
 			<Sheet.Description>Recent solvers for {challenge?.name}</Sheet.Description>
 		</Sheet.Header>
 
 		{#if loading}
-			<p class="py-6 text-sm text-gray-500">Loading…</p>
+			<p class="py-6 text-sm text-gray-500">Loading...</p>
 		{:else if solves.length === 0}
 			<p class="py-6 text-sm text-gray-500">No solves yet.</p>
 		{:else}
@@ -66,7 +66,7 @@
 					<Table.Row>
 						<Table.Head class="w-10"></Table.Head>
 						<Table.Head>{$userMode ? 'Player' : 'Team'}</Table.Head>
-						<Table.Head class="text-right">Time</Table.Head>
+						<Table.Head class="text-right whitespace-nowrap">Time</Table.Head>
 					</Table.Row>
 				</Table.Header>
 
@@ -95,8 +95,14 @@
 								{/if}
 							</Table.Cell>
 
-							<Table.Cell class="py-2 text-right text-gray-600 dark:text-gray-400">
-								{new Date(t(s)).toLocaleString()}
+							<Table.Cell class="py-2 text-right text-gray-600 dark:text-gray-400 text-xs sm:text-sm whitespace-nowrap">
+								<span class="hidden sm:inline">{new Date(t(s)).toLocaleString()}</span>
+								<span class="sm:hidden">{new Date(t(s)).toLocaleString(undefined, { 
+									month: 'short', 
+									day: 'numeric', 
+									hour: '2-digit', 
+									minute: '2-digit' 
+								})}</span>
 							</Table.Cell>
 						</Table.Row>
 					{/each}

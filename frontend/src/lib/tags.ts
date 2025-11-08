@@ -1,7 +1,6 @@
 import { api } from '$lib/api'
 
 // CREATE tags for a challenge (POST)
-// (keeps values as given; dedupe empties to avoid useless requests)
 export async function createTagsForChallenge(tags: any[], chall_id: any) {
   const list = Array.from(tags ?? [])
     .map((name) =>
@@ -16,7 +15,6 @@ export async function createTagsForChallenge(tags: any[], chall_id: any) {
 }
 
 // DELETE tags from a challenge (DELETE)
-// DO NOT normalize: send exactly what backend provided.
 export async function deleteTagsFromChallenge(tags: any[], chall_id: any) {
   const list = Array.from(tags ?? []).map((name) =>
     api<any>('/tags', {

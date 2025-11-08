@@ -44,12 +44,17 @@
   }
 </script>
 
-<div class="flex flex-wrap items-center gap-2 fixed right-4 bottom-15">
+<div class="mb-6 flex flex-wrap items-center gap-2">
+    <Button variant="outline" onclick={() => dispatch('open-create')} class="cursor-pointer">
+        <NotebookPenIcon class="mr-2 h-4 w-4" />
+        Create Challenge
+    </Button>
+
     <Popover.Root bind:open={catPopoverOpen}>
         <Popover.Trigger>
         {#snippet child({ props })}
             <Button {...props} variant="outline" class="flex cursor-pointer items-center gap-2">
-            <Shapes class="h-5 w-5" />
+            <Shapes class="h-4 w-4" />
             New Category
             </Button>
         {/snippet}
@@ -77,9 +82,4 @@
         </form>
         </Popover.Content>
     </Popover.Root>
-    
-    <Button variant="outline" onclick={() => dispatch('open-create')} class="cursor-pointer">
-        <NotebookPenIcon class="mr-2 h-5 w-5" />
-        Create Challenge
-    </Button>
 </div>

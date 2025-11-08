@@ -5,7 +5,7 @@
   import { Textarea } from '$lib/components/ui/textarea/index.js';
   import { Button } from '@/components/ui/button';
   import { Spinner } from '$lib/components/ui/spinner/index.js';
-  import MultiSelect from '$lib/components/challenges/category-select.svelte';
+  import MultiSelect from '$lib/components/challenges/CategorySelect.svelte';
   import * as Tooltip from '$lib/components/ui/tooltip/index.js';
   import { Checkbox } from '$lib/components/ui/checkbox/index.js';
   import { toast } from 'svelte-sonner';
@@ -117,7 +117,7 @@
             <Label for="category" class="mb-2 mt-4 block text-sm font-medium text-gray-900 dark:text-white">
               Category*
             </Label>
-            <MultiSelect id="category" items={categories} bind:value={category} placeholder="Select a category…" />
+            <MultiSelect id="category" items={categories} bind:value={category} placeholder="Select a category..." />
           </div>
 
           <div class="flex min-w-56 flex-col">

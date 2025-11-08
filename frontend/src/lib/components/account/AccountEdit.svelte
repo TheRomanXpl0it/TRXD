@@ -31,8 +31,16 @@
 
 	type Country = { name: string; iso2: string; iso3?: string; emoji?: string };
 	const countryItems = (countries as Country[])
-		.map((c) => ({ value: c.iso2.toUpperCase(), label: c.name }))
+		.filter((c) => c.iso3) // Only include countries with iso3
+		.map((c) => ({ value: c.iso3!.toUpperCase(), label: c.name, iso2: c.iso2.toUpperCase() }))
 		.sort((a, b) => a.label.localeCompare(b.label));
+	
+	let countrySearch = $state('');
+	const filteredCountries = $derived(
+		countrySearch.trim() 
+			? countryItems.filter(c => c.label.toLowerCase().includes(countrySearch.toLowerCase()) || c.value.toLowerCase().includes(countrySearch.toLowerCase())).slice(0, 50)
+			: countryItems.slice(0, 50)
+	);
 
 	// Watch for user changes and update form fields
 	$effect(() => {
@@ -52,6 +60,7 @@
 		}
 	});
 
+	// TODO: Remove this
 	function isLikelyUrl(s: string): boolean {
 		if (!s) return false;
 		try {
@@ -93,10 +102,12 @@
 			saving = false;
 		}
 	}
+
+	let accordionValue = $state<string | undefined>("identity");
 </script>
 
 <Sheet.Root bind:open>
-	<Sheet.Content side="right" class="px-5 sm:max-w-[640px]">
+	<Sheet.Content side="right" class="w-full px-5 sm:max-w-[640px]">
 		<Sheet.Header>
 			<Sheet.Title>Update Profile</Sheet.Title>
 			<Sheet.Description
@@ -105,7 +116,7 @@
 		</Sheet.Header>
 
 		<form class="mt-3 space-y-6" onsubmit={onSave}>
-			<Accordion.Root type="single" value="identity">
+			<Accordion.Root type="single" bind:value={accordionValue}>
 				<Accordion.Item value="identity">
 					<Accordion.Trigger class="cursor-pointer text-xl font-semibold tracking-tight">
 						Identity
@@ -129,17 +140,21 @@
 								<Select.Root
 									type="single"
 									bind:value={countryCode}
-									items={countryItems}
+									items={filteredCountries}
 									allowDeselect={true}
+									onOpenChange={(open) => { if (!open) countrySearch = ''; }}
 								>
 									<Select.Trigger id="pf-country" class="w-full justify-between">
 										{#if countryCode}
+											{@const country = countryItems.find(c => c.value === countryCode)}
 											<span class="flex items-center gap-2">
-												<Icon
-													icon={`circle-flags:${countryCode.toLowerCase()}`}
-													width="16"
-													height="16"
-												/>
+												{#if country?.iso2}
+													<Icon
+														icon={`circle-flags:${country.iso2.toLowerCase()}`}
+														width="16"
+														height="16"
+													/>
+												{/if}
 												<span class="uppercase">{countryCode}</span>
 											</span>
 										{:else}
@@ -147,28 +162,43 @@
 										{/if}
 									</Select.Trigger>
 									<Select.Content sideOffset={4}>
-										{#each countryItems as item (item.value)}
+										<div class="px-2 pb-2">
+											<Input 
+												placeholder="Search countries..." 
+												bind:value={countrySearch}
+												class="h-8"
+											/>
+										</div>
+										{#each filteredCountries as item (item.value)}
 											<Select.Item value={item.value} label={item.label}>
 												{#snippet children({ selected })}
 													<Icon
-														icon={`circle-flags:${item.value.toLowerCase()}`}
+														icon={`circle-flags:${item.iso2.toLowerCase()}`}
 														width="16"
 														height="16"
 													/>
-													<span>{item.label}</span>
+													<span>{item.label} ({item.value})</span>
 												{/snippet}
 											</Select.Item>
 										{/each}
+										{#if filteredCountries.length === 0}
+											<div class="px-2 py-6 text-center text-sm text-muted-foreground">
+												No countries found
+											</div>
+										{/if}
 									</Select.Content>
 								</Select.Root>
 
 								{#if user?.country && user.country.toUpperCase() !== countryCode}
+									{@const userCountry = countryItems.find(c => c.value === user.country.toUpperCase())}
 									<div class="text-muted-foreground mt-1 flex items-center gap-2 text-sm">
-										<Icon
-											icon={`circle-flags:${user.country.toLowerCase()}`}
-											width="16"
-											height="16"
-										/>
+										{#if userCountry?.iso2}
+											<Icon
+												icon={`circle-flags:${userCountry.iso2.toLowerCase()}`}
+												width="16"
+												height="16"
+											/>
+										{/if}
 										<span>Current: {user.country.toUpperCase()}</span>
 									</div>
 								{/if}
@@ -179,7 +209,7 @@
 								<Input
 									id="pf-image"
 									bind:value={imageUrl}
-									placeholder={user?.image || 'https://…/avatar.png'}
+									placeholder={user?.image || 'https://.../avatar.png'}
 								/>
 								{#if user?.image && user.image !== imageUrl}
 									<p class="text-muted-foreground mt-1 text-sm">Current image will be replaced</p>
@@ -222,7 +252,7 @@
 					<Button type="button" variant="outline">Cancel</Button>
 				</Sheet.Close>
 				<Button type="submit" disabled={saving}>
-					{#if saving}Saving…{:else}Save{/if}
+					{#if saving}Saving...{:else}Save{/if}
 				</Button>
 			</div>
 		</form>

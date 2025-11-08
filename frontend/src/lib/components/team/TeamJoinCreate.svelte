@@ -41,7 +41,6 @@
 		joinLoading = true;
 		try {
 			const result = await joinTeam(joinName, joinPassword);
-			console.log("Result:",result)
 			// Success case - api function only returns on success (200)
 			joinOpen = false;
 			// reset fields after close
@@ -82,7 +81,6 @@
 		registerLoading = true;
 		try {
 			const result = await createTeam(registerName, registerPassword);
-			 console.log("create result:",result)
 			// Success case - api function only returns on success (200)
 			registerOpen = false;
 			// reset fields after close
@@ -100,19 +98,19 @@
 	}
 </script>
 
-<div class="mt-5 flex flex-col items-center justify-center gap-6 sm:flex-row">
+<div class="mt-5 mb-10 flex flex-col items-stretch justify-center gap-6 xl:flex-row">
 	<!-- Join card -->
-	<Card.Root class="w-full p-5 sm:w-[28rem]">
-		<Card.Header>
+	<Card.Root class="flex w-full flex-col p-4 sm:w-[28rem] sm:p-5">
+		<Card.Header class="flex-1 pb-3">
 			<Card.Title class="Title">
 				<h3 class="text-lg font-bold">Join a Team</h3>
-				<p class="italic text-gray-400">Join an already existing team</p>
+				<p class="text-sm italic text-gray-400">Join an already existing team</p>
 			</Card.Title>
-			<Card.Content>
+			<Card.Content class="px-0">
 				<img
 					src={joinTeamImg}
 					alt="Join a Team"
-					class="mt-2 h-auto w-full rounded-md dark:invert"
+					class="mx-auto mt-2 h-auto w-full max-h-48 max-w-xs rounded-md object-contain dark:invert sm:max-h-64"
 				/>
 			</Card.Content>
 		</Card.Header>
@@ -120,17 +118,17 @@
 	</Card.Root>
 
 	<!-- Create card -->
-	<Card.Root class="w-full p-5 sm:w-[28rem]">
-		<Card.Header>
+	<Card.Root class="flex w-full flex-col p-4 sm:w-[28rem] sm:p-5">
+		<Card.Header class="flex-1 pb-3">
 			<Card.Title class="Title">
 				<h3 class="text-lg font-bold">Create a Team</h3>
-				<p class="italic text-gray-400">Create a new team from scratch</p>
+				<p class="text-sm italic text-gray-400">Create a new team from scratch</p>
 			</Card.Title>
-			<Card.Content>
+			<Card.Content class="px-0">
 				<img
 					src={createTeamImg}
 					alt="Create a Team"
-					class="mt-2 h-auto w-full rounded-md p-8 dark:invert"
+					class="mx-auto mt-2 h-auto w-full max-h-48 max-w-xs rounded-md object-contain p-6 dark:invert sm:max-h-64 sm:p-8"
 				/>
 			</Card.Content>
 		</Card.Header>
@@ -171,7 +169,7 @@
 					<Button variant="outline" type="button" class="cursor-pointer">Cancel</Button>
 				</Dialog.Close>
 				<Button type="submit" disabled={joinLoading} class="cursor-pointer">
-					{#if joinLoading}Joining…{:else}Join{/if}
+					{#if joinLoading}Joining...{:else}Join{/if}
 				</Button>
 			</div>
 		</form>
@@ -220,7 +218,7 @@
 					<Button variant="outline" type="button" class="cursor-pointer">Cancel</Button>
 				</Dialog.Close>
 				<Button type="submit" disabled={registerLoading} class="cursor-pointer">
-					{#if registerLoading}Creating…{:else}Create{/if}
+					{#if registerLoading}Creating...{:else}Create{/if}
 				</Button>
 			</div>
 		</form>

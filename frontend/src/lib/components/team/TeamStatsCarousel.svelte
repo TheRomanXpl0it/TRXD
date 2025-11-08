@@ -10,10 +10,11 @@
 	import { push } from 'svelte-spa-router';
 	import { Avatar } from 'flowbite-svelte';
 	import { getUserData } from '$lib/user';
+	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 
 	let { team } = $props<{ team: any }>();
 
-	// ── derived stats (all `any`) ────────────────────────────────────────────────
+	// derived stats
 	const badgesCount = $derived(team?.badges?.length ?? 0);
 	const members = $derived(team?.members ?? []);
 	const membersCount = $derived(members.length);
@@ -82,7 +83,7 @@
 
 	// utils
 	const timeSince = (iso?: string) => {
-		if (!iso) return '—';
+		if (!iso) return '-';
 		const sec = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
 		const h = Math.floor(sec / 3600);
 		const m = Math.floor((sec % 3600) / 60);
@@ -109,10 +110,10 @@
 			<CarouselItem class="md:basis-3/3 h-full">
 				<div class="w-full rounded-xl border p-6 dark:border-gray-700">
 					<div class="flex items-center gap-3">
-						<Crown class="h-6 w-6 opacity-80" />
-						<h2 class="text-2xl font-semibold">{team?.name ?? 'Team'}</h2>
+						<Crown class="h-6 w-6 shrink-0 opacity-80" />
+						<h2 class="truncate text-2xl font-semibold">{team?.name ?? 'Team'}</h2>
 						{#if team?.country}
-							<span class="ml-2 rounded bg-gray-100 px-2 py-0.5 text-xs dark:bg-gray-800">
+							<span class="ml-2 shrink-0 rounded bg-gray-100 px-2 py-0.5 text-xs dark:bg-gray-800">
 								{team.country}
 							</span>
 						{/if}
@@ -150,15 +151,16 @@
 					</div>
 
 					{#if topMember}
-						<div class="bg-muted mt-6 rounded-lg p-4">
-							<div class="text-muted-foreground flex items-center gap-2 text-sm">
-								<Star class="h-4 w-4" /> Top member
-							</div>
-							<div class="mt-1 flex items-center justify-between">
-								<a
-									class="cursor-pointer text-lg font-medium hover:underline"
-									onclick={() => push(`/account/${topMember.id}`)}>{topMember.name}</a
-								>
+					<div class="bg-muted mt-6 rounded-lg p-4">
+						<div class="text-muted-foreground flex items-center gap-2 text-sm">
+							<Star class="h-4 w-4" /> Top member
+						</div>
+						<div class="mt-1 flex items-center justify-between">
+							<button
+								type="button"
+								class="cursor-pointer text-lg font-medium hover:underline"
+								onclick={() => push(`/account/${topMember.id}`)}>{topMember.name}</button
+							>
 								<p class="text-lg font-semibold">{topMember.score}pts</p>
 							</div>
 						</div>
@@ -235,29 +237,30 @@
 											>
 												{i + 1}
 											</span>
-											{#if memberImages[String(m.id)]}
-												<Avatar src={memberImages[String(m.id)]} class="h-8 w-8" />
-											{/if}
-											<div>
-												<a
-													class="cursor-pointer font-medium leading-tight hover:underline"
-													onclick={() => {
-														push(`/account/${m.id}`);
-													}}>{m.name}</a
-												>
-												<p class="text-muted-foreground text-xs">{m.role}</p>
-											</div>
+										{#if memberImages[String(m.id)]}
+											<Avatar src={memberImages[String(m.id)]} class="h-8 w-8" />
+										{/if}
+										<div>
+											<button
+												type="button"
+												class="cursor-pointer font-medium leading-tight hover:underline"
+												onclick={() => {
+													push(`/account/${m.id}`);
+												}}>{m.name}</button
+											>
+											<p class="text-muted-foreground text-xs">{m.role}</p>
+										</div>
 										</div>
 										<p class="text-right text-lg font-semibold">{m.score}pts</p>
 									</div>
-									{#if topMember?.score}
-										<div class="bg-muted mt-2 h-2 w-full rounded">
-											<div
-												class="bg-primary h-2 rounded"
-												style={barWidth(Math.round((m.score / Math.max(1, topMember.score)) * 100))}
-											/>
-										</div>
-									{/if}
+								{#if topMember?.score}
+									<div class="bg-muted mt-2 h-2 w-full rounded">
+										<div
+											class="bg-primary h-2 rounded"
+											style={barWidth(Math.round((m.score / Math.max(1, topMember.score)) * 100))}
+										></div>
+									</div>
+								{/if}
 								</div>
 							{/each}
 						</div>
@@ -282,11 +285,11 @@
 									<div class="flex items-center justify-between text-sm">
 										<span class="font-medium">{c.cat}</span>
 										<span class="text-muted-foreground">{c.count} ({c.pct}%)</span>
-									</div>
-									<div class="bg-muted mt-1 h-2 w-full rounded">
-										<div class="h-2 rounded bg-emerald-500" style={barWidth(c.pct)} />
-									</div>
 								</div>
+								<div class="bg-muted mt-1 h-2 w-full rounded">
+									<div class="h-2 rounded bg-emerald-500" style={barWidth(c.pct)}></div>
+								</div>
+							</div>
 							{/each}
 						</div>
 					{:else}
@@ -308,15 +311,24 @@
 					{:else}
 						<div class="mt-4 grid gap-3 sm:grid-cols-2">
 							{#each team?.badges ?? [] as b}
-								<div class="rounded-lg border p-3 dark:border-gray-700">
-									<div class="flex items-center gap-2">
-										<Star class="h-4 w-4 text-yellow-500" />
-										<p class="font-medium">{b.name}</p>
-									</div>
+								<Tooltip.Root>
+									<Tooltip.Trigger asChild>
+										<div class="rounded-lg border p-3 dark:border-gray-700">
+											<div class="flex items-center gap-2">
+												<Star class="h-4 w-4 text-yellow-500" />
+												<p class="font-medium">{b.name}</p>
+											</div>
+											{#if b.description}
+												<p class="text-muted-foreground mt-1 text-sm">{b.description}</p>
+											{/if}
+										</div>
+									</Tooltip.Trigger>
 									{#if b.description}
-										<p class="text-muted-foreground mt-1 text-sm">{b.description}</p>
+										<Tooltip.Content>
+											<p>{b.description}</p>
+										</Tooltip.Content>
 									{/if}
-								</div>
+								</Tooltip.Root>
 							{/each}
 						</div>
 					{/if}

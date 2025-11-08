@@ -2,7 +2,8 @@ import { api } from '$lib/api';
 
 export async function getSolves(chall_id: string): Promise<any[]> {
 	const challenge = await getChallenge(chall_id);
-	return challenge.solves_list;
+	const solves = Array.isArray(challenge?.solves_list) ? challenge.solves_list : [];
+	return solves;
 }
 
 export async function getChallenges(): Promise<any[]> {
@@ -14,7 +15,7 @@ export async function getChallenge(chall_id: string): Promise<any> {
 }
 
 export async function submitFlag(chall_id: string, flag: string): Promise<{ status: string }> {
-	return await api<{ first_blood: boolean; status: string }>(`/submissions`, {
+	return api<{ first_blood: boolean; status: string }>(`/submissions`, {
 		headers: { 'content-type': 'application/json' },
 		method: 'POST',
 		body: JSON.stringify({ flag, chall_id })
@@ -57,7 +58,7 @@ export async function deleteChallenge(chall_id: string): Promise<any> {
 }
 
 /** Sends multipart/form-data to PATCH /challenges (server reads chall_id) */
-export async function updateChallengeMultipart(fd: any): Promise<any> {
+export async function updateChallengeMultipart(fd: FormData): Promise<any> {
 	return api<any>(`/challenges`, {
 		method: 'PATCH',
 		body: fd

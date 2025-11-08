@@ -27,7 +27,7 @@
 
 {#if loading}
   <div class="flex flex-row items-center gap-2 text-gray-500">
-    <Spinner /><p>Loading…</p>
+    <Spinner /><p>Loading...</p>
   </div>
 {:else}
   <p class="mt-5 text-3xl font-bold text-gray-800 dark:text-gray-100">You've been logged out.</p>

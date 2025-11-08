@@ -54,7 +54,7 @@
 		const raw = Array.isArray(team?.members) ? team.members : [];
 		members = raw.map((m: any) => ({
 			id: m?.id,
-			name: m?.name ?? '—',
+			name: m?.name ?? '-',
 			role: m?.role ?? 'Member',
 			score: Number(m?.score ?? 0)
 		}));
@@ -121,7 +121,7 @@
 
 		<div class="ml-auto w-full max-w-xs">
 			<!-- bind:value ensures q updates properly -->
-			<Input placeholder="Search members…" bind:value={q} />
+			<Input placeholder="Search members..." bind:value={q} />
 		</div>
 	</div>
 
@@ -146,31 +146,39 @@
 							class="hover:bg-muted group flex w-full cursor-pointer items-center gap-3 rounded-lg border p-3 text-left transition-colors dark:border-gray-700"
 						>
 							{#if memberImages[String(m.id)]}
-								<Avatar src={memberImages[String(m.id)]} class="h-10 w-10" />
+								<Avatar src={memberImages[String(m.id)]} class="h-10 w-10 shrink-0" />
 							{:else}
 								<div
-									class="bg-muted flex h-10 w-10 items-center justify-center rounded-full font-semibold"
+									class="bg-muted flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-semibold"
 								>
-									{initials(m.name)}
-								</div>
-							{/if}
+								{initials(m.name)}
+							</div>
+						{/if}
 
-							<div class="min-w-0">
-								<p
-									class="cursor-pointer truncate text-sm font-medium hover:underline"
-									onclick={() => {
+						<div class="min-w-0 flex-1">
+							<span
+								class="block cursor-pointer truncate text-sm font-medium hover:underline"
+								onclick={() => {
+									push(`/account/${m.id}`);
+								}}
+								onkeydown={(e) => {
+									if (e.key === 'Enter' || e.key === ' ') {
+										e.preventDefault();
 										push(`/account/${m.id}`);
-									}}
-								>
-									{m.name}
-								</p>
-								<p class="text-muted-foreground truncate text-xs">{m.role}</p>
-							</div>
+									}
+								}}
+								role="link"
+								tabindex="0"
+							>
+								{m.name}
+							</span>
+							<p class="text-muted-foreground truncate text-xs">{m.role}</p>
+						</div>
 
-							<div class="ml-auto text-right">
-								<p class="text-sm font-semibold">{prettyNum(m.score)} pts</p>
-							</div>
-						</button>
+						<div class="ml-auto shrink-0 text-right">
+							<p class="text-sm font-semibold">{prettyNum(m.score)} pts</p>
+						</div>
+					</button>
 					</HoverCardTrigger>
 
 					<HoverCardContent class="w-80">
