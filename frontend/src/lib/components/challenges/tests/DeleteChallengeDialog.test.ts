@@ -2,13 +2,17 @@
 import userEvent from '@testing-library/user-event';
 import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
 import { tick } from 'svelte';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import DeleteChallengeDialog from '../DeleteChallengeDialog.svelte';
 
 
 describe('DeleteChallengeDialog Component', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+	});
+
+	afterEach(async () => {
+		await new Promise(resolve => setTimeout(resolve, 150));
 	});
 
 	it('renders dialog title', () => {
