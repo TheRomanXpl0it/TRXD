@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within, fireEvent } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { toast } from 'svelte-sonner';
 import TeamJoinCreate from '../TeamJoinCreate.svelte';
 import { joinTeam, createTeam } from '@/team';
@@ -20,6 +20,10 @@ vi.mock('@/team', () => ({
 describe('TeamJoinCreate Component', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+  });
+
+  afterEach(async () => {
+    await new Promise(resolve => setTimeout(resolve, 150));
   });
 
 	it('renders join and create buttons', () => {
@@ -227,16 +231,12 @@ describe('TeamJoinCreate Component', () => {
     const submitButton = within(dialog).getByRole('button', { name: /^join$/i });
     await fireEvent.click(submitButton);
 
-    // Wait for loading state
-    await waitFor(() => {
-      const joinButton = within(dialog).getByRole('button', { name: /joining/i });
-      expect(joinButton).toBeDisabled();
-    });
+    // Wait for loading state - use findByRole which waits automatically
+    const joinButton = await within(dialog).findByRole('button', { name: /joining/i });
+    expect(joinButton).toBeDisabled();
 
     // Resolve join and let it finish
     resolveJoin({ ok: true });
-
-
 	});
 
 	it('shows loading state during create', async () => {
