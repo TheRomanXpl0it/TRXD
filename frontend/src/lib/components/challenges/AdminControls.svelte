@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
   import { Button } from '@/components/ui/button';
   import * as Popover from '$lib/components/ui/popover/index.js';
   import * as Command from '$lib/components/ui/command/index.js';
@@ -10,7 +9,10 @@
   import { toast } from 'svelte-sonner';
   import { createCategory as createCategoryApi } from '$lib/categories';
 
-  const dispatch = createEventDispatcher();
+  let { 'onopen-create': onOpenCreate, 'oncategory-created': onCategoryCreated } = $props<{
+    'onopen-create'?: () => void;
+    'oncategory-created'?: () => void;
+  }>();
 
   // local state
   let catPopoverOpen = $state(false);
@@ -35,7 +37,7 @@
       newCategoryName = '';
       newCategoryIcon = '';
       catPopoverOpen = false;
-      dispatch('category-created');
+      onCategoryCreated?.();
     } catch (e: any) {
       toast.error(e?.message ?? 'Failed to create category.');
     } finally {
@@ -45,7 +47,7 @@
 </script>
 
 <div class="mb-6 flex flex-wrap items-center gap-2">
-    <Button variant="outline" onclick={() => dispatch('open-create')} class="cursor-pointer">
+    <Button variant="outline" onclick={() => onOpenCreate?.()} class="cursor-pointer">
         <NotebookPenIcon class="mr-2 h-4 w-4" />
         Create Challenge
     </Button>

@@ -67,8 +67,8 @@
 	function isLikelyUrl(s: string): boolean {
 		if (!s) return false;
 		try {
-			new URL(s);
-			return true;
+			const url = new URL(s);
+			return url.protocol.startsWith("http:") || url.protocol.startsWith("https:");
 		} catch {
 			return false;
 		}

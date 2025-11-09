@@ -14,11 +14,17 @@
 		"lint": "prettier --check .",
 		"test": "vitest",
 		"test:ui": "vitest --ui",
-		"test:run": "vitest run"
+		"test:run": "vitest run",
+		"test:e2e": "playwright test",
+		"test:e2e:ui": "playwright test --ui",
+		"test:e2e:headed": "playwright test --headed",
+		"test:e2e:debug": "playwright test --debug",
+		"test:e2e:report": "playwright show-report"
 	},
 	"devDependencies": {
 		"@internationalized/date": "^3.10.0",
 		"@lucide/svelte": "^0.544.0",
+		"@playwright/test": "^1.56.1",
 		"@sveltejs/adapter-auto": "^6.1.0",
 		"@sveltejs/kit": "^2.43.2",
 		"@sveltejs/vite-plugin-svelte": "^6.2.0",
@@ -69,6 +75,7 @@
 		"embla-carousel-autoplay": "^8.6.0",
 		"layerchart": "^2.0.0-next.41",
 		"mode-watcher": "^1.1.0",
+		"monaco-editor": "^0.54.0",
 		"svelte-apexcharts": "^1.0.2",
 		"svelte-circle-flags": "^1.1.2",
 		"svelte-flagpack": "^1.0.0",

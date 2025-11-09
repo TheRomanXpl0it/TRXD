@@ -14,22 +14,9 @@
     import { createEventDispatcher } from 'svelte';
     import { createTagsForChallenge, deleteTagsFromChallenge} from '$lib/tags'
     import { createFlags, deleteFlags } from '$lib/flags'
+	import MonacoEditor from '$lib/components/MonacoEditor.svelte';
     
     const dispatch = createEventDispatcher();
-
-	// TODO: Maybe remove codemirror and use something else?
-	import { EditorState, Compartment } from '@codemirror/state';
-	import {
-		EditorView,
-		keymap,
-		lineNumbers,
-		highlightActiveLine,
-		highlightActiveLineGutter
-	} from '@codemirror/view';
-	import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
-	import { yaml } from '@codemirror/lang-yaml';
-	import { oneDark } from '@codemirror/theme-one-dark';
-	import { syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language';
 
 	type Item = { value: string; label: string };
 
@@ -388,105 +375,6 @@
 		}
 	}
 
-	// TODO: Remove codemirror, use something else
-	let cmComposeHost: HTMLDivElement | undefined;
-	let cmComposeView: EditorView | null = null;
-
-	// Theme compartment + light theme
-	const themeComp = new Compartment();
-	function lightTheme() {
-		return EditorView.theme(
-			{
-				'&': { backgroundColor: 'transparent' },
-				'.cm-content': {
-					fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-					fontSize: '0.9rem'
-				},
-				'.cm-gutters': {
-					backgroundColor: 'transparent',
-					borderRight: 'none',
-					color: 'rgb(100 116 139)'
-				},
-				'&.cm-editor': { borderRadius: '0.5rem' },
-				'&.cm-focused': { outline: 'none' }
-			},
-			{ dark: false }
-		);
-	}
-
-	$effect(() => {
-		// Destroy editor when sheet closes or type changes away from Compose or not on deployment tab
-		if ((!open || type !== 'Compose' || activeTab !== 'deployment') && cmComposeView) {
-			cmComposeView.destroy();
-			cmComposeView = null;
-			if (cmComposeHost) cmComposeHost.innerHTML = '';
-		}
-
-		// Create editor when sheet is open, type is Compose, on deployment tab, host exists, and challenge data is loaded
-		if (open && type === 'Compose' && activeTab === 'deployment' && cmComposeHost && !cmComposeView && challenge) {
-			cmComposeView = new EditorView({
-				parent: cmComposeHost,
-				state: EditorState.create({
-					doc: composeFile && composeFile.length ? composeFile : '\n',
-					extensions: [
-						lineNumbers(),
-						highlightActiveLineGutter(),
-						highlightActiveLine(),
-						history(),
-						keymap.of([indentWithTab, ...defaultKeymap, ...historyKeymap]),
-						yaml(),
-						syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
-						themeComp.of(lightTheme()),
-						EditorView.theme({ '&': { minHeight: '180px', borderRadius: '0.5rem' } }),
-						EditorView.updateListener.of((u) => {
-							if (u.docChanged) composeFile = u.state.doc.toString();
-						})
-					]
-				})
-			});
-		}
-	});
-
-	$effect(() => {
-		if (!cmComposeView) return;
-		const current = cmComposeView.state.doc.toString();
-		const desired = composeFile && composeFile.length ? composeFile : '\n';
-		if (desired !== current) {
-			cmComposeView.dispatch({
-				changes: { from: 0, to: current.length, insert: desired }
-			});
-		}
-	});
-
-	$effect(() => {
-		if (!cmComposeView) return;
-
-		const isDarkNow = () =>
-			typeof document !== 'undefined' &&
-			(document.documentElement.classList.contains('dark') ||
-				(typeof window !== 'undefined' &&
-					window.matchMedia?.('(prefers-color-scheme: dark)')?.matches));
-
-		const apply = () => {
-			cmComposeView?.dispatch({
-				effects: themeComp.reconfigure(isDarkNow() ? oneDark : lightTheme())
-			});
-		};
-
-		apply();
-
-		const mq = window.matchMedia?.('(prefers-color-scheme: dark)');
-		const mqHandler = () => apply();
-		mq?.addEventListener?.('change', mqHandler);
-
-		const obs = new MutationObserver(apply);
-		obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-
-		return () => {
-			mq?.removeEventListener?.('change', mqHandler);
-			obs.disconnect();
-		};
-	});
 </script>
 
 <Sheet.Root bind:open>
@@ -832,7 +720,9 @@
 					<div class="space-y-4">
 						<div>
 							<Label class="mb-2 block text-sm font-semibold">Compose Configuration</Label>
-							<div bind:this={cmComposeHost} class="min-h-45 mt-3 rounded border"></div>
+							{#if open && activeTab === 'deployment'}
+								<MonacoEditor bind:value={composeFile} language="yaml" class="mt-3" />
+							{/if}
 						</div>
 						<div class="flex items-center gap-3">
 							<Checkbox id="com-hashdomain" bind:checked={hashDomain} />

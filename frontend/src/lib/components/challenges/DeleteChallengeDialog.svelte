@@ -4,13 +4,21 @@
   import { Input } from '$lib/components/ui/input/index.js';
   import Label from '$lib/components/ui/label/label.svelte';
   import { Spinner } from '$lib/components/ui/spinner/index.js';
-  import { createEventDispatcher } from 'svelte';
 
 
+type Props = {
+  open?: boolean;
+  toDelete: any;
+  deleting: boolean;
+  onconfirm?: () => void;
+};
 
-  let { open = $bindable(false), toDelete = $bindable(null), deleting = $bindable(false) } = $props<{ open?: boolean; toDelete: any, deleting: boolean }>();
-
-  const dispatch = createEventDispatcher();
+let {
+  open = $bindable(false),
+  toDelete,
+  deleting,
+  onconfirm
+} = $props<Props>();
 
   let confirmationText = $state('');
 
@@ -66,7 +74,7 @@
           Cancel
         </Button>
       </Dialog.Close>
-      <Button variant="destructive" class="cursor-pointer" disabled={deleting || !canDelete} onclick={() => dispatch('confirm')}>
+      <Button variant="destructive" class="cursor-pointer" disabled={deleting || !canDelete} onclick={() => onconfirm?.()}>
         {#if deleting}
           <Spinner class="mr-2" /> Deleting...
         {:else}

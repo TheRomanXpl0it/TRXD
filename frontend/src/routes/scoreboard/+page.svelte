@@ -174,10 +174,10 @@
 								</div>
 							</Table.Cell>
 
-							<Table.Cell class="max-w-32 truncate sm:max-w-none">
-								<div class="flex items-center gap-2">
+							<Table.Cell class="max-w-32 sm:max-w-xs">
+								<div class="flex items-center gap-2 min-w-0">
 									{#if !compactMode}
-										<Avatar src={row.image} class="h-8 w-8">
+										<Avatar src={row.image} class="h-8 w-8 shrink-0">
 											{#if !row.image}
 												<BugOutline class="h-4 w-4" />
 											{/if}
@@ -191,7 +191,7 @@
 											e.preventDefault();
 											pushItem(row.id);
 										}}
-										class="text-primary cursor-pointer text-sm underline-offset-2 hover:underline sm:text-base"
+										class="text-primary cursor-pointer text-sm underline-offset-2 hover:underline sm:text-base truncate"
 										title={`View ${$userMode ? 'player' : 'team'} ${row.name}`}
 									>
 										{row.name}

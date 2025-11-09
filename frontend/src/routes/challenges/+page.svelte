@@ -301,8 +301,8 @@
 
 {#if $authUser?.role === 'Admin' && AdminControlsCmp}
   <AdminControlsCmp
-    on:open-create={openCreate}
-    on:category-created={() => {
+    onopen-create={openCreate}
+    oncategory-created={() => {
 		challengesQuery.refetch();
 		categoriesQuery.refetch();
 	}}

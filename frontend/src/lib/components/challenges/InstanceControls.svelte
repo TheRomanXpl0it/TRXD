@@ -41,9 +41,8 @@
 		creatingInstance = true;
 		try {
 			const { host, port, timeout } = await startInstance(challenge.id);
-			challenge.host = host;
-			challenge.port = port;
-			challenge.timeout = timeout;
+			// Force reactivity by creating a new object reference
+			challenge = { ...challenge, host, port, timeout };
 			if (typeof timeout === 'number' && onCountdownUpdate) {
 				onCountdownUpdate(challenge.id, Math.max(0, timeout));
 			}
@@ -61,9 +60,8 @@
 		destroyingInstance = true;
 		try {
 			await stopInstance(challenge.id);
-			challenge.host = null;
-			challenge.port = null;
-			challenge.timeout = null;
+			// Force reactivity by creating a new object reference
+			challenge = { ...challenge, host: null, port: null, timeout: null };
 			if (onCountdownUpdate) {
 				onCountdownUpdate(challenge.id, 0);
 			}

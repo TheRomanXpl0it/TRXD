@@ -16,7 +16,6 @@ export async function loadUser(force = true) {
   loadingPromise = (async () => {
     try {
       const userfetched:any = await getInfo();
-      //console.log(userfetched);
 
       if (userfetched === "OK"){
         user.set(null);

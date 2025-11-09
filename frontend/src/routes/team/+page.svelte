@@ -27,7 +27,6 @@
 	let lastKey: string | null = $state(null);
 	let reqSeq = $state(0);
 
-	// TODO: Move these functions somewhere else
 	function normalizeKey(x: unknown): string | null {
 		const s = String(x ?? '').trim();
 		return s ? s : null;

@@ -34,9 +34,9 @@
 	type NavItem = { title: string; url: string; icon: typeof HouseIcon };
 	const baseItems: NavItem[] = [
 		{ title: 'Home', url: '/', icon: HouseIcon },
+		{ title: 'Challenges', url: '/challenges', icon: Joystick },
 		{ title: 'Scoreboard', url: '/scoreboard', icon: Trophy },
 		{ title: 'Teams', url: '/teams', icon: Users },
-		{ title: 'Challenges', url: '/challenges', icon: Joystick }
 		//{ title: "Writeups",   url: "/writeups",   icon: BookText },
 	];
 
