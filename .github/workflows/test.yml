@@ -61,6 +61,9 @@ jobs:
   frontend-e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      POSTGRES_PORT: 5433
+      REDIS_PORT: 6380
     steps:
     - name: Checkout code
       uses: actions/checkout@v5
