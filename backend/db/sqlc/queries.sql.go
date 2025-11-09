@@ -223,6 +223,34 @@ func (q *Queries) DeleteTag(ctx context.Context, arg DeleteTagParams) error {
 	return err
 }
 
+const getCategories = `-- name: GetCategories :many
+SELECT name, visible_challs, icon FROM categories ORDER BY name ASC
+`
+
+// Retrieve all categories and icons
+func (q *Queries) GetCategories(ctx context.Context) ([]Category, error) {
+	rows, err := q.query(ctx, q.getCategoriesStmt, getCategories)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Category
+	for rows.Next() {
+		var i Category
+		if err := rows.Scan(&i.Name, &i.VisibleChalls, &i.Icon); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getCategory = `-- name: GetCategory :one
 SELECT name, visible_challs, icon FROM categories WHERE name = $1
 `
@@ -584,9 +612,25 @@ func (q *Queries) GetTeamSolves(ctx context.Context, id int32) ([]GetTeamSolvesR
 }
 
 const getTeamsPreview = `-- name: GetTeamsPreview :many
-SELECT id, name, score, country, image
-  FROM teams
-  ORDER BY id
+SELECT
+    t.id,
+    t.name,
+    t.score,
+    t.country,
+    t.image,
+    COALESCE(
+      JSON_AGG(
+        JSON_BUILD_OBJECT(
+          'name', b.name,
+          'description', b.description
+        )
+      ) FILTER (WHERE b.name IS NOT NULL),
+      '[]'
+    ) AS badges
+  FROM teams t
+  LEFT JOIN badges b ON b.team_id = t.id
+  GROUP BY t.id, t.name, t.score, t.country, t.image
+  ORDER BY t.id
 `
 
 type GetTeamsPreviewRow struct {
@@ -595,6 +639,7 @@ type GetTeamsPreviewRow struct {
 	Score   int32          `json:"score"`
 	Country sql.NullString `json:"country"`
 	Image   sql.NullString `json:"image"`
+	Badges  interface{}    `json:"badges"`
 }
 
 // Retrieve all teams
@@ -613,6 +658,7 @@ func (q *Queries) GetTeamsPreview(ctx context.Context) ([]GetTeamsPreviewRow, er
 			&i.Score,
 			&i.Country,
 			&i.Image,
+			&i.Badges,
 		); err != nil {
 			return nil, err
 		}
@@ -628,9 +674,25 @@ func (q *Queries) GetTeamsPreview(ctx context.Context) ([]GetTeamsPreviewRow, er
 }
 
 const getTeamsScoreboard = `-- name: GetTeamsScoreboard :many
-SELECT id, name, score, country, image
-  FROM teams
-  ORDER BY score DESC
+SELECT
+    t.id,
+    t.name,
+    t.score,
+    t.country,
+    t.image,
+    COALESCE(
+      JSON_AGG(
+        JSON_BUILD_OBJECT(
+          'name', b.name,
+          'description', b.description
+        )
+      ) FILTER (WHERE b.name IS NOT NULL),
+      '[]'
+    ) AS badges
+  FROM teams t
+  LEFT JOIN badges b ON b.team_id = t.id
+  GROUP BY t.id, t.name, t.score, t.country, t.image
+  ORDER BY t.score DESC
 `
 
 type GetTeamsScoreboardRow struct {
@@ -639,6 +701,7 @@ type GetTeamsScoreboardRow struct {
 	Score   int32          `json:"score"`
 	Country sql.NullString `json:"country"`
 	Image   sql.NullString `json:"image"`
+	Badges  interface{}    `json:"badges"`
 }
 
 // Retrieve all teams
@@ -657,6 +720,7 @@ func (q *Queries) GetTeamsScoreboard(ctx context.Context) ([]GetTeamsScoreboardR
 			&i.Score,
 			&i.Country,
 			&i.Image,
+			&i.Badges,
 		); err != nil {
 			return nil, err
 		}
@@ -747,7 +811,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 }
 
 const getUserSolves = `-- name: GetUserSolves :many
-SELECT c.id, c.name, c.category, s.first_blood, s.timestamp
+SELECT c.id, c.name, c.category, c.points, s.first_blood, s.timestamp
   FROM submissions s
   JOIN challenges c ON s.chall_id = c.id
   WHERE s.user_id = $1
@@ -758,6 +822,7 @@ type GetUserSolvesRow struct {
 	ID         int32     `json:"id"`
 	Name       string    `json:"name"`
 	Category   string    `json:"category"`
+	Points     int32     `json:"points"`
 	FirstBlood bool      `json:"first_blood"`
 	Timestamp  time.Time `json:"timestamp"`
 }
@@ -776,6 +841,7 @@ func (q *Queries) GetUserSolves(ctx context.Context, userID int32) ([]GetUserSol
 			&i.ID,
 			&i.Name,
 			&i.Category,
+			&i.Points,
 			&i.FirstBlood,
 			&i.Timestamp,
 		); err != nil {

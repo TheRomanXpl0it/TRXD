@@ -191,8 +191,11 @@ i1 = spawn_good_instance(s1, chall_id_3)
 r = requests.get(f'http://localhost:{i1["port"]}')
 assert_request(r, False)
 kill_good_instance(s1, chall_id_3)
-stats = list(container.stats())
-assert json.loads(stats[0].decode())['message'].startswith("No such container"), stats
+try:
+	stats = list(container.stats())
+	assert json.loads(stats[0].decode())['message'].startswith("No such container"), stats
+except docker.errors.NotFound:
+	pass
 update_config(admin, "min-port", "10000")
 update_config(admin, "max-port", "20000")
 
@@ -354,7 +357,7 @@ i1 = spawn_good_instance(s1, chall_id_3)
 kill_container_by_name(project_name+'-nginx-1')
 fail_hash_request(i1['host'].split('.')[0])
 kill_good_instance(s1, chall_id_3)
-res = os.system('cd .. && docker compose up -d nginx')
+res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
 assert res == 0, res
 
 #! REMOVE NGINX
@@ -362,7 +365,7 @@ i1 = spawn_good_instance(s1, chall_id_3)
 remove_container_by_name(project_name+'-nginx-1')
 fail_hash_request(i1['host'].split('.')[0])
 kill_good_instance(s1, chall_id_3)
-res = os.system('cd .. && docker compose up -d nginx')
+res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
 assert res == 0, res
 
 #! KILL NGINX (COMPOSE)
@@ -370,7 +373,7 @@ i1 = spawn_good_instance(s1, chall_id_4)
 kill_container_by_name(project_name+'-nginx-1')
 fail_hash_request(i1['host'].split('.')[0])
 kill_good_instance(s1, chall_id_4)
-res = os.system('cd .. && docker compose up -d nginx')
+res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
 assert res == 0, res
 
 #! REMOVE NGINX (COMPOSE)
@@ -378,7 +381,7 @@ i1 = spawn_good_instance(s1, chall_id_4)
 remove_container_by_name(project_name+'-nginx-1')
 fail_hash_request(i1['host'].split('.')[0])
 kill_good_instance(s1, chall_id_4)
-res = os.system('cd .. && docker compose up -d nginx')
+res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
 assert res == 0, res
 
 #! KILL NGINX (ROUND 2: CACHE RESET)
@@ -386,7 +389,7 @@ i1 = spawn_good_instance(s1, chall_id_3)
 kill_container_by_name(project_name+'-nginx-1')
 fail_hash_request(i1['host'].split('.')[0])
 kill_good_instance(s1, chall_id_3)
-res = os.system('cd .. && docker compose up -d nginx')
+res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
 assert res == 0, res
 
 #! REMOVE NGINX (ROUND 2: CACHE RESET)
@@ -394,7 +397,7 @@ i1 = spawn_good_instance(s1, chall_id_3)
 remove_container_by_name(project_name+'-nginx-1')
 fail_hash_request(i1['host'].split('.')[0])
 kill_good_instance(s1, chall_id_3)
-res = os.system('cd .. && docker compose up -d nginx')
+res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
 assert res == 0, res
 
 #! KILL NGINX (COMPOSE) (ROUND 2: CACHE RESET)
@@ -402,7 +405,7 @@ i1 = spawn_good_instance(s1, chall_id_4)
 kill_container_by_name(project_name+'-nginx-1')
 fail_hash_request(i1['host'].split('.')[0])
 kill_good_instance(s1, chall_id_4)
-res = os.system('cd .. && docker compose up -d nginx')
+res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
 assert res == 0, res
 
 #! REMOVE NGINX (COMPOSE) (ROUND 2: CACHE RESET)
@@ -410,7 +413,7 @@ i1 = spawn_good_instance(s1, chall_id_4)
 remove_container_by_name(project_name+'-nginx-1')
 fail_hash_request(i1['host'].split('.')[0])
 kill_good_instance(s1, chall_id_4)
-res = os.system('cd .. && docker compose up -d nginx')
+res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
 assert res == 0, res
 
 #! REMOVE NGINX BEFOREHAND
@@ -419,7 +422,7 @@ r = spawn_instance(s1, chall_id_3)
 assert r.status_code == 500, r.text
 r = kill_instance(s1, chall_id_3)
 assert r.status_code == 404, r.text
-res = os.system('cd .. && docker compose up -d nginx')
+res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
 assert res == 0, res
 
 #! REMOVE NGINX BEFOREHAND (COMPOSE)
@@ -428,7 +431,7 @@ r = spawn_instance(s1, chall_id_4)
 assert r.status_code == 500, r.text
 r = kill_instance(s1, chall_id_4)
 assert r.status_code == 404, r.text
-res = os.system('cd .. && docker compose up -d nginx')
+res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
 assert res == 0, res
 
 #! REMOVE NGINX BEFOREHAND (WITH NON EMPTY CACHE)
@@ -438,7 +441,7 @@ r = kill_instance(s1, chall_id_3)
 assert r.status_code == 200, r.text
 
 remove_container_by_name(project_name+'-nginx-1')
-res = os.system('cd .. && docker compose up -d nginx')
+res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
 assert res == 0, res
 
 r = spawn_instance(s1, chall_id_3)

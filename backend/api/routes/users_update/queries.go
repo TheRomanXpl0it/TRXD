@@ -10,14 +10,19 @@ import (
 	"github.com/lib/pq"
 )
 
-func UpdateUser(ctx context.Context, tx *sql.Tx, userID int32, name, country, image string) error {
+func UpdateUser(ctx context.Context, tx *sql.Tx, userID int32, name string, country *string, image *string) error {
+	params := sqlc.UpdateUserParams{
+		ID:   userID,
+		Name: sql.NullString{String: name, Valid: name != ""},
+	}
+	if country != nil {
+		params.Country = sql.NullString{String: *country, Valid: true}
+	}
+	if image != nil {
+		params.Image = sql.NullString{String: *image, Valid: true}
+	}
 	sqlTx := db.Sql.WithTx(tx)
-	err := sqlTx.UpdateUser(ctx, sqlc.UpdateUserParams{
-		ID:      userID,
-		Name:    sql.NullString{String: name, Valid: name != ""},
-		Country: sql.NullString{String: country, Valid: country != ""},
-		Image:   sql.NullString{String: image, Valid: image != ""},
-	})
+	err := sqlTx.UpdateUser(ctx, params)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
 			if pqErr.Code == "23505" { // Unique violation error code

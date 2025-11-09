@@ -14,15 +14,15 @@ import (
 
 func Route(c *fiber.Ctx) error {
 	var data struct {
-		Name    string `json:"name" validate:"user_name"`
-		Country string `json:"country" validate:"user_country"`
-		Image   string `json:"image" validate:"user_image"`
+		Name    string  `json:"name" validate:"user_name"`
+		Country *string `json:"country" validate:"omitempty,user_country"`
+		Image   *string `json:"image" validate:"omitempty,user_image"`
 	}
 	if err := c.BodyParser(&data); err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidJSON)
 	}
 
-	if data.Name == "" && data.Country == "" && data.Image == "" {
+	if data.Name == "" && data.Country == nil && data.Image == nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.MissingRequiredFields)
 	}
 	valid, err := validator.Struct(c, data)
@@ -53,7 +53,8 @@ func Route(c *fiber.Ctx) error {
 	}
 	if mode == "true" {
 		tid := c.Locals("tid").(int32)
-		err = teams_update.UpdateTeam(c.Context(), tx, tid, data.Name, data.Country, data.Image, "")
+
+		err = teams_update.UpdateTeam(c.Context(), tx, tid, data.Name, data.Country, data.Image, nil)
 		if err != nil {
 			return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorUpdatingTeam, err)
 		}

@@ -87,7 +87,7 @@ jobs:
       run: |
         go build .
 
-    - name: Run Go Unit tests
+    - name: Run Go Unit tests without Redis
       run: |
         REDIS_DISABLE=true go test -v ./...
     

@@ -57,16 +57,19 @@ func TestRoute(t *testing.T) {
 				"category":    "cat-1",
 				"first_blood": true,
 				"name":        "chall-1",
+				"points":      500,
 			},
 			{
 				"category":    "cat-1",
 				"first_blood": true,
 				"name":        "chall-3",
+				"points":      500,
 			},
 			{
 				"category":    "cat-1",
 				"first_blood": true,
 				"name":        "chall-4",
+				"points":      498,
 			},
 		},
 	}
@@ -108,16 +111,19 @@ func TestRoute(t *testing.T) {
 				"category":    "cat-1",
 				"first_blood": true,
 				"name":        "chall-1",
+				"points":      500,
 			},
 			{
 				"category":    "cat-1",
 				"first_blood": true,
 				"name":        "chall-3",
+				"points":      500,
 			},
 			{
 				"category":    "cat-1",
 				"first_blood": true,
 				"name":        "chall-4",
+				"points":      498,
 			},
 		},
 	}
@@ -166,16 +172,19 @@ func TestRoute(t *testing.T) {
 				"category":    "cat-1",
 				"first_blood": true,
 				"name":        "chall-1",
+				"points":      500,
 			},
 			{
 				"category":    "cat-1",
 				"first_blood": true,
 				"name":        "chall-3",
+				"points":      500,
 			},
 			{
 				"category":    "cat-1",
 				"first_blood": true,
 				"name":        "chall-4",
+				"points":      498,
 			},
 		},
 	}

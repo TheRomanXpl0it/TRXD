@@ -8,7 +8,7 @@ const (
 	MaxChallDescLen       = 1024
 	MaxChallDifficultyLen = 16
 	MaxChallNameLen       = 128
-	MaxCountryLen         = 3
+	MaxCountryLen         = 3 // TODO: remove
 	MaxEmailLen           = 256
 	MaxFlagLen            = 128
 	MaxIconLen            = 32
@@ -52,6 +52,7 @@ const (
 	ErrorDeletingInstance        = "Error deleting instance"
 	ErrorDeletingTag             = "Error deleting tag"
 	ErrorDestroyingSession       = "Error destroying session"
+	ErrorFetchingCategories      = "Error fetching categories"
 	ErrorFetchingCategory        = "Error fetching category"
 	ErrorFetchingChallenge       = "Error fetching challenge"
 	ErrorFetchingChallenges      = "Error fetching challenges"
@@ -79,11 +80,13 @@ const (
 	ErrorUpdatingUser            = "Error updating user"
 
 	InvalidChallengeID     = "Invalid challenge ID, must be non negative"
+	InvalidCountry         = "Invalid country code, must be ISO3166-1 alpha-3"
 	InvalidCredentials     = "Invalid email or password"
 	InvalidEmail           = "Invalid email format"
 	InvalidEnvs            = "Invalid environment variables"
 	InvalidFilePath        = "Invalid file path"
 	InvalidFormData        = "Invalid form data"
+	InvalidHttpUrl         = "Invalid http(s) url"
 	InvalidImage           = "Invalid image"
 	InvalidJSON            = "Invalid JSON format"
 	InvalidMaxCpu          = "Invalid Max CPU, must be a positive number"

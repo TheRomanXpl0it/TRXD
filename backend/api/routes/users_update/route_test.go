@@ -41,9 +41,9 @@ var testData = []struct {
 		expectedResponse: errorf("Name must not exceed 64"),
 	},
 	{
-		testBody:         JSON{"country": strings.Repeat("a", consts.MaxCountryLen+1)},
+		testBody:         JSON{"country": "a"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("Country must not exceed 3"),
+		expectedResponse: errorf(consts.InvalidCountry),
 	},
 	{
 		testBody:         JSON{"image": strings.Repeat("a", consts.MaxImageLen+1)},
@@ -51,16 +51,38 @@ var testData = []struct {
 		expectedResponse: errorf("Image must not exceed 1024"),
 	},
 	{
-		testBody:         JSON{"name": "a", "country": "a", "image": "a"},
+		testBody:         JSON{"name": "a", "country": "USA", "image": "a"},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.InvalidHttpUrl),
+	},
+	{
+		testBody:         JSON{"name": "a", "country": "USA", "image": "file://example.com/image.png"},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.InvalidHttpUrl),
+	},
+	{
+		testBody:         JSON{"name": "a", "country": "USA", "image": "http://example.com/image.png"},
 		expectedStatus:   http.StatusConflict,
 		expectedResponse: errorf(consts.NameAlreadyTaken),
 	},
 	{
-		testBody:       JSON{"name": "aa", "country": "a", "image": "a"},
+		testBody:       JSON{"name": "aa", "country": "USA", "image": "http://example.com/image.png"},
 		expectedStatus: http.StatusOK,
 	},
 	{
-		testBody:       JSON{"name": "bb", "country": "b"},
+		testBody:       JSON{"name": "aa", "country": "USA", "image": "https://example.com/image.png"},
+		expectedStatus: http.StatusOK,
+	},
+	{
+		testBody:       JSON{"name": "aa", "country": "USA", "image": ""},
+		expectedStatus: http.StatusOK,
+	},
+	{
+		testBody:       JSON{"name": "aa", "country": "", "image": "https://example.com/image.png"},
+		expectedStatus: http.StatusOK,
+	},
+	{
+		testBody:       JSON{"name": "bb", "country": "JPN"},
 		expectedStatus: http.StatusOK,
 	},
 	{

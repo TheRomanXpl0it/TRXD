@@ -2,27 +2,27 @@ package teams_scoreboard
 
 import (
 	"context"
+	"encoding/json"
 	"trxd/db"
-	"trxd/db/sqlc"
 )
 
 type TeamData struct {
-	ID      int32                       `json:"id"`
-	Name    string                      `json:"name"`
-	Score   int32                       `json:"score"`
-	Country string                      `json:"country"`
-	Image   string                      `json:"image,omitempty"`
-	Badges  []sqlc.GetBadgesFromTeamRow `json:"badges,omitempty"`
+	ID      int32           `json:"id"`
+	Name    string          `json:"name"`
+	Score   int32           `json:"score"`
+	Country string          `json:"country"`
+	Image   string          `json:"image"`
+	Badges  json.RawMessage `json:"badges"`
 }
 
 func GetTeamScoreboard(ctx context.Context) ([]*TeamData, error) {
-	teamPreviews, err := db.Sql.GetTeamsScoreboard(ctx)
+	teams, err := db.Sql.GetTeamsScoreboard(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	var teamsData []*TeamData
-	for _, team := range teamPreviews {
+	for _, team := range teams {
 		teamData := &TeamData{
 			ID:    team.ID,
 			Name:  team.Name,
@@ -35,11 +35,9 @@ func GetTeamScoreboard(ctx context.Context) ([]*TeamData, error) {
 			teamData.Image = team.Image.String
 		}
 
-		badges, err := db.GetBadgesFromTeam(ctx, team.ID)
-		if err != nil {
-			return nil, err
+		if js, ok := team.Badges.([]byte); ok {
+			teamData.Badges = js
 		}
-		teamData.Badges = badges
 
 		teamsData = append(teamsData, teamData)
 	}

@@ -25,6 +25,9 @@ func init() {
 	scoreTypes := []string{string(sqlc.ScoreTypeStatic), string(sqlc.ScoreTypeDynamic)}
 
 	// TODO: put a max to integers (ex: "challenge_max_points") or test with more than maxint
+	// validate.RegisterAlias("id", "min=0") // TODO: rework names
+	validate.RegisterValidation("country", validCountry)
+	validate.RegisterValidation("image", validHttpUrl)
 
 	validate.RegisterAlias("category_name", fmt.Sprintf("max=%d", consts.MaxCategoryLen))
 	validate.RegisterAlias("category_icon", fmt.Sprintf("max=%d", consts.MaxIconLen))
@@ -51,16 +54,16 @@ func init() {
 	validate.RegisterAlias("team_id", "min=0")
 	validate.RegisterAlias("team_name", fmt.Sprintf("max=%d", consts.MaxTeamNameLen))
 	validate.RegisterAlias("team_password", fmt.Sprintf("min=%d,max=%d", consts.MinPasswordLen, consts.MaxPasswordLen))
-	validate.RegisterAlias("team_country", fmt.Sprintf("max=%d", consts.MaxCountryLen)) // TODO: iso3166 / country_code
-	validate.RegisterAlias("team_image", fmt.Sprintf("max=%d", consts.MaxImageLen))     // TODO: url/uri
+	validate.RegisterAlias("team_country", "country")
+	validate.RegisterAlias("team_image", fmt.Sprintf("max=%d,image", consts.MaxImageLen))
 	validate.RegisterAlias("team_bio", fmt.Sprintf("max=%d", consts.MaxBioLen))
 
 	validate.RegisterAlias("user_id", "min=0")
 	validate.RegisterAlias("user_name", fmt.Sprintf("max=%d", consts.MaxUserNameLen))
 	validate.RegisterAlias("user_email", fmt.Sprintf("max=%d,email", consts.MaxEmailLen))
 	validate.RegisterAlias("user_password", fmt.Sprintf("min=%d,max=%d", consts.MinPasswordLen, consts.MaxPasswordLen))
-	validate.RegisterAlias("user_country", fmt.Sprintf("max=%d", consts.MaxCountryLen)) // TODO: iso3166 / country_code
-	validate.RegisterAlias("user_image", fmt.Sprintf("max=%d", consts.MaxImageLen))     // TODO: url/uri
+	validate.RegisterAlias("user_country", "country")
+	validate.RegisterAlias("user_image", fmt.Sprintf("max=%d,image", consts.MaxImageLen))
 }
 
 func errHandle(c *fiber.Ctx, err error) error {
