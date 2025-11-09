@@ -413,13 +413,18 @@ test.describe("Challenge Instances", () => {
     await page.waitForTimeout(300);
     await page.locator("#cat-name").fill(category.name);
     await page.locator("#cat-icon").fill(category.icon);
+    
+    const categoryResponsePromise = page.waitForResponse(
+      (response) => response.url().includes('/api/categories') && response.status() === 200,
+      { timeout: 10000 }
+    );
+    
     await page
       .getByRole("button", { name: /^Create$/i })
       .last()
       .click();
-    await expect(page.getByText("Category created!").first()).toBeVisible({
-      timeout: 5000,
-    });
+    
+    await categoryResponsePromise;
     await page.keyboard.press("Escape");
     await page.waitForTimeout(500);
 

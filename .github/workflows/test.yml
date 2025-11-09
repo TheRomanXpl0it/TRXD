@@ -88,20 +88,24 @@ jobs:
       run: npx playwright install --with-deps
 
     - name: Set up Infrastructure (Docker Compose)
+      working-directory: .
       run: docker compose -p $PROJECT_NAME up -d
 
     - name: Build echo-server image
+      working-directory: .
       run: |
         cd tests/echo-server
         chmod +x ./build.sh
         ./build.sh
 
     - name: Install system dependencies
+      working-directory: .
       run: |
         sudo apt update
         sudo apt install -y netcat-openbsd postgresql-client
 
     - name: Wait for Postgres
+      working-directory: .
       run: |
         until pg_isready -h localhost -p $POSTGRES_PORT -U testuser -d testdb; do
           echo "Waiting for Postgres..."
@@ -157,6 +161,7 @@ jobs:
 
     - name: Teardown Infrastructure
       if: always()
+      working-directory: .
       run: docker compose -p $PROJECT_NAME down
   tests:
     timeout-minutes: 30
