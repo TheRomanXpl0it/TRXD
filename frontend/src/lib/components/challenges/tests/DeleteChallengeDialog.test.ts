@@ -345,8 +345,12 @@ describe('DeleteChallengeDialog Component', () => {
 			}
 		});
 
+		await waitFor(() => {
+			expect(screen.getByRole('dialog')).toBeInTheDocument();
+		});
+
 		const input = screen.getByLabelText(/confirmation/i);
-		await user.type(input, 'some text');
+		await fireEvent.input(input, { target: { value: 'some text' } });
 		
 		expect(input).toHaveValue('some text');
 

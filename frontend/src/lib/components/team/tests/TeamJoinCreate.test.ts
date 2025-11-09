@@ -161,10 +161,18 @@ describe('TeamJoinCreate Component', () => {
 	const openButtons = screen.getAllByRole('button', { name: /^create$/i });
 	await fireEvent.click(openButtons[0]);
 
-		// Fill in form
-		await user.type(screen.getByLabelText(/^team name$/i), 'BlueTeam');
-		await user.type(screen.getByLabelText(/^team password$/i), '123');
-		await user.type(screen.getByLabelText(/confirm password/i), '123');
+		await waitFor(() => {
+			expect(screen.getByRole('dialog')).toBeInTheDocument();
+		});
+
+		// Fill in form using fireEvent instead of userEvent
+		const nameInput = screen.getByLabelText(/^team name$/i);
+		const passwordInput = screen.getByLabelText(/^team password$/i);
+		const confirmInput = screen.getByLabelText(/confirm password/i);
+
+		await fireEvent.input(nameInput, { target: { value: 'BlueTeam' } });
+		await fireEvent.input(passwordInput, { target: { value: '123' } });
+		await fireEvent.input(confirmInput, { target: { value: '123' } });
 
 		// Submit the form inside the open dialog (avoids overlay/pointer-events issues)
 		const dialog = screen.getByRole('dialog');
