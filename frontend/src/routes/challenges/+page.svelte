@@ -26,6 +26,7 @@
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import { user as authUser } from '$lib/stores/auth';
 	import { onMount } from 'svelte';
+	import { marked } from "marked";
 
 	import { config } from '$lib/env';
 
@@ -606,8 +607,8 @@
 		</div>
 
 		<!-- Description -->
-		<div class="mt-5 flex flex-row items-center">
-			{selected?.description}
+		<div class="mt-5 prose dark:prose-invert items-center">
+		   {@html marked(selected?.description)}
 		</div>
 
 		<!-- Attatchments  -->
