@@ -3,7 +3,7 @@ name: TRXd Tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, feature/frontend-refactor ]
   pull_request:
     branches: [ main ]
 
