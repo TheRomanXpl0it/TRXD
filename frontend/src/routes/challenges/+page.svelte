@@ -13,8 +13,11 @@
 	import { Button } from '@/components/ui/button';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import * as Command from '$lib/components/ui/command/index.js';
-	import { Container, Download, Droplet, X, Filter, Shapes } from '@lucide/svelte';
+	import * as RadioGroup from "$lib/components/ui/radio-group/index.js";
+	 import { Label } from "$lib/components/ui/label/index.js";
+	import { Container, Download, Droplet, X, Filter, Shapes, ArrowDownAZ, Search, Tag } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
+
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import SolveListSheet from '$lib/components/challenges/solvelist-sheet.svelte';
 	import { Spinner } from '$lib/components/ui/spinner/index.js';
@@ -85,6 +88,7 @@
 	let selected: any | null = $state(null);
 	let countdowns: Record<string, number> = $state({});
 
+
 	let all_tags = $state<any[]>([]);
 
 	let points: number = $state(500);
@@ -94,6 +98,7 @@
 	let challengeDescription = $state('');
 	let dynamicScore = $state(false);
 	let createLoading = $state(false);
+	let showSolved = $state(true);
 
 	// Admin controls moved to dedicated component (admin-controls.svelte)
 
@@ -142,6 +147,25 @@
 			)
 		).sort((a, b) => a.localeCompare(b))
 	);
+	
+	type SortKey =
+      | 'name-asc' | 'name-desc'
+      | 'points-asc' | 'points-desc'
+      | 'solves-asc' | 'solves-desc';
+    
+    let sortKey: SortKey = $state('name-asc');
+    
+    function getComparator(key: SortKey) {
+      const safe = (v: any) => v ?? 0;
+      switch (key) {
+        case 'name-asc':   return (a: any, b: any) => String(a.name ?? '').localeCompare(String(b.name ?? ''));
+        case 'name-desc':  return (a: any, b: any) => String(b.name ?? '').localeCompare(String(a.name ?? ''));
+        case 'points-asc': return (a: any, b: any) => safe(a.points) - safe(b.points);
+        case 'points-desc':return (a: any, b: any) => safe(b.points) - safe(a.points);
+        case 'solves-asc': return (a: any, b: any) => safe(a.solves) - safe(b.solves);
+        case 'solves-desc':return (a: any, b: any) => safe(b.solves) - safe(a.solves);
+      }
+    }
 
 	const filteredChallenges = $derived(
 		(challenges ?? [])
@@ -167,10 +191,11 @@
 					tags.some((t: string) => fuzzyScore(t, q) > -Infinity)
 				);
 			})
+            .filter((c: any) => showSolved || !c?.solved)
 	);
 
 	const activeFiltersCount = $derived(
-		(filterCategories?.length ?? 0) + (filterTags?.length ?? 0) + (search.trim() ? 1 : 0)
+		(filterCategories?.length ?? 0) + (filterTags?.length ?? 0) + (search.trim() ? 1 : 0) + (!showSolved ? 1 : 0)
 	);
 
 	// NEW: delete confirmation modal state
@@ -242,12 +267,11 @@
 			const label = c?.category?.name ?? c?.category ?? 'Uncategorized';
 			(map[label] ??= []).push(c);
 		}
-		return Object.entries(map)
-			.sort(([a], [b]) => a.localeCompare(b))
-			.map(([cat, items]) => [
-				cat,
-				items.sort((x, y) => String(x.title || '').localeCompare(String(y.title || '')))
-			]) as [string, any[]][];
+		const cmp = getComparator(sortKey);
+
+        return Object.entries(map)
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([cat, items]) => [cat, items.sort(cmp)]) as [string, any[]][];
 	}
 	const grouped = $derived(groupByCategory(filteredChallenges));
 
@@ -372,111 +396,166 @@
 {/if}
 
 
-<!-- Filters -->
-<div class="mb-4 flex flex-wrap items-left gap-3">
-	<Popover.Root bind:open={categoriesOpen}>
-		<Popover.Trigger>
-			{#snippet child({ props })}
-				<Button {...props} variant="outline" class="flex cursor-pointer items-center gap-2">
-					<Shapes class="h-4 w-4" />
-					Categories
-					{#if filterCategories.length > 0}
-						<span class="bg-primary text-primary-foreground ml-1 rounded px-2 py-0.5 text-xs"
-							>{filterCategories.length}</span
-						>
-					{/if}
-				</Button>
-			{/snippet}
-		</Popover.Trigger>
-		<Popover.Content class="w-[260px] p-1">
-			<Command.Root>
-				<Command.Input
-					placeholder="Search categories…"
-					class="border-0 shadow-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
-				/>
-				<Command.List>
-					<Command.Empty>No categories.</Command.Empty>
-					<Command.Group value="categories">
-						{#each categories as c (c.value)}
-							<Command.Item
-								value={c.value}
-								onSelect={() => {
-									if (filterCategories.includes(c.value)) {
-										filterCategories = filterCategories.filter((x) => x !== c.value);
-									} else {
-										filterCategories = [...filterCategories, c.value];
-									}
-								}}
-							>
-								<Checkbox checked={filterCategories.includes(c.value)} />
-								<span class="ml-2">{c.label}</span>
-							</Command.Item>
-						{/each}
-					</Command.Group>
-				</Command.List>
-			</Command.Root>
-		</Popover.Content>
-	</Popover.Root>
-	<Popover.Root bind:open={tagsOpen}>
-		<Popover.Trigger>
-			{#snippet child({ props })}
-				<Button {...props} variant="outline" class="flex cursor-pointer items-center gap-2">
-					<Filter class="h-4 w-4" />
-					Tags
-					{#if filterTags.length > 0}
-						<span class="bg-primary text-primary-foreground ml-1 rounded px-2 py-0.5 text-xs"
-							>{filterTags.length}</span
-						>
-					{/if}
-				</Button>
-			{/snippet}
-		</Popover.Trigger>
-		<Popover.Content class="w-[260px] p-1">
-			<Command.Root>
-				<Command.Input
-					placeholder="Search tags…"
-					class="border-0 shadow-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
-				/>
-				<Command.List>
-					<Command.Empty>No tags.</Command.Empty>
-					<Command.Group value="tags">
-						{#each allTags as t (t)}
-							<Command.Item
-								value={t}
-								onSelect={() => {
-									if (filterTags.includes(t)) {
-										filterTags = filterTags.filter((x) => x !== t);
-									} else {
-										filterTags = [...filterTags, t];
-									}
-								}}
-							>
-								<Checkbox checked={filterTags.includes(t)} />
-								<span class="ml-2">{t}</span>
-							</Command.Item>
-						{/each}
-					</Command.Group>
-				</Command.List>
-			</Command.Root>
-		</Popover.Content>
-	</Popover.Root>
-
-	<div class="xl:ml-auto flex items-center gap-2">
-		<Input id="search" placeholder="Search challenges…" bind:value={search} class="w-[260px]" />
-		{#if activeFiltersCount > 0}
-			<Badge color="cyan">{activeFiltersCount}</Badge>
-		{/if}
-		<Button
-			variant="outline"
-			size="sm"
-			class="cursor-pointer"
-			onclick={() => {
-				filterCategories = [];
-				filterTags = [];
-				search = '';
-			}}>Clear</Button
-		>
-	</div>
+<!-- Unified Filters / Sort -->
+<div class="mb-4 flex flex-wrap items-left gap-3 justify-between">
+    <div class="flex flex-row">
+    <Popover.Root>
+        <Popover.Trigger>
+        {#snippet child({ props })}
+            <Button {...props} variant="outline" class="flex cursor-pointer items-center gap-2">
+            <Filter class="h-4 w-4" />
+            Filters
+            {#if activeFiltersCount > 0}
+                <span class="bg-primary text-primary-foreground ml-1 rounded px-2 py-0.5 text-xs">
+                {activeFiltersCount}
+                </span>
+            {/if}
+            </Button>
+        {/snippet}
+        </Popover.Trigger>
+    
+        <Popover.Content class="p-2 w-full">
+        <div class="grid grid-cols-3 md:grid-cols-[1fr_1px_1fr] gap-4 w-full">
+            <div class="space-y-3">
+                <!-- Categories -->
+                <div>
+                <div class="flex flex-row align-middle">
+                    <Shapes size={14}/>
+                    <p class="mb-1 text-xs font-semibold opacity-70 align-middle ml-1 text-center">
+                        Categories
+                    </p>
+                </div>
+                <Command.Root>
+                    <Command.List>
+                    <Command.Group>
+                        {#each categories as c (c.value)}
+                        <Command.Item
+                            value={c.value}
+                            onSelect={() => {
+                            filterCategories = filterCategories.includes(c.value)
+                                ? filterCategories.filter((x) => x !== c.value)
+                                : [...filterCategories, c.value];
+                            }}>
+                            <Checkbox checked={filterCategories.includes(c.value)} />
+                            <span class="ml-2">{c.label}</span>
+                        </Command.Item>
+                        {/each}
+                    </Command.Group>
+                    </Command.List>
+                </Command.Root>
+                </div>
+    
+                <!-- Tags -->
+                <div>
+                    <div class="flex flex-row">
+                        <Tag size={14}/>
+                        <p class="mb-1 text-xs font-semibold opacity-70 ml-1">Tags</p>
+                    </div>
+                <Command.Root>
+                    <Command.List>
+                    <Command.Group>
+                        {#each allTags as t (t)}
+                        <Command.Item
+                            value={t}
+                            onSelect={() => {
+                            filterTags = filterTags.includes(t)
+                                ? filterTags.filter((x) => x !== t)
+                                : [...filterTags, t];
+                            }}>
+                            <Checkbox checked={filterTags.includes(t)} />
+                            <span class="ml-2">{t}</span>
+                        </Command.Item>
+                        {/each}
+                    </Command.Group>
+                    </Command.List>
+                </Command.Root>
+                </div>
+            </div>
+            <div class="hidden md:block bg-border w-px" />
+            <div class="space-y-2">
+        
+                <!-- Order -->
+                <div>
+                    <div class="flex items-center gap-1 mb-1">
+                        <ArrowDownAZ size={14}/>
+                        <p class="mb-1 text-xs font-semibold opacity-70 ml-1">Order</p>
+                    </div>
+                    
+                    <!-- shadcn-svelte Radio Group -->
+                    <RadioGroup.Root bind:value={sortKey}>
+                        <div class="flex items-center space-x-2">
+                            <RadioGroup.Item value="name-asc" id="name-asc"/>
+                            <Label for="name-asc">Name (A→Z)</Label>
+                        </div>
+                    
+                        <div class="flex items-center space-x-2">
+                            <RadioGroup.Item value="name-desc" id="name-desc"/>
+                            <Label for="name-desc">Name (Z→A)</Label>
+                        </div>
+                    
+                        <div class="flex items-center space-x-2"> 
+                            <RadioGroup.Item value="points-asc" id="points-asc"/>
+                            <Label for="points-asc">Points (low→high)</Label>
+                        </div>
+                    
+                        <div class="flex items-center space-x-2"> 
+                            <RadioGroup.Item value="points-desc" id="points-desc"/>
+                            <Label for="points-desc">Points (high→low)</Label>
+                        </div>
+                        
+                        <div class="flex items-center space-x-2"> 
+                            <RadioGroup.Item value="solves-asc" id="solves-asc"/>
+                            <Label for="solves-asc">Solves (low→high)</Label>
+                        </div>
+                    
+                        <div class="flex items-center space-x-2"> 
+                            <RadioGroup.Item value="solves-desc" id="solves-desc"/>
+                            <Label for="solves-desc">Solves (high→low)</Label>
+                        </div>
+                    </RadioGroup.Root>
+                </div>
+        
+                <!-- Show solved -->
+                <div class="mt-2">
+                <Label
+                    class="hover:bg-accent/50 flex items-start gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:border-green-600 has-[[aria-checked=true]]:bg-green-50 dark:has-[[aria-checked=true]]:border-green-900 dark:has-[[aria-checked=true]]:bg-green-950"
+                >
+                    <Checkbox
+                    id="toggle-2"
+                    bind:checked={showSolved}
+                    class="data-[state=checked]:border-green-600 data-[state=checked]:bg-green-600 data-[state=checked]:text-white dark:data-[state=checked]:border-green-700 dark:data-[state=checked]:bg-green-700"
+                    />
+                    <div class="grid gap-1.5 font-normal">
+                    <p class="text-sm font-medium leading-none">Show Solved</p>
+                    </div>
+                </Label>
+                </div>
+        
+                <!-- Footer -->
+            </div>
+                <div class="pt-1 flex gap-2 w-full">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        class="cursor-pointer flex-1"
+                        onclick={() => {
+                        filterCategories = [];
+                        filterTags = [];
+                        search = '';
+                        sortKey = 'name-asc';
+                        showSolved = true;
+                        }}>
+                        Clear all
+                    </Button>
+                </div>
+        </div>
+        </Popover.Content>
+    </Popover.Root>
+  </div>
+  <div class="ml:auto flex flex-row">
+    <Search class="flex flex-col items-center self-center"/>
+    <Input placeholder="Search challenges…" class="ml-2" bind:value={search} />
+  </div>
 </div>
 
 {#if loading}
@@ -728,6 +807,7 @@
 
 <!-- Solve list -->
 <SolveListSheet bind:open={solvesOpen} challenge={selected} />
+
 
 
 <!-- Delete Confirmation Modal -->
