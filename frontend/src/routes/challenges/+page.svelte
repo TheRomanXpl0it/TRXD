@@ -608,7 +608,7 @@
 
 		<!-- Description -->
 		<div class="mt-5 prose dark:prose-invert items-center">
-		   {@html marked(selected?.description)}
+		   {@html marked(selected?.description ?? "")}
 		</div>
 
 		<!-- Attatchments  -->
