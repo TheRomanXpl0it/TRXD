@@ -92,11 +92,19 @@
 					{#each pageRows as team (team.id)}
 						<Table.Row class="h-16">
 							<Table.Cell class="py-3">
-								<Avatar src={team.image} class="h-12 w-12">
-									{#if !team.image}
+								{#if team.image}
+									<div class="h-12 w-12 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+										<img 
+											src={team.image} 
+											alt={team.name}
+											class="h-full w-full object-cover"
+										/>
+									</div>
+								{:else}
+									<div class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700">
 										<BugOutline class="h-6 w-6" />
-									{/if}
-								</Avatar>
+									</div>
+								{/if}
 							</Table.Cell>
 
 							<Table.Cell class="py-3">

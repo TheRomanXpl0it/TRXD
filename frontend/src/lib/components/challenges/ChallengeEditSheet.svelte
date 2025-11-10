@@ -11,12 +11,9 @@
 	import { toast } from 'svelte-sonner';
 	import { updateChallengeMultipart, getChallenge } from '$lib/challenges';
 	import { Cpu, MemoryStick, Clock, X, Tags } from '@lucide/svelte';
-    import { createEventDispatcher } from 'svelte';
     import { createTagsForChallenge, deleteTagsFromChallenge} from '$lib/tags'
     import { createFlags, deleteFlags } from '$lib/flags'
 	import MonacoEditor from '$lib/components/MonacoEditor.svelte';
-    
-    const dispatch = createEventDispatcher();
 
 	type Item = { value: string; label: string };
 
@@ -24,8 +21,14 @@
 	let {
 		open = $bindable(false),
 		challenge_user,
-		all_tags
-	} = $props<{ open?: boolean; challenge_user: any; all_tags?: string[] }>();
+		all_tags,
+		onupdated
+	} = $props<{ 
+		open?: boolean; 
+		challenge_user: any; 
+		all_tags?: string[];
+		onupdated?: (detail: { id: number }) => void;
+	}>();
 
 	let challenge = $state<any>(null);
 	let activeTab = $state<'meta' | 'settings' | 'flags' | 'deployment'>('meta');
@@ -358,17 +361,15 @@
 				fd.append('attachments[]', f, f.name);
 			}
 
-			await updateChallengeMultipart(fd)
-			await createTagsForChallenge(newTags,challenge_user?.id )
-			await deleteTagsFromChallenge(deletedTags,challenge_user?.id )
-			await createFlags(newFlags,challenge_user?.id)
-			await deleteFlags(deletedFlags,challenge_user?.id)
+		await updateChallengeMultipart(fd)
+		await createTagsForChallenge(newTags,challenge_user?.id )
+		await deleteTagsFromChallenge(deletedTags,challenge_user?.id )
+		await createFlags(newFlags,challenge_user?.id)
+		await deleteFlags(deletedFlags,challenge_user?.id)
 
-			dispatch('updated', {id: challenge_user.id})
-			open = false;
-			toast.success('Challenge updated.');
-			
-		} catch (err: any) {
+		onupdated?.({ id: challenge_user.id });
+		open = false;
+		toast.success('Challenge updated.');		} catch (err: any) {
 			toast.error(err?.message ?? 'Failed to update challenge.');
 		} finally {
 			saving = false;
@@ -563,9 +564,9 @@
 						<TagMultiSelect
 							all_tags={uniqAllTags}
 							bind:value={tags}
-							on:create={(e) => {
-								const newTag = String(e.detail ?? '').trim();
-								if (newTag && !tags.includes(newTag)) tags = [...tags, newTag];
+						oncreate={(newTag) => {
+							const tag = String(newTag ?? '').trim();
+							if (tag && !tags.includes(tag)) tags = [...tags, tag];
 							}}
 						/>
 					</div>

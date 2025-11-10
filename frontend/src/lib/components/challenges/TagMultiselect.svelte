@@ -3,15 +3,18 @@
   import * as Popover from "$lib/components/ui/popover/index.js";
   import { Checkbox } from "$lib/components/ui/checkbox/index.js";
   import { X } from "@lucide/svelte";
-  import { createEventDispatcher } from "svelte";
 
   let {
     all_tags = [] as string[],
     placeholder = "Select tags...",
-    value = $bindable<string[]>([])
-  } = $props<{ all_tags?: string[]; placeholder?: string; value?: string[] }>();
-
-  const dispatch = createEventDispatcher<{ create: string }>();
+    value = $bindable<string[]>([]),
+    oncreate
+  } = $props<{ 
+    all_tags?: string[]; 
+    placeholder?: string; 
+    value?: string[];
+    oncreate?: (tag: string) => void;
+  }>();
 
   let open   = $state(false);
   let query  = $state("");
@@ -46,7 +49,7 @@
     const tag = query;
     custom = [...custom, tag];
     if (!value.includes(tag)) value = [...value, tag];
-    dispatch("create", tag);
+    oncreate?.(tag);
     query = "";
     active = 0;
   }

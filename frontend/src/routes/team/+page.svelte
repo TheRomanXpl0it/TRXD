@@ -103,7 +103,7 @@
 	{#if !$authReady || loading}
 		<div class="flex flex-col items-center justify-center py-12">
 			<Spinner class="mb-4 h-8 w-8" />
-			<p class="text-gray-600 dark:text-gray-400">Loading team...</p>
+			<p class="text-gray-600 dark:text-gray-400">Loading...</p>
 		</div>
 	{:else if teamError}
 		<div class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-600 dark:border-red-800 dark:bg-red-950/20">
@@ -111,7 +111,7 @@
 			<p class="text-sm">{teamError}</p>
 		</div>
 	{:else if !team}
-		<TeamJoinCreate on:created={() => loadUser()} on:joined={()=>loadUser()} />
+		<TeamJoinCreate oncreated={() => loadUser()} onjoined={() => loadUser()} />
 	{:else}
 		<!-- Header -->
 		<div class="mb-8 flex items-start justify-between pb-6">
@@ -301,4 +301,4 @@
 		{/if}
 	{/if}
 </div>
-<TeamEdit bind:open={teamEditOpen} {team} on:updated={() => loadTeamByKey(team.id)} />
+<TeamEdit bind:open={teamEditOpen} {team} onupdated={() => loadTeamByKey(team.id)} />

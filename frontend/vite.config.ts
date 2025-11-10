@@ -8,6 +8,9 @@ import { dirname } from 'path';
 export default defineConfig({
 	publicDir: 'static',
 	plugins: [tailwindcss(), svelte()],
+	optimizeDeps: {
+		include: ['@iconify/svelte', '@iconify-json/circle-flags']
+	},
 	resolve: {
 		alias: {
 			$lib: resolve(dirname(fileURLToPath(import.meta.url)), 'src/lib'),

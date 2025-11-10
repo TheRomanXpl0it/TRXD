@@ -12,23 +12,15 @@
 	import ChallengeFilters from '$lib/components/challenges/ChallengeFilters.svelte';
 	import ChallengeCard from '$lib/components/challenges/ChallengeCard.svelte';
 	import ChallengeModal from '$lib/components/challenges/ChallengeModal.svelte';
+	import AdminControls from '$lib/components/challenges/AdminControls.svelte';
 
 	import { config } from '$lib/env';
 
 	// Lazy-loaded component handles
 	type Cmp = typeof import('svelte').SvelteComponent;
-	let AdminControlsCmp: Cmp | null = $state(null);
 	let CreateModalCmp: Cmp | null = $state(null);
 	let DeleteDialogCmp: Cmp | null = $state(null);
 	let ChallengeEditSheetCmp: Cmp | null = $state(null);
-
-	// Load admin controls once for admins
-	$effect(async () => {
-		if ($authUser?.role === 'Admin' && !AdminControlsCmp) {
-			const mod = await import('$lib/components/challenges/AdminControls.svelte');
-			AdminControlsCmp = mod.default;
-		}
-	});
 
 	// ** lazy load elements on first use **
 	async function openCreate() {
@@ -138,6 +130,7 @@
 			.trim()
 			.toLowerCase();
 	}
+	
 	function fuzzyScore(text: string, query: string) {
 		const t = norm(text),
 			q = norm(query);
@@ -164,31 +157,58 @@
 		).sort((a, b) => a.localeCompare(b))
 	);
 
-	const filteredChallenges = $derived(
-		(challenges ?? [])
-			.filter((c: any) => {
-				if (!filterCategories || filterCategories.length === 0) return true;
-				const cat = c?.category?.name ?? c?.category ?? '';
-				return filterCategories.some((fc: string) => norm(cat) === norm(fc));
-			})
-			.filter((c: any) => {
-				if (!filterTags || filterTags.length === 0) return true;
+	// Optimize filtering with early returns and memoization
+	const filteredChallenges = $derived.by(() => {
+		const hasSearch = search.trim().length > 0;
+		const hasCategoryFilter = filterCategories && filterCategories.length > 0;
+		const hasTagsFilter = filterTags && filterTags.length > 0;
+		
+		// No filters at all - return all challenges
+		if (!hasSearch && !hasCategoryFilter && !hasTagsFilter) {
+			return challenges ?? [];
+		}
+		
+		const searchQuery = hasSearch ? norm(search) : '';
+		
+		return (challenges ?? []).filter((c: any) => {
+			// Category filter
+			if (hasCategoryFilter) {
+				const cat = norm(c?.category?.name ?? c?.category ?? '');
+				if (!filterCategories.some((fc: string) => norm(fc) === cat)) {
+					return false;
+				}
+			}
+			
+			// Tags filter
+			if (hasTagsFilter) {
 				const tags = (c?.tags ?? []).map((t: any) => String(t));
-				return filterTags.every((t: string) => tags.includes(t));
-			})
-			.filter((c: any) => {
-				const q = search.trim();
-				if (!q) return true;
+				if (!filterTags.every((t: string) => tags.includes(t))) {
+					return false;
+				}
+			}
+			
+			// Search filter
+			if (hasSearch) {
 				const cat = c?.category?.name ?? c?.category ?? '';
 				const tags = (c?.tags ?? []).map((t: any) => String(t));
 				const name = c?.name ?? c?.title ?? '';
+				
+				// Quick check: exact name match
+				if (norm(name).includes(searchQuery)) return true;
+				if (norm(cat).includes(searchQuery)) return true;
+				if (tags.some((t: string) => norm(t).includes(searchQuery))) return true;
+				
+				// Fallback to fuzzy if simple includes didn't work
 				return (
-					fuzzyScore(name, q) > -Infinity ||
-					fuzzyScore(cat, q) > -Infinity ||
-					tags.some((t: string) => fuzzyScore(t, q) > -Infinity)
+					fuzzyScore(name, searchQuery) > -Infinity ||
+					fuzzyScore(cat, searchQuery) > -Infinity ||
+					tags.some((t: string) => fuzzyScore(t, searchQuery) > -Infinity)
 				);
-			})
-	);
+			}
+			
+			return true;
+		});
+	});
 
 	const activeFiltersCount = $derived(
 		(filterCategories?.length ?? 0) + (filterTags?.length ?? 0)
@@ -232,9 +252,10 @@
 
 	function groupByCategory(list: any[]) {
 		const map: Record<string, any[]> = {};
-		for (const c of list ?? []) {
+		for (const c of list) {
 			const label = c?.category?.name ?? c?.category ?? 'Uncategorized';
-			(map[label] ??= []).push(c);
+			if (!map[label]) map[label] = [];
+			map[label].push(c);
 		}
 		return Object.entries(map)
 			.sort(([a], [b]) => a.localeCompare(b))
@@ -243,7 +264,8 @@
 				items.sort((x, y) => (x.points || 0) - (y.points || 0))
 			]) as [string, any[]][];
 	}
-	const grouped = $derived(groupByCategory(filteredChallenges));
+	
+	const grouped = $derived.by(() => groupByCategory(filteredChallenges));
 
 	function openChallenge(ch: any) {
 		selectedId = ch?.id ?? null;
@@ -299,14 +321,14 @@
 	"A man who loves to walk will walk more than a man who loves his destination"
 </p>
 
-{#if $authUser?.role === 'Admin' && AdminControlsCmp}
-  <AdminControlsCmp
-    onopen-create={openCreate}
-    oncategory-created={() => {
-		challengesQuery.refetch();
-		categoriesQuery.refetch();
-	}}
-  />
+{#if $authUser?.role === 'Admin'}
+	<AdminControls
+		onopen-create={openCreate}
+		oncategory-created={() => {
+			challengesQuery.refetch();
+			categoriesQuery.refetch();
+		}}
+	/>
 {/if}
 
 <ChallengeFilters
@@ -331,8 +353,8 @@
 	</div>
 {:else}
 	{#each grouped as [category, items]}
-		<section class="mb-10" aria-labelledby="category-{category.replace(/\s+/g, '-')}">
-			<div class="mb-3 flex items-center gap-3">
+		<section class={compactView ? 'mb-4' : 'mb-10'} aria-labelledby="category-{category.replace(/\s+/g, '-')}">
+			<div class="{compactView ? 'mb-2' : 'mb-3'} flex items-center gap-3">
 				<h2 id="category-{category.replace(/\s+/g, '-')}" class="text-2xl font-bold leading-tight text-gray-900 dark:text-white">
 					{category}
 				</h2>
@@ -342,7 +364,7 @@
 			</div>
 
 			{#if compactView}
-				<div class="space-y-2" role="list" aria-label="{category} challenges">
+				<div class="space-y-2 px-0.5 py-0.5" role="list" aria-label="{category} challenges">
 					{#each items as ch (ch.id)}
 						<ChallengeCard
 							challenge={ch}
@@ -353,7 +375,7 @@
 					{/each}
 				</div>
 			{:else}
-				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="list" aria-label="{category} challenges">
+				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 px-0.5" role="list" aria-label="{category} challenges">
 					{#each items as ch (ch.id)}
 						<ChallengeCard
 							challenge={ch}
@@ -403,7 +425,7 @@
     bind:dynamicScore
     categories={categories}
     challengeTypes={challengeTypes}
-    on:created={() => challengesQuery.refetch()}
+    oncreated={() => challengesQuery.refetch()}
   />
 {/if}
 
@@ -411,7 +433,7 @@
   <ChallengeEditSheetCmp
     bind:open={editOpen}
     challenge_user={selected}
-    on:updated={() => challengesQuery.refetch()}
+    onupdated={() => challengesQuery.refetch()}
     all_tags={allTags}
   />
 {/if}

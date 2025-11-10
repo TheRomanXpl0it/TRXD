@@ -9,7 +9,6 @@
   import * as Tooltip from '$lib/components/ui/tooltip/index.js';
   import { Checkbox } from '$lib/components/ui/checkbox/index.js';
   import { toast } from 'svelte-sonner';
-  import { createEventDispatcher } from 'svelte';
   import { createChallenge } from '$lib/challenges';
 
   const defaultChallengeTypes = [
@@ -28,7 +27,8 @@
     points = $bindable(500),
     dynamicScore = $bindable(true),
     categories = $bindable([]),
-    challengeTypes = []
+    challengeTypes = [],
+    oncreated
   } = $props<{
     open: boolean,
     challengeName: string
@@ -38,13 +38,11 @@
     points: number;
     dynamicScore: boolean;
     categories: Array<string>;
-    challengeTypes: Array<{value:string,label:string}>
-    
-    
+    challengeTypes: Array<{value:string,label:string}>;
+    oncreated?: () => void;
   }>();
 
   let createLoading = $state(false);
-  const dispatch = createEventDispatcher();
 
   async function submitCreateChallenge(ev: SubmitEvent) {
     ev.preventDefault();
@@ -81,7 +79,7 @@
       points = 500;
 
       open = false;
-      dispatch('created');
+      oncreated?.();
     } catch (err: any) {
       toast.error(err?.message ?? 'Failed to create challenge.');
     } finally {

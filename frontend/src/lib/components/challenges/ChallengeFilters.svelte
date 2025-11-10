@@ -5,6 +5,7 @@
 	import * as Command from '$lib/components/ui/command/index.js';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import { X, Filter, Shapes, LayoutGrid, List } from '@lucide/svelte';
+	import VirtualList from '@sveltejs/svelte-virtual-list';
 
 	let {
 		search = $bindable(''),
@@ -26,10 +27,50 @@
 
 	let tagsOpen = $state(false);
 	let categoriesOpen = $state(false);
+	let categorySearch = $state('');
+	let tagSearch = $state('');
+
+	const filteredCategories = $derived(
+		categorySearch
+			? categories.filter(c => 
+				c.label.toLowerCase().includes(categorySearch.toLowerCase())
+			)
+			: categories
+	);
+
+	const filteredTags = $derived(
+		tagSearch
+			? allTags.filter(t => 
+				t.toLowerCase().includes(tagSearch.toLowerCase())
+			)
+			: allTags
+	);
 
 	function clearFilters() {
 		filterCategories = [];
 		filterTags = [];
+	}
+	
+	function toggleCategory(value: string) {
+		const idx = filterCategories.indexOf(value);
+		if (idx > -1) {
+			filterCategories.splice(idx, 1);
+			filterCategories = filterCategories;
+		} else {
+			filterCategories.push(value);
+			filterCategories = filterCategories;
+		}
+	}
+	
+	function toggleTag(value: string) {
+		const idx = filterTags.indexOf(value);
+		if (idx > -1) {
+			filterTags.splice(idx, 1);
+			filterTags = filterTags;
+		} else {
+			filterTags.push(value);
+			filterTags = filterTags;
+		}
 	}
 </script>
 
@@ -66,47 +107,54 @@
 				>
 					<Shapes class="h-4 w-4" aria-hidden="true" />
 					<span class="hidden sm:inline">Categories</span>
-					{#if filterCategories.length > 0}
-						<span
-							class="bg-primary text-primary-foreground rounded px-1.5 py-0.5 text-xs"
-							aria-label="{filterCategories.length} categories selected"
-						>
-							{filterCategories.length}
-						</span>
-					{/if}
 				</Button>
 			{/snippet}
 		</Popover.Trigger>
 		<Popover.Content class="w-[260px] p-1">
-			<Command.Root>
-				<Command.Input
+			<div class="px-2 py-1.5">
+				<Input
+					bind:value={categorySearch}
 					placeholder="Search categories..."
-					class="border-0 shadow-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
+					class="h-8"
 				/>
-				<Command.List>
-					<Command.Empty>No categories.</Command.Empty>
-					<Command.Group value="categories">
-						{#each categories as c (c.value)}
-							<Command.Item
-								value={c.value}
-								onSelect={() => {
-									if (filterCategories.includes(c.value)) {
-										filterCategories = filterCategories.filter((x) => x !== c.value);
-									} else {
-										filterCategories = [...filterCategories, c.value];
-									}
-								}}
-							>
-								<Checkbox
-									checked={filterCategories.includes(c.value)}
-									aria-label="Filter by {c.label}"
-								/>
-								<span class="ml-2">{c.label}</span>
-							</Command.Item>
-						{/each}
-					</Command.Group>
-				</Command.List>
-			</Command.Root>
+			</div>
+			{#if filteredCategories.length === 0}
+				<div class="py-6 text-center text-sm text-muted-foreground">
+					No categories found.
+				</div>
+			{:else if filteredCategories.length > 20}
+				<div class="px-1" style="height: 300px;">
+					<VirtualList items={filteredCategories} let:item>
+						<button
+							type="button"
+							class="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+							onclick={() => toggleCategory(item.value)}
+						>
+							<Checkbox
+								checked={filterCategories.includes(item.value)}
+								aria-label="Filter by {item.label}"
+							/>
+							<span class="ml-2">{item.label}</span>
+						</button>
+					</VirtualList>
+				</div>
+			{:else}
+				<div class="px-1 max-h-[300px] overflow-y-auto">
+					{#each filteredCategories as item (item.value)}
+						<button
+							type="button"
+							class="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+							onclick={() => toggleCategory(item.value)}
+						>
+							<Checkbox
+								checked={filterCategories.includes(item.value)}
+								aria-label="Filter by {item.label}"
+							/>
+							<span class="ml-2">{item.label}</span>
+						</button>
+					{/each}
+				</div>
+			{/if}
 		</Popover.Content>
 	</Popover.Root>
 
@@ -133,32 +181,44 @@
 			{/snippet}
 		</Popover.Trigger>
 		<Popover.Content class="w-[260px] p-1">
-			<Command.Root>
-				<Command.Input
+			<div class="px-2 py-1.5">
+				<Input
+					bind:value={tagSearch}
 					placeholder="Search tags..."
-					class="border-0 shadow-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
+					class="h-8"
 				/>
-				<Command.List>
-					<Command.Empty>No tags.</Command.Empty>
-					<Command.Group value="tags">
-						{#each allTags as t (t)}
-							<Command.Item
-								value={t}
-								onSelect={() => {
-									if (filterTags.includes(t)) {
-										filterTags = filterTags.filter((x) => x !== t);
-									} else {
-										filterTags = [...filterTags, t];
-									}
-								}}
-							>
-								<Checkbox checked={filterTags.includes(t)} aria-label="Filter by {t}" />
-								<span class="ml-2">{t}</span>
-							</Command.Item>
-						{/each}
-					</Command.Group>
-				</Command.List>
-			</Command.Root>
+			</div>
+			{#if filteredTags.length === 0}
+				<div class="py-6 text-center text-sm text-muted-foreground">
+					No tags found.
+				</div>
+			{:else if filteredTags.length > 20}
+				<div class="px-1" style="height: 300px;">
+					<VirtualList items={filteredTags} let:item>
+						<button
+							type="button"
+							class="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+							onclick={() => toggleTag(item)}
+						>
+							<Checkbox checked={filterTags.includes(item)} aria-label="Filter by {item}" />
+							<span class="ml-2">{item}</span>
+						</button>
+					</VirtualList>
+				</div>
+			{:else}
+				<div class="px-1 max-h-[300px] overflow-y-auto">
+					{#each filteredTags as item}
+						<button
+							type="button"
+							class="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+							onclick={() => toggleTag(item)}
+						>
+							<Checkbox checked={filterTags.includes(item)} aria-label="Filter by {item}" />
+							<span class="ml-2">{item}</span>
+						</button>
+					{/each}
+				</div>
+			{/if}
 		</Popover.Content>
 	</Popover.Root>
 

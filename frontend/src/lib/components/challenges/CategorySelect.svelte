@@ -2,10 +2,11 @@
   import CheckIcon from "@lucide/svelte/icons/check";
   import ChevronsUpDownIcon from "@lucide/svelte/icons/chevrons-up-down";
   import { tick } from "svelte";
-  import * as Command from "$lib/components/ui/command/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
+  import { Input } from "$lib/components/ui/input/index.js";
   import { cn } from "$lib/utils.js";
+  import VirtualList from '@sveltejs/svelte-virtual-list';
 
   type Item = { value: string; label: string };
 
@@ -31,16 +32,32 @@
 
   let open = $state(false);
   let triggerRef = $state<HTMLButtonElement>(null!);
+  let searchValue = $state("");
 
   const selectedLabel = $derived(items.find((i:any) => i.value === value)?.label);
+  
+  const filteredItems = $derived(
+    searchValue.trim()
+      ? items.filter(item => 
+          item.label.toLowerCase().includes(searchValue.toLowerCase()) ||
+          item.value.toLowerCase().includes(searchValue.toLowerCase())
+        )
+      : items
+  );
 
   function closeAndFocusTrigger() {
     open = false;
+    searchValue = "";
     tick().then(() => triggerRef?.focus());
+  }
+  
+  function selectItem(item: Item) {
+    value = item.value;
+    closeAndFocusTrigger();
   }
 </script>
 
-<Popover.Root bind:open>
+<Popover.Root bind:open onOpenChange={(isOpen) => { if (!isOpen) searchValue = ""; }}>
   <Popover.Trigger bind:ref={triggerRef}>
     {#snippet child({ props })}
       <Button
@@ -48,7 +65,7 @@
         variant="outline"
         role="combobox"
         aria-expanded={open}
-        class={cn(widthClass, "justify-between", className)}
+        class={cn(widthClass, "justify-between cursor-pointer", className)}
       >
         {selectedLabel || placeholder}
         <ChevronsUpDownIcon class="opacity-50" />
@@ -56,26 +73,45 @@
     {/snippet}
   </Popover.Trigger>
 
-  <Popover.Content class={cn(widthClass, "p-1")} id={id}>
-    <Command.Root>
-      <Command.Input placeholder={searchPlaceholder} class="border-0 shadow-none ring-0 focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:outline-none" />
-      <Command.List>
-        <Command.Empty>No results.</Command.Empty>
-        <Command.Group value={groupLabel}>
-          {#each items as item (item.value)}
-            <Command.Item
-              value={item.value}
-              onSelect={() => {
-                value = item.value;
-                closeAndFocusTrigger();
-              }}
-            >
-              <CheckIcon class={cn(value !== item.value && "text-transparent")} />
-              {item.label}
-            </Command.Item>
-          {/each}
-        </Command.Group>
-      </Command.List>
-    </Command.Root>
+  <Popover.Content class={cn(widthClass, "p-0")} id={id}>
+    <div class="p-2">
+      <Input 
+        placeholder={searchPlaceholder}
+        bind:value={searchValue}
+        class="h-9"
+      />
+    </div>
+    
+    {#if filteredItems.length === 0}
+      <div class="border-t py-6 text-center text-sm text-muted-foreground">
+        No results.
+      </div>
+    {:else if filteredItems.length > 20}
+      <div class="h-[300px] border-t">
+        <VirtualList items={filteredItems} let:item height="300px">
+          <button
+            type="button"
+            class="relative flex w-full cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+            onclick={() => selectItem(item)}
+          >
+            <CheckIcon class={cn("h-4 w-4", value !== item.value && "text-transparent")} />
+            {item.label}
+          </button>
+        </VirtualList>
+      </div>
+    {:else}
+      <div class="max-h-[300px] overflow-auto border-t">
+        {#each filteredItems as item (item.value)}
+          <button
+            type="button"
+            class="relative flex w-full cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+            onclick={() => selectItem(item)}
+          >
+            <CheckIcon class={cn("h-4 w-4", value !== item.value && "text-transparent")} />
+            {item.label}
+          </button>
+        {/each}
+      </div>
+    {/if}
   </Popover.Content>
 </Popover.Root>

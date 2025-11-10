@@ -6,6 +6,7 @@
 	import { toast } from 'svelte-sonner';
 	import InstanceControls from './InstanceControls.svelte';
 	import FlagSubmission from './FlagSubmission.svelte';
+	import Markdown from '$lib/components/Markdown.svelte';
 	import { config } from '$lib/env';
 
 	let {
@@ -139,9 +140,11 @@
 		<!-- Description -->
 		<section class="mb-6" aria-labelledby="description-heading">
 			<h3 id="description-heading" class="text-sm font-semibold mb-2 opacity-70">Description</h3>
-			<div class="text-base leading-relaxed">
-				{challenge?.description ?? 'No description available.'}
-			</div>
+			{#if challenge?.description}
+				<Markdown content={challenge.description} class="text-base leading-relaxed" />
+			{:else}
+				<div class="text-base leading-relaxed opacity-60">No description available.</div>
+			{/if}
 		</section>
 
 		<!-- Attachments -->

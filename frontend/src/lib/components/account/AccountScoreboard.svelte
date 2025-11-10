@@ -88,16 +88,16 @@
 
     <TableHeader>
       <TableRow>
-        <TableHead class="w-[40%] cursor-pointer" on:click={() => toggleSort('name')}>
+        <TableHead class="w-[40%] cursor-pointer" onclick={() => toggleSort('name')}>
           Challenge {arrow('name')}
         </TableHead>
-        <TableHead class="w-[20%] cursor-pointer" on:click={() => toggleSort('category')}>
+        <TableHead class="w-[20%] cursor-pointer" onclick={() => toggleSort('category')}>
           Category {arrow('category')}
         </TableHead>
-        <TableHead class="w-[15%] text-right cursor-pointer" on:click={() => toggleSort('points')}>
+        <TableHead class="w-[15%] text-right cursor-pointer" onclick={() => toggleSort('points')}>
           Points {arrow('points')}
         </TableHead>
-        <TableHead class="w-[25%] cursor-pointer text-right sm:text-left" on:click={() => toggleSort('timestamp')}>
+        <TableHead class="w-[25%] cursor-pointer text-right sm:text-left" onclick={() => toggleSort('timestamp')}>
           Solved at {arrow('timestamp')}
         </TableHead>
       </TableRow>

@@ -82,12 +82,20 @@
 </script>
 
 {#if !$authReady || loading}
-	<div class="flex flex-row items-center gap-2 text-gray-500">
-		<Spinner />
-		<p>Loading...</p>
+	<div>
+		<p class="mt-5 text-3xl font-bold text-gray-800 dark:text-gray-100">Account</p>
+		<hr class="my-2 h-px border-0 bg-gray-200 dark:bg-gray-700" />
+		<p class="mb-10 text-lg italic text-gray-500 dark:text-gray-400">
+			"You didn't wake up today to be mediocre."
+		</p>
+
+		<div class="flex flex-col items-center justify-center py-12">
+			<Spinner class="mb-4 h-8 w-8" />
+			<p class="text-gray-600 dark:text-gray-400">Loading...</p>
+		</div>
 	</div>
 {:else if !$user && !$params?.id}
-	<p>You’re not signed in.</p>
+	<p>You're not signed in.</p>
 {:else}
 	<div>
 		<p class="mt-5 text-3xl font-bold text-gray-800 dark:text-gray-100">Account</p>
@@ -98,16 +106,16 @@
 
 		<!-- Header -->
 		<div class="mb-8 flex items-start justify-between pb-6">
-			<div class="flex items-center gap-4">
+			<div class="flex items-center gap-4 min-w-0 flex-1">
 				{#if userVerboseData?.image}
-					<Avatar src={userVerboseData.image} class="h-16 w-16" />
+					<Avatar src={userVerboseData.image} class="h-16 w-16 shrink-0" />
 				{:else}
-					<Avatar class="h-16 w-16">
+					<Avatar class="h-16 w-16 shrink-0">
 						<BugOutline class="h-8 w-8" />
 					</Avatar>
 				{/if}
-				<div>
-					<h2 class="text-2xl font-bold">{userVerboseData?.name ?? '-'}</h2>
+				<div class="min-w-0 flex-1">
+					<h2 class="text-2xl font-bold truncate">{userVerboseData?.name ?? '-'}</h2>
 					<div class="mt-1 flex items-center gap-3 text-sm">
 						{#if userVerboseData?.country}
 							<div class="flex items-center gap-1">
@@ -131,7 +139,7 @@
 				</div>
 			</div>
 			{#if isOwnProfile}
-				<Button variant="outline" size="sm" onclick={() => (editSheetOpen = true)}>
+				<Button variant="outline" size="sm" onclick={() => (editSheetOpen = true)} class="shrink-0">
 					<Edit class="h-4 w-4" />
 				</Button>
 			{/if}
@@ -215,7 +223,7 @@
 <UserUpdate
 	bind:open={editSheetOpen}
 	user={userVerboseData}
-	on:updated={() => {
+	onupdated={() => {
 		// Invalidate queries to refresh data
 		userQuery.refetch();
 		if (!$userMode) {

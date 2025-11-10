@@ -1,6 +1,4 @@
 <script lang="ts">
-	// TODO: Refactor this file
-	
 	import { getConfigs, updateConfigs } from '@/config';
 	import { onMount } from 'svelte';
 	import Label from '$lib/components/ui/label/label.svelte';
@@ -10,82 +8,137 @@
 	import { user as authUser } from '$lib/stores/auth';
 	import { push } from 'svelte-spa-router';
 
+	type ConfigType = 'bool' | 'int' | 'string' | (string & {});
+
+	interface Config {
+		key: string;
+		type?: ConfigType | null;
+		value?: string | number | boolean | null;
+		description?: string;
+		// Allow extra backend fields
+		[key: string]: unknown;
+	}
+
+	type FormValue = string | boolean;
+
 	let loading = $state(true);
 	let error = $state<string | null>(null);
-	let configs = $state<any[]>([]);
-	const isAdmin = $derived(($authUser as any)?.role === 'Admin');
 
-	// Editable form state keyed by config key
-	let form = $state<Record<string, any>>({});
+	let configs = $state<Config[]>([]);
+	let form = $state<Record<string, FormValue>>({});
 
-	// Save state
 	let saving = $state(false);
 	let saveError = $state<string | null>(null);
 	let saveOk = $state(false);
 
-	$effect(() => {
-		if (!isAdmin) {
-			push('/404');
-		}
-	});
+	const isAdmin = $derived(($authUser as any)?.role === 'Admin');
 
-	onMount(async () => {
+
+	const hasChanges = $derived(
+		configs.some((config) => {
+			const key = config.key;
+			const current = form[key];
+			const next = toConfigValue(config, current);
+			const prev = String(config.value ?? '');
+			return next !== prev;
+		})
+	);
+
+	function normalizeType(type: Config['type']): ConfigType {
+		if (type === 'bool' || type === 'int' || type === 'string') return type;
+		return 'string';
+	}
+
+	function toFormValue(config: Config): FormValue {
+		const t = normalizeType(config.type);
+		const raw = config.value;
+
+		if (t === 'bool') {
+			return String(raw) === 'true';
+		}
+
+		return raw != null ? String(raw) : '';
+	}
+
+	function toConfigValue(config: Config, formValue: FormValue | undefined): string {
+		const t = normalizeType(config.type);
+
+		if (t === 'bool') {
+			return formValue ? 'true' : 'false';
+		}
+
+		if (t === 'int') {
+			const n = Number(formValue ?? 0);
+			return Number.isFinite(n) ? String(n) : '0';
+		}
+
+		return String(formValue ?? '');
+	}
+
+	async function loadConfigs() {
 		loading = true;
 		error = null;
+
 		try {
 			const res = await getConfigs();
-			configs = Array.isArray(res) ? res : [];
-			// Initialize form values by type
-			for (const c of configs) {
+			const list = Array.isArray(res) ? (res as Config[]) : [];
+
+			configs = list;
+
+			const nextForm: Record<string, FormValue> = {};
+			for (const c of list) {
 				if (!c || typeof c !== 'object') continue;
-				const k = c.key as string;
-				const t = (c.type as string) ?? 'string';
-				const v = c.value;
-				if (t === 'bool') {
-					form[k] = String(v) === 'true';
-				} else if (t === 'int') {
-					form[k] = String(v ?? '');
-				} else {
-					form[k] = String(v ?? '');
-				}
+				nextForm[c.key] = toFormValue(c);
 			}
+			form = nextForm;
 		} catch (e: any) {
 			error = e?.message ?? 'Failed to load configs';
 		} finally {
 			loading = false;
 		}
+	}
+
+	$effect(() => {
+		if (($authUser as any) && !isAdmin) {
+			push('/404');
+		}
 	});
 
+	onMount(loadConfigs);
+
 	async function save() {
-		if (saving) return;
+		if (saving || !hasChanges) return;
+
 		saving = true;
 		saveError = null;
 		saveOk = false;
+
 		try {
-			// Build changes array by converting current form values back to strings
-			const changes = [];
-			for (const c of configs) {
-				const t = (c.type as string) ?? 'string';
-				const k = c.key as string;
-				let value: string;
-				if (t === 'bool') {
-					value = form[k] ? 'true' : 'false';
-				} else if (t === 'int') {
-					const n = Number(form[k] ?? 0);
-					value = String(Number.isFinite(n) ? n : 0);
-				} else {
-					value = String(form[k] ?? '');
-				}
-				const prev = String(c.value ?? '');
+			// Build list of changed configs with new values
+			const changes: Config[] = [];
+
+			for (const config of configs) {
+				const key = config.key;
+				const value = toConfigValue(config, form[key]);
+				const prev = String(config.value ?? '');
+
 				if (value !== prev) {
-					changes.push({ ...c, value });
+					changes.push({ ...config, value });
 				}
 			}
 
-			// Call updateConfigs once per changed config
-			for (const change of changes) {
-				await updateConfigs(change);
+			if (!changes.length) {
+				saveOk = true;
+				return;
 			}
+
+			const changesByKey = new Map(changes.map((c) => [c.key, c]));
+
+			// Update all changed configs (in parallel)
+			await Promise.all(changes.map((change) => updateConfigs(change)));
+
+			// Sync local state with saved values
+			configs = configs.map((config) => changesByKey.get(config.key) ?? config);
 
 			saveOk = true;
 		} catch (e: any) {
@@ -96,12 +149,9 @@
 	}
 </script>
 
-<div>
+<div class="mb-5">
 	<p class="mt-5 text-3xl font-bold text-gray-800 dark:text-gray-100">Configs</p>
 	<hr class="my-2 h-px border-0 bg-gray-200 dark:bg-gray-700" />
-	<p class="mb-6 text-lg italic text-gray-500 dark:text-gray-400">
-		"Tiny tweaks can lead to big changes"
-	</p>
 </div>
 
 {#if loading}
@@ -164,7 +214,11 @@
 
 		<!-- Save section -->
 		<div class="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/50">
-			<Button onclick={save} disabled={saving} class="cursor-pointer px-6">
+			<Button
+				onclick={save}
+				disabled={saving || !hasChanges}
+				class="cursor-pointer px-6"
+			>
 				{#if saving}
 					<div class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
 					Saving...
@@ -172,7 +226,8 @@
 					Save Changes
 				{/if}
 			</Button>
-			{#if saveOk}
+
+			{#if saveOk && !hasChanges}
 				<div class="flex items-center gap-2 text-green-600 dark:text-green-400">
 					<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -180,6 +235,7 @@
 					<span class="font-medium">Saved successfully!</span>
 				</div>
 			{/if}
+
 			{#if saveError}
 				<div class="flex items-center gap-2 text-red-600 dark:text-red-400">
 					<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

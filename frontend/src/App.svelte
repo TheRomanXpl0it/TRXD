@@ -87,7 +87,7 @@
 	</div>
 
 	<main class="flex min-h-screen w-full flex-col pt-[57px] lg:pt-0">
-		<div class="router-content flex-1 mx-3 pb-24 lg:mx-6 lg:pb-16 overflow-x-hidden">
+		<div class="router-content flex-1 mx-3 pb-24 lg:mx-6 lg:pb-16">
 			<Router
 				{routes}
 				useHash={true}

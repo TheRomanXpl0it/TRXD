@@ -10,10 +10,14 @@
 	import joinTeamImg from '$lib/assets/joinTeam.png?url';
 	import { joinTeam, createTeam } from '@/team';
 	import { toast } from 'svelte-sonner';
-	
-	import { createEventDispatcher } from 'svelte';
-        
-    const dispatch = createEventDispatcher();
+
+	let {
+		onjoined,
+		oncreated
+	} = $props<{
+		onjoined?: (detail: { joinName: string }) => void;
+		oncreated?: (detail: { registerName: string }) => void;
+	}>();
 
 	// Modal state
 	let joinOpen = $state(false);
@@ -44,10 +48,11 @@
 			// Success case - api function only returns on success (200)
 			joinOpen = false;
 			// reset fields after close
+			const teamName = joinName;
 			joinName = '';
 			joinPassword = '';
 
-			dispatch('joined', {joinName: joinName})
+			onjoined?.({ joinName: teamName });
 			toast.success('Team Joined, welcome aboard!');
 		} catch (err: any) {
 			joinError = err?.message ?? 'Failed to join team.';
@@ -84,10 +89,11 @@
 			// Success case - api function only returns on success (200)
 			registerOpen = false;
 			// reset fields after close
+			const teamName = registerName;
 			registerName = '';
 			registerPassword = '';
 
-			dispatch('created', {registerName: registerName})
+			oncreated?.({ registerName: teamName });
 			toast.success('Team Created!');
 		} catch (err: any) {
 			registerError = err?.message ?? 'Failed to register team.';
