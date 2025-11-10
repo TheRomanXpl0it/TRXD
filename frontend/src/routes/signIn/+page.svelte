@@ -90,7 +90,7 @@
 	}
 </script>
 
-<div class="min-h-svh flex items-center justify-center">
+<div class="flex min-h-full items-center justify-center py-12">
 	<Card.Root class="mx-auto w-full max-w-sm flex flex-col">
 		<Card.Header>
 			<Card.Title>Welcome back hacker.</Card.Title>

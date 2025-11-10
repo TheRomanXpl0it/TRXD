@@ -115,7 +115,7 @@
 	{:else}
 		<!-- Header -->
 		<div class="mb-8 flex items-start justify-between pb-6">
-			<div class="flex items-center gap-4">
+			<div class="flex min-w-0 flex-1 items-center gap-4">
 				{#if team?.image || team?.profileImage}
 					<Avatar src={team.image ?? team.profileImage} class="h-16 w-16" />
 				{:else}
@@ -123,7 +123,7 @@
 						<ShieldHalf class="h-8 w-8" />
 					</Avatar>
 				{/if}
-				<div class="min-w-0">
+				<div class="min-w-0 flex-1">
 					<h2 class="truncate text-2xl font-bold">{team.name}</h2>
 					<div class="mt-1 flex items-center gap-3 text-sm">
 						{#if team.country}
