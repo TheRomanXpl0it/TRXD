@@ -169,14 +169,6 @@
 				>
 					<Filter class="h-4 w-4" aria-hidden="true" />
 					<span class="hidden sm:inline">Tags</span>
-					{#if filterTags.length > 0}
-						<span
-							class="bg-primary text-primary-foreground rounded px-1.5 py-0.5 text-xs"
-							aria-label="{filterTags.length} tags selected"
-						>
-							{filterTags.length}
-						</span>
-					{/if}
 				</Button>
 			{/snippet}
 		</Popover.Trigger>

@@ -117,10 +117,7 @@
 				</Button>
 			</div>
 		</div>
-		<hr class="my-2 h-px border-0 bg-gray-200 dark:bg-gray-700" />
-		<p class="mb-4 text-base italic text-gray-500 dark:text-gray-400 sm:text-lg">
-			"True success is measured by effort and inner resolve, not just the final score."
-		</p>
+		<hr class="my-2 mb-10 h-px border-0 bg-gray-200 dark:bg-gray-700" />
 	</div>
 
 	{#if loading}

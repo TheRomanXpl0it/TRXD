@@ -95,10 +95,7 @@
 
 <div>
 	<p class="mt-5 text-3xl font-bold text-gray-800 dark:text-gray-100">Team</p>
-	<hr class="my-2 h-px border-0 bg-gray-200 dark:bg-gray-700" />
-	<p class="mb-10 text-lg italic text-gray-500 dark:text-gray-400">
-		"None of us is as smart as all of us."
-	</p>
+	<hr class="my-2 mb-10 h-px border-0 bg-gray-200 dark:bg-gray-700" />
 
 	{#if !$authReady || loading}
 		<div class="flex flex-col items-center justify-center py-12">

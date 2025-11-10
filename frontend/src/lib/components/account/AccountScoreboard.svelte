@@ -82,8 +82,7 @@
 
   <Table class="w-full">
     <TableCaption class="text-sm">
-      {rows.length} solve{rows.length === 1 ? '' : 's'}
-      {#if totalPoints > 0} · {totalPoints} pts total{/if}
+      {#if totalPoints > 0}{totalPoints} pts total{/if}
     </TableCaption>
 
     <TableHeader>

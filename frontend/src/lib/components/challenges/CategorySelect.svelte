@@ -100,7 +100,7 @@
         </VirtualList>
       </div>
     {:else}
-      <div class="max-h-[300px] overflow-auto border-t">
+      <div class="border-t">
         {#each filteredItems as item (item.value)}
           <button
             type="button"

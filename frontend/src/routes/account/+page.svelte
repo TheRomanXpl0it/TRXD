@@ -84,10 +84,7 @@
 {#if !$authReady || loading}
 	<div>
 		<p class="mt-5 text-3xl font-bold text-gray-800 dark:text-gray-100">Account</p>
-		<hr class="my-2 h-px border-0 bg-gray-200 dark:bg-gray-700" />
-		<p class="mb-10 text-lg italic text-gray-500 dark:text-gray-400">
-			"You didn't wake up today to be mediocre."
-		</p>
+		<hr class="my-2 mb-10 h-px border-0 bg-gray-200 dark:bg-gray-700" />
 
 		<div class="flex flex-col items-center justify-center py-12">
 			<Spinner class="mb-4 h-8 w-8" />
@@ -99,10 +96,7 @@
 {:else}
 	<div>
 		<p class="mt-5 text-3xl font-bold text-gray-800 dark:text-gray-100">Account</p>
-		<hr class="my-2 h-px border-0 bg-gray-200 dark:bg-gray-700" />
-		<p class="mb-10 text-lg italic text-gray-500 dark:text-gray-400">
-			"You didn't wake up today to be mediocre."
-		</p>
+		<hr class="my-2 mb-10 h-px border-0 bg-gray-200 dark:bg-gray-700" />
 
 		<!-- Header -->
 		<div class="mb-8 flex items-start justify-between pb-6">
@@ -180,23 +174,23 @@
 						<div class="rounded bg-gray-50 dark:bg-gray-800/50 p-4 shadow-sm">
 							<div class="text-sm">Total Points</div>
 							<p class="mt-1 text-2xl font-semibold">{userVerboseData?.score ?? 0}</p>
-						</div>
+					</div>
+					<div class="rounded bg-gray-50 dark:bg-gray-800/50 p-4 shadow-sm">
+						<div class="text-sm">Solves</div>
+						<p class="mt-1 text-2xl font-semibold">
+							{#if $userMode}
+								{userVerboseData?.solves?.length ?? 0}
+							{:else}
+								{team?.solves?.filter((s) => String(s.user_id) === String(userVerboseData?.id)).length ?? 0}
+							{/if}
+						</p>
+					</div>
+					{#if !$userMode}
 						<div class="rounded bg-gray-50 dark:bg-gray-800/50 p-4 shadow-sm">
-							<div class="text-sm">Solves</div>
-							<p class="mt-1 text-2xl font-semibold">
-								{#if $userMode}
-									{userVerboseData?.solves?.length ?? 0}
-								{:else}
-									{team?.solves?.filter((s) => String(s.user_id) === String(userVerboseData?.id)).length ?? 0}
-								{/if}
-							</p>
+							<div class="text-sm">Team</div>
+							<p class="mt-1 truncate text-lg font-semibold">{team?.name ?? 'No team'}</p>
 						</div>
-						{#if !$userMode}
-							<div class="rounded bg-gray-50 dark:bg-gray-800/50 p-4 shadow-sm">
-								<div class="text-sm">Team</div>
-								<p class="mt-1 truncate text-lg font-semibold">{team?.name ?? 'No team'}</p>
-							</div>
-						{/if}
+					{/if}
 					</div>
 				</div>
 			</div>
