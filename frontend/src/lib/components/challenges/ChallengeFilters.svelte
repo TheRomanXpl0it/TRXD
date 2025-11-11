@@ -3,14 +3,17 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import * as Command from '$lib/components/ui/command/index.js';
+	import * as RadioGroup from "$lib/components/ui/radio-group/index.js";
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
-	import { X, Filter, Shapes, LayoutGrid, List } from '@lucide/svelte';
+	import { Label } from '$lib/components/ui/label'
+	import { X, Filter, Shapes, LayoutGrid, List, ArrowDownAZ } from '@lucide/svelte';
 	import VirtualList from '@sveltejs/svelte-virtual-list';
 
 	let {
 		search = $bindable(''),
 		filterCategories = $bindable([]),
 		filterTags = $bindable([]),
+		sortMethod = $bindable('alphabetical-a-to-z'),
 		categories = [],
 		allTags = [],
 		compactView = $bindable(false),
@@ -19,14 +22,29 @@
 		search: string;
 		filterCategories: string[];
 		filterTags: string[];
+		sortMethod: string;
 		categories: Array<{ value: string; label: string }>;
 		allTags: string[];
 		compactView: boolean;
 		activeFiltersCount: number;
 	} = $props();
+	
+	const sortingMethods = [
+      { value: "points-min-to-max", label: "Points from low to high" },
+      { value: "points-max-to-min", label: "Points from high to low" },
+      { value: "solves-min-to-max", label: "Solves count from low to high" },
+      { value: "solves-max-to-min", label: "Solves count from high to low" },
+      { value: "alphabetical-a-to-z", label: "Alphabetical from A to Z" },
+      { value: "alphabetical-z-to-a", label: "Alphabetical from Z to A" }
+    ];
+	
+	const sortingLabel: Record<string, string> = Object.fromEntries(
+      sortingMethods.map(m => [m.value, m.label])
+    );
 
 	let tagsOpen = $state(false);
 	let categoriesOpen = $state(false);
+	let sortOpen = $state(false);
 	let categorySearch = $state('');
 	let tagSearch = $state('');
 
@@ -34,7 +52,7 @@
 		categorySearch
 			? categories.filter(c => 
 				c.label.toLowerCase().includes(categorySearch.toLowerCase())
-			)
+			).sort()
 			: categories
 	);
 
@@ -72,6 +90,11 @@
 			filterTags = filterTags;
 		}
 	}
+	
+	function toggleSortingMethod(value: string) {
+        sortMethod = value;
+        sortOpen = false;
+    }
 </script>
 
 <div class="mb-6 flex items-center gap-2">
@@ -227,6 +250,41 @@
 			{/if}
 		</Popover.Content>
 	</Popover.Root>
+	
+	<Popover.Root bind:open={sortOpen}>
+        <Popover.Trigger>
+        {#snippet child({ props })}
+            <Button
+                {...props}
+                variant="outline"
+                class="flex cursor-pointer items-center gap-1 shrink-0"
+                aria-label={`Ordered by ${sortingLabel[sortMethod]}`}
+            >
+                <ArrowDownAZ class="h-4 w-4" aria-hidden="true" />
+                <span class="hidden sm:inline">
+                    Sort
+                </span>
+            </Button>
+            {/snippet}
+        </Popover.Trigger>
+        <Popover.Content class="w-[260px] p-1">
+          <div class="px-1 max-h-[300px] overflow-y-auto p-2">
+            <RadioGroup.Root value={sortMethod} onValueChange={(v) => toggleSortingMethod(v)}>
+                {#each sortingMethods as item (item.value)} 
+                <div class="flex flex-row space-x-2">
+                    <RadioGroup.Item
+                    value={item.value}
+                    class="cursor-pointer"
+                    aria-label={`Sort by ${item.label}`}
+                    id={item.value}
+                    />
+                    <Label for={item.value}>{item.label}</Label>
+                </div>
+                {/each}
+            </RadioGroup.Root>
+          </div>
+        </Popover.Content>
+      </Popover.Root>
 
 	{#if activeFiltersCount > 0}
 		<Button
