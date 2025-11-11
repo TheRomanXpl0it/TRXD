@@ -103,10 +103,17 @@
 					{...props}
 					variant="outline"
 					class="flex cursor-pointer items-center gap-1 shrink-0"
-					aria-label="Filter by categories"
+					aria-label={filterCategories.length > 0
+						? `${filterCategories.length} categories selected`
+						: "Filter by categories"}
 				>
 					<Shapes class="h-4 w-4" aria-hidden="true" />
 					<span class="hidden sm:inline">Categories</span>
+					{#if filterCategories.length > 0}
+						<span class="ml-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-xs text-primary-foreground">
+							{filterCategories.length}
+						</span>
+					{/if}
 				</Button>
 			{/snippet}
 		</Popover.Trigger>
@@ -165,10 +172,17 @@
 					{...props}
 					variant="outline"
 					class="flex cursor-pointer items-center gap-1 shrink-0"
-					aria-label="Filter by tags"
+					aria-label={filterTags.length > 0
+						? `${filterTags.length} tags selected`
+						: "Filter by tags"}
 				>
 					<Filter class="h-4 w-4" aria-hidden="true" />
 					<span class="hidden sm:inline">Tags</span>
+					{#if filterTags.length > 0}
+						<span class="ml-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-xs text-primary-foreground">
+							{filterTags.length}
+						</span>
+					{/if}
 				</Button>
 			{/snippet}
 		</Popover.Trigger>

@@ -10,6 +10,7 @@
 	import * as Select from '$lib/components/ui/select/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import countries from '$lib/data/countries.json';
+	import { tick } from 'svelte';
 
 	import { updateTeam } from '$lib/team';
 	import { useQueryClient } from '@tanstack/svelte-query';
@@ -98,6 +99,7 @@
 
 		try {
 			saving = true;
+			await tick(); // Ensure DOM updates before async operation
 			await updateTeam(id, n, b, i, c);
 			open = false;
 			

@@ -87,10 +87,12 @@
         No results.
       </div>
     {:else if filteredItems.length > 20}
-      <div class="h-[300px] border-t">
+      <div class="h-[300px] border-t" data-command-group data-value={groupLabel}>
         <VirtualList items={filteredItems} let:item height="300px">
           <button
             type="button"
+            role="option"
+            aria-selected={value === item.value}
             class="relative flex w-full cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
             onclick={() => selectItem(item)}
           >
@@ -100,10 +102,12 @@
         </VirtualList>
       </div>
     {:else}
-      <div class="border-t">
+      <div class="border-t" data-command-group data-value={groupLabel}>
         {#each filteredItems as item (item.value)}
           <button
             type="button"
+            role="option"
+            aria-selected={value === item.value}
             class="relative flex w-full cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
             onclick={() => selectItem(item)}
           >
