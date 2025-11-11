@@ -176,7 +176,7 @@
 									{#if !compactMode}
 										{#if row.image}
 											<div class="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-												<img src={row.image} alt={row.name} class="h-full w-full object-cover" />
+												<img src={row.image} alt={row.name} class="h-full w-full rounded-full object-cover object-center" />
 											</div>
 										{:else}
 											<Avatar class="h-8 w-8 shrink-0">

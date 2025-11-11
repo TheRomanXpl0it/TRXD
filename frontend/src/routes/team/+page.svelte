@@ -115,7 +115,7 @@
 			<div class="flex min-w-0 flex-1 items-center gap-4">
 				{#if team?.image || team?.profileImage}
 					<div class="h-16 w-16 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-						<img src={team.image ?? team.profileImage} alt={team.name} class="h-full w-full object-cover" />
+						<img src={team.image ?? team.profileImage} alt={team.name} class="h-full w-full rounded-full object-cover object-center" />
 					</div>
 				{:else}
 					<Avatar class="h-16 w-16">

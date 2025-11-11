@@ -144,7 +144,7 @@
 				>
 					{#if memberImages[String(m.id)]}
 						<div class="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-							<img src={memberImages[String(m.id)]} alt={m.name} class="h-full w-full object-cover" />
+							<img src={memberImages[String(m.id)]} alt={m.name} class="h-full w-full rounded-full object-cover object-center" />
 						</div>
 					{:else}
 						<div
