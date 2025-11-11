@@ -1,7 +1,7 @@
 <script lang="ts">
     import Spinner from '$lib/components/ui/spinner/spinner.svelte';
     import { logout } from '@/auth';
-    import { clearUser } from '$lib/stores/auth';
+    import { clearUser, loadUser } from '$lib/stores/auth';
     import { push } from 'svelte-spa-router';
     import { onMount } from 'svelte';
     
@@ -13,6 +13,7 @@
         try {
           await logout();
           clearUser();
+          await loadUser();
         } catch (e) {
           console.error('Logout failed', e);
         } finally {
@@ -27,7 +28,7 @@
 
 {#if loading}
   <div class="flex flex-row items-center gap-2 text-gray-500">
-    <Spinner /><p>Loading…</p>
+    <Spinner /><p>Loading...</p>
   </div>
 {:else}
   <p class="mt-5 text-3xl font-bold text-gray-800 dark:text-gray-100">You've been logged out.</p>

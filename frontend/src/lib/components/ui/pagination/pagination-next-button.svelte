@@ -13,7 +13,7 @@
 </script>
 
 {#snippet Fallback()}
-	<span>Next</span>
+	<span class="hidden sm:inline">Next</span>
 	<ChevronRightIcon class="size-4" />
 {/snippet}
 
@@ -24,7 +24,7 @@
 		buttonVariants({
 			size: "default",
 			variant: "ghost",
-			class: "gap-1 px-2.5 sm:pr-2.5",
+			class: "cursor-pointer gap-1 px-2.5 sm:pr-2.5",
 		}),
 		className
 	)}

@@ -1,5 +1,3 @@
-// Environment configuration utility
-// This module provides access to Vite environment variables
 
 export const config = {
 	/**

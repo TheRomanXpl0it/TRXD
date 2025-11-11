@@ -45,6 +45,7 @@
 			class="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
 			style="--sidebar-width: {SIDEBAR_WIDTH_MOBILE};"
 			{side}
+			preventScroll={false}
 		>
 			<Sheet.Header class="sr-only">
 				<Sheet.Title>Sidebar</Sheet.Title>
@@ -58,7 +59,7 @@
 {:else}
 	<div
 		bind:this={ref}
-		class="text-sidebar-foreground group peer hidden md:block"
+		class="text-sidebar-foreground group peer hidden lg:block"
 		data-state={sidebar.state}
 		data-collapsible={sidebar.state === "collapsed" ? collapsible : ""}
 		data-variant={variant}
@@ -80,7 +81,7 @@
 		<div
 			data-slot="sidebar-container"
 			class={cn(
-				"w-(--sidebar-width) fixed inset-y-0 z-10 hidden h-svh transition-[left,right,width] duration-200 ease-linear md:flex",
+				"w-(--sidebar-width) fixed inset-y-0 z-10 hidden h-svh transition-[left,right,width] duration-200 ease-linear lg:flex",
 				side === "left"
 					? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
 					: "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",

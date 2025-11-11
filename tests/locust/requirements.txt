@@ -1,0 +1,3 @@
+locust
+requests
+requests_toolbelt
