@@ -2,12 +2,14 @@
 - change name from _TID_CID to _CID_TID
 - change name of challs, network and so on, with $PROJECT_NAME prefix
 - single user mode, send user id instead of team id (ex scoreboard)
-- optimize badge queries
 - tests with removal of trxd-shared (and fault tolerance)
 - https://doc.traefik.io/traefik/expose/docker/
 - password reset for players
 - change image pfp system
 - configs changable by env
+- add tests with a lot of hash named challs (hard cap for networks on nginx?)
+- N instance limit per team
+- submission endpoint only player sumbit
 
 QOS:
 	- flush cache flag

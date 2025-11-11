@@ -101,6 +101,7 @@ jobs:
 
     - name: Run Python Integration tests
       run: |
+        ./trxd -test-data-WARNING-DO-NOT-USE-IN-PRODUCTION
         ./trxd &
         echo $! > server.pid
         for i in {1..20}; do
