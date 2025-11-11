@@ -2,7 +2,6 @@ package challenges_all_get
 
 import (
 	"context"
-	"database/sql"
 	"strings"
 	"time"
 	"trxd/db"
@@ -11,134 +10,86 @@ import (
 )
 
 type Chall struct {
-	ID          int32          `json:"id"`
-	Name        string         `json:"name"`
-	Category    string         `json:"category"`
-	Description string         `json:"description"`
-	Difficulty  string         `json:"difficulty"`
-	Authors     []string       `json:"authors"`
-	Instance    bool           `json:"instance"`
-	Hidden      bool           `json:"hidden"`
-	Points      int            `json:"points"`
-	Solves      int            `json:"solves"`
-	Solved      bool           `json:"solved"`
-	FirstBlood  bool           `json:"first_blood"`
-	Host        string         `json:"host"`
-	Port        int            `json:"port"`
-	Attachments []string       `json:"attachments"`
-	Tags        []string       `json:"tags"`
-	MaxPoints   int            `json:"max_points"`
-	ScoreType   sqlc.ScoreType `json:"score_type"`
-	Timeout     int            `json:"timeout"`
+	ID           int32          `json:"id"`
+	Name         string         `json:"name"`
+	Category     string         `json:"category"`
+	Description  string         `json:"description"`
+	Difficulty   string         `json:"difficulty"`
+	Authors      []string       `json:"authors"`
+	Instance     bool           `json:"instance"`
+	Hidden       bool           `json:"hidden"`
+	Points       int            `json:"points"`
+	Solves       int            `json:"solves"`
+	Solved       bool           `json:"solved"`
+	FirstBlood   bool           `json:"first_blood"`
+	Host         string         `json:"host"`
+	Port         int            `json:"port"`
+	Attachments  []string       `json:"attachments"`
+	Tags         []string       `json:"tags"`
+	MaxPoints    int            `json:"max_points"`
+	ScoreType    sqlc.ScoreType `json:"score_type"`
+	Timeout      int            `json:"timeout"`
+	InstanceHost string         `json:"instance_host,omitempty"`
+	InstancePort int            `json:"instance_port,omitempty"`
 }
 
-func IsChallengeSolved(ctx context.Context, id int32, uid int32) (bool, bool, error) {
-	first_blood, err := db.Sql.IsChallengeFirstBlood(ctx, sqlc.IsChallengeFirstBloodParams{
-		ChallID: id,
-		ID:      uid,
-	})
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false, false, nil
-		}
-		return false, false, err
-	}
-
-	return true, first_blood, nil
-}
-
-func GetInstanceInfo(ctx context.Context, challID int32, teamID int32) (*sqlc.GetInstanceInfoRow, error) {
-	instance, err := db.Sql.GetInstanceInfo(ctx, sqlc.GetInstanceInfoParams{
-		TeamID:  teamID,
-		ChallID: challID,
-	})
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
-		}
-		return nil, err
-	}
-
-	return &instance, nil
-}
-
-func GetChallenge(ctx context.Context, challenge *sqlc.Challenge, uid int32, tid int32) (*Chall, error) {
-	tags, err := db.GetTagsByChallenge(ctx, challenge.ID)
+func GetChallenges(ctx context.Context, uid int32, tid int32, author bool) ([]Chall, error) {
+	challenges, err := db.Sql.GetAllChallengesInfo(ctx, uid)
 	if err != nil {
 		return nil, err
 	}
 
-	solved, first_blood, err := IsChallengeSolved(ctx, challenge.ID, uid)
-	if err != nil {
-		return nil, err
-	}
-
-	instance, err := GetInstanceInfo(ctx, challenge.ID, tid)
-	if err != nil {
-		return nil, err
-	}
-
-	chall := Chall{
-		ID:          challenge.ID,
-		Name:        challenge.Name,
-		Category:    challenge.Category,
-		Description: challenge.Description,
-		Difficulty:  challenge.Difficulty,
-		Authors:     []string{},
-		Instance:    challenge.Type != sqlc.DeployTypeNormal,
-		Hidden:      challenge.Hidden,
-		Points:      int(challenge.Points),
-		Solves:      int(challenge.Solves),
-		Solved:      solved,
-		FirstBlood:  first_blood,
-		Attachments: []string{},
-		Tags:        []string{},
-		Host:        challenge.Host,
-		Port:        int(challenge.Port),
-		MaxPoints:   int(challenge.MaxPoints),
-		ScoreType:   challenge.ScoreType,
-	}
-
-	if instance != nil {
-		if instance.DockerID.Valid { // TODO: tests
-			chall.Host = instance.Host
-			if instance.Port.Valid {
-				chall.Port = int(instance.Port.Int32)
-			}
-		}
-		chall.Timeout = int(time.Until(instance.ExpiresAt).Seconds())
-		if chall.Timeout < 0 {
-			chall.Timeout = 0
-		}
-	}
-	if challenge.Authors != "" {
-		chall.Authors = strings.Split(challenge.Authors, consts.Separator)
-	}
-	if challenge.Attachments != "" {
-		chall.Attachments = strings.Split(challenge.Attachments, consts.Separator)
-	}
-	if tags != nil {
-		chall.Tags = tags
-	}
-
-	return &chall, nil
-}
-
-func GetChallenges(ctx context.Context, uid int32, tid int32, author bool) ([]*Chall, error) {
-	challenges, err := db.Sql.GetChallenges(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	challsData := make([]*Chall, 0)
+	challsData := make([]Chall, 0)
 	for _, challenge := range challenges {
 		if !author && challenge.Hidden {
 			continue
 		}
 
-		chall, err := GetChallenge(ctx, &challenge, uid, tid)
-		if err != nil {
-			return nil, err
+		chall := Chall{
+			ID:          challenge.ID,
+			Name:        challenge.Name,
+			Category:    challenge.Category,
+			Description: challenge.Description,
+			Difficulty:  challenge.Difficulty,
+			Authors:     []string{},
+			Instance:    challenge.Type != sqlc.DeployTypeNormal,
+			Hidden:      challenge.Hidden,
+			Points:      int(challenge.Points),
+			Solves:      int(challenge.Solves),
+			Solved:      challenge.Solved,
+			FirstBlood:  challenge.FirstBlood,
+			Attachments: []string{},
+			Tags:        []string{},
+			Host:        challenge.Host,
+			Port:        int(challenge.Port),
+			MaxPoints:   int(challenge.MaxPoints),
+			ScoreType:   challenge.ScoreType,
+			Timeout:     0,
+		}
+
+		if challenge.Authors != "" {
+			chall.Authors = strings.Split(challenge.Authors, consts.Separator)
+		}
+		if challenge.Attachments != "" {
+			chall.Attachments = strings.Split(challenge.Attachments, consts.Separator)
+		}
+		if challenge.Tags != nil {
+			chall.Tags = challenge.Tags
+		}
+
+		if challenge.ExpiresAt.Valid {
+			chall.Timeout = int(time.Until(challenge.ExpiresAt.Time).Seconds())
+			if chall.Timeout < 0 {
+				chall.Timeout = 0
+			}
+		}
+		if challenge.DockerID.Valid {
+			if challenge.InstanceHost.Valid {
+				chall.InstanceHost = challenge.InstanceHost.String
+			}
+			if challenge.InstancePort.Valid {
+				chall.InstancePort = int(challenge.InstancePort.Int32)
+			}
 		}
 
 		challsData = append(challsData, chall)

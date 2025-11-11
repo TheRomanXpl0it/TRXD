@@ -8,7 +8,6 @@ import (
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
-	"github.com/tde-nico/log"
 )
 
 func FetchContainerByName(ctx context.Context, name string) (string, error) {
@@ -32,7 +31,6 @@ func FetchNginxID(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	log.Warnf("ID: %+v", id)
 	if id != nil && *id != "" {
 		return *id, nil
 	}

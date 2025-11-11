@@ -68,6 +68,10 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v5
+
+    - name: Enable Debug
+      run: |
+        touch DEV
     
     - name: Set up Infra
       run: |
@@ -122,6 +126,7 @@ jobs:
 
     - name: Run Python Integration tests
       run: |
+        ./trxd -test-data-WARNING-DO-NOT-USE-IN-PRODUCTION
         ./trxd &
         echo $! > server.pid
         for i in {1..20}; do

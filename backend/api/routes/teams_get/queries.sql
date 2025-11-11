@@ -13,3 +13,9 @@ SELECT c.id, c.name, c.category, s.first_blood, s.timestamp, s.user_id
     AND t.id = $1
     AND s.status = 'Correct'
   ORDER BY s.timestamp DESC;
+
+-- name: GetBadgesFromTeam :many
+-- Retrieve all badges associated with a team
+SELECT badges.name, badges.description FROM badges
+  JOIN teams ON teams.id = badges.team_id
+  WHERE teams.id = $1;

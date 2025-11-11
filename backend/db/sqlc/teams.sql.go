@@ -9,41 +9,6 @@ import (
 	"context"
 )
 
-const getBadgesFromTeam = `-- name: GetBadgesFromTeam :many
-SELECT badges.name, badges.description FROM badges
-  JOIN teams ON teams.id = badges.team_id
-  WHERE teams.id = $1
-`
-
-type GetBadgesFromTeamRow struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-}
-
-// Retrieve all badges associated with a team
-func (q *Queries) GetBadgesFromTeam(ctx context.Context, id int32) ([]GetBadgesFromTeamRow, error) {
-	rows, err := q.query(ctx, q.getBadgesFromTeamStmt, getBadgesFromTeam, id)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []GetBadgesFromTeamRow
-	for rows.Next() {
-		var i GetBadgesFromTeamRow
-		if err := rows.Scan(&i.Name, &i.Description); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getTeamByID = `-- name: GetTeamByID :one
 SELECT id, name, password_hash, password_salt, score, country, image, bio FROM teams WHERE id = $1
 `
