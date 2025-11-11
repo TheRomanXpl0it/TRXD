@@ -174,11 +174,15 @@
 							<Table.Cell class="max-w-32 sm:max-w-xs">
 								<div class="flex items-center gap-2 min-w-0">
 									{#if !compactMode}
-										<Avatar src={row.image} class="h-8 w-8 shrink-0">
-											{#if !row.image}
+										{#if row.image}
+											<div class="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+												<img src={row.image} alt={row.name} class="h-full w-full object-cover" />
+											</div>
+										{:else}
+											<Avatar class="h-8 w-8 shrink-0">
 												<BugOutline class="h-4 w-4" />
-											{/if}
-										</Avatar>
+											</Avatar>
+										{/if}
 									{/if}
 									<!-- svelte-spa-router in-page navigation -->
 									<a

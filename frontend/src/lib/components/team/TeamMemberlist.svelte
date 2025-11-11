@@ -143,7 +143,9 @@
 					class="hover:bg-muted group flex w-full cursor-pointer items-center gap-3 rounded-lg border p-3 text-left transition-colors dark:border-gray-700"
 				>
 					{#if memberImages[String(m.id)]}
-						<Avatar src={memberImages[String(m.id)]} class="h-10 w-10 shrink-0" />
+						<div class="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+							<img src={memberImages[String(m.id)]} alt={m.name} class="h-full w-full object-cover" />
+						</div>
 					{:else}
 						<div
 							class="bg-muted flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-semibold"

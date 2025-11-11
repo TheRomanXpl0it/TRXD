@@ -81,7 +81,7 @@
 
 					{#if challenge?.solves === 0}
 						<span class="inline-flex items-center gap-1 text-xs font-medium">
-							<Droplet class="h-3 w-3 text-red-500" aria-hidden="true" />
+							<Droplet class="h-4 w-4 text-red-500" aria-hidden="true" />
 							<span class="opacity-70">0 solves</span>
 						</span>
 					{:else if challenge?.solves}
