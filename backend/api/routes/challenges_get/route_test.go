@@ -115,10 +115,10 @@ func TestRoute(t *testing.T) {
 	if body == nil {
 		t.Fatal("Expected body to not be nil")
 	}
-	id = int32(body.([]interface{})[0].(map[string]interface{})["id"].(float64))
+	id5 := int32(body.([]interface{})[4].(map[string]interface{})["id"].(float64))
 	id3 := int32(body.([]interface{})[2].(map[string]interface{})["id"].(float64))
 
-	session.Get(fmt.Sprintf("/challenges/%d", id), nil, http.StatusOK)
+	session.Get(fmt.Sprintf("/challenges/%d", id5), nil, http.StatusOK)
 	body = session.Body()
 	if body == nil {
 		t.Fatal("Expected body to not be nil")

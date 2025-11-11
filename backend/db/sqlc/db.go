@@ -63,6 +63,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteTagStmt, err = db.PrepareContext(ctx, deleteTag); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteTag: %w", err)
 	}
+	if q.getAllChallengesInfoStmt, err = db.PrepareContext(ctx, getAllChallengesInfo); err != nil {
+		return nil, fmt.Errorf("error preparing query GetAllChallengesInfo: %w", err)
+	}
 	if q.getBadgesFromTeamStmt, err = db.PrepareContext(ctx, getBadgesFromTeam); err != nil {
 		return nil, fmt.Errorf("error preparing query GetBadgesFromTeam: %w", err)
 	}
@@ -81,9 +84,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getChallengeSolvesStmt, err = db.PrepareContext(ctx, getChallengeSolves); err != nil {
 		return nil, fmt.Errorf("error preparing query GetChallengeSolves: %w", err)
 	}
-	if q.getChallengesStmt, err = db.PrepareContext(ctx, getChallenges); err != nil {
-		return nil, fmt.Errorf("error preparing query GetChallenges: %w", err)
-	}
 	if q.getConfigStmt, err = db.PrepareContext(ctx, getConfig); err != nil {
 		return nil, fmt.Errorf("error preparing query GetConfig: %w", err)
 	}
@@ -101,9 +101,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.getInstanceStmt, err = db.PrepareContext(ctx, getInstance); err != nil {
 		return nil, fmt.Errorf("error preparing query GetInstance: %w", err)
-	}
-	if q.getInstanceInfoStmt, err = db.PrepareContext(ctx, getInstanceInfo); err != nil {
-		return nil, fmt.Errorf("error preparing query GetInstanceInfo: %w", err)
 	}
 	if q.getNextInstanceToDeleteStmt, err = db.PrepareContext(ctx, getNextInstanceToDelete); err != nil {
 		return nil, fmt.Errorf("error preparing query GetNextInstanceToDelete: %w", err)
@@ -149,9 +146,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.getUsersPreviewStmt, err = db.PrepareContext(ctx, getUsersPreview); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUsersPreview: %w", err)
-	}
-	if q.isChallengeFirstBloodStmt, err = db.PrepareContext(ctx, isChallengeFirstBlood); err != nil {
-		return nil, fmt.Errorf("error preparing query IsChallengeFirstBlood: %w", err)
 	}
 	if q.registerTeamStmt, err = db.PrepareContext(ctx, registerTeam); err != nil {
 		return nil, fmt.Errorf("error preparing query RegisterTeam: %w", err)
@@ -271,6 +265,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteTagStmt: %w", cerr)
 		}
 	}
+	if q.getAllChallengesInfoStmt != nil {
+		if cerr := q.getAllChallengesInfoStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getAllChallengesInfoStmt: %w", cerr)
+		}
+	}
 	if q.getBadgesFromTeamStmt != nil {
 		if cerr := q.getBadgesFromTeamStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getBadgesFromTeamStmt: %w", cerr)
@@ -301,11 +300,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getChallengeSolvesStmt: %w", cerr)
 		}
 	}
-	if q.getChallengesStmt != nil {
-		if cerr := q.getChallengesStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getChallengesStmt: %w", cerr)
-		}
-	}
 	if q.getConfigStmt != nil {
 		if cerr := q.getConfigStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getConfigStmt: %w", cerr)
@@ -334,11 +328,6 @@ func (q *Queries) Close() error {
 	if q.getInstanceStmt != nil {
 		if cerr := q.getInstanceStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getInstanceStmt: %w", cerr)
-		}
-	}
-	if q.getInstanceInfoStmt != nil {
-		if cerr := q.getInstanceInfoStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getInstanceInfoStmt: %w", cerr)
 		}
 	}
 	if q.getNextInstanceToDeleteStmt != nil {
@@ -414,11 +403,6 @@ func (q *Queries) Close() error {
 	if q.getUsersPreviewStmt != nil {
 		if cerr := q.getUsersPreviewStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getUsersPreviewStmt: %w", cerr)
-		}
-	}
-	if q.isChallengeFirstBloodStmt != nil {
-		if cerr := q.isChallengeFirstBloodStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing isChallengeFirstBloodStmt: %w", cerr)
 		}
 	}
 	if q.registerTeamStmt != nil {
@@ -553,20 +537,19 @@ type Queries struct {
 	deleteFlagStmt               *sql.Stmt
 	deleteInstanceStmt           *sql.Stmt
 	deleteTagStmt                *sql.Stmt
+	getAllChallengesInfoStmt     *sql.Stmt
 	getBadgesFromTeamStmt        *sql.Stmt
 	getCategoriesStmt            *sql.Stmt
 	getCategoryStmt              *sql.Stmt
 	getChallDockerConfigStmt     *sql.Stmt
 	getChallengeByIDStmt         *sql.Stmt
 	getChallengeSolvesStmt       *sql.Stmt
-	getChallengesStmt            *sql.Stmt
 	getConfigStmt                *sql.Stmt
 	getConfigsStmt               *sql.Stmt
 	getDockerConfigsByIDStmt     *sql.Stmt
 	getFlagsByChallengeStmt      *sql.Stmt
 	getHiddenAndAttachmentsStmt  *sql.Stmt
 	getInstanceStmt              *sql.Stmt
-	getInstanceInfoStmt          *sql.Stmt
 	getNextInstanceToDeleteStmt  *sql.Stmt
 	getTagsByChallengeStmt       *sql.Stmt
 	getTeamByIDStmt              *sql.Stmt
@@ -582,7 +565,6 @@ type Queries struct {
 	getUserByNameStmt            *sql.Stmt
 	getUserSolvesStmt            *sql.Stmt
 	getUsersPreviewStmt          *sql.Stmt
-	isChallengeFirstBloodStmt    *sql.Stmt
 	registerTeamStmt             *sql.Stmt
 	registerUserStmt             *sql.Stmt
 	resetTeamPasswordStmt        *sql.Stmt
@@ -618,20 +600,19 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deleteFlagStmt:               q.deleteFlagStmt,
 		deleteInstanceStmt:           q.deleteInstanceStmt,
 		deleteTagStmt:                q.deleteTagStmt,
+		getAllChallengesInfoStmt:     q.getAllChallengesInfoStmt,
 		getBadgesFromTeamStmt:        q.getBadgesFromTeamStmt,
 		getCategoriesStmt:            q.getCategoriesStmt,
 		getCategoryStmt:              q.getCategoryStmt,
 		getChallDockerConfigStmt:     q.getChallDockerConfigStmt,
 		getChallengeByIDStmt:         q.getChallengeByIDStmt,
 		getChallengeSolvesStmt:       q.getChallengeSolvesStmt,
-		getChallengesStmt:            q.getChallengesStmt,
 		getConfigStmt:                q.getConfigStmt,
 		getConfigsStmt:               q.getConfigsStmt,
 		getDockerConfigsByIDStmt:     q.getDockerConfigsByIDStmt,
 		getFlagsByChallengeStmt:      q.getFlagsByChallengeStmt,
 		getHiddenAndAttachmentsStmt:  q.getHiddenAndAttachmentsStmt,
 		getInstanceStmt:              q.getInstanceStmt,
-		getInstanceInfoStmt:          q.getInstanceInfoStmt,
 		getNextInstanceToDeleteStmt:  q.getNextInstanceToDeleteStmt,
 		getTagsByChallengeStmt:       q.getTagsByChallengeStmt,
 		getTeamByIDStmt:              q.getTeamByIDStmt,
@@ -647,7 +628,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getUserByNameStmt:            q.getUserByNameStmt,
 		getUserSolvesStmt:            q.getUserSolvesStmt,
 		getUsersPreviewStmt:          q.getUsersPreviewStmt,
-		isChallengeFirstBloodStmt:    q.isChallengeFirstBloodStmt,
 		registerTeamStmt:             q.registerTeamStmt,
 		registerUserStmt:             q.registerUserStmt,
 		resetTeamPasswordStmt:        q.resetTeamPasswordStmt,

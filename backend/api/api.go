@@ -149,6 +149,7 @@ func SetupApi(app *fiber.App) {
 		log.Error("Failed to get user-mode config:", "err", err)
 		mode = fmt.Sprint(consts.DefaultConfigs["user-mode"])
 	}
+	log.Debug("User mode:", "mode", mode) // TODO: review and remove this line
 	if mode != "true" {
 		api.Post("/teams/register", player, teams_register.Route)
 		api.Post("/teams/join", player, teams_join.Route)

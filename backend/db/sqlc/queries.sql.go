@@ -9,6 +9,8 @@ import (
 	"context"
 	"database/sql"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 const addTeamMember = `-- name: AddTeamMember :exec
@@ -223,6 +225,105 @@ func (q *Queries) DeleteTag(ctx context.Context, arg DeleteTagParams) error {
 	return err
 }
 
+const getAllChallengesInfo = `-- name: GetAllChallengesInfo :many
+WITH tid AS (SELECT team_id FROM users WHERE users.id = $1)
+SELECT
+    c.id, c.name, c.category, c.description, c.difficulty, c.authors, c.type, c.hidden, c.max_points, c.score_type, c.points, c.solves, c.host, c.port, c.attachments,
+    (ARRAY_AGG(t.name) FILTER (WHERE t.name IS NOT NULL))::TEXT[] AS tags,
+    (s.first_blood IS NOT NULL)::BOOLEAN AS solved,
+    COALESCE(s.first_blood, FALSE) AS first_blood,
+    i.expires_at,
+    i.host AS instance_host,
+    i.port AS instance_port,
+    i.docker_id
+  FROM challenges c
+  LEFT JOIN tags t ON t.chall_id = c.id
+  LEFT JOIN (
+      SELECT chall_id, first_blood
+        FROM submissions
+        JOIN users ON users.id = submissions.user_id
+        WHERE team_id = (SELECT team_id FROM tid)
+          AND status = 'Correct') s
+    ON s.chall_id = c.id
+  LEFT JOIN instances i
+    ON i.chall_id = c.id
+      AND i.team_id = (SELECT team_id FROM tid)
+  GROUP BY c.id, s.first_blood, i.expires_at, i.host, i.port, i.docker_id 
+  ORDER BY c.id
+`
+
+type GetAllChallengesInfoRow struct {
+	ID           int32          `json:"id"`
+	Name         string         `json:"name"`
+	Category     string         `json:"category"`
+	Description  string         `json:"description"`
+	Difficulty   string         `json:"difficulty"`
+	Authors      string         `json:"authors"`
+	Type         DeployType     `json:"type"`
+	Hidden       bool           `json:"hidden"`
+	MaxPoints    int32          `json:"max_points"`
+	ScoreType    ScoreType      `json:"score_type"`
+	Points       int32          `json:"points"`
+	Solves       int32          `json:"solves"`
+	Host         string         `json:"host"`
+	Port         int32          `json:"port"`
+	Attachments  string         `json:"attachments"`
+	Tags         []string       `json:"tags"`
+	Solved       bool           `json:"solved"`
+	FirstBlood   bool           `json:"first_blood"`
+	ExpiresAt    sql.NullTime   `json:"expires_at"`
+	InstanceHost sql.NullString `json:"instance_host"`
+	InstancePort sql.NullInt32  `json:"instance_port"`
+	DockerID     sql.NullString `json:"docker_id"`
+}
+
+// Retrieve all challenges along with first blood status and instance info for a user
+func (q *Queries) GetAllChallengesInfo(ctx context.Context, id int32) ([]GetAllChallengesInfoRow, error) {
+	rows, err := q.query(ctx, q.getAllChallengesInfoStmt, getAllChallengesInfo, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllChallengesInfoRow
+	for rows.Next() {
+		var i GetAllChallengesInfoRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Category,
+			&i.Description,
+			&i.Difficulty,
+			&i.Authors,
+			&i.Type,
+			&i.Hidden,
+			&i.MaxPoints,
+			&i.ScoreType,
+			&i.Points,
+			&i.Solves,
+			&i.Host,
+			&i.Port,
+			&i.Attachments,
+			pq.Array(&i.Tags),
+			&i.Solved,
+			&i.FirstBlood,
+			&i.ExpiresAt,
+			&i.InstanceHost,
+			&i.InstancePort,
+			&i.DockerID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getBadgesFromTeam = `-- name: GetBadgesFromTeam :many
 SELECT badges.name, badges.description FROM badges
   JOIN teams ON teams.id = badges.team_id
@@ -359,50 +460,6 @@ func (q *Queries) GetChallengeSolves(ctx context.Context, challID int32) ([]GetC
 	return items, nil
 }
 
-const getChallenges = `-- name: GetChallenges :many
-SELECT id, name, category, description, difficulty, authors, type, hidden, max_points, score_type, points, solves, host, port, attachments FROM challenges
-`
-
-// Retrieve all challenges
-func (q *Queries) GetChallenges(ctx context.Context) ([]Challenge, error) {
-	rows, err := q.query(ctx, q.getChallengesStmt, getChallenges)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Challenge
-	for rows.Next() {
-		var i Challenge
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Category,
-			&i.Description,
-			&i.Difficulty,
-			&i.Authors,
-			&i.Type,
-			&i.Hidden,
-			&i.MaxPoints,
-			&i.ScoreType,
-			&i.Points,
-			&i.Solves,
-			&i.Host,
-			&i.Port,
-			&i.Attachments,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getConfigs = `-- name: GetConfigs :many
 SELECT key, type, value, description FROM configs ORDER BY key
 `
@@ -485,35 +542,6 @@ func (q *Queries) GetInstance(ctx context.Context, arg GetInstanceParams) (Insta
 	err := row.Scan(
 		&i.TeamID,
 		&i.ChallID,
-		&i.ExpiresAt,
-		&i.Host,
-		&i.Port,
-		&i.DockerID,
-	)
-	return i, err
-}
-
-const getInstanceInfo = `-- name: GetInstanceInfo :one
-SELECT expires_at, host, port, docker_id FROM instances WHERE team_id = $1 AND chall_id = $2
-`
-
-type GetInstanceInfoParams struct {
-	TeamID  int32 `json:"team_id"`
-	ChallID int32 `json:"chall_id"`
-}
-
-type GetInstanceInfoRow struct {
-	ExpiresAt time.Time      `json:"expires_at"`
-	Host      string         `json:"host"`
-	Port      sql.NullInt32  `json:"port"`
-	DockerID  sql.NullString `json:"docker_id"`
-}
-
-// Retrieve the instance associated with a challenge and team
-func (q *Queries) GetInstanceInfo(ctx context.Context, arg GetInstanceInfoParams) (GetInstanceInfoRow, error) {
-	row := q.queryRow(ctx, q.getInstanceInfoStmt, getInstanceInfo, arg.TeamID, arg.ChallID)
-	var i GetInstanceInfoRow
-	err := row.Scan(
 		&i.ExpiresAt,
 		&i.Host,
 		&i.Port,
@@ -939,30 +967,6 @@ func (q *Queries) GetUsersPreview(ctx context.Context) ([]GetUsersPreviewRow, er
 		return nil, err
 	}
 	return items, nil
-}
-
-const isChallengeFirstBlood = `-- name: IsChallengeFirstBlood :one
-SELECT first_blood
-  FROM submissions
-  JOIN users ON users.id = submissions.user_id
-  JOIN teams ON users.team_id = teams.id
-    AND teams.id = (SELECT team_id FROM users WHERE users.id = $2)
-  WHERE users.role = 'Player'
-    AND submissions.status = 'Correct'
-    AND submissions.chall_id = $1
-`
-
-type IsChallengeFirstBloodParams struct {
-	ChallID int32 `json:"chall_id"`
-	ID      int32 `json:"id"`
-}
-
-// Check if a challenge is solved (and is a first blood) by a user's team
-func (q *Queries) IsChallengeFirstBlood(ctx context.Context, arg IsChallengeFirstBloodParams) (bool, error) {
-	row := q.queryRow(ctx, q.isChallengeFirstBloodStmt, isChallengeFirstBlood, arg.ChallID, arg.ID)
-	var first_blood bool
-	err := row.Scan(&first_blood)
-	return first_blood, err
 }
 
 const registerTeam = `-- name: RegisterTeam :exec
