@@ -27,7 +27,7 @@
  - Add custom buttons for first/second/third bloods?
  - Improve challenge creation procedure
  - Write tests
- - Add frontend testing to the gh workflow
+ - ~~Add frontend testing to the gh workflow~~
 
 ## Alpha
  - config to start and end ctf
