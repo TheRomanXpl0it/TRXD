@@ -79,13 +79,15 @@
 		const c = countryCode.trim();
 		const i = imageUrl.trim();
 
-		if (!n && !c && !i) {
-			toast.error('Please fill at least one field.');
+		// Validate URL format first (if any value is entered)
+		if (i && !isLikelyUrl(i)) {
+			toast.error('Image must be a valid URL.');
 			return;
 		}
 
-		if (i && !isLikelyUrl(i)) {
-			toast.error('Image must be a valid URL.');
+		// Then check if at least one field is filled
+		if (!n && !c && !i) {
+			toast.error('Please fill at least one field.');
 			return;
 		}
 
