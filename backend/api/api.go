@@ -66,6 +66,7 @@ var (
 func SetupApp() *fiber.App {
 	app := fiber.New(fiber.Config{
 		AppName: consts.Name,
+	 	BodyLimit: 1024 * 1024 * 1024, // 1GB
 	})
 
 	SetupFeatures(app)
