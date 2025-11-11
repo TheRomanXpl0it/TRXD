@@ -66,78 +66,90 @@
 		return String(team?.team_id ?? '');
 	}
 
-	// Color palette for different teams
-	const colors = [
-		'#3b82f6', // blue
-		'#ef4444', // red
-		'#10b981', // green
-		'#f59e0b', // amber
-		'#8b5cf6', // violet
-		'#06b6d4', // cyan
-		'#f97316', // orange
-		'#84cc16', // lime
-		'#ec4899', // pink
-		'#6366f1' // indigo
-	];
+    // Color palette for different teams
+    const colors = [
+        '#3b82f6', // blue
+        '#ef4444', // red
+        '#10b981', // green
+        '#f59e0b', // amber
+        '#8b5cf6', // violet
+        '#06b6d4', // cyan
+        '#f97316', // orange
+        '#84cc16', // lime
+        '#ec4899', // pink
+        '#6366f1' // indigo
+    ];
 
-	const chartData = $derived.by(() => {
-		const arr = Array.isArray(data) ? data : [];
-		const n = Number(topN ?? 5) || 5;
+    const chartData = $derived.by(() => {
+        const arr = Array.isArray(data) ? data : [];
+        const n = Number(topN ?? 5) || 5;
 
-		const ranked = [...arr]
-			.map((e: any) => ({ ...e, total: totalPoints(e) }))
-			.sort((a: any, b: any) => (b.total || 0) - (a.total || 0))
-			.slice(0, n);
+        const ranked = [...arr]
+            .map((e: any) => ({ ...e, total: totalPoints(e) }))
+            .sort((a: any, b: any) => (b.total || 0) - (a.total || 0))
+            .slice(0, n);
 
-		const series: Array<{
-			name: string;
-			data: Array<{ date: Date; value: number }>;
-			color: string;
-		}> = [];
+        const series: Array<{
+            name: string;
+            data: Array<{ date: Date; value: number; fb?: boolean }>;
+            regularPoints: Array<{ date: Date; value: number }>;
+            fbPoints: Array<{ date: Date; value: number }>;
+            color: string;
+        }> = [];
 
-		ranked.forEach((team: any, index: number) => {
-			const name = nameForTeam(team);
-			const solves = normalizeTeam(team)
-				.filter((s: any) => s.date !== null)
-				.sort((a: any, b: any) => a.date!.getTime() - b.date!.getTime());
+        ranked.forEach((team: any, index: number) => {
+            const name = nameForTeam(team);
+            const solves = normalizeTeam(team)
+                .filter((s: any) => s.date !== null)
+                .sort((a: any, b: any) => a.date!.getTime() - b.date!.getTime());
 
-			const points: Array<{ date: Date; value: number }> = [];
+            const points: Array<{ date: Date; value: number; fb?: boolean }> = [];
 
-			// Add starting point at 0
-			if (solves.length > 0 && solves[0].date) {
-				points.push({
-					date: new Date(solves[0].date.getTime() - 60000),
-					value: 0
-				});
-			}
+            // Add starting point at 0
+            if (solves.length > 0 && solves[0].date) {
+                points.push({
+                    date: new Date(solves[0].date.getTime() - 60000),
+                    value: 0
+                });
+            }
 
-			// Add cumulative points for each solve
-			for (const s of solves) {
-				if (s.date) {
-					points.push({ date: s.date, value: Number(s?.points ?? 0) });
-				}
-			}
+            // Add cumulative points for each solve
+            for (const s of solves) {
+                if (s.date) {
+                    points.push({
+                        date: s.date,
+                        value: Number(s?.points ?? 0),
+                        fb: !!s?.fb
+                    });
+                }
+            }
 
-			// Extend line to current time
-			if (points.length > 0) {
-				const lastPoint = points[points.length - 1];
-				const now = new Date();
-				if (lastPoint.date < now) {
-					points.push({ date: now, value: lastPoint.value });
-				}
-			}
+            // Extend line to current time
+            if (points.length > 0) {
+                const lastPoint = points[points.length - 1];
+                const now = new Date();
+                if (lastPoint.date < now) {
+                    points.push({ date: now, value: lastPoint.value });
+                }
+            }
 
-			if (points.length > 0) {
-				series.push({
-					name,
-					data: points,
-					color: colors[index % colors.length]
-				});
-			}
-		});
+            if (points.length > 0) {
+                // Pre-compute filtered arrays to avoid inline filtering in template
+                const regularPoints = points.filter(p => !p.fb);
+                const fbPoints = points.filter(p => p.fb);
 
-		return series;
-	});
+                series.push({
+                    name,
+                    data: points,
+                    regularPoints,
+                    fbPoints,
+                    color: colors[index % colors.length]
+                });
+            }
+        });
+
+        return series;
+    });
 
 	const textColor = $derived(isDark ? '#e5e7eb' : '#374151');
 	const gridColor = $derived(isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)');
@@ -209,21 +221,30 @@
 						grid={{ style: `stroke: ${gridColor}` }}
 						rule={{ style: `font-size: 14px; fill: ${textColor}` }}
 					/>
-					{#each chartData as series}
-						<Spline
-							data={series.data}
-							class="stroke-2"
-							style={`stroke: ${series.color}`}
-						/>
-						<Points
-							data={series.data}
-							r={4}
-							fill={series.color}
-						/>
-					{/each}
-					<Highlight points lines />
-				</Svg>
-			</Chart>
+                    {#each chartData as series}
+                        <Spline
+                            data={series.data}
+                            class="stroke-2"
+                            style={`stroke: ${series.color}`}
+                        />
+                        <!-- Regular points (non-first blood) -->
+                        <Points
+                            data={series.regularPoints}
+                            r={4}
+                            fill={series.color}
+                        />
+                        <!-- First blood points - larger with gold/yellow color and stroke -->
+                        <Points
+                            data={series.fbPoints}
+                            r={6}
+                            fill="#fbbf24"
+                            stroke="#f59e0b"
+                            strokeWidth={2}
+                        />
+                    {/each}
+                    <Highlight points lines />
+                </Svg>
+            </Chart>
 		{:else}
 			<div class="flex h-full items-center justify-center text-gray-500">
 				No data available

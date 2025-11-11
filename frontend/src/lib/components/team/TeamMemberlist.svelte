@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 	import { Input } from '@/components/ui/input';
 	import { Users } from '@lucide/svelte';
 	import { push } from 'svelte-spa-router';
@@ -139,83 +138,44 @@
 			</div>
 		{:else}
 			{#each filtered as m (m.id ?? m.name)}
-				<HoverCard>
-					<HoverCardTrigger>
-						<button
-							type="button"
-							class="hover:bg-muted group flex w-full cursor-pointer items-center gap-3 rounded-lg border p-3 text-left transition-colors dark:border-gray-700"
+				<button
+					type="button"
+					class="hover:bg-muted group flex w-full cursor-pointer items-center gap-3 rounded-lg border p-3 text-left transition-colors dark:border-gray-700"
+				>
+					{#if memberImages[String(m.id)]}
+						<Avatar src={memberImages[String(m.id)]} class="h-10 w-10 shrink-0" />
+					{:else}
+						<div
+							class="bg-muted flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-semibold"
 						>
-							{#if memberImages[String(m.id)]}
-								<Avatar src={memberImages[String(m.id)]} class="h-10 w-10 shrink-0" />
-							{:else}
-								<div
-									class="bg-muted flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-semibold"
-								>
-								{initials(m.name)}
-							</div>
-						{/if}
+							{initials(m.name)}
+						</div>
+					{/if}
 
-						<div class="min-w-0 flex-1">
-							<span
-								class="block cursor-pointer truncate text-sm font-medium hover:underline"
-								onclick={() => {
+					<div class="min-w-0 flex-1">
+						<span
+							class="block cursor-pointer truncate text-sm font-medium hover:underline"
+							onclick={() => {
+								push(`/account/${m.id}`);
+							}}
+							onkeydown={(e) => {
+								if (e.key === 'Enter' || e.key === ' ') {
+									e.preventDefault();
 									push(`/account/${m.id}`);
-								}}
-								onkeydown={(e) => {
-									if (e.key === 'Enter' || e.key === ' ') {
-										e.preventDefault();
-										push(`/account/${m.id}`);
-									}
-								}}
-								role="link"
-								tabindex="0"
-							>
-								{m.name}
-							</span>
-							<p class="text-muted-foreground truncate text-xs">{m.role}</p>
-						</div>
+								}
+							}}
+							role="link"
+							tabindex="0"
+						>
+							{m.name}
+						</span>
+						<p class="text-muted-foreground truncate text-xs">{m.role}</p>
+					</div>
 
-						<div class="ml-auto shrink-0 text-right">
-							<p class="text-sm font-semibold">{prettyNum(m.score)} pts</p>
-						</div>
-					</button>
-					</HoverCardTrigger>
-
-					<HoverCardContent class="w-80">
-						<div class="flex items-start gap-3">
-							{#if memberImages[String(m.id)]}
-								<Avatar src={memberImages[String(m.id)]} class="h-10 w-10 shrink-0" />
-							{:else}
-								<div
-									class="bg-muted flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-semibold"
-								>
-									{initials(m.name)}
-								</div>
-							{/if}
-							<div class="min-w-0">
-								<p class="truncate text-base font-semibold leading-tight">{m.name}</p>
-								<p class="text-muted-foreground text-xs">{m.role}</p>
-
-								<div class="mt-3 grid grid-cols-2 gap-2">
-									<div class="rounded-md border p-2 text-center text-xs dark:border-gray-700">
-										<div class="text-muted-foreground">Score</div>
-										<div class="mt-1 text-sm font-semibold">{prettyNum(m.score)}</div>
-									</div>
-									<div class="rounded-md border p-2 text-center text-xs dark:border-gray-700">
-										<div class="text-muted-foreground">Team total</div>
-										<div class="mt-1 text-sm font-semibold">{prettyNum(team?.score ?? 0)}</div>
-									</div>
-								</div>
-
-								{#if team?.name}
-									<p class="text-muted-foreground mt-2 truncate text-xs">
-										Team: <span class="font-medium">{team.name}</span>
-									</p>
-								{/if}
-							</div>
-						</div>
-					</HoverCardContent>
-				</HoverCard>
+					<div class="ml-auto shrink-0 text-right">
+						<p class="text-sm font-semibold">{prettyNum(m.score)} pts</p>
+					</div>
+				</button>
 			{/each}
 		{/if}
 	</div>

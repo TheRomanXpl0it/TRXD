@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { toast } from 'svelte-sonner';
 import AccountEdit from '../AccountEdit.svelte';
 import { updateUser } from '$lib/user';
@@ -26,6 +26,10 @@ describe('AccountEdit Component', () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+	});
+
+	afterEach(async () => {
+		await new Promise(resolve => setTimeout(resolve, 150));
 	});
 
 	it('renders account edit dialog', () => {

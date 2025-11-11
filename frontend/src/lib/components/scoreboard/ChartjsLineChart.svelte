@@ -118,16 +118,37 @@
 
 			let cum = 0;
 			const points: any[] = [];
+			const pointRadii: number[] = [];
+			const pointColors: string[] = [];
+			const pointBorderColors: string[] = [];
+			const pointBorderWidths: number[] = [];
 
 			// Add starting point
 			if (solves.length > 0) {
 				points.push({ x: solves[0].ts, y: 0 });
+				pointRadii.push(4);
+				pointColors.push(colors[index % colors.length]);
+				pointBorderColors.push('#ffffff');
+				pointBorderWidths.push(2);
 			}
 
 			// Add cumulative points
 			for (const s of solves) {
 				cum += Number(s?.points ?? 0);
 				points.push({ x: s.ts, y: cum });
+
+				// Style first blood points differently
+				if (s.fb) {
+					pointRadii.push(6); // Larger radius for first blood
+					pointColors.push('#fbbf24'); // Gold color
+					pointBorderColors.push('#f59e0b'); // Amber border
+					pointBorderWidths.push(3); // Thicker border
+				} else {
+					pointRadii.push(4);
+					pointColors.push(colors[index % colors.length]);
+					pointBorderColors.push('#ffffff');
+					pointBorderWidths.push(2);
+				}
 			}
 
 			const color = colors[index % colors.length];
@@ -140,11 +161,11 @@
 				borderWidth: 3,
 				fill: false,
 				tension: 0.1,
-				pointRadius: 4,
+				pointRadius: pointRadii,
 				pointHoverRadius: 6,
-				pointBackgroundColor: color,
-				pointBorderColor: '#ffffff',
-				pointBorderWidth: 2
+				pointBackgroundColor: pointColors,
+				pointBorderColor: pointBorderColors,
+				pointBorderWidth: pointBorderWidths
 			});
 		});
 
