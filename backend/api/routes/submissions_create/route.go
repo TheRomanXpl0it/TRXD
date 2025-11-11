@@ -42,7 +42,7 @@ func Route(c *fiber.Ctx) error {
 
 	data.Flag = strings.TrimSpace(data.Flag)
 
-	status, first_blood, err := SubmitFlag(c.Context(), uid, *data.ChallID, data.Flag)
+	status, first_blood, err := SubmitFlag(c.Context(), uid, role, *data.ChallID, data.Flag)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorSubmittingFlag, err)
 	}

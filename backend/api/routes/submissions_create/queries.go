@@ -6,7 +6,8 @@ import (
 	"trxd/db/sqlc"
 )
 
-func SubmitFlag(ctx context.Context, userID int32, challengeID int32, flag string) (sqlc.SubmissionStatus, bool, error) {
+func SubmitFlag(ctx context.Context, userID int32, role sqlc.UserRole,
+	challengeID int32, flag string) (sqlc.SubmissionStatus, bool, error) {
 	valid, err := db.Sql.CheckFlags(ctx, sqlc.CheckFlagsParams{
 		Flag:    flag,
 		ChallID: challengeID,
@@ -18,6 +19,10 @@ func SubmitFlag(ctx context.Context, userID int32, challengeID int32, flag strin
 	status := sqlc.SubmissionStatusWrong
 	if valid {
 		status = sqlc.SubmissionStatusCorrect
+	}
+
+	if role != sqlc.UserRolePlayer {
+		return status, false, nil
 	}
 
 	res, err := db.Sql.Submit(ctx, sqlc.SubmitParams{

@@ -12,6 +12,7 @@ import (
 func Route(c *fiber.Ctx) error {
 	var data struct {
 		UserID *int32 `json:"user_id" validate:"required,user_id"`
+		// TODO: password new only for ourself
 	}
 	if err := c.BodyParser(&data); err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidJSON)
