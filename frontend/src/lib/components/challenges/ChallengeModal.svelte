@@ -113,6 +113,7 @@
 						<Button
 							variant="outline"
 							size="sm"
+							class="cursor-pointer"
 							onclick={() => onEdit?.(challenge)}
 							aria-label="Edit challenge"
 						>
@@ -122,7 +123,7 @@
 						<Button
 							variant="outline"
 							size="sm"
-							class="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+							class="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950 cursor-pointer"
 							onclick={() => onDelete?.(challenge)}
 							aria-label="Delete challenge"
 						>
