@@ -117,7 +117,7 @@
 	// Filters
 	let filterCategories = $state<string[]>([]);
 	let filterTags = $state<string[]>([]);
-	let sortMethod = $state<string>('alphabetical-a-to-z');
+	let sortMethod = $state<string>('points-min-to-max');
 	let search = $state('');
 	let tagsOpen = $state(false);
 	let categoriesOpen = $state(false);

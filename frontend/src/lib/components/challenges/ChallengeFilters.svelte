@@ -9,11 +9,20 @@
 	import { X, Filter, Shapes, LayoutGrid, List, ArrowDownAZ } from '@lucide/svelte';
 	import VirtualList from '@sveltejs/svelte-virtual-list';
 
+	const sortingMethods = [
+		{ value: 'points-min-to-max', label: 'Points: low to high' },
+		{ value: "points-max-to-min", label: "Points: high to low" },
+		{ value: "solves-min-to-max", label: "Solves: low to high" },
+		{ value: "solves-max-to-min", label: "Solves: high to low" },
+		{ value: "alphabetical-a-to-z", label: "A to Z" },
+		{ value: "alphabetical-z-to-a", label: "Z to A" }
+	];
+
 	let {
 		search = $bindable(''),
 		filterCategories = $bindable([]),
 		filterTags = $bindable([]),
-		sortMethod = $bindable('alphabetical-a-to-z'),
+		sortMethod = $bindable(sortingMethods[0].value),
 		categories = [],
 		allTags = [],
 		compactView = $bindable(false),
@@ -28,15 +37,6 @@
 		compactView: boolean;
 		activeFiltersCount: number;
 	} = $props();
-	
-	const sortingMethods = [
-      { value: "points-min-to-max", label: "Points from low to high" },
-      { value: "points-max-to-min", label: "Points from high to low" },
-      { value: "solves-min-to-max", label: "Solves count from low to high" },
-      { value: "solves-max-to-min", label: "Solves count from high to low" },
-      { value: "alphabetical-a-to-z", label: "Alphabetical from A to Z" },
-      { value: "alphabetical-z-to-a", label: "Alphabetical from Z to A" }
-    ];
 	
 	const sortingLabel: Record<string, string> = Object.fromEntries(
       sortingMethods.map(m => [m.value, m.label])
