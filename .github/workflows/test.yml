@@ -58,7 +58,7 @@ jobs:
       working-directory: ./frontend
       run: npm run test:run
 
-  tests:
+  backend-tests:
     timeout-minutes: 30
     runs-on: ubuntu-latest
     env:
@@ -161,4 +161,4 @@ jobs:
     - name: Infra Teardown
       run: |
         cd ../
-        docker compose -p trxd-test-pipeline down
+        docker compose -p $PROJECT_NAME down

@@ -37,3 +37,5 @@ attachments/
 
 # Other files
 *.bashrc
+*.pyc
+__pycache__/
