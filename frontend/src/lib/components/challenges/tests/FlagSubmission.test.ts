@@ -281,7 +281,9 @@ describe('FlagSubmission Component - User Workflow', () => {
 		});
 
 		// Verify first blood toast was shown
-		expect(mockToast.success).toHaveBeenCalledWith('First blood!');
+		await waitFor(() => {
+			expect(mockToast.success).toHaveBeenCalledWith('First blood!');
+		});
 		expect(mockSubmit).toHaveBeenCalledTimes(1);
 		
 		// Challenge should be marked as solved
@@ -357,7 +359,9 @@ describe('FlagSubmission Component - User Workflow', () => {
 		});
 
 		// Verify success toast was shown
-		expect(mockToast.success).toHaveBeenCalledWith('Correct flag!');
+		await waitFor(() => {
+			expect(mockToast.success).toHaveBeenCalledWith('Correct flag!');
+		});
 		expect(mockSubmit).toHaveBeenCalledTimes(1);
 		
 		// Challenge should be marked as solved
@@ -393,8 +397,10 @@ describe('FlagSubmission Component - User Workflow', () => {
 			expect(mockSubmit).toHaveBeenCalledWith(challengeId, testFlag);
 		});
 
-		// Verify success toast was not shown
-		expect(mockToast.error).toHaveBeenCalledWith('Incorrect flag');
+		// Verify error toast was shown
+		await waitFor(() => {
+			expect(mockToast.error).toHaveBeenCalledWith('Incorrect flag');
+		});
 		expect(mockSubmit).toHaveBeenCalledTimes(1);
 		
 		// Challenge should not be marked as solved

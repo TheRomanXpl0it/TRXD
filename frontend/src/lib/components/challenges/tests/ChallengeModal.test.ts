@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import ChallengeModal from '../ChallengeModal.svelte';
@@ -332,7 +332,9 @@ describe('ChallengeModal Component', () => {
 		await user.click(connectionButton);
 
 		expect(mockClipboard).toHaveBeenCalledWith('ctf.example.com:8080');
-		expect(mockToast.success).toHaveBeenCalledWith('Copied to clipboard!');
+		await waitFor(() => {
+			expect(mockToast.success).toHaveBeenCalledWith('Copied to clipboard!');
+		});
 	});
 
 	it('does not show connection section for instance challenges', () => {
@@ -398,7 +400,9 @@ describe('ChallengeModal Component', () => {
 		const connectionButton = screen.getByRole('button', { name: /copy connection string/i });
 		await user.click(connectionButton);
 
-		expect(mockToast.error).toHaveBeenCalledWith('Failed to copy to clipboard.');
+		await waitFor(() => {
+			expect(mockToast.error).toHaveBeenCalledWith('Failed to copy to clipboard.');
+		});
 	});
 
 	it('uses singular "solve" for solves count of 1', () => {

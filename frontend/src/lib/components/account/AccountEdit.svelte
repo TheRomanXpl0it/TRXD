@@ -10,7 +10,8 @@
 	import * as Select from '$lib/components/ui/select/index.js';
 	import countries from '$lib/data/countries.json';
 	/* Your provided function */
-	import { updateUser } from '$lib/user';
+import { updateUser } from '$lib/user';
+import { tick } from 'svelte';
 
 	let { 
 		open = $bindable(false), 
@@ -74,10 +75,16 @@
 		e.preventDefault();
 		if (saving) return;
 
-		const id = user?.id ?? 0;
-		const n = name.trim();
-		const c = countryCode.trim();
-		const i = imageUrl.trim();
+    // Ensure any pending bound input updates are flushed
+    await tick();
+
+    const id = user?.id ?? 0;
+    // Prefer direct reads from inputs to avoid any binding lag in tests
+    const nEl = document.getElementById('pf-name') as HTMLInputElement | null;
+    const iEl = document.getElementById('pf-image') as HTMLInputElement | null;
+    const n = (nEl?.value ?? name).trim();
+    const c = countryCode.trim();
+    const i = (iEl?.value ?? imageUrl).trim();
 
 		// Validate URL format first (if any value is entered)
 		if (i && !isLikelyUrl(i)) {

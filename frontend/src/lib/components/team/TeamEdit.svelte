@@ -10,7 +10,7 @@
 	import * as Select from '$lib/components/ui/select/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import countries from '$lib/data/countries.json';
-	import { tick } from 'svelte';
+import { tick } from 'svelte';
 
 	import { updateTeam } from '$lib/team';
 	import { useQueryClient } from '@tanstack/svelte-query';
@@ -77,15 +77,15 @@
 		}
 	}
 
-	async function onSave(e: Event) {
-		e.preventDefault();
-		if (saving) return;
+    async function onSave(e: Event) {
+        e.preventDefault();
+        if (saving) return;
 
-		const id = team?.id ?? 0;
-		const n = name.trim();
-		const b = bio.trim();
-		const c = countryCode.trim();
-		const i = imageUrl.trim();
+        const id = team?.id ?? 0;
+        const n = name.trim();
+        const b = bio.trim();
+        const c = countryCode.trim();
+        const i = imageUrl.trim();
 
 		if (!n && !b && !c && !i) {
 			toast.error('Please fill at least one field.');
@@ -97,10 +97,10 @@
 			return;
 		}
 
-		try {
-			saving = true;
-			await tick(); // Ensure DOM updates before async operation
-			await updateTeam(id, n, b, i, c);
+        try {
+            saving = true;
+            await tick(); // Ensure DOM updates before async operation
+            await updateTeam(id, n, b, i, c);
 			open = false;
 			
 			// Invalidate teams cache so the teams page updates

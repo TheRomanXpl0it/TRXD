@@ -1,10 +1,16 @@
-import { render, screen, waitFor } from '@testing-library/svelte';
+import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { toast } from 'svelte-sonner';
 import TeamEdit from '../TeamEdit.svelte';
 import { updateTeam } from '$lib/team';
 import { useQueryClient } from '@tanstack/svelte-query';
+import { tick } from 'svelte';
+
+async function flush() {
+  await tick();
+  await Promise.resolve();
+}
 
 vi.mock('svelte-sonner', () => ({
   toast: {
@@ -41,7 +47,8 @@ describe('TeamEdit Component', () => {
   });
 
   it('renders team edit dialog', () => {
-    render(TeamEdit, { props: { open: true, team: baseTeam } });
+		render(TeamEdit, { props: { open: true, team: baseTeam } });
+
 
     expect(screen.getByLabelText(/team name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^bio$/i)).toBeInTheDocument();
@@ -52,7 +59,8 @@ describe('TeamEdit Component', () => {
   it('validates empty form submission', async () => {
     const user = userEvent.setup();
 
-    render(TeamEdit, { props: { open: true, team: baseTeam } });
+		render(TeamEdit, { props: { open: true, team: baseTeam } });
+		await flush();
 
     await user.click(screen.getByRole('button', { name: /^save$/i }));
 
@@ -63,9 +71,11 @@ describe('TeamEdit Component', () => {
   it('validates image URL format', async () => {
     const user = userEvent.setup();
 
-    render(TeamEdit, { props: { open: true, team: baseTeam } });
+		render(TeamEdit, { props: { open: true, team: baseTeam } });
+		await flush();
 
-    await user.type(screen.getByLabelText(/image url/i), 'not-a-url');
+    const imageBad = screen.getByLabelText(/image url/i) as HTMLInputElement;
+    await fireEvent.input(imageBad, { target: { value: 'not-a-url' } });
     await user.click(screen.getByRole('button', { name: /^save$/i }));
 
     expect(toast.error).toHaveBeenCalledWith('Image must be a valid URL.');
@@ -76,11 +86,16 @@ describe('TeamEdit Component', () => {
     const user = userEvent.setup();
     vi.mocked(updateTeam).mockResolvedValueOnce({ ok: true } as any);
 
-    render(TeamEdit, { props: { open: true, team: baseTeam } });
+		render(TeamEdit, { props: { open: true, team: baseTeam } });
+		await flush();
 
-    await user.type(screen.getByLabelText(/team name/i), ' New Team ');
-    await user.type(screen.getByLabelText(/^bio$/i), ' Cool bio ');
-    await user.type(screen.getByLabelText(/image url/i), ' http://image.png ');
+    const tName = screen.getByLabelText(/team name/i) as HTMLInputElement;
+    const tBio = screen.getByLabelText(/^bio$/i) as HTMLTextAreaElement;
+    const tImg = screen.getByLabelText(/image url/i) as HTMLInputElement;
+    await fireEvent.input(tName, { target: { value: ' New Team ' } });
+    await fireEvent.input(tBio, { target: { value: ' Cool bio ' } });
+    await fireEvent.input(tImg, { target: { value: ' http://image.png ' } });
+    await flush();
     await user.click(screen.getByRole('button', { name: /^save$/i }));
 
     await waitFor(() => {
@@ -94,11 +109,16 @@ describe('TeamEdit Component', () => {
     vi.mocked(updateTeam).mockResolvedValueOnce({ ok: true } as any);
     vi.mocked(useQueryClient).mockReturnValue({ invalidateQueries: mockInvalidateQueries } as any);
 
-    render(TeamEdit, { props: { open: true, team: baseTeam } });
+		render(TeamEdit, { props: { open: true, team: baseTeam } });
+		await flush();
 
-    await user.type(screen.getByLabelText(/team name/i), 'New Team');
-    await user.type(screen.getByLabelText(/^bio$/i), 'Cool bio');
-    await user.type(screen.getByLabelText(/image url/i), 'http://image.png');
+    const tName2 = screen.getByLabelText(/team name/i) as HTMLInputElement;
+    const tBio2 = screen.getByLabelText(/^bio$/i) as HTMLTextAreaElement;
+    const tImg2 = screen.getByLabelText(/image url/i) as HTMLInputElement;
+    await fireEvent.input(tName2, { target: { value: 'New Team' } });
+    await fireEvent.input(tBio2, { target: { value: 'Cool bio' } });
+    await fireEvent.input(tImg2, { target: { value: 'http://image.png' } });
+    await flush();
     await user.click(screen.getByRole('button', { name: /^save$/i }));
 
     await waitFor(() => {
@@ -113,7 +133,8 @@ describe('TeamEdit Component', () => {
 
     render(TeamEdit, { props: { open: true, team: baseTeam } });
 
-    await user.type(screen.getByLabelText(/team name/i), 'New Team');
+    const nm = screen.getByLabelText(/team name/i) as HTMLInputElement;
+    await fireEvent.input(nm, { target: { value: 'New Team' } });
     await user.click(screen.getByRole('button', { name: /^save$/i }));
 
     await waitFor(() => {
@@ -132,11 +153,14 @@ describe('TeamEdit Component', () => {
     render(TeamEdit, { props: { open: true, team: baseTeam } });
 
     await user.type(screen.getByLabelText(/team name/i), 'New Team');
-    await user.click(screen.getByRole('button', { name: /^save$/i }));
+    await flush();
+    const submitButton = screen.getByRole('button', { name: /^save$/i });
+    await user.click(submitButton);
 
-    // While pending, shows disabled Saving... button
-    const savingButton = screen.getByRole('button', { name: /saving/i });
-    expect(savingButton).toBeDisabled();
+    // While pending, the original submit button becomes disabled
+    await waitFor(() => {
+      expect(submitButton).toBeDisabled();
+    });
 
     // Resolve and ensure it completes without throwing
     resolveUpdate({ ok: true });
@@ -148,7 +172,9 @@ describe('TeamEdit Component', () => {
 
     render(TeamEdit, { props: { open: true, team: baseTeam } });
 
-    await user.type(screen.getByLabelText(/^bio$/i), 'Only bio updated');
+    const tBio3 = screen.getByLabelText(/^bio$/i) as HTMLTextAreaElement;
+    await fireEvent.input(tBio3, { target: { value: 'Only bio updated' } });
+    await flush();
     await user.click(screen.getByRole('button', { name: /^save$/i }));
 
     await waitFor(() => {

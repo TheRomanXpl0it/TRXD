@@ -12,13 +12,14 @@
 ## Frontend
  - convert .pngs to webp
  - Better tags handling in /challenges page
- - Use the same style with tabs in the "Update profile" page
- - Country selection sucks/does not work + it's buggy
  - Improve "Team join" page on smaller screens
  - Add custom buttons for first/second/third bloods?
  - Improve challenge creation procedure
- - Write tests
- - Add frontend testing to the gh workflow
+ - Fix admin flag submission 
+ - ~~Write tests~~
+ - ~~Add frontend testing to the gh workflow~~
+ - ~~Use the same style with tabs in the "Update profile" page~~
+ - ~~Country selection sucks/does not work + it's buggy~~
 
 ## QoS
  - flush cache flag

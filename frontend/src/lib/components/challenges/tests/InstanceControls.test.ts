@@ -72,7 +72,9 @@ describe('InstanceControls Component', () => {
 		});
 
 		// Verify success toast
-		expect(mockToast.success).toHaveBeenCalledWith('Instance created!');
+		await waitFor(() => {
+			expect(mockToast.success).toHaveBeenCalledWith('Instance created!');
+		});
 
 		// Verify countdown callback was called
 		expect(onCountdownUpdate).toHaveBeenCalledWith(challengeId, 3600);
@@ -112,7 +114,9 @@ describe('InstanceControls Component', () => {
 		});
 
 		// Verify success toast
-		expect(mockToast.success).toHaveBeenCalledWith('Instance stopped!');
+		await waitFor(() => {
+			expect(mockToast.success).toHaveBeenCalledWith('Instance stopped!');
+		});
 
 		// Verify countdown callback was called with 0
 		expect(onCountdownUpdate).toHaveBeenCalledWith(challengeId, 0);
