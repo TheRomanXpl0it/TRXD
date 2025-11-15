@@ -88,7 +88,7 @@
 						<button
 							type="button"
 							onclick={onOpenSolves}
-							class="text-xs font-medium opacity-70 hover:opacity-100 hover:underline focus:outline-none focus:underline"
+							class="text-xs font-medium opacity-70 hover:opacity-100 hover:underline focus:outline-none focus:underline cursor-pointer transition-opacity"
 							aria-label="View {challenge.solves} solve{challenge.solves === 1 ? '' : 's'}"
 						>
 							{challenge.solves} {challenge.solves === 1 ? 'solve' : 'solves'}

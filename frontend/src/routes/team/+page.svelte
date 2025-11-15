@@ -126,10 +126,7 @@
 					<h2 class="truncate text-2xl font-bold">{team.name}</h2>
 					<div class="mt-1 flex items-center gap-3 text-sm">
 						{#if team.country}
-							<div class="flex items-center gap-1">
-								<Icon icon={`circle-flags:${String(team.country).toLowerCase()}`} width="14" height="14" />
-								<span>{team.country}</span>
-							</div>
+							<Icon icon={`circle-flags:${String(team.country).toLowerCase()}`} width="20" height="20" />
 						{/if}
 						<div class="flex items-center gap-1">
 							<Users class="h-3.5 w-3.5" />

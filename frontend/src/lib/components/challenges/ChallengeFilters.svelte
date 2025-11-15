@@ -12,8 +12,6 @@
 	const sortingMethods = [
 		{ value: 'points-min-to-max', label: 'Points: low to high' },
 		{ value: "points-max-to-min", label: "Points: high to low" },
-		{ value: "solves-min-to-max", label: "Solves: low to high" },
-		{ value: "solves-max-to-min", label: "Solves: high to low" },
 		{ value: "alphabetical-a-to-z", label: "A to Z" },
 		{ value: "alphabetical-z-to-a", label: "Z to A" }
 	];

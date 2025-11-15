@@ -5,6 +5,7 @@ import Home from './routes/+page.svelte';
 import Challenges from './routes/challenges/+page.svelte';
 import Team from './routes/team/+page.svelte';
 import Teams from './routes/teams/+page.svelte';
+import Accounts from './routes/accounts/+page.svelte';
 import Account from './routes/account/+page.svelte';
 import Scoreboard from './routes/scoreboard/+page.svelte';
 
@@ -22,6 +23,7 @@ export default {
   '/':        requireAuth(Home),
   '/challenges': requireAuth(Challenges),
   '/scoreboard': requireAuth(Scoreboard),
+  '/accounts':   requireAuth(Accounts),
   '/teams':      requireAuth(Teams),
   '/team':       requireAuth(Team),
   '/team/:id':   requireAuth(Team),

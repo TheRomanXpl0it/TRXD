@@ -90,8 +90,6 @@
 	const comparators: Record<string, (a: Challenge, b: Challenge) => number> = {
         "points-min-to-max": (a, b) => (a.points ?? 0) - (b.points ?? 0),
         "points-max-to-min": (a, b) => (b.points ?? 0) - (a.points ?? 0),
-        "solves-min-to-max": (a, b) => (a.solves ?? 0) - (b.solves ?? 0),
-        "solves-max-to-min": (a, b) => (b.solves ?? 0) - (a.solves ?? 0),
         "alphabetical-a-to-z": (a, b) => (a.name ?? a.title ?? '').localeCompare(b.name ?? b.title ?? ''),
         "alphabetical-z-to-a": (a, b) => (b.name ?? b.title ?? '').localeCompare(a.name ?? a.title ?? '')
     };

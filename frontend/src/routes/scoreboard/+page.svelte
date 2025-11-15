@@ -161,7 +161,7 @@
 				{:else}
 					{#each pageRows as row, i (row.id)}
 						{@const rank = startIndex + i + 1}
-						<Table.Row>
+						<Table.Row class={!compactMode ? 'h-16' : ''}>
 							<Table.Cell class="font-medium">
 								<div class="flex items-center gap-1.5">
 									<span class="text-sm">#{rank}</span>
