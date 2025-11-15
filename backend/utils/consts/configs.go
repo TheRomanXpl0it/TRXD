@@ -16,6 +16,8 @@ var DefaultConfigs = map[string]any{
 	"secret":                    "",
 	"domain":                    "",
 	"discord-webhook":           "",
+	"telegram-token":            "",
+	"telegram-chat-id":          -1,
 	"project-name":              "trxd",
 	"user-mode":                 false,
 	"scoreboard-top":            10,

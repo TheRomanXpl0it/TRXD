@@ -8,6 +8,7 @@ import (
 	"trxd/utils"
 	"trxd/utils/consts"
 	"trxd/utils/discord"
+	"trxd/utils/telegram"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -49,6 +50,7 @@ func Route(c *fiber.Ctx) error {
 
 	if first_blood {
 		go discord.BroadcastFirstBlood(c.Context(), challenge, uid)
+		go telegram.BroadcastFirstBlood(c.Context(), challenge, uid)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
