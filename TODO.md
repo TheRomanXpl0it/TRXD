@@ -8,6 +8,15 @@
  - https://doc.traefik.io/traefik/expose/docker/
  - password reset for players
  - change image pfp system
+ - configs changable by env
+ - add tests with a lot of hash named challs (hard cap for networks on nginx?)
+ - N instance limit per team
+ - flush cache flag
+ - verify no comunication between instances on standard default bridge network
+ - change csrf token name
+ - error generator for tests
+ - split main.go flag function
+ - resolve TODOs left into the code
 
 ## Frontend
  - convert .pngs to webp

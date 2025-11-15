@@ -85,6 +85,20 @@
 			}))
 			.sort((a: any, b: any) => a.label.localeCompare(b.label))
 	);
+	
+	//comparators to sort challenges after filtering
+	const comparators: Record<string, (a: Challenge, b: Challenge) => number> = {
+        "points-min-to-max": (a, b) => (a.points ?? 0) - (b.points ?? 0),
+        "points-max-to-min": (a, b) => (b.points ?? 0) - (a.points ?? 0),
+        "solves-min-to-max": (a, b) => (a.solves ?? 0) - (b.solves ?? 0),
+        "solves-max-to-min": (a, b) => (b.solves ?? 0) - (a.solves ?? 0),
+        "alphabetical-a-to-z": (a, b) => (a.name ?? a.title ?? '').localeCompare(b.name ?? b.title ?? ''),
+        "alphabetical-z-to-a": (a, b) => (b.name ?? b.title ?? '').localeCompare(a.name ?? a.title ?? '')
+    };
+	
+	const sortedChallenges = $derived(
+        [...filteredChallenges].sort(comparators[sortMethod] ?? comparators["alphabetical-a-to-z"])
+    );
 
 	let points: number = $state(500);
 	let category: any = $state(null);
@@ -103,6 +117,7 @@
 	// Filters
 	let filterCategories = $state<string[]>([]);
 	let filterTags = $state<string[]>([]);
+	let sortMethod = $state<string>('points-min-to-max');
 	let search = $state('');
 	let tagsOpen = $state(false);
 	let categoriesOpen = $state(false);
@@ -250,22 +265,18 @@
 	});
 
 
-	function groupByCategory(list: any[]) {
-		const map: Record<string, any[]> = {};
-		for (const c of list) {
-			const label = c?.category?.name ?? c?.category ?? 'Uncategorized';
-			if (!map[label]) map[label] = [];
-			map[label].push(c);
-		}
-		return Object.entries(map)
-			.sort(([a], [b]) => a.localeCompare(b))
-			.map(([cat, items]) => [
-				cat,
-				items.sort((x, y) => (x.points || 0) - (y.points || 0))
-			]) as [string, any[]][];
-	}
-	
-	const grouped = $derived.by(() => groupByCategory(filteredChallenges));
+	function groupByCategory(list: Challenge[], cmp: (a: Challenge, b: Challenge) => number) {
+        const map: Record<string, Challenge[]> = {};
+        for (const c of list) {
+            const label = (typeof c?.category === 'string' ? c.category : c?.category?.name) ?? 'Uncategorized';
+            (map[label] ??= []).push(c);
+        }
+        return Object.entries(map)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([cat, items]) => [cat, items.sort(cmp)]) as [string, Challenge[]][];
+    }
+    
+    const grouped = $derived.by(() => groupByCategory(sortedChallenges, comparators[sortMethod]));
 
 	function openChallenge(ch: any) {
 		selectedId = ch?.id ?? null;
@@ -335,6 +346,7 @@
 	bind:search
 	bind:filterCategories
 	bind:filterTags
+	bind:sortMethod
 	bind:compactView
 	{categories}
 	{allTags}

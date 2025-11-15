@@ -65,9 +65,15 @@ for i in range(N):
 
 	if r.status_code == 200:
 		r = s.post('http://localhost:1337/api/teams/register', json={
-			"name": "test-team"+user,
+			"name": "test-team",
 			"password": "test1234",
 		}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
+		if r.status_code != 200:
+			r = s.post('http://localhost:1337/api/teams/join', json={
+				"name": "test-team",
+				"password": "test1234",
+			}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
+			assert r.status_code == 200, r.text
 	else:
 		r = s.post('http://localhost:1337/api/login', json={
 			"email": email,
@@ -79,6 +85,7 @@ for i in range(N):
 
 counter = {
 	"instanced": 0,
+	"already_active": 0,
 	"invalid": 0,
 }
 lock = threading.Lock()
@@ -90,19 +97,11 @@ def instance(i):
 	}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
 	resp = r.json()
 
-	r = s.delete('http://localhost:1337/api/instances', json={
-		"chall_id": chall_id,
-	}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
-	success = r.status_code == 200
-	del_resp = r.text
-
 	with lock:
 		if "timeout" in resp:
-			if success:
-				counter["instanced"] += 1
-			else:
-				print(f"Failed to delete instance: {del_resp}")
-				counter["invalid"] += 1
+			counter["instanced"] += 1
+		elif resp['error'] == "Already an active instance":
+			counter["already_active"] += 1
 		else:
 			print(f"Unexpected response: {resp}")
 			counter["invalid"] += 1
@@ -119,8 +118,18 @@ for thread in threads:
 for key, value in counter.items():
 	print(f"{key}: {value}")
 
-if counter["instanced"] != N:
-	print(f"Test failed: Expected exactly {N} valid instance.")
+r = sessions[0].delete('http://localhost:1337/api/instances', json={
+	"chall_id": chall_id,
+}, headers={'X-Csrf-Token': sessions[0].cookies.get('csrf_')})
+if r.status_code != 200:
+	print("Error", r.text)
+	sys.exit(1)
+
+if counter["instanced"] != 1:
+	print(f"Test failed: Expected exactly 1 valid instance.")
+	sys.exit(1)
+elif counter["already_active"] != N-1:
+	print(f"Test failed: Expected exactly {N-1} already spawned instance messages.")
 	sys.exit(1)
 else:
-	print(f"Test passed: Exactly {N} valid instance.")
+	print(f"Test passed: Exactly 1 valid instance.")
