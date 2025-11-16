@@ -2,6 +2,7 @@
 
 declare global {
 	const __BACKEND_URL__: string;
+	const __GIT_HASH__: string;
 }
 
 interface ImportMetaEnv {

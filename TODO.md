@@ -25,10 +25,6 @@
  - Add custom buttons for first/second/third bloods?
  - Improve challenge creation procedure
  - Fix admin flag submission 
- - ~~Write tests~~
- - ~~Add frontend testing to the gh workflow~~
- - ~~Use the same style with tabs in the "Update profile" page~~
- - ~~Country selection sucks/does not work + it's buggy~~
 
 ## QoS
  - flush cache flag

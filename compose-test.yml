@@ -1,7 +1,10 @@
 
 services:
   app:
-    build: .
+    build:
+      context: .
+      args:
+        GIT_HASH: ${GIT_HASH:-unknown}
     restart: always
     environment:
       POSTGRES_HOST: postgres
@@ -19,6 +22,7 @@ services:
     networks:
       - default
       - internal
+    # command: ["tail", "-f", "/dev/null"] #! Debugging
 
   postgres:
     image: postgres:18rc1-alpine

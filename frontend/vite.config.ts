@@ -5,7 +5,14 @@ import { resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
+const getGitHash = () => {
+	return process.env.VITE_GIT_HASH ?? 'unknown';
+};
+
 export default defineConfig({
+	define: {
+		__GIT_HASH__: JSON.stringify(getGitHash())
+	},
 	publicDir: 'static',
 	plugins: [tailwindcss(), svelte()],
 	optimizeDeps: {

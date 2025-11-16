@@ -1,7 +1,10 @@
 
 services:
   app:
-    build: .
+    build:
+      context: .
+      args:
+        GIT_HASH: ${GIT_HASH:-unknown}
     restart: always
     environment:
       POSTGRES_HOST: postgres
