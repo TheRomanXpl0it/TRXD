@@ -5,11 +5,14 @@ import (
 	"trxd/api/validator"
 	"trxd/db"
 	"trxd/db/sqlc"
+	"trxd/plugins"
 	"trxd/utils"
 	"trxd/utils/consts"
 	"trxd/utils/discord"
 
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/tde-nico/log"
 )
 
 func Route(c *fiber.Ctx) error {
@@ -50,9 +53,18 @@ func Route(c *fiber.Ctx) error {
 	if first_blood {
 		go discord.BroadcastFirstBlood(c.Context(), challenge, uid)
 	}
-
+	
+	submissionResult := map [string] any{
+		"first_blood" : first_blood,
+		"err" : err,
+	}
+	submissionResult, err = plugins.DispatchEvent("submitFlag",submissionResult)
+	if err != nil {
+		log.Fatal("Plugin error","err",err)
+	}
+	
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"status":      status,
-		"first_blood": first_blood,
+		"first_blood": submissionResult["first_blood"],
 	})
 }

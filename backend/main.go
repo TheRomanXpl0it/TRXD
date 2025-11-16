@@ -14,6 +14,7 @@ import (
 	"trxd/utils"
 	"trxd/utils/consts"
 	"trxd/utils/crypto_utils"
+	"trxd/plugins"
 
 	"github.com/joho/godotenv"
 	"github.com/tde-nico/log"
@@ -177,6 +178,13 @@ func main() {
 	go instancer.ReclaimLoop()
 
 	app := api.SetupApp()
+	
+	// Setup the plugins api
+	err = plugins.InitManager()
+	if err != nil {
+		log.Fatal("Error loading plugins", "err", err)
+	}
+	
 	err = app.Listen(":1337")
 	if err != nil {
 		log.Fatal("Error starting server", "err", err)
