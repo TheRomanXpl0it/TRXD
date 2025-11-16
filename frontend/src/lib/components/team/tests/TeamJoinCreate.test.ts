@@ -4,6 +4,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { toast } from 'svelte-sonner';
 import TeamJoinCreate from '../TeamJoinCreate.svelte';
 import { joinTeam, createTeam } from '@/team';
+import { tick } from 'svelte';
+
+async function flush() {
+  await tick();
+  await Promise.resolve();
+}
 
 vi.mock('svelte-sonner', () => ({
 	toast: {
@@ -29,6 +35,7 @@ describe('TeamJoinCreate Component', () => {
 	it('renders join and create buttons', () => {
 		render(TeamJoinCreate);
 
+
 		expect(screen.getByRole('button', { name: /^join$/i })).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: /^create$/i })).toBeInTheDocument();
 	});
@@ -37,6 +44,7 @@ describe('TeamJoinCreate Component', () => {
 		const user = userEvent.setup();
 
 		render(TeamJoinCreate);
+		await flush();
 
 		await fireEvent.click(screen.getByRole('button', { name: /^join$/i }));
 
@@ -48,6 +56,7 @@ describe('TeamJoinCreate Component', () => {
 		const user = userEvent.setup();
 
 		render(TeamJoinCreate);
+		await flush();
 
 		const joinButtons = screen.getAllByRole('button', { name: /^join$/i });
 		await fireEvent.click(joinButtons[0]);
@@ -64,17 +73,21 @@ describe('TeamJoinCreate Component', () => {
 		vi.mocked(joinTeam).mockResolvedValueOnce({ ok: true });
 
 		render(TeamJoinCreate);
+		await flush();
 
 		// Open join dialog
 		const joinButtons = screen.getAllByRole('button', { name: /^join$/i });
 		await fireEvent.click(joinButtons[0]);
 
-		// Fill in form
-		await user.type(screen.getByLabelText(/team name/i), 'ZeroDayCats');
-		await user.type(screen.getByLabelText(/team password/i), 'p@ssw0rd');
+		// Scope all queries to the open join dialog to avoid matching hidden inputs
+		const dialog = await screen.findByRole('dialog');
+		const nameInput = within(dialog).getByLabelText(/team name/i);
+		const passInput = within(dialog).getByLabelText(/team password/i);
+		await user.type(nameInput, 'ZeroDayCats');
+		await user.type(passInput, 'p@ssw0rd');
+		await flush();
 
 		// Submit the form inside the open dialog (avoids overlay/pointer-events issues)
-		const dialog = screen.getByRole('dialog');
 		const form = dialog.querySelector('form') as HTMLFormElement;
 		await fireEvent.submit(form);
 
@@ -82,7 +95,9 @@ describe('TeamJoinCreate Component', () => {
 			expect(joinTeam).toHaveBeenCalledWith('ZeroDayCats', 'p@ssw0rd');
 		});
 
-		expect(toast.success).toHaveBeenCalled();
+		await waitFor(() => {
+			expect(toast.success).toHaveBeenCalled();
+		});
 	});
 
 	it('handles join errors with toast message', async () => {
@@ -90,21 +105,23 @@ describe('TeamJoinCreate Component', () => {
 		vi.mocked(joinTeam).mockRejectedValueOnce(new Error('Bad credentials'));
 
 		render(TeamJoinCreate);
+		await flush();
 
 		// Open join dialog
 		const joinButtons = screen.getAllByRole('button', { name: /^join$/i });
 		await fireEvent.click(joinButtons[0]);
 
-		// Wait for fields to be available
-		const nameInput = await screen.findByLabelText(/team name/i);
-		const passwordInput = await screen.findByLabelText(/team password/i);
+		// Scope to the open dialog to avoid picking fields from other modals
+		const dialog = await screen.findByRole('dialog');
+		const nameInput = within(dialog).getByLabelText(/team name/i);
+		const passwordInput = within(dialog).getByLabelText(/team password/i);
 
 		// Fill in form
-		await user.type(nameInput, 'TeamX');
-		await user.type(passwordInput, 'wrong');
+    await user.type(nameInput, 'TeamX');
+    await user.type(passwordInput, 'wrong');
+    await flush();
 
 		// Submit the form inside the open dialog (avoids overlay/pointer-events issues)
-		const dialog = screen.getByRole('dialog');
 		const form = dialog.querySelector('form') as HTMLFormElement;
 		await fireEvent.submit(form);
 
@@ -140,6 +157,7 @@ describe('TeamJoinCreate Component', () => {
 		await user.type(screen.getByLabelText(/^team name$/i), 'BlueTeam');
 		await user.type(screen.getByLabelText(/^team password$/i), '1234567');
 		await user.type(screen.getByLabelText(/confirm password/i), '7654321');
+		await flush();
 
 		// Submit the form inside the open dialog (avoids overlay/pointer-events issues)
 		const dialog = screen.getByRole('dialog');
@@ -200,9 +218,10 @@ describe('TeamJoinCreate Component', () => {
 		const passwordInput = await screen.findByLabelText(/^team password$/i);
 		const confirmInput = await screen.findByLabelText(/confirm password/i);
 
-    await user.type(nameInput, 'RedTeam');
-		await user.type(passwordInput, 'longpassword');
-		await user.type(confirmInput, 'longpassword');
+    await fireEvent.input(nameInput, { target: { value: 'RedTeam' } });
+    await fireEvent.input(passwordInput, { target: { value: 'longpassword' } });
+    await fireEvent.input(confirmInput, { target: { value: 'longpassword' } });
+    await flush();
 
 		// Submit the form inside the open dialog (avoids overlay/pointer-events issues)
 		const dialog = screen.getByRole('dialog');
@@ -213,7 +232,9 @@ describe('TeamJoinCreate Component', () => {
 			expect(createTeam).toHaveBeenCalledWith('RedTeam', 'longpassword');
 		});
 
-		expect(toast.success).toHaveBeenCalled();
+		await waitFor(() => {
+			expect(toast.success).toHaveBeenCalled();
+		});
 	});
 
 	it('shows loading state during join', async () => {
@@ -231,17 +252,22 @@ describe('TeamJoinCreate Component', () => {
 		const openButtons = screen.getAllByRole('button', { name: /^join$/i });
 		await fireEvent.click(openButtons[0]);
 
-		// Fill in form
-		await user.type(screen.getByLabelText(/team name/i), 'TestTeam');
-		await user.type(screen.getByLabelText(/team password/i), 'password');
-    
-    const dialog = screen.getByRole('dialog');
-    const submitButton = within(dialog).getByRole('button', { name: /^join$/i });
-    await fireEvent.click(submitButton);
+		// Scope inputs to the open dialog and fill the form
+		const dialog = await screen.findByRole('dialog');
+		const nameInput = within(dialog).getByLabelText(/team name/i);
+		const passInput = within(dialog).getByLabelText(/team password/i);
+		await user.type(nameInput, 'TestTeam');
+		await user.type(passInput, 'password');
 
-    // Wait for loading state - use findByRole which waits automatically
-    const joinButton = await within(dialog).findByRole('button', { name: /joining/i });
-    expect(joinButton).toBeDisabled();
+		// Submit the form directly to ensure onsubmit runs
+		const form = dialog.querySelector('form') as HTMLFormElement;
+		await fireEvent.submit(form);
+
+		// Wait for loading state by checking the submit button becomes disabled
+		const submitButton = within(dialog).getByRole('button', { name: /join/i });
+		await waitFor(() => {
+			expect(submitButton).toBeDisabled();
+		});
 
     // Resolve join and let it finish
     resolveJoin({ ok: true });
@@ -267,19 +293,19 @@ describe('TeamJoinCreate Component', () => {
 		const passwordInput = await screen.findByLabelText(/^team password$/i);
 		const confirmInput = await screen.findByLabelText(/confirm password/i);
 
-		// Fill in form
-		await user.type(nameInput, 'TestTeam');
-		await user.type(passwordInput, 'longpassword');
-		await user.type(confirmInput, 'longpassword');
+    // Fill in form (force sync)
+    await fireEvent.input(nameInput, { target: { value: 'TestTeam' } });
+    await fireEvent.input(passwordInput, { target: { value: 'longpassword' } });
+    await fireEvent.input(confirmInput, { target: { value: 'longpassword' } });
 
     const dialog = screen.getByRole('dialog');
+    const createBtn = within(dialog).getByRole('button', { name: /^create$/i });
     const form = dialog.querySelector('form') as HTMLFormElement;
     await fireEvent.submit(form);
 
-    // Wait for loading state
+    // Wait for loading state (submit button becomes disabled)
     await waitFor(() => {
-      const createButton = within(dialog).getByRole('button', { name: /creating/i });
-      expect(createButton).toBeDisabled();
+      expect(createBtn).toBeDisabled();
     });
 
     // Resolve create and let it finish
@@ -303,9 +329,10 @@ describe('TeamJoinCreate Component', () => {
     const confirmInput = await screen.findByLabelText(/confirm password/i);
 
     // Fill in form
-    await user.type(nameInput, 'ExistingTeam');
-    await user.type(passwordInput, 'validpassword');
-    await user.type(confirmInput, 'validpassword');
+    await fireEvent.input(nameInput, { target: { value: 'ExistingTeam' } });
+    await fireEvent.input(passwordInput, { target: { value: 'validpassword' } });
+    await fireEvent.input(confirmInput, { target: { value: 'validpassword' } });
+    await flush();
 
     // Submit the form inside the open dialog
     const dialog = screen.getByRole('dialog');

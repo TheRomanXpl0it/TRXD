@@ -1,5 +1,9 @@
 import { api } from '$lib/api';
 
+export async function getUsers(): Promise<any[]> {
+	return api<any[]>('/users');
+}
+
 export async function getUserData(id: number): Promise<any> {
 	return api<any>(`/users/${id}`);
 }

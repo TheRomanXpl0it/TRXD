@@ -36,11 +36,16 @@
 		{ title: 'Home', url: '/', icon: HouseIcon },
 		{ title: 'Challenges', url: '/challenges', icon: Joystick },
 		{ title: 'Scoreboard', url: '/scoreboard', icon: Trophy },
-		{ title: 'Teams', url: '/teams', icon: Users },
 		//{ title: "Writeups",   url: "/writeups",   icon: BookText },
 	];
 
-	// Team item shown only when userMode is false
+	// Accounts item shown only when logged in
+	const accountsItem: NavItem = { title: 'Accounts', url: '/accounts', icon: Users };
+
+	// Teams item shown only when userMode is false and logged in
+	const teamsItem: NavItem = { title: 'Teams', url: '/teams', icon: ShieldHalf };
+
+	// Team item shown only when userMode is false and logged in
 	const teamItem: NavItem = { title: 'Team', url: '/team', icon: ShieldHalf };
 
 	// Admin-only visibility
@@ -49,7 +54,10 @@
 
 	// Combine items based on userMode and role
 	const allItems: NavItem[] = $derived(
-		(userMode ? [...baseItems] : [...baseItems, teamItem]).concat(isAdmin ? [configsItem] : [])
+		[...baseItems]
+			.concat(user ? [accountsItem] : [])
+			.concat(user && !userMode ? [teamsItem, teamItem] : [])
+			.concat(isAdmin ? [configsItem] : [])
 	);
 
 	// Enrich user data to ensure profile image is available in `image`

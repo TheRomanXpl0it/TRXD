@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Pagination from '$lib/components/ui/pagination/index.js';
-	import { getTeams } from '@/team';
+	import { getUsers } from '@/user';
 	import { link, push } from 'svelte-spa-router';
 	import ErrorMessage from '$lib/components/ui/error-message.svelte';
 	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
@@ -10,28 +10,19 @@
 	import Icon from '@iconify/svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import countries from '$lib/data/countries.json';
-	import { userMode } from '$lib/stores/auth';
-	import { onMount } from 'svelte';
-
-	// Redirect to accounts page if in user mode
-	onMount(() => {
-		if ($userMode) {
-			push('/accounts');
-		}
-	});
 
 	let perPage = $state(20);
 
-	const teamsQuery = createQuery(() => ({
-		queryKey: ['teams'],
-		queryFn: getTeams,
+	const usersQuery = createQuery(() => ({
+		queryKey: ['users'],
+		queryFn: getUsers,
 		staleTime: 5 * 60 * 1000
 	}));
 
-	const teamsData = $derived(teamsQuery.data ?? []);
-	const loading = $derived(teamsQuery.isLoading);
-	const error = $derived(teamsQuery.error?.message ?? null);
-	
+	const usersData = $derived(usersQuery.data ?? []);
+	const loading = $derived(usersQuery.isLoading);
+	const error = $derived(usersQuery.error?.message ?? null);
+
 	// Helper to convert ISO3 to ISO2 for flag icons
 	function getCountryIso2(iso3: string): string | null {
 		const country = (countries as any[]).find(c => c.iso3?.toUpperCase() === iso3?.toUpperCase());
@@ -40,7 +31,7 @@
 
 	// Sort alphabetically by name
 	const sorted = $derived(
-		(Array.isArray(teamsData) ? [...teamsData] : []).sort(
+		(Array.isArray(usersData) ? [...usersData] : []).sort(
 			(a, b) => (a?.name || '').localeCompare(b?.name || '')
 		)
 	);
@@ -60,16 +51,16 @@
 	});
 </script>
 
-<p class="mt-5 text-3xl font-bold text-gray-800 dark:text-gray-100">Teams</p>
+<p class="mt-5 text-3xl font-bold text-gray-800 dark:text-gray-100">Accounts</p>
 <hr class="my-2 mb-10 h-px border-0 bg-gray-200 dark:bg-gray-700" />
 
 {#if loading}
 	<div class="flex flex-col items-center justify-center py-12">
 		<Spinner class="mb-4 h-8 w-8" />
-		<p class="text-gray-600 dark:text-gray-400">Loading teams...</p>
+		<p class="text-gray-600 dark:text-gray-400">Loading accounts...</p>
 	</div>
 {:else if error}
-	<ErrorMessage title="Error loading teams" message={error} />
+	<ErrorMessage title="Error loading accounts" message={error} />
 {:else}
 	{@const startIndex = (currentPage - 1) * perPage}
 	{@const pageRows = sorted.slice(startIndex, startIndex + perPage)}
@@ -82,7 +73,7 @@
 			<Table.Header>
 				<Table.Row>
 					<Table.Head class="w-[4rem]">Photo</Table.Head>
-					<Table.Head class="min-w-[10rem]">Team Name</Table.Head>
+					<Table.Head class="min-w-[10rem]">Account Name</Table.Head>
 					<Table.Head class="w-[8rem]">Country</Table.Head>
 				</Table.Row>
 			</Table.Header>
@@ -91,18 +82,18 @@
 				{#if pageRows.length === 0}
 					<Table.Row>
 						<Table.Cell colspan={3} class="py-8 text-center text-gray-500">
-							No teams yet.
+							No accounts yet.
 						</Table.Cell>
 					</Table.Row>
 				{:else}
-					{#each pageRows as team (team.id)}
+					{#each pageRows as account (account.id)}
 						<Table.Row class="h-16">
 							<Table.Cell class="py-3">
-								{#if team.image}
+								{#if account.image}
 									<div class="h-12 w-12 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-										<img 
-											src={team.image} 
-											alt={team.name}
+										<img
+											src={account.image}
+											alt={account.name}
 											class="h-full w-full object-cover"
 										/>
 									</div>
@@ -115,27 +106,27 @@
 
 							<Table.Cell class="py-3">
 								<a
-									href={`#/team/${team.id}`}
+									href={`#/account/${account.id}`}
 									use:link
 									onclick={(e) => {
 										e.preventDefault();
-										push(`/team/${team.id}`);
+										push(`/account/${account.id}`);
 									}}
 									class="text-primary cursor-pointer text-sm font-medium underline-offset-2 hover:underline sm:text-base"
-									title={`View team ${team.name}`}
+									title={`View account ${account.name}`}
 								>
-									{team.name}
+									{account.name}
 								</a>
 							</Table.Cell>
 
 							<Table.Cell class="py-3">
-								{#if team.country}
-									{@const iso2 = getCountryIso2(team.country)}
+								{#if account.country}
+									{@const iso2 = getCountryIso2(account.country)}
 									<div class="flex items-center gap-2">
 										{#if iso2}
 											<Icon icon={`circle-flags:${iso2.toLowerCase()}`} width="20" height="20" />
 										{/if}
-										<span class="text-sm">{team.country}</span>
+										<span class="text-sm">{account.country}</span>
 									</div>
 								{:else}
 									<span class="text-xs text-gray-500">-</span>

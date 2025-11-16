@@ -1,9 +1,15 @@
-import { render, screen, waitFor } from '@testing-library/svelte';
+import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { toast } from 'svelte-sonner';
 import AccountEdit from '../AccountEdit.svelte';
 import { updateUser } from '$lib/user';
+import { tick } from 'svelte';
+
+async function flush() {
+  await tick();
+  await Promise.resolve();
+}
 
 vi.mock('svelte-sonner', () => ({
 	toast: {
@@ -40,6 +46,7 @@ describe('AccountEdit Component', () => {
 			}
 		});
 
+
 		expect(screen.getByLabelText(/display name/i)).toBeInTheDocument();
 		expect(screen.getByLabelText(/image url/i)).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: /^save$/i })).toBeInTheDocument();
@@ -54,6 +61,8 @@ describe('AccountEdit Component', () => {
 				user: baseUser
 			}
 		});
+
+		await flush();
 
 		await user.click(screen.getByRole('button', { name: /^save$/i }));
 
@@ -71,11 +80,17 @@ describe('AccountEdit Component', () => {
 			}
 		});
 
-		await user.type(screen.getByLabelText(/image url/i), 'bad');
-		await user.click(screen.getByRole('button', { name: /^save$/i }));
+		await flush();
 
-		expect(toast.error).toHaveBeenCalledWith('Image must be a valid URL.');
-		expect(updateUser).not.toHaveBeenCalled();
+    const imgInput = screen.getByLabelText(/image url/i) as HTMLInputElement;
+    await fireEvent.input(imgInput, { target: { value: 'bad' } });
+    await flush();
+    await user.click(screen.getByRole('button', { name: /^save$/i }));
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('Image must be a valid URL.');
+    });
+    expect(updateUser).not.toHaveBeenCalled();
 	});
 
 	it('trims whitespace from input fields', async () => {
@@ -89,9 +104,12 @@ describe('AccountEdit Component', () => {
 			}
 		});
 
-		await user.type(screen.getByLabelText(/display name/i), ' Bob ');
-		await user.type(screen.getByLabelText(/image url/i), ' http://img.png ');
-		await user.click(screen.getByRole('button', { name: /^save$/i }));
+    const nameInput = screen.getByLabelText(/display name/i) as HTMLInputElement;
+    const imageInput = screen.getByLabelText(/image url/i) as HTMLInputElement;
+    await fireEvent.input(nameInput, { target: { value: ' Bob ' } });
+    await fireEvent.input(imageInput, { target: { value: ' http://img.png ' } });
+    await flush();
+    await user.click(screen.getByRole('button', { name: /^save$/i }));
 
 		await waitFor(() => {
 			expect(updateUser).toHaveBeenCalledWith(5, 'Bob', '', 'http://img.png');
@@ -108,16 +126,22 @@ describe('AccountEdit Component', () => {
         user: baseUser
       }
     });
+    await flush();
 
-    await user.type(screen.getByLabelText(/display name/i), 'Bob');
-    await user.type(screen.getByLabelText(/image url/i), 'http://img.png');
+    const name2 = screen.getByLabelText(/display name/i) as HTMLInputElement;
+    const image2 = screen.getByLabelText(/image url/i) as HTMLInputElement;
+    await fireEvent.input(name2, { target: { value: 'Bob' } });
+    await fireEvent.input(image2, { target: { value: 'http://img.png' } });
+    await flush();
     await user.click(screen.getByRole('button', { name: /^save$/i }));
 
     await waitFor(() => {
       expect(updateUser).toHaveBeenCalledWith(5, 'Bob', '', 'http://img.png');
     });
 
-    expect(toast.success).toHaveBeenCalledWith('Profile updated.');
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith('Profile updated.');
+    });
   });
 
 	it('handles update error', async () => {
@@ -131,7 +155,10 @@ describe('AccountEdit Component', () => {
 			}
 		});
 
-		await user.type(screen.getByLabelText(/display name/i), 'Bob');
+		await flush();
+
+		const nameErr = screen.getByLabelText(/display name/i) as HTMLInputElement;
+		await fireEvent.input(nameErr, { target: { value: 'Bob' } });
 		await user.click(screen.getByRole('button', { name: /^save$/i }));
 
 		await waitFor(() => {
@@ -141,9 +168,9 @@ describe('AccountEdit Component', () => {
 
 	it('shows loading state during update', async () => {
 		const user = userEvent.setup();
-		vi.mocked(updateUser).mockImplementation(
-			() => new Promise((resolve) => setTimeout(() => resolve({ ok: true }), 100))
-		);
+    vi.mocked(updateUser).mockImplementation(
+        () => new Promise((resolve) => setTimeout(() => resolve({ ok: true }), 200))
+    );
 
 		render(AccountEdit, {
 			props: {
@@ -152,11 +179,15 @@ describe('AccountEdit Component', () => {
 			}
 		});
 
-		await user.type(screen.getByLabelText(/display name/i), 'Bob');
-		await user.click(screen.getByRole('button', { name: /^save$/i }));
+		await flush();
 
-		const saveButton = screen.getByRole('button', { name: /saving/i });
-		expect(saveButton).toBeDisabled();
+    const name3 = screen.getByLabelText(/display name/i) as HTMLInputElement;
+    await fireEvent.input(name3, { target: { value: 'Bob' } });
+    await flush();
+    await user.click(screen.getByRole('button', { name: /^save$/i }));
+
+    const saveButton = await screen.findByRole('button', { name: /saving/i });
+    expect(saveButton).toBeDisabled();
 	});
 
 	it('allows updating individual fields', async () => {
@@ -170,8 +201,12 @@ describe('AccountEdit Component', () => {
 			}
 		});
 
-		await user.type(screen.getByLabelText(/image url/i), 'http://newimage.png');
-		await user.click(screen.getByRole('button', { name: /^save$/i }));
+		await flush();
+
+    const image3 = screen.getByLabelText(/image url/i) as HTMLInputElement;
+    await fireEvent.input(image3, { target: { value: 'http://newimage.png' } });
+    await flush();
+    await user.click(screen.getByRole('button', { name: /^save$/i }));
 
 		await waitFor(() => {
 			expect(updateUser).toHaveBeenCalledWith(5, '', '', 'http://newimage.png');
@@ -188,11 +223,14 @@ describe('AccountEdit Component', () => {
 			}
 		});
 
-		await user.type(screen.getByLabelText(/image url/i), 'ftp://image.png');
-		await user.click(screen.getByRole('button', { name: /^save$/i }));
+    const image4 = screen.getByLabelText(/image url/i) as HTMLInputElement;
+    await fireEvent.input(image4, { target: { value: 'ftp://image.png' } });
+    await flush();
+    await user.click(screen.getByRole('button', { name: /^save$/i }));
 
-		expect(toast.error).toHaveBeenCalledWith('Image must be a valid URL.');
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('Image must be a valid URL.');
+    });
 		expect(updateUser).not.toHaveBeenCalled();
 	});
 });
-

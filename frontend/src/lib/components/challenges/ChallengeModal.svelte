@@ -81,14 +81,14 @@
 
 					{#if challenge?.solves === 0}
 						<span class="inline-flex items-center gap-1 text-xs font-medium">
-							<Droplet class="h-3 w-3 text-red-500" aria-hidden="true" />
+							<Droplet class="h-4 w-4 text-red-500" aria-hidden="true" />
 							<span class="opacity-70">0 solves</span>
 						</span>
 					{:else if challenge?.solves}
 						<button
 							type="button"
 							onclick={onOpenSolves}
-							class="text-xs font-medium opacity-70 hover:opacity-100 hover:underline focus:outline-none focus:underline"
+							class="text-xs font-medium opacity-70 hover:opacity-100 hover:underline focus:outline-none focus:underline cursor-pointer transition-opacity"
 							aria-label="View {challenge.solves} solve{challenge.solves === 1 ? '' : 's'}"
 						>
 							{challenge.solves} {challenge.solves === 1 ? 'solve' : 'solves'}

@@ -111,17 +111,7 @@
 				<div class="min-w-0 flex-1">
 					<h2 class="text-2xl font-bold truncate">{userVerboseData?.name ?? '-'}</h2>
 					<div class="mt-1 flex items-center gap-3 text-sm">
-						{#if userVerboseData?.country}
-							<div class="flex items-center gap-1">
-								<Icon icon={`circle-flags:${String(userVerboseData.country).toLowerCase()}`} width="14" height="14" />
-								<span>{userVerboseData.country}</span>
-							</div>
-						{:else}
-							<div class="flex items-center gap-1">
-								<Globe class="h-3.5 w-3.5" />
-								<span>Unknown</span>
-							</div>
-						{/if}
+						<Icon icon={`circle-flags:${userVerboseData?.country ? String(userVerboseData.country).toLowerCase() : 'un'}`} width="20" height="20" />
 						{#if userVerboseData?.joined_at}
 							<span>•</span>
 							<span>Joined {new Date(userVerboseData.joined_at).toLocaleDateString(undefined, {

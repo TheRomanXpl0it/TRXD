@@ -23,6 +23,8 @@ export default defineConfig({
 	use: {
 		/* Base URL to use in actions like `await page.goto('/')`. */
 		baseURL: 'http://localhost:80',
+		/* Disable CSS animations/transitions for more stable UI timing in tests */
+		reducedMotion: 'reduce',
 		/* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
 		trace: 'on-first-retry',
 		screenshot: 'only-on-failure'

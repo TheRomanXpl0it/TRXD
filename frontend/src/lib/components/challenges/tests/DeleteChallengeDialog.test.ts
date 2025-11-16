@@ -1,5 +1,3 @@
-
-import userEvent from '@testing-library/user-event';
 import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
@@ -9,10 +7,12 @@ import DeleteChallengeDialog from '../DeleteChallengeDialog.svelte';
 describe('DeleteChallengeDialog Component', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		vi.useFakeTimers();
 	});
 
-	afterEach(async () => {
-		await new Promise(resolve => setTimeout(resolve, 150));
+	afterEach(() => {
+		vi.runAllTimers();
+		vi.useRealTimers();
 	});
 
 	it('renders dialog title', () => {
@@ -145,8 +145,6 @@ describe('DeleteChallengeDialog Component', () => {
 	});
 
 	it('delete button is disabled when confirmation text is incorrect', async () => {
-		const user = userEvent.setup();
-
 		render(DeleteChallengeDialog, {
 			props: {
 				open: true,
@@ -156,15 +154,13 @@ describe('DeleteChallengeDialog Component', () => {
 		});
 
 		const input = screen.getByLabelText(/confirmation/i);
-		await user.type(input, 'wrong text');
+		await fireEvent.input(input, { target: { value: 'wrong text' } });
 
 		const deleteButton = screen.getByRole('button', { name: /^delete$/i });
 		expect(deleteButton).toBeDisabled();
 	});
 
 	it('delete button is enabled when confirmation text matches exactly', async () => {
-		const user = userEvent.setup();
-
 		render(DeleteChallengeDialog, {
 			props: {
 				open: true,
@@ -173,10 +169,10 @@ describe('DeleteChallengeDialog Component', () => {
 			}
 		});
 
-		const input = await screen.findByLabelText(/confirmation/i);
-		const expectedText = "Yes, I want to delete 'Test Challenge'";
-		await user.clear(input);
-		await user.type(input, expectedText);
+    const input = await screen.findByLabelText(/confirmation/i);
+    const expectedText = "Yes, I want to delete 'Test Challenge'";
+    await fireEvent.input(input, { target: { value: expectedText } });
+    await tick();
 
 		// Wait for the button to become enabled
 		const deleteButton = screen.getByRole('button', { name: /^delete$/i });
@@ -186,7 +182,6 @@ describe('DeleteChallengeDialog Component', () => {
 	});
 
 	it('calls onconfirm when delete button clicked with correct text', async () => {
-		const user = userEvent.setup();
 		const handleConfirm = vi.fn();
 
 		render(DeleteChallengeDialog, {
@@ -198,12 +193,9 @@ describe('DeleteChallengeDialog Component', () => {
 			},
 		});
 
-		const input = screen.getByLabelText(/confirmation/i);
-		await user.clear(input);
-		await user.type(input, "Yes, I want to delete 'Test'");
-
-		// Let Svelte recompute canDelete
-		await tick();
+    const input = screen.getByLabelText(/confirmation/i);
+    await fireEvent.input(input, { target: { value: "Yes, I want to delete 'Test'" } });
+    await tick();
 
 		const deleteButton = screen.getByRole('button', { name: /^delete$/i });
 		await waitFor(() => {
@@ -273,8 +265,6 @@ describe('DeleteChallengeDialog Component', () => {
 	});
 
 	it('confirmation text is case-sensitive', async () => {
-		const user = userEvent.setup();
-
 		render(DeleteChallengeDialog, {
 			props: {
 				open: true,
@@ -285,15 +275,13 @@ describe('DeleteChallengeDialog Component', () => {
 
 		const input = screen.getByLabelText(/confirmation/i);
 		// Wrong case
-		await user.type(input, "yes, i want to delete 'Test'");
+		await fireEvent.input(input, { target: { value: "yes, i want to delete 'Test'" } });
 
 		const deleteButton = screen.getByRole('button', { name: /^delete$/i });
 		expect(deleteButton).toBeDisabled();
 	});
 
 	it('confirmation requires exact punctuation', async () => {
-		const user = userEvent.setup();
-
 		render(DeleteChallengeDialog, {
 			props: {
 				open: true,
@@ -304,7 +292,7 @@ describe('DeleteChallengeDialog Component', () => {
 
 		const input = screen.getByLabelText(/confirmation/i);
 		// Missing comma
-		await user.type(input, "Yes I want to delete 'Test'");
+		await fireEvent.input(input, { target: { value: "Yes I want to delete 'Test'" } });
 
 		const deleteButton = screen.getByRole('button', { name: /^delete$/i });
 		expect(deleteButton).toBeDisabled();
@@ -335,8 +323,6 @@ describe('DeleteChallengeDialog Component', () => {
 	});
 
 	it('clears confirmation text when dialog is closed and reopened', async () => {
-		const user = userEvent.setup();
-
 		const { rerender } = render(DeleteChallengeDialog, {
 			props: {
 				open: true,
@@ -351,7 +337,7 @@ describe('DeleteChallengeDialog Component', () => {
 
 		const input = screen.getByLabelText(/confirmation/i);
 		await fireEvent.input(input, { target: { value: 'some text' } });
-		
+
 		expect(input).toHaveValue('some text');
 
 		// Close dialog

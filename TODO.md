@@ -21,13 +21,18 @@
 ## Frontend
  - convert .pngs to webp
  - Better tags handling in /challenges page
- - Use the same style with tabs in the "Update profile" page
- - Country selection sucks/does not work + it's buggy
  - Improve "Team join" page on smaller screens
  - Add custom buttons for first/second/third bloods?
  - Improve challenge creation procedure
- - Write tests
- - ~~Add frontend testing to the gh workflow~~
+ - Fix admin flag submission 
+
+## QoS
+ - flush cache flag
+ - verify no comunication between instances on standard default bridge network
+ - change csrf token name
+ - error generator for tests
+ - split main.go flag function
+ - resolve TODOs left into the code
 
 ## Alpha
  - config to start and end ctf

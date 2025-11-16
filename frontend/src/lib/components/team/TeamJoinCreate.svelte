@@ -8,8 +8,8 @@
 	// Images (transparent PNGs)
 	import createTeamImg from '$lib/assets/createTeam.png?url';
 	import joinTeamImg from '$lib/assets/joinTeam.png?url';
-	import { joinTeam, createTeam } from '@/team';
-	import { toast } from 'svelte-sonner';
+    import { joinTeam, createTeam } from '@/team';
+    import { toast } from 'svelte-sonner';
 
 	let {
 		onjoined,
@@ -33,16 +33,16 @@
 	let registerLoading = $state(false);
 	let registerError: string | null = $state(null);
 
-	async function onJoinSubmit(e: Event) {
-		e.preventDefault();
-		joinError = null;
+    async function onJoinSubmit(e: Event) {
+        e.preventDefault();
+        joinError = null;
 
 		if (!joinName.trim() || !joinPassword.trim()) {
 			joinError = 'Please fill in both fields.';
 			return;
 		}
 
-		joinLoading = true;
+        joinLoading = true;
 		try {
 			const result = await joinTeam(joinName, joinPassword);
 			// Success case - api function only returns on success (200)
@@ -62,9 +62,9 @@
 		}
 	}
 
-	async function onRegisterSubmit(e: Event) {
-		e.preventDefault();
-		registerError = null;
+    async function onRegisterSubmit(e: Event) {
+        e.preventDefault();
+        registerError = null;
 
 		if (!registerName.trim() || !registerPassword.trim() || !confirmRegisterPassword.trim()) {
 			registerError = 'Please fill all fields.';
@@ -83,7 +83,7 @@
 			return;
 		}
 
-		registerLoading = true;
+        registerLoading = true;
 		try {
 			const result = await createTeam(registerName, registerPassword);
 			// Success case - api function only returns on success (200)
@@ -155,14 +155,14 @@
 
 		<form onsubmit={onJoinSubmit} class="mt-2 space-y-4">
 			<div class="grid gap-2">
-				<Label for="team-name">Team name</Label>
-				<Input id="team-name" placeholder="e.g. ZeroDayCats" bind:value={joinName} required />
+				<Label for="join-team-name">Team name</Label>
+				<Input id="join-team-name" placeholder="e.g. ZeroDayCats" bind:value={joinName} required />
 			</div>
 
 			<div class="grid gap-2">
-				<Label for="team-pass">Team password</Label>
+				<Label for="join-team-pass">Team password</Label>
 				<Input
-					id="team-pass"
+					id="join-team-pass"
 					type="password"
 					placeholder="••••••"
 					bind:value={joinPassword}
@@ -193,14 +193,14 @@
 
 		<form onsubmit={onRegisterSubmit} class="mt-2 space-y-4">
 			<div class="grid gap-2">
-				<Label for="team-name">Team name</Label>
-				<Input id="team-name" placeholder="TRX" bind:value={registerName} required />
+				<Label for="register-team-name">Team name</Label>
+				<Input id="register-team-name" placeholder="TRX" bind:value={registerName} required />
 			</div>
 
 			<div class="grid gap-2">
-				<Label for="team-pass">Team password</Label>
+				<Label for="register-team-pass">Team password</Label>
 				<Input
-					id="team-pass"
+					id="register-team-pass"
 					type="password"
 					placeholder="••••••"
 					bind:value={registerPassword}
@@ -209,9 +209,9 @@
 			</div>
 
 			<div class="grid gap-2">
-				<Label for="confirm-pass">Confirm password</Label>
+				<Label for="register-confirm-pass">Confirm password</Label>
 				<Input
-					id="confirm-pass"
+					id="register-confirm-pass"
 					type="password"
 					placeholder="••••••"
 					bind:value={confirmRegisterPassword}

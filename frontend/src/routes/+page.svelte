@@ -1,3 +1,10 @@
+<script lang="ts">
+    import { user } from '$lib/stores/auth';
+
+    const gitHash = __GIT_HASH__;
+    const isAdmin = $derived(($user as any)?.role === 'Admin');
+</script>
+
 <svelte:head>
     <link rel="preload" as="image" href="/trx_logo.webp" />
 </svelte:head>
@@ -44,5 +51,11 @@
             </a>
         </div>
     </div>
+
+    {#if isAdmin}
+        <div class="mt-8 text-center text-xs text-gray-400 dark:text-gray-600">
+            <span title={gitHash}>hash: {gitHash}</span>
+        </div>
+    {/if}
 </div>
     

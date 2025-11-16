@@ -45,8 +45,11 @@ describe('AppSidebar Component', () => {
 		expect(screen.getByText('TRXD')).toBeInTheDocument();
 		expect(screen.getByText('Home')).toBeInTheDocument();
 		expect(screen.getByText('Scoreboard')).toBeInTheDocument();
-		expect(screen.getByText('Teams')).toBeInTheDocument();
 		expect(screen.getByText('Challenges')).toBeInTheDocument();
+		// Accounts, Teams, and Team should not show when user is null
+		expect(screen.queryByText('Accounts')).not.toBeInTheDocument();
+		expect(screen.queryByText('Teams')).not.toBeInTheDocument();
+		expect(screen.queryByText('Team')).not.toBeInTheDocument();
 	});
 
 	it('shows sign in link when user is not logged in', () => {
@@ -65,12 +68,17 @@ describe('AppSidebar Component', () => {
 	it('shows team item when not in user mode', () => {
 		render(AppSidebar, {
 			props: {
-				user: null,
+				user: {
+					id: 1,
+					name: 'Alice'
+				},
 				userMode: false
-			}
+			} as any
 		});
 
 		expect(screen.getByText('Team')).toBeInTheDocument();
+		expect(screen.getByText('Teams')).toBeInTheDocument();
+		expect(screen.getByText('Accounts')).toBeInTheDocument();
 	});
 
 	it('shows configs item for admin users', () => {
