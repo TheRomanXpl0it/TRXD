@@ -239,11 +239,12 @@ SELECT
   FROM challenges c
   LEFT JOIN tags t ON t.chall_id = c.id
   LEFT JOIN (
-      SELECT chall_id, first_blood
+      SELECT submissions.chall_id, submissions.first_blood
         FROM submissions
         JOIN users ON users.id = submissions.user_id
-        WHERE team_id = (SELECT team_id FROM tid)
-          AND status = 'Correct') s
+        WHERE users.team_id = (SELECT team_id FROM tid)
+          AND users.role = 'Player'
+          AND submissions.status = 'Correct') s
     ON s.chall_id = c.id
   LEFT JOIN instances i
     ON i.chall_id = c.id
@@ -623,7 +624,7 @@ func (q *Queries) GetTeamMembers(ctx context.Context, teamID sql.NullInt32) ([]G
 }
 
 const getTeamSolves = `-- name: GetTeamSolves :many
-SELECT c.id, c.name, c.category, s.first_blood, s.timestamp, s.user_id
+SELECT c.id, c.name, c.category, c.points, s.first_blood, s.timestamp, s.user_id
   FROM submissions s
   JOIN users u ON u.id = s.user_id
   JOIN teams t ON u.team_id = t.id
@@ -638,6 +639,7 @@ type GetTeamSolvesRow struct {
 	ID         int32     `json:"id"`
 	Name       string    `json:"name"`
 	Category   string    `json:"category"`
+	Points     int32     `json:"points"`
 	FirstBlood bool      `json:"first_blood"`
 	Timestamp  time.Time `json:"timestamp"`
 	UserID     int32     `json:"user_id"`
@@ -657,6 +659,7 @@ func (q *Queries) GetTeamSolves(ctx context.Context, id int32) ([]GetTeamSolvesR
 			&i.ID,
 			&i.Name,
 			&i.Category,
+			&i.Points,
 			&i.FirstBlood,
 			&i.Timestamp,
 			&i.UserID,
@@ -807,7 +810,7 @@ SELECT t.id AS team_id, c.id AS chall_id, c.points, s.first_blood, s."timestamp"
   JOIN submissions s ON s.user_id = u.id
   JOIN challenges c ON c.id = s.chall_id
   WHERE s.status = 'Correct'
-	AND u.role = 'Player'
+	  AND u.role = 'Player'
   ORDER BY s."timestamp" ASC
 `
 

@@ -13,11 +13,12 @@ SELECT
   FROM challenges c
   LEFT JOIN tags t ON t.chall_id = c.id
   LEFT JOIN (
-      SELECT chall_id, first_blood
+      SELECT submissions.chall_id, submissions.first_blood
         FROM submissions
         JOIN users ON users.id = submissions.user_id
-        WHERE team_id = (SELECT team_id FROM tid)
-          AND status = 'Correct') s
+        WHERE users.team_id = (SELECT team_id FROM tid)
+          AND users.role = 'Player'
+          AND submissions.status = 'Correct') s
     ON s.chall_id = c.id
   LEFT JOIN instances i
     ON i.chall_id = c.id
