@@ -2,16 +2,20 @@ package plugins
 
 import (
 	"fmt"
+	"sync"
 	"context"
+	"reflect"
 	"path/filepath"
 
 	"github.com/tde-nico/log"
 	"github.com/yuin/gopher-lua"
+	"github.com/vadv/gopher-lua-libs"
 )
 
 type Plugin struct {
 	path string
 	state *lua.LState
+ 	mu *sync.Mutex
 }
 
 type Handler struct {
@@ -42,12 +46,15 @@ func InitManager() error {
 	    log.Info("Found plugin: ","path",path)
 		l := lua.NewState()
 		l.PreloadModule("trxd",Loader)
-		// l.SetGlobal("_trxd_plugin_index",index)
+		// load the built in functions
+		libs.Preload(l)
 		registry := l.Get(lua.RegistryIndex).(*lua.LTable)
 		registry.RawSetString("trxd_plugin_index",lua.LNumber(index))
+		mutex := sync.Mutex{}
 		plugin := Plugin{
 			path: path,
 			state: l,
+			mu: &mutex,
 		}
 		manager.plugins = append(manager.plugins, plugin)
 		err = l.DoFile(path)
@@ -59,7 +66,7 @@ func InitManager() error {
 	pluginsLoaded := map[string] any {}
 	pluginsLoaded["plugins"] = []string {}
 	for _, value := range (manager.plugins) {
-		pluginsLoaded["plugins"] = value.path
+		pluginsLoaded["plugins"] = append(pluginsLoaded["plugins"].([]string),value.path)
 	}
 	
 	pluginsLoaded, err = DispatchEvent(context.TODO(),"pluginsLoaded",pluginsLoaded)
@@ -96,54 +103,136 @@ func registerHandler(eventName string, luaFunction *lua.LFunction, pluginIndex i
 }
 
 
-// Send the information about the event to the plugins that manage that event
-func DispatchEvent(c context.Context, event string, parameters map [string] any) (map[string] any, error) {
-	handlers, ok := manager.handlers[event]
-	if ok {
-		for _, handler := range handlers {
-			plugin := manager.plugins[handler.pluginIndex]
-			interpreter := plugin.state
-			interpreter.SetContext(c)
-			parameterTable := interpreter.NewTable()
-			backupParameterTable := interpreter.NewTable()
+// // Send the information about the event to the plugins that manage that event
+// func DispatchEvent(c context.Context, event string, parameters map [string] any) (map[string] any, error) {
+// 	handlers, ok := manager.handlers[event]
+// 	if ok {
+// 		for _, handler := range handlers {
+// 			plugin := manager.plugins[handler.pluginIndex]
+// 			interpreter := plugin.state
+// 			interpreter.SetContext(c)
+// 			parameterTable := interpreter.NewTable()
+// 			backupParameterTable := interpreter.NewTable()
 			
-			for key, value := range parameters {
-				value, err := goToLua(interpreter,value)
-				if err != nil {
-					return nil, err
-				}
-				parameterTable.RawSetString(key,value)
-				backupParameterTable.RawSetString(key,value)
-			}
+// 			for key, value := range parameters {
+// 				value, err := goToLua(interpreter,value)
+// 				if err != nil {
+// 					return nil, err
+// 				}
+// 				parameterTable.RawSetString(key,value)
+// 				backupParameterTable.RawSetString(key,value)
+// 			}
 			
-			err := interpreter.CallByParam(
-				lua.P{
-					Fn: handler.callback,
-					NRet: 1,
-				    Protect: true,
-				}, 
-				parameterTable,
-			)
-			if err != nil {
-				log.Error("Error executing plugin:","path",plugin.path,"err",err)
-				continue
-			}
+// 			err := interpreter.CallByParam(
+// 				lua.P{
+// 					Fn: handler.callback,
+// 					NRet: 1,
+// 				    Protect: true,
+// 				}, 
+// 				parameterTable,
+// 			)
+// 			if err != nil {
+// 				log.Error("Error executing plugin:","path",plugin.path,"err",err)
+// 				continue
+// 			}
 			
-			ret := interpreter.Get(-1).(*lua.LTable)
-			interpreter.Pop(1)
+// 			ret := interpreter.Get(-1).(*lua.LTable)
+// 			interpreter.Pop(1)
 			
-			oldLuaParams := parameters
+// 			oldLuaParams := parameters
 
-			for key := range parameters {
-				value, err := luaToGo(interpreter,ret.RawGetString(key),backupParameterTable.RawGetString(key))
-				if err != nil {
-					log.Error("Error converting plugin result:","path",plugin.path,"err",err)
-					parameters = oldLuaParams
-					break
-				}
-				parameters[key] = value
-			}
-		}
-	}
-	return parameters, nil
+// 			for key := range parameters {
+// 				value, err := luaToGo(interpreter,ret.RawGetString(key),backupParameterTable.RawGetString(key))
+// 				if err != nil {
+// 					log.Error("Error converting plugin result:","path",plugin.path,"err",err)
+// 					parameters = oldLuaParams
+// 					break
+// 				}
+// 				parameters[key] = value
+// 			}
+// 		}
+// 	}
+// 	return parameters, nil
+// }
+
+func DispatchEvent[T any](c context.Context, event string, payload T) (T, error) {
+
+    out, err := dispatchEventRaw(c, event, payload, reflect.TypeOf(payload))
+    if err != nil {
+        return payload, err
+    }
+
+    v, ok := out.(T)
+    if !ok {
+        return payload, fmt.Errorf("plugin '%s' returned incompatible type %T, expected %T",
+            event, out, payload)
+    }
+
+    return v, nil
+}
+
+
+func dispatchEventRaw(
+    c context.Context,
+    event string,
+    payload any,
+    expectedType reflect.Type,
+) (any, error) {
+    handlers, ok := manager.handlers[event]
+    if !ok {
+        return payload, nil
+    }
+
+    for _, handler := range handlers {
+        plugin := manager.plugins[handler.pluginIndex]
+        plugin.mu.Lock()
+        log.Info("Critical section entered")
+         	
+        
+        interpreter := plugin.state
+        interpreter.SetContext(c)
+        luaPayload, err := goToLua(interpreter, payload)
+        // Error on the go side, the type given was not convertible to Lua type
+        if err != nil {
+            return nil, err
+        }
+        backupPayload, err := goToLua(interpreter, payload)
+        if err != nil {
+            return nil, err
+        }
+
+        err = interpreter.CallByParam(
+            lua.P{
+                Fn:      handler.callback,
+                NRet:    1,
+                Protect: true,
+            },
+            luaPayload,
+        )
+        if err != nil {
+            log.Error("Error executing plugin:", "path", plugin.path, "err", err)
+            continue
+        }
+
+
+        ret := interpreter.Get(-1)
+        interpreter.Pop(1)
+
+        converted, err := luaToGo(
+            interpreter,
+            ret,
+            backupPayload,
+            expectedType,
+        )
+        if err != nil {
+            log.Error("Error converting plugin result:", "path", plugin.path, "err", err)
+            break
+        }
+
+        log.Info("Critical Section ended")
+        plugin.mu.Unlock()
+        payload = converted
+    }
+
+    return payload, nil
 }

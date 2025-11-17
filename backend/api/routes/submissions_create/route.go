@@ -12,7 +12,6 @@ import (
 
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/tde-nico/log"
 )
 
 func Route(c *fiber.Ctx) error {
@@ -60,7 +59,7 @@ func Route(c *fiber.Ctx) error {
 	}
 	submissionResult, err = plugins.DispatchEvent(c.Context(), "submitFlag",submissionResult)
 	if err != nil {
-		log.Fatal("Plugin error","err",err)
+		return utils.Error(c,fiber.StatusInternalServerError, consts.ErrorPassingDataToPlugins, err)
 	}
 	
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{

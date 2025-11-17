@@ -3,6 +3,7 @@ package challenges_get
 import (
 	"trxd/api/validator"
 	"trxd/db/sqlc"
+	"trxd/plugins"
 	"trxd/utils"
 	"trxd/utils/consts"
 
@@ -30,6 +31,11 @@ func Route(c *fiber.Ctx) error {
 	}
 	if challenge == nil {
 		return utils.Error(c, fiber.StatusNotFound, consts.ChallengeNotFound)
+	}
+
+	challenge,err = plugins.DispatchEvent(c.Context(),"challengeGet",challenge)
+	if err != nil {
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorPassingDataToPlugins, err)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(challenge)
