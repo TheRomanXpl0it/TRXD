@@ -7,4 +7,4 @@ function ModifyFirstBlood (submission)
     return submission
 end
 
-trxd.on_event("submitFlag",ModifyFirstBlood)
+trxd.on_event("submitFlag","ModifyFirstBlood")

@@ -1,26 +1,27 @@
 package plugins
 
 import (
-	"fmt"
-	"sync"
 	"context"
-	"reflect"
+	"fmt"
 	"path/filepath"
+	"reflect"
+	"sync"
+	"time"
 
 	"github.com/tde-nico/log"
-	"github.com/yuin/gopher-lua"
 	"github.com/vadv/gopher-lua-libs"
+	"github.com/yuin/gopher-lua"
 )
 
 type Plugin struct {
 	path string
-	state *lua.LState
- 	mu *sync.Mutex
+	states []*lua.LState
+ 	mus []*sync.Mutex
 }
 
 type Handler struct {
 	pluginIndex uint
-	callback *lua.LFunction
+	callback string
 }
 
 type Manager struct {
@@ -29,6 +30,7 @@ type Manager struct {
 }
 
 var manager Manager
+var INTERPRETER_NUMBER int = 1
 
 func InitManager() error {
 	manager = Manager{
@@ -44,23 +46,30 @@ func InitManager() error {
 	// register a new plugin
 	for index, path := range matches {
 	    log.Info("Found plugin: ","path",path)
-		l := lua.NewState()
-		l.PreloadModule("trxd",Loader)
+		lA := []* lua.LState {}
+		muA := []* sync.Mutex {}
+		for interpreterIndex := range INTERPRETER_NUMBER {
+			l := lua.NewState()
+			l.PreloadModule("trxd",Loader)
+			registry := l.Get(lua.RegistryIndex).(*lua.LTable)
+			registry.RawSetString("trxd_plugin_index",lua.LNumber(index))
+			registry.RawSetString("trxd_interpreter_index",lua.LNumber(interpreterIndex))
+			libs.Preload(l)
+			err = l.DoFile(path)
+			if err != nil {
+				return err
+			}
+			lA = append(lA, l)
+			mutex := sync.Mutex{}
+			muA = append(muA, &mutex)
+		}
 		// load the built in functions
-		libs.Preload(l)
-		registry := l.Get(lua.RegistryIndex).(*lua.LTable)
-		registry.RawSetString("trxd_plugin_index",lua.LNumber(index))
-		mutex := sync.Mutex{}
 		plugin := Plugin{
 			path: path,
-			state: l,
-			mu: &mutex,
+			states: lA,
+			mus: muA,
 		}
 		manager.plugins = append(manager.plugins, plugin)
-		err = l.DoFile(path)
-		if err != nil {
-			return err
-		}
 	}
 	
 	pluginsLoaded := map[string] any {}
@@ -79,22 +88,38 @@ func InitManager() error {
 
 func DestroyManager() {
 	for _, plugin := range manager.plugins {
-		plugin.state.Close()
+		for _, interpreters := range plugin.states {	
+			interpreters.Close()
+		}
 	}
 }
 
 
-func registerHandler(eventName string, luaFunction *lua.LFunction, pluginIndex int) error {
+func registerHandler(eventName string, luaFunction string, pluginIndex int, l *lua.LState) error {
 	
-	if luaFunction.Proto.NumParameters != 1 {
-		return fmt.Errorf("Function num parameters, expected: %d, got: %d",1,luaFunction.Proto.NumParameters)
+	luaFunctionPointer, ok := l.GetGlobal(luaFunction).(*lua.LFunction)
+	if ! ok{
+		return fmt.Errorf("Expected function, got:",luaFunctionPointer.Type().String())
+		
+	}
+	if luaFunctionPointer.Proto.NumParameters != 1 {
+		return fmt.Errorf("Function num parameters, expected: %d, got: %d",1,luaFunctionPointer.Proto.NumParameters)
 	}
 	
 	value, ok := manager.handlers[eventName]
 	handler := Handler{pluginIndex: uint(pluginIndex), callback: luaFunction}
 	
 	if ok {
-		manager.handlers[eventName] = append(value, handler)
+		skipAppend:= false
+		for _,existingHandler := range manager.handlers[eventName] {
+			if existingHandler.callback == handler.callback && existingHandler.pluginIndex == handler.pluginIndex {
+				skipAppend = true
+				break
+			} 
+		}
+		if !skipAppend {
+			manager.handlers[eventName] = append(value, handler)
+		}
 	} else {
 		manager.handlers[eventName] = [] Handler {handler}
 	}
@@ -171,6 +196,23 @@ func DispatchEvent[T any](c context.Context, event string, payload T) (T, error)
     return v, nil
 }
 
+func retrieveLock(locks []*sync.Mutex) int {
+	index := 0
+	for true {
+		lock := locks[index]
+		success := lock.TryLock()
+		if success {
+			return index
+		}
+		index++
+		if index == len(locks){
+			time.Sleep(1*time.Millisecond)
+		}
+		index %= len(locks)
+	}
+	return 0 //cannot reach
+}
+
 
 func dispatchEventRaw(
     c context.Context,
@@ -185,11 +227,9 @@ func dispatchEventRaw(
 
     for _, handler := range handlers {
         plugin := manager.plugins[handler.pluginIndex]
-        plugin.mu.Lock()
-        log.Info("Critical section entered")
+        interpreterIdx := retrieveLock(plugin.mus)
          	
-        
-        interpreter := plugin.state
+        interpreter := plugin.states[interpreterIdx]
         interpreter.SetContext(c)
         luaPayload, err := goToLua(interpreter, payload)
         // Error on the go side, the type given was not convertible to Lua type
@@ -203,7 +243,7 @@ func dispatchEventRaw(
 
         err = interpreter.CallByParam(
             lua.P{
-                Fn:      handler.callback,
+                Fn:      interpreter.GetGlobal(handler.callback).(*lua.LFunction),
                 NRet:    1,
                 Protect: true,
             },
@@ -229,8 +269,7 @@ func dispatchEventRaw(
             break
         }
 
-        log.Info("Critical Section ended")
-        plugin.mu.Unlock()
+        plugin.mus[interpreterIdx].Unlock()
         payload = converted
     }
 

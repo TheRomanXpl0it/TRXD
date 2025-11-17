@@ -18,11 +18,11 @@ var exports = map[string]lua.LGFunction{
 
 func onEvent(L *lua.LState) int{
 	eventName := L.ToString(1)
-	callback := L.ToFunction(2)
+	callback := L.ToString(2)
 	
 	registry := L.Get(lua.RegistryIndex).(*lua.LTable)
 	pluginIndex := int(lua.LVAsNumber(registry.RawGetString("trxd_plugin_index")))
-	err := registerHandler(eventName, callback, pluginIndex)
+	err := registerHandler(eventName, callback, pluginIndex, L)
 	if err != nil {
 		L.Panic(L)
 		log.Error("Error registering plugin:","err",err)
