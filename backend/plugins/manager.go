@@ -2,6 +2,7 @@ package plugins
 
 import (
 	"fmt"
+	"context"
 	"path/filepath"
 
 	"github.com/tde-nico/log"
@@ -60,14 +61,21 @@ func InitManager() error {
 	for _, value := range (manager.plugins) {
 		pluginsLoaded["plugins"] = value.path
 	}
-
-	pluginsLoaded, err = DispatchEvent("pluginsLoaded",pluginsLoaded)
+	
+	pluginsLoaded, err = DispatchEvent(context.TODO(),"pluginsLoaded",pluginsLoaded)
 	if err != nil {
 		log.Error("Error executing plugins:","err",err)
 	}
 	
 	return nil
 }
+
+func DestroyManager() {
+	for _, plugin := range manager.plugins {
+		plugin.state.Close()
+	}
+}
+
 
 func registerHandler(eventName string, luaFunction *lua.LFunction, pluginIndex int) error {
 	
@@ -89,12 +97,13 @@ func registerHandler(eventName string, luaFunction *lua.LFunction, pluginIndex i
 
 
 // Send the information about the event to the plugins that manage that event
-func DispatchEvent(event string, parameters map [string] any) (map[string] any, error) {
+func DispatchEvent(c context.Context, event string, parameters map [string] any) (map[string] any, error) {
 	handlers, ok := manager.handlers[event]
 	if ok {
 		for _, handler := range handlers {
 			plugin := manager.plugins[handler.pluginIndex]
 			interpreter := plugin.state
+			interpreter.SetContext(c)
 			parameterTable := interpreter.NewTable()
 			backupParameterTable := interpreter.NewTable()
 			

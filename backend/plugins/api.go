@@ -14,12 +14,6 @@ func Loader(L *lua.LState) int {
 
 var exports = map[string]lua.LGFunction{
     "on_event": onEvent,
-    "hello_world": helloWorld,
-}
-
-func helloWorld(L *lua.LState) int {
-	print("Hello From the backend!") 
-	return 0
 }
 
 func onEvent(L *lua.LState) int{

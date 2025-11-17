@@ -184,6 +184,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading plugins", "err", err)
 	}
+	defer plugins.DestroyManager()
 	
 	err = app.Listen(":1337")
 	if err != nil {

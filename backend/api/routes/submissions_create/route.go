@@ -58,7 +58,7 @@ func Route(c *fiber.Ctx) error {
 		"first_blood" : first_blood,
 		"err" : err,
 	}
-	submissionResult, err = plugins.DispatchEvent("submitFlag",submissionResult)
+	submissionResult, err = plugins.DispatchEvent(c.Context(), "submitFlag",submissionResult)
 	if err != nil {
 		log.Fatal("Plugin error","err",err)
 	}
