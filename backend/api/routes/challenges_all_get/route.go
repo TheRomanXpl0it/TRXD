@@ -4,6 +4,7 @@ import (
 	"trxd/db/sqlc"
 	"trxd/utils"
 	"trxd/utils/consts"
+	"trxd/plugins"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -18,6 +19,11 @@ func Route(c *fiber.Ctx) error {
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingChallenges, err)
 	}
-
+	
+	challenges, err = plugins.DispatchEvent(c.Context(),"challengesGet",challenges)
+	if err != nil {
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorPassingDataToPlugins, err)
+	}
+	
 	return c.Status(fiber.StatusOK).JSON(challenges)
 }
