@@ -37,8 +37,6 @@ func InitPlugins() error {
 	}
 
 	for _, path := range matches {
-		log.Infof("Loading plugin: %s", path)
-
 		p, err := plugin.Open(path)
 		if err != nil {
 			log.Errorf("  -> failed to open: %v", err)
@@ -54,12 +52,12 @@ func InitPlugins() error {
 			}
 		}
 
-		if sym, err := p.Lookup("RegisterDBs"); err == nil {
+		if sym, err := p.Lookup("RegisterQueries"); err == nil {
 			if regFn, ok := sym.(func(postgres.Registry)); ok {
 				regFn(Pm.Postgres)
-				log.Infof("Loaded plugin %s DB handler",sym)
+				log.Infof("Loaded plugin %s Query handler",path)
 			} else {
-				log.Errorf("  -> RegisterDB has wrong type in %s", path)
+				log.Errorf("  -> RegisterQuery has wrong type in %s", path)
 			}
 		}
 
@@ -90,15 +88,10 @@ func  DispatchEvent[T any](ctx context.Context, hook string, args T) (T, error) 
 	return res, nil
 }
 
-func DispatchDb[T any](ctx context.Context, hook string, args T) (T, error) {
-	var zero T 
-    out, err := Pm.Postgres.Dispatch(ctx, hook, args)
+func DispatchQuery(ctx context.Context, ev postgres.QueryEvent) (postgres.QueryEvent, error) {
+    out, err := Pm.Postgres.DispatchQuery(ctx, ev)
 	if err != nil {
-		return zero, err
+		return ev, err
 	}
-	res, ok := out.(T)
-	if !ok {
-		return zero, fmt.Errorf("plugin chain for %s returned incompatible type %T", hook, out)
-	}
-	return res, nil
+	return out, nil
 }

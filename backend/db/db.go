@@ -47,7 +47,7 @@ func ConnectDB(info *utils.DBInfo, test ...bool) error {
 	db.SetMaxIdleConns(info.PgMaxConnections)
 	db.SetConnMaxIdleTime(time.Hour)
 
-	Sql = sqlc.New(db)
+	Sql = sqlc.New(&HookedDB{Inner:db}) //this lets me 
 
 	success, err := initDB(len(test) > 0 && test[0])
 	if err != nil {

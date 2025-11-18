@@ -1,59 +1,66 @@
 package postgres
 
 import (
-    "context"
+	"context"
 
-    "github.com/tde-nico/log"
-    "trxd/pluginsapi/core"
+	"trxd/pluginsapi/core"
 )
 
+type QueryEvent struct {
+	Name string
+	SQL  string
+	Args []any
+}
+
 type DBManager struct {
-    handlers map[string][]core.Handler
+	queryHandlers map[string][]core.Handler
+    triggerHandlers map[string][]core.Handler
 }
 
 type Registry interface {
-    OnDbHook(hook string, handler core.Handler, priority int)
+    OnQuery(hook string, handler core.Handler, priority int)
+    OnTrigger(hook string, handler core.Handler, priority int)
 }
 
 func NewDBManager() *DBManager {
     return &DBManager{
-        handlers: make(map[string][]core.Handler),
+        queryHandlers: make(map[string][]core.Handler),
+        triggerHandlers: make(map[string][]core.Handler),
     }
 }
 
-func (dm *DBManager) OnDbHook(hook string, handler core.Handler, priority int) {
-    if dm.handlers == nil {
-        dm.handlers = make(map[string][]core.Handler)
+func (dm *DBManager) OnQuery(hook string, handler core.Handler, priority int) {
+ 	if dm.queryHandlers == nil {
+        dm.queryHandlers = make(map[string][]core.Handler)
     }
-    list := dm.handlers[hook]
-    list = core.InsertHandlerByPriority(list, handler, priority)
-    dm.handlers[hook] = list
+	list := dm.queryHandlers[hook]
+	list = core.InsertHandlerByPriority(list, handler, priority)
+	dm.queryHandlers[hook] = list
 }
 
-func (m *DBManager) Dispatch(ctx context.Context, hook string, args any) (any, error) {
-    handlers, ok := m.handlers[hook]
-    if !ok || len(handlers) == 0 {
-        return args, nil
+func (dm *DBManager) OnTrigger(hook string, handler core.Handler, priority int) {
+ 	if dm.triggerHandlers == nil {
+        dm.triggerHandlers = make(map[string][]core.Handler)
     }
+	list := dm.triggerHandlers[hook]
+	list = core.InsertHandlerByPriority(list, handler, priority)
+	dm.triggerHandlers[hook] = list
+}
 
-    in := args
-    var err error
-
-    for _, handler := range handlers {
-        beforeCall := in
-
-        in, err = handler.Handle(ctx, in)
-        if typeErr := core.CheckSameTypes(beforeCall, in); typeErr != nil {
-            log.Errorf("db plugin for %s returned incompatible types in safe mode: %v", hook, typeErr)
-            in = beforeCall
-            continue
-        }
-
-        if err != nil {
-            log.Error("Error in executing db plugin", "hook", hook, "err", err)
-            in = beforeCall
-        }
-    }
-
-    return in, nil
+func (dm *DBManager) DispatchQuery(ctx context.Context, ev QueryEvent) (QueryEvent, error) {
+	args := ev
+	if list, ok := dm.queryHandlers[ev.Name]; ok {
+		for _, handler := range list {
+			out, err := handler.Handle(ctx, args)
+			if err != nil {
+				return ev, err
+			}
+			if updated, ok := out.(QueryEvent); ok {
+				ev = updated
+				args = ev
+			}
+		}
+	}
+	
+	return ev, nil
 }
