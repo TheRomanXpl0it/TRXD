@@ -33,7 +33,7 @@ var testData = []struct {
 }
 
 func TestRoute(t *testing.T) {
-	app := api.SetupApp()
+	app := api.SetupApp(t.Context())
 	defer app.Shutdown()
 
 	for _, test := range testData {

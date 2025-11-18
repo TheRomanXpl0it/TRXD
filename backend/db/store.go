@@ -120,7 +120,7 @@ func StorageDelete(ctx context.Context, key string) error {
 	return nil
 }
 
-func StorageFlush() error {
+func StorageFlush(ctx context.Context) error {
 	if rdb == nil {
 		storageRWMutex.Lock()
 		defer storageRWMutex.Unlock()
@@ -128,7 +128,7 @@ func StorageFlush() error {
 		return nil
 	}
 
-	err := rdb.FlushAll(context.Background()).Err()
+	err := rdb.FlushAll(ctx).Err()
 	if err != nil {
 		return err
 	}

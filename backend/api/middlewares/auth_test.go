@@ -52,7 +52,7 @@ var testAuthMiddlewares = []struct {
 }
 
 func TestAuthMiddlewares(t *testing.T) {
-	app := api.SetupApp()
+	app := api.SetupApp(t.Context())
 	defer app.Shutdown()
 
 	users := [6]*sqlc.User{}

@@ -19,7 +19,7 @@ import (
 	"github.com/tde-nico/log"
 )
 
-func Flags() {
+func Flags(ctx context.Context) {
 	var (
 		help                bool
 		h                   bool
@@ -40,7 +40,7 @@ func Flags() {
 	}
 
 	if toggleRegisterAllow {
-		conf, err := db.GetConfig(context.Background(), "allow-register")
+		conf, err := db.GetConfig(ctx, "allow-register")
 		if err != nil {
 			log.Fatal("Error getting allow-register config", "err", err)
 		}
@@ -55,7 +55,7 @@ func Flags() {
 			toggle = "false"
 		}
 
-		err = db.UpdateConfig(context.Background(), "allow-register", toggle)
+		err = db.UpdateConfig(ctx, "allow-register", toggle)
 		if err != nil {
 			log.Fatal("Error updating allow-register config", "err", err)
 		}
@@ -97,13 +97,13 @@ func Flags() {
 			log.Fatal(err)
 		}
 
-		tx, err := db.BeginTx(context.Background())
+		tx, err := db.BeginTx(ctx)
 		if err != nil {
 			log.Fatal("Error beginning transaction", "err", err)
 		}
 		defer tx.Rollback()
 
-		user, err := users_register.RegisterUser(context.Background(), tx, name, email, password, sqlc.UserRoleAdmin)
+		user, err := users_register.RegisterUser(ctx, tx, name, email, password, sqlc.UserRoleAdmin)
 		if err != nil {
 			log.Fatal("Error registering admin user", "err", err)
 		}
@@ -128,7 +128,7 @@ func Flags() {
 			log.Fatal("Error executing SQL file", "err", err)
 		}
 
-		err = db.DeleteAll()
+		err = db.DeleteAll(ctx)
 		if err != nil {
 			log.Fatal("Error deleting existing data", "err", err)
 		}
@@ -169,14 +169,15 @@ func main() {
 	}
 	defer db.CloseDB()
 
-	Flags()
+	ctx := context.Background()
+	Flags(ctx)
 
 	log.Info("Starting TRXd server")
 	defer log.Info("Stopping TRXd server")
 
 	go instancer.ReclaimLoop()
 
-	app := api.SetupApp()
+	app := api.SetupApp(ctx)
 	err = app.Listen(":1337")
 	if err != nil {
 		log.Fatal("Error starting server", "err", err)

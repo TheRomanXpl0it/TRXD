@@ -22,7 +22,7 @@ func TestMain(m *testing.M) {
 }
 
 func Test404(t *testing.T) {
-	app := api.SetupApp()
+	app := api.SetupApp(t.Context())
 	defer app.Shutdown()
 
 	session := test_utils.NewApiTestSession(t, app)
@@ -38,7 +38,7 @@ func TestPanic(t *testing.T) {
 		AppName: consts.Name,
 	})
 	api.SetupFeatures(app)
-	api.SetupApi(app)
+	api.SetupApi(t.Context(), app)
 	defer app.Shutdown()
 
 	app.Get("/api/panic", func(c *fiber.Ctx) error {
@@ -54,7 +54,7 @@ func TestPanic(t *testing.T) {
 // 	consts.Testing = false
 // 	defer func() { consts.Testing = true }()
 
-// 	app := api.SetupApp()
+// 	app := api.SetupApp(t.Context())
 // 	defer app.Shutdown()
 
 // 	session := test_utils.NewApiTestSession(t, app)
@@ -69,7 +69,7 @@ func TestPanic(t *testing.T) {
 // }
 
 func TestCSRF(t *testing.T) {
-	app := api.SetupApp()
+	app := api.SetupApp(t.Context())
 	defer app.Shutdown()
 
 	session := test_utils.NewApiTestSession(t, app)
@@ -84,7 +84,7 @@ func TestCSRF(t *testing.T) {
 }
 
 func TestStatic(t *testing.T) {
-	app := api.SetupApp()
+	app := api.SetupApp(t.Context())
 	defer app.Shutdown()
 
 	session := test_utils.NewApiTestSession(t, app, true)
@@ -95,7 +95,7 @@ func TestStatic(t *testing.T) {
 
 func TestUserMode(t *testing.T) {
 	test_utils.UpdateConfig(t, "user-mode", "true")
-	app := api.SetupApp()
+	app := api.SetupApp(t.Context())
 	defer app.Shutdown()
 
 	enpoints := []struct {
@@ -117,7 +117,7 @@ func TestUserMode(t *testing.T) {
 }
 
 func TestAttachments(t *testing.T) {
-	app := api.SetupApp()
+	app := api.SetupApp(t.Context())
 	defer app.Shutdown()
 
 	module := test_utils.GetModuleName(t)

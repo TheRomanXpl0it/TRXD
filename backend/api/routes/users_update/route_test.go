@@ -92,7 +92,7 @@ var testData = []struct {
 }
 
 func TestRoute(t *testing.T) {
-	app := api.SetupApp()
+	app := api.SetupApp(t.Context())
 	defer app.Shutdown()
 
 	session := test_utils.NewApiTestSession(t, app)
@@ -106,7 +106,7 @@ func TestRoute(t *testing.T) {
 		session.CheckResponse(test.expectedResponse)
 	}
 
-	app2 := api.SetupApp()
+	app2 := api.SetupApp(t.Context())
 	defer app2.Shutdown()
 	test_utils.UpdateConfig(t, "user-mode", "true")
 

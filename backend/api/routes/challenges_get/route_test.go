@@ -21,7 +21,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestRoute(t *testing.T) {
-	app := api.SetupApp()
+	app := api.SetupApp(t.Context())
 	defer app.Shutdown()
 
 	session := test_utils.NewApiTestSession(t, app)

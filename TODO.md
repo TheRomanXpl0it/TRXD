@@ -3,7 +3,6 @@
  - change name from _TID_CID to _CID_TID
  - change name of challs, network and so on, with $PROJECT_NAME prefix
  - single user mode, send user id instead of team id (ex scoreboard)
- - optimize badge queries
  - tests with removal of trxd-shared (and fault tolerance)
  - https://doc.traefik.io/traefik/expose/docker/
  - password reset for players
@@ -17,6 +16,16 @@
  - error generator for tests
  - split main.go flag function
  - resolve TODOs left into the code
+ - discord webhook tests in pipeline
+ - tg webhook tests in pipeline
+ - instance expire tests
+ - ingress only challenges (verify if useful)
+ - attachments rework (own table)
+ - attachments hash in path
+ - authors rework (string list)
+ - challenge remote type (table: (tcp & http) + format: ex. "nc {{host}} {{port}}" & "http://{{host}}:{{port}}")
+ - challs SNI traefik
+ - main single context at the beginning for inits
 
 ## Frontend
  - convert .pngs to webp
@@ -25,14 +34,6 @@
  - Add custom buttons for first/second/third bloods?
  - Improve challenge creation procedure
  - Fix admin flag submission 
-
-## QoS
- - flush cache flag
- - verify no comunication between instances on standard default bridge network
- - change csrf token name
- - error generator for tests
- - split main.go flag function
- - resolve TODOs left into the code
 
 ## Alpha
  - config to start and end ctf
@@ -45,15 +46,18 @@
 
 ## Extra
  - editable homepage & theme
+ - instanes page (admin only)
  - deletable instances (from admin)
+ - submission page (admin only)
  - deletable submissions (from admin)
  - link to join team
  - endpoint + cli cmd to parse a category/challenge file (maybe yaml) with all infos
  - extract data for ctftime
  - scoreboard freeze (idea: use a table or a view to take a snapshot of the scoreboard, update it every time someone solves if not in freeze time (or just prefetch and compute if not exists))
  - telegram bot for first bloods
- - when finished endpoints, review needed data and revome `RETURNING *;` and similar when not needed
  - hash verifier flag or script
+ - kube support
+ - swarm support
 
 ## Bonus Ideas
  - maybe set default starting points for challenges as global config
@@ -67,3 +71,4 @@
  - timeout on endpoints
  - optional mail server
  - endpoint to store image files (like badges and pfp)
+ - flag format validator

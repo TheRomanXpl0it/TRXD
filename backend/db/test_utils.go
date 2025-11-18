@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"trxd/utils"
@@ -52,8 +53,8 @@ func CloseTestDB() {
 	}
 }
 
-func DeleteAll() error {
-	err := StorageFlush()
+func DeleteAll(ctx context.Context) error {
+	err := StorageFlush(ctx)
 	if err != nil {
 		return err
 	}
