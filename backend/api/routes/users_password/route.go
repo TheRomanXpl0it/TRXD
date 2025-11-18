@@ -11,7 +11,7 @@ import (
 
 func Route(c *fiber.Ctx) error {
 	var data struct {
-		UserID *int32 `json:"user_id" validate:"required,user_id"`
+		UserID *int32 `json:"user_id" validate:"required,id"`
 		// TODO: password new only for ourself
 	}
 	if err := c.BodyParser(&data); err != nil {

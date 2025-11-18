@@ -2,6 +2,7 @@ package teams_password_test
 
 import (
 	"fmt"
+	"math"
 	"net/http"
 	"testing"
 	"trxd/api"
@@ -39,6 +40,11 @@ var testData = []struct {
 		testBody:         JSON{"team_id": -1},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf("TeamID must be at least 0"),
+	},
+	{
+		testBody:         JSON{"team_id": math.MaxInt32 + 1},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.InvalidJSON),
 	},
 	{
 		testBody:       JSON{"team_id": 0},

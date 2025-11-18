@@ -1,6 +1,7 @@
 package submissions_create_test
 
 import (
+	"math"
 	"net/http"
 	"strings"
 	"testing"
@@ -55,6 +56,11 @@ var testData = []struct {
 		testBody:         JSON{"chall_id": 99999, "flag": "flag{test}"},
 		expectedStatus:   http.StatusNotFound,
 		expectedResponse: errorf(consts.ChallengeNotFound),
+	},
+	{
+		testBody:         JSON{"chall_id": math.MaxInt32 + 1, "flag": "flag{test}"},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.InvalidJSON),
 	},
 	{
 		testBody:         JSON{"chall_id": "", "flag": "test"},

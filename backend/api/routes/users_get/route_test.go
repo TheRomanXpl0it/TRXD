@@ -2,6 +2,7 @@ package users_get_test
 
 import (
 	"fmt"
+	"math"
 	"net/http"
 	"testing"
 	"trxd/api"
@@ -80,11 +81,15 @@ func TestRoute(t *testing.T) {
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Get(fmt.Sprintf("/users/%d", -1), nil, http.StatusBadRequest)
-	session.CheckResponse(errorf("user_id must be at least 0"))
+	session.CheckResponse(errorf("id must be at least 0"))
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Get(fmt.Sprintf("/users/%d", 99999), nil, http.StatusNotFound)
 	session.CheckResponse(errorf(consts.UserNotFound))
+
+	session = test_utils.NewApiTestSession(t, app)
+	session.Get(fmt.Sprintf("/users/%d", math.MaxInt32+1), nil, http.StatusBadRequest)
+	session.CheckResponse(errorf("id must be at least 0"))
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Get(fmt.Sprintf("/users/%d", idAdmin), nil, http.StatusNotFound)

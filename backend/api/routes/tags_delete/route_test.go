@@ -1,6 +1,7 @@
 package tags_delete_test
 
 import (
+	"math"
 	"net/http"
 	"strings"
 	"testing"
@@ -49,6 +50,11 @@ var testData = []struct {
 		testBody:         JSON{"chall_id": -1, "name": "test"},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf("ChallID must be at least 0"),
+	},
+	{
+		testBody:         JSON{"chall_id": math.MaxInt32 + 1, "name": "test"},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.InvalidJSON),
 	},
 	{
 		testBody:       JSON{"chall_id": "", "name": "test-2"},

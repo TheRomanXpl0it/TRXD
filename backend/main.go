@@ -71,7 +71,7 @@ func registerAdmin(ctx context.Context, userInfo string) {
 	if err != nil || !valid {
 		log.Fatal(err)
 	}
-	valid, err = validator.Var(nil, password, "user_password")
+	valid, err = validator.Var(nil, password, "password")
 	if err != nil || !valid {
 		log.Fatal(err)
 	}

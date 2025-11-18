@@ -12,11 +12,12 @@ import (
 func Route(c *fiber.Ctx) error {
 	role := c.Locals("role")
 
-	teamID, err := c.ParamsInt("id")
+	teamIDInt, err := c.ParamsInt("id")
 	if err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidTeamID)
 	}
-	valid, err := validator.Var(c, teamID, "team_id")
+	teamID := int32(teamIDInt)
+	valid, err := validator.Var(c, teamID, "id")
 	if err != nil || !valid {
 		return err
 	}

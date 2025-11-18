@@ -14,17 +14,18 @@ func Route(c *fiber.Ctx) error {
 	tid := c.Locals("tid").(int32)
 	role := c.Locals("role").(sqlc.UserRole)
 
-	challengeID, err := c.ParamsInt("id")
+	challengeIDInt, err := c.ParamsInt("id")
 	if err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidChallengeID)
 	}
-	valid, err := validator.Var(c, challengeID, "challenge_id")
+	challengeID := int32(challengeIDInt)
+	valid, err := validator.Var(c, challengeID, "id")
 	if err != nil || !valid {
 		return err
 	}
 
 	all := utils.In(role, []sqlc.UserRole{sqlc.UserRoleAuthor, sqlc.UserRoleAdmin})
-	challenge, err := GetChallenge(c.Context(), int32(challengeID), uid, tid, all)
+	challenge, err := GetChallenge(c.Context(), challengeID, uid, tid, all)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingChallenges, err)
 	}

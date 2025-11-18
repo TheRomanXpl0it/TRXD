@@ -1,6 +1,7 @@
 package challenges_create_test
 
 import (
+	"math"
 	"net/http"
 	"strings"
 	"testing"
@@ -84,6 +85,11 @@ var testData = []struct {
 		testBody:         JSON{"name": "test", "category": "cat", "description": "test-desc", "type": "Normal", "max_points": -1, "score_type": "Static"},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf("MaxPoints must be at least 0"),
+	},
+	{
+		testBody:         JSON{"name": "test", "category": "cat", "description": "test-desc", "type": "Normal", "max_points": math.MaxInt32 + 1, "score_type": "Static"},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.InvalidJSON),
 	},
 	{
 		testBody:         JSON{"name": "test", "category": "cat", "description": "test-desc", "type": "Normal", "max_points": 1, "score_type": "aaaa"},

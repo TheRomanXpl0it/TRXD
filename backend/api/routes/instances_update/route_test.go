@@ -1,6 +1,7 @@
 package instances_update_test
 
 import (
+	"math"
 	"net/http"
 	"testing"
 	"trxd/api"
@@ -66,6 +67,9 @@ func TestRoute(t *testing.T) {
 
 	session.Patch("/instances", JSON{"chall_id": 99999}, http.StatusNotFound)
 	session.CheckResponse(errorf(consts.ChallengeNotFound))
+
+	session.Patch("/instances", JSON{"chall_id": math.MaxInt32 + 1}, http.StatusBadRequest)
+	session.CheckResponse(errorf(consts.InvalidJSON))
 
 	test_utils.UpdateConfig(t, "secret", "")
 	session.Patch("/instances", JSON{"chall_id": challID1}, http.StatusForbidden)

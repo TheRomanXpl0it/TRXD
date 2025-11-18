@@ -29,7 +29,7 @@ func Route(c *fiber.Ctx) error {
 	var data struct {
 		Name     string `json:"name" validate:"required,user_name"`
 		Email    string `json:"email" validate:"required,user_email"`
-		Password string `json:"password" validate:"required,user_password"`
+		Password string `json:"password" validate:"required,password"`
 	}
 	if err := c.BodyParser(&data); err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidJSON)

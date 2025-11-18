@@ -40,6 +40,11 @@ var testData = []struct {
 		expectedResponse: errorf(consts.InvalidCountry),
 	},
 	{
+		testBody:         JSON{"image": strings.Repeat("a", consts.MaxImageLen+1)},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf("Image must not exceed 1024"),
+	},
+	{
 		testBody:         JSON{"image": "a"},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(consts.InvalidHttpUrl),

@@ -2,6 +2,7 @@ package validator
 
 import (
 	"fmt"
+	"math"
 	"strings"
 	"trxd/db/sqlc"
 	"trxd/utils"
@@ -25,45 +26,37 @@ func init() {
 	scoreTypes := []string{string(sqlc.ScoreTypeStatic), string(sqlc.ScoreTypeDynamic)}
 
 	// TODO: put a max to integers (ex: "challenge_max_points") or test with more than maxint
-	// validate.RegisterAlias("id", "min=0") // TODO: rework names
+	validate.RegisterAlias("id", fmt.Sprintf("min=0,max=%d", math.MaxInt32))
+	validate.RegisterAlias("password", fmt.Sprintf("min=%d,max=%d", consts.MinPasswordLen, consts.MaxPasswordLen))
 	validate.RegisterValidation("country", validCountry)
-	validate.RegisterValidation("image", validHttpUrl)
+	validate.RegisterValidation("valid_http_url", validHttpUrl)
+	validate.RegisterAlias("image_url", fmt.Sprintf("max=%d,valid_http_url", consts.MaxImageLen))
 
 	validate.RegisterAlias("category_name", fmt.Sprintf("max=%d", consts.MaxCategoryLen))
 	validate.RegisterAlias("category_icon", fmt.Sprintf("max=%d", consts.MaxIconLen))
 
-	validate.RegisterAlias("challenge_id", "min=0")
 	validate.RegisterAlias("challenge_name", fmt.Sprintf("max=%d", consts.MaxChallNameLen))
 	validate.RegisterAlias("challenge_description", fmt.Sprintf("max=%d", consts.MaxChallDescLen))
 	validate.RegisterAlias("challenge_difficulty", fmt.Sprintf("max=%d", consts.MaxChallDifficultyLen))
 	validate.RegisterAlias("challenge_type", "oneof="+strings.Join(deployTypes, " "))
-	validate.RegisterAlias("challenge_max_points", "min=0")
+	validate.RegisterAlias("challenge_max_points", fmt.Sprintf("min=0,max=%d", math.MaxInt32))
 	validate.RegisterAlias("challenge_score_type", "oneof="+strings.Join(scoreTypes, " "))
 	validate.RegisterAlias("challenge_port", fmt.Sprintf("min=%d,max=%d", consts.MinPort, consts.MaxPort))
-	validate.RegisterAlias("challenge_lifetime", "min=0") // TODO: test maxint+1
+	validate.RegisterAlias("challenge_lifetime", fmt.Sprintf("min=0,max=%d", math.MaxInt32)) // TODO: test maxint+1
 	validate.RegisterValidation("challenge_envs", validJson)
-	validate.RegisterAlias("challenge_max_memory", "min=0")
+	validate.RegisterAlias("challenge_max_memory", fmt.Sprintf("min=0,max=%d", math.MaxInt32))
 	validate.RegisterValidation("challenge_max_cpu", validFloat)
 
-	validate.RegisterAlias("flag_flag", fmt.Sprintf("max=%d", consts.MaxFlagLen))
+	validate.RegisterAlias("flag", fmt.Sprintf("max=%d", consts.MaxFlagLen))
 
 	validate.RegisterAlias("tag_name", fmt.Sprintf("max=%d", consts.MaxTagNameLen))
 
-	// TODO: join passwords, countries, images in one alias
-
-	validate.RegisterAlias("team_id", "min=0")
 	validate.RegisterAlias("team_name", fmt.Sprintf("max=%d", consts.MaxTeamNameLen))
-	validate.RegisterAlias("team_password", fmt.Sprintf("min=%d,max=%d", consts.MinPasswordLen, consts.MaxPasswordLen))
-	validate.RegisterAlias("team_country", "country")
-	validate.RegisterAlias("team_image", fmt.Sprintf("max=%d,image", consts.MaxImageLen))
 	validate.RegisterAlias("team_bio", fmt.Sprintf("max=%d", consts.MaxBioLen))
 
-	validate.RegisterAlias("user_id", "min=0")
 	validate.RegisterAlias("user_name", fmt.Sprintf("max=%d", consts.MaxUserNameLen))
 	validate.RegisterAlias("user_email", fmt.Sprintf("max=%d,email", consts.MaxEmailLen))
-	validate.RegisterAlias("user_password", fmt.Sprintf("min=%d,max=%d", consts.MinPasswordLen, consts.MaxPasswordLen))
-	validate.RegisterAlias("user_country", "country")
-	validate.RegisterAlias("user_image", fmt.Sprintf("max=%d,image", consts.MaxImageLen))
+
 }
 
 func errHandle(c *fiber.Ctx, err error) error {

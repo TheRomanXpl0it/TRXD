@@ -22,7 +22,7 @@ func Attachments(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusNotFound, consts.NotFound)
 	}
 
-	valid, err := validator.Var(c, challID, "challenge_id")
+	valid, err := validator.Var(c, challID, "id")
 	if err != nil || !valid {
 		return utils.Error(c, fiber.StatusNotFound, consts.NotFound)
 	}

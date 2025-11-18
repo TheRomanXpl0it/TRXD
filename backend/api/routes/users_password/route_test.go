@@ -1,6 +1,7 @@
 package users_password_test
 
 import (
+	"math"
 	"net/http"
 	"testing"
 	"trxd/api"
@@ -38,6 +39,11 @@ var testData = []struct {
 		testBody:         JSON{"user_id": -1},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf("UserID must be at least 0"),
+	},
+	{
+		testBody:         JSON{"user_id": math.MaxInt32 + 1},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.InvalidJSON),
 	},
 	{
 		testBody:       JSON{"user_id": 0},

@@ -10,7 +10,6 @@
  - configs changable by env
  - add tests with a lot of hash named challs (hard cap for networks on nginx?)
  - N instance limit per team
- - verify no comunication between instances on standard default bridge network
  - change csrf token name
  - error generator for tests
  - resolve TODOs left into the code
@@ -18,11 +17,12 @@
  - tg webhook tests in pipeline
  - instance expire tests
  - ingress only challenges (verify if useful)
- - attachments rework (own table)
+ - attachments rework (own table) (own endpoint & update challenges to json)
  - attachments hash in path
  - authors rework (string list)
  - challenge remote type (table: (tcp & http) + format: ex. "nc {{host}} {{port}}" & "http://{{host}}:{{port}}")
  - challs SNI traefik
+ - add DELETE tests with not found id (sould give 200)
 
 ## Frontend
  - convert .pngs to webp
