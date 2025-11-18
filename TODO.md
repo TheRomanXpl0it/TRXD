@@ -14,7 +14,6 @@
  - verify no comunication between instances on standard default bridge network
  - change csrf token name
  - error generator for tests
- - split main.go flag function
  - resolve TODOs left into the code
  - discord webhook tests in pipeline
  - tg webhook tests in pipeline
@@ -25,7 +24,6 @@
  - authors rework (string list)
  - challenge remote type (table: (tcp & http) + format: ex. "nc {{host}} {{port}}" & "http://{{host}}:{{port}}")
  - challs SNI traefik
- - main single context at the beginning for inits
 
 ## Frontend
  - convert .pngs to webp
