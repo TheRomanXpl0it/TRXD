@@ -5,6 +5,7 @@ import (
 	"strings"
 	"trxd/api/validator"
 	"trxd/db"
+	"trxd/db/sqlc"
 	"trxd/utils"
 	"trxd/utils/consts"
 
@@ -27,16 +28,15 @@ func Attachments(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusNotFound, consts.NotFound)
 	}
 
+	role := c.Locals("role").(sqlc.UserRole)
+
 	res, err := db.GetHiddenAndAttachments(c.Context(), int32(challID))
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.InternalServerError, err)
 	}
 	if res == nil ||
-		res.Hidden ||
-		!utils.In(
-			c.Path()[1:],
-			strings.Split(res.Attachments, consts.Separator),
-		) {
+		(res.Hidden && !utils.In(role, []sqlc.UserRole{sqlc.UserRoleAuthor, sqlc.UserRoleAdmin})) ||
+		!utils.In(c.Path()[1:], strings.Split(res.Attachments, consts.Separator)) {
 		return utils.Error(c, fiber.StatusNotFound, consts.NotFound)
 	}
 

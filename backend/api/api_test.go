@@ -116,6 +116,7 @@ func TestUserMode(t *testing.T) {
 	}
 }
 
+// TODO: add hidden attachment test + move this into attachments_test.go
 func TestAttachments(t *testing.T) {
 	app := api.SetupApp(t.Context())
 	defer app.Shutdown()
