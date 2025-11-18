@@ -98,6 +98,13 @@ func registerAdmin(ctx context.Context, userInfo string) {
 	log.Info("Admin user registered successfully")
 }
 
+func flushCache(ctx context.Context) {
+	err := db.StorageFlush(ctx)
+	if err != nil {
+		log.Fatal("Error flushing the cache", "err", err)
+	}
+}
+
 func insertTestData(ctx context.Context) {
 	log.Warn("Inserting mock data into the database. This will delete all existing data!")
 
@@ -122,27 +129,31 @@ func insertTestData(ctx context.Context) {
 
 func parseFlags(ctx context.Context) {
 	var (
-		help                bool
-		h                   bool
-		user                string
-		toggleAllowRegister bool
-		testData            bool
+		help               bool
+		h                  bool
+		user               string
+		toggleRegisterFlag bool
+		flushCacheFlag     bool
+		insertTestDataFlag bool
 	)
 	flag.BoolVar(&help, "help", false, "Show help")
 	flag.BoolVar(&h, "h", false, "Show help")
-	flag.BoolVar(&toggleAllowRegister, "t", false, "Toggle the allow-register config")
+	flag.BoolVar(&toggleRegisterFlag, "t", false, "Toggle the allow-register config")
 	flag.StringVar(&user, "r", "", "Register a new admin user with 'username:email:password'")
-	flag.BoolVar(&testData, "test-data-WARNING-DO-NOT-USE-IN-PRODUCTION", false, "Inserts mocks data into the db")
+	flag.BoolVar(&flushCacheFlag, "f", false, "Flush the system cache")
+	flag.BoolVar(&insertTestDataFlag, "test-data-WARNING-DO-NOT-USE-IN-PRODUCTION", false, "Inserts mocks data into the db")
 	flag.Parse()
 
 	switch {
 	case help || h:
 		flag.Usage()
-	case toggleAllowRegister:
+	case toggleRegisterFlag:
 		toggleRegister(ctx)
 	case user != "":
 		registerAdmin(ctx, user)
-	case testData:
+	case flushCacheFlag:
+		flushCache(ctx)
+	case insertTestDataFlag:
 		insertTestData(ctx)
 	default:
 		return
