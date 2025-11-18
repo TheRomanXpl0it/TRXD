@@ -78,6 +78,7 @@ const (
 	ErrorUpdatingTag             = "Error updating tag"
 	ErrorUpdatingTeam            = "Error updating team"
 	ErrorUpdatingUser            = "Error updating user"
+	ErrorPassingDataToPlugins    = "Error passing data to plugins"
 
 	InvalidChallengeID     = "Invalid challenge ID, must be non negative"
 	InvalidCountry         = "Invalid country code, must be ISO3166-1 alpha-3"
