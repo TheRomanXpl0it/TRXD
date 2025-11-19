@@ -23,6 +23,7 @@
  - challenge remote type (table: (tcp & http) + format: ex. "nc {{host}} {{port}}" & "http://{{host}}:{{port}}")
  - challs SNI traefik
  - add DELETE tests with not found id (sould give 200)
+ - add pagination on "all" GETs
 
 ## Frontend
  - convert .pngs to webp

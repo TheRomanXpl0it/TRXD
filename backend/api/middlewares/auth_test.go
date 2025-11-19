@@ -8,12 +8,6 @@ import (
 	"trxd/utils/test_utils"
 )
 
-type JSON map[string]interface{}
-
-func TestMain(m *testing.M) {
-	test_utils.Main(m)
-}
-
 var testAuthMiddlewares = []struct {
 	method           string
 	endpoint         string
