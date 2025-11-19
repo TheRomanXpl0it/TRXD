@@ -1,6 +1,7 @@
 package submissions_create_test
 
 import (
+	"math"
 	"net/http"
 	"strings"
 	"testing"
@@ -57,6 +58,11 @@ var testData = []struct {
 		expectedResponse: errorf(consts.ChallengeNotFound),
 	},
 	{
+		testBody:         JSON{"chall_id": math.MaxInt32 + 1, "flag": "flag{test}"},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.InvalidJSON),
+	},
+	{
 		testBody:         JSON{"chall_id": "", "flag": "test"},
 		expectedStatus:   http.StatusOK,
 		expectedResponse: JSON{"status": sqlc.SubmissionStatusWrong, "first_blood": false},
@@ -97,7 +103,7 @@ var testData = []struct {
 }
 
 func TestRoute(t *testing.T) {
-	app := api.SetupApp()
+	app := api.SetupApp(t.Context())
 	defer app.Shutdown()
 
 	session := test_utils.NewApiTestSession(t, app)

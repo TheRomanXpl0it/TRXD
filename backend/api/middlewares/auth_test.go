@@ -8,12 +8,6 @@ import (
 	"trxd/utils/test_utils"
 )
 
-type JSON map[string]interface{}
-
-func TestMain(m *testing.M) {
-	test_utils.Main(m)
-}
-
 var testAuthMiddlewares = []struct {
 	method           string
 	endpoint         string
@@ -52,7 +46,7 @@ var testAuthMiddlewares = []struct {
 }
 
 func TestAuthMiddlewares(t *testing.T) {
-	app := api.SetupApp()
+	app := api.SetupApp(t.Context())
 	defer app.Shutdown()
 
 	users := [6]*sqlc.User{}

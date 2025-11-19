@@ -105,7 +105,7 @@ var testData = []struct {
 }
 
 func TestRoute(t *testing.T) {
-	app := api.SetupApp()
+	app := api.SetupApp(t.Context())
 	defer app.Shutdown()
 
 	test_utils.UpdateConfig(t, "allow-register", "false")
@@ -126,7 +126,7 @@ func TestRoute(t *testing.T) {
 		session.CheckResponse(test.expectedResponse)
 	}
 
-	app2 := api.SetupApp()
+	app2 := api.SetupApp(t.Context())
 	defer app2.Shutdown()
 	test_utils.UpdateConfig(t, "user-mode", "true")
 	session = test_utils.NewApiTestSession(t, app2)

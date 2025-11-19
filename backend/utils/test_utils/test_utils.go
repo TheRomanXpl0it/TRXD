@@ -25,6 +25,8 @@ func fatalf(format string, a ...any) {
 }
 
 func Main(m *testing.M) {
+	ctx := context.Background()
+
 	dir, err := os.Getwd()
 	if err != nil {
 		fatalf("Failed to get current directory: %v\n", err)
@@ -55,7 +57,7 @@ func Main(m *testing.M) {
 	}
 	defer db.CloseTestDB()
 
-	err = db.DeleteAll()
+	err = db.DeleteAll(ctx)
 	if err != nil {
 		fatalf("Failed to delete all data: %v\n", err)
 	}
@@ -71,17 +73,17 @@ func Main(m *testing.M) {
 	}
 
 	consts.DefaultConfigs["allow-register"] = true
-	err = db.UpdateConfig(context.Background(), "allow-register", "true")
+	err = db.UpdateConfig(ctx, "allow-register", "true")
 	if err != nil {
 		fatalf("Failed to update config: %v\n", err)
 	}
 	consts.DefaultConfigs["secret"] = "test-secret"
-	err = db.UpdateConfig(context.Background(), "secret", "test-secret")
+	err = db.UpdateConfig(ctx, "secret", "test-secret")
 	if err != nil {
 		fatalf("Failed to update config: %v\n", err)
 	}
 	consts.DefaultConfigs["domain"] = "test.com"
-	err = db.UpdateConfig(context.Background(), "domain", "test.com")
+	err = db.UpdateConfig(ctx, "domain", "test.com")
 	if err != nil {
 		fatalf("Failed to update config: %v\n", err)
 	}

@@ -89,7 +89,7 @@ const (
 	InvalidHttpUrl         = "Invalid http(s) url"
 	InvalidImage           = "Invalid image"
 	InvalidJSON            = "Invalid JSON format"
-	InvalidMaxCpu          = "Invalid Max CPU, must be a positive number"
+	InvalidMaxCpu          = "Invalid Max CPU, must be a positive 32-bit integer"
 	InvalidMultipartForm   = "Invalid multipart form"
 	InvalidTeamCredentials = "Invalid name or password"
 	InvalidTeamID          = "Invalid team ID, must be non negative"
@@ -115,7 +115,7 @@ const (
 	TeamNotFound      = "Team not found"
 	UserNotFound      = "User not found"
 
-	MissingLifetime       = "Global lifetime is missing"
+	MissingLifetime       = "global lifetime is missing"
 	MissingRequiredFields = "Missing required fields"
 	NoDataToUpdate        = "No data provided to update"
 	NotLoggedIn           = "Not logged in"

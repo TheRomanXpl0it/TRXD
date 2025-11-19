@@ -1,6 +1,7 @@
 package challenges_create_test
 
 import (
+	"math"
 	"net/http"
 	"strings"
 	"testing"
@@ -86,6 +87,11 @@ var testData = []struct {
 		expectedResponse: errorf("MaxPoints must be at least 0"),
 	},
 	{
+		testBody:         JSON{"name": "test", "category": "cat", "description": "test-desc", "type": "Normal", "max_points": math.MaxInt32 + 1, "score_type": "Static"},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.InvalidJSON),
+	},
+	{
 		testBody:         JSON{"name": "test", "category": "cat", "description": "test-desc", "type": "Normal", "max_points": 1, "score_type": "aaaa"},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf("ScoreType must be one of: Static Dynamic"),
@@ -111,7 +117,7 @@ var testData = []struct {
 }
 
 func TestRoute(t *testing.T) {
-	app := api.SetupApp()
+	app := api.SetupApp(t.Context())
 	defer app.Shutdown()
 
 	test_utils.RegisterUser(t, "author", "author@test.test", "authorpass", sqlc.UserRoleAuthor)

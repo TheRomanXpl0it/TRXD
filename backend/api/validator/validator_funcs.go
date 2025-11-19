@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"math"
 	"strconv"
 
 	"github.com/go-playground/validator/v10"
@@ -38,6 +39,10 @@ func validFloat(fl validator.FieldLevel) bool {
 	if value == "" {
 		return true
 	}
-	_, err := strconv.ParseFloat(value, 32)
-	return err == nil
+	res, err := strconv.ParseFloat(value, 64)
+	if err != nil {
+		return false
+	}
+
+	return 0.0 < res && res < math.MaxInt32
 }

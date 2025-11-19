@@ -13,8 +13,8 @@ import (
 func Route(c *fiber.Ctx) error {
 	var data struct {
 		Name    string  `json:"name" validate:"team_name"`
-		Country *string `json:"country" validate:"omitempty,team_country"`
-		Image   *string `json:"image" validate:"omitempty,team_image"`
+		Country *string `json:"country" validate:"omitempty,country"`
+		Image   *string `json:"image" validate:"omitempty,image_url"`
 		Bio     *string `json:"bio" validate:"omitempty,team_bio"`
 	}
 	if err := c.BodyParser(&data); err != nil {

@@ -11,8 +11,8 @@ import (
 
 func Route(c *fiber.Ctx) error {
 	var data struct {
-		ChallID *int32 `json:"chall_id" validate:"required,challenge_id"`
-		Flag    string `json:"flag" validate:"required,flag_flag"`
+		ChallID *int32 `json:"chall_id" validate:"required,id"`
+		Flag    string `json:"flag" validate:"required,flag"`
 	}
 	if err := c.BodyParser(&data); err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidJSON)

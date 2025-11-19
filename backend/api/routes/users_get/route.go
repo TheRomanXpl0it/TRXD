@@ -13,11 +13,12 @@ func Route(c *fiber.Ctx) error {
 	uid := c.Locals("uid")
 	role := c.Locals("role")
 
-	userID, err := c.ParamsInt("id")
+	userIDInt, err := c.ParamsInt("id")
 	if err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidUserID)
 	}
-	valid, err := validator.Var(c, userID, "user_id")
+	userID := int32(userIDInt)
+	valid, err := validator.Var(c, userID, "id")
 	if err != nil || !valid {
 		return err
 	}

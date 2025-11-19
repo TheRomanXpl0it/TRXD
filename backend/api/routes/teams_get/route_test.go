@@ -2,6 +2,7 @@ package teams_get_test
 
 import (
 	"fmt"
+	"math"
 	"net/http"
 	"testing"
 	"trxd/api"
@@ -21,7 +22,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestRoute(t *testing.T) {
-	app := api.SetupApp()
+	app := api.SetupApp(t.Context())
 	defer app.Shutdown()
 
 	A := test_utils.GetTeamByName(t, "A")
@@ -53,16 +54,19 @@ func TestRoute(t *testing.T) {
 				"category":    "cat-1",
 				"first_blood": true,
 				"name":        "chall-1",
+				"points":      500,
 			},
 			{
 				"category":    "cat-1",
 				"first_blood": true,
 				"name":        "chall-3",
+				"points":      500,
 			},
 			{
 				"category":    "cat-1",
 				"first_blood": true,
 				"name":        "chall-4",
+				"points":      498,
 			},
 		},
 	}
@@ -73,11 +77,15 @@ func TestRoute(t *testing.T) {
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Get(fmt.Sprintf("/teams/%d", -1), nil, http.StatusBadRequest)
-	session.CheckResponse(errorf("team_id must be at least 0"))
+	session.CheckResponse(errorf("id must be at least 0"))
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Get(fmt.Sprintf("/teams/%d", 99999), nil, http.StatusNotFound)
 	session.CheckResponse(errorf(consts.TeamNotFound))
+
+	session = test_utils.NewApiTestSession(t, app)
+	session.Get(fmt.Sprintf("/teams/%d", math.MaxInt32+1), nil, http.StatusBadRequest)
+	session.CheckResponse(errorf("id must be at least 0"))
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Get(fmt.Sprintf("/teams/%d", A.ID), nil, http.StatusOK)
@@ -130,16 +138,19 @@ func TestRoute(t *testing.T) {
 				"category":    "cat-1",
 				"first_blood": true,
 				"name":        "chall-1",
+				"points":      500,
 			},
 			{
 				"category":    "cat-1",
 				"first_blood": true,
 				"name":        "chall-3",
+				"points":      500,
 			},
 			{
 				"category":    "cat-1",
 				"first_blood": true,
 				"name":        "chall-4",
+				"points":      498,
 			},
 		},
 	}

@@ -1,6 +1,7 @@
 package instances_create_test
 
 import (
+	"math"
 	"net/http"
 	"strings"
 	"testing"
@@ -21,7 +22,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestRoute(t *testing.T) {
-	app := api.SetupApp()
+	app := api.SetupApp(t.Context())
 	defer app.Shutdown()
 
 	test_utils.RegisterUser(t, "author", "author@test.test", "authorpass", sqlc.UserRoleAuthor)
@@ -69,6 +70,9 @@ func TestRoute(t *testing.T) {
 
 	session.Post("/instances", JSON{"chall_id": 99999}, http.StatusNotFound)
 	session.CheckResponse(errorf(consts.ChallengeNotFound))
+
+	session.Post("/instances", JSON{"chall_id": math.MaxInt32 + 1}, http.StatusBadRequest)
+	session.CheckResponse(errorf(consts.InvalidJSON))
 
 	test_utils.UpdateConfig(t, "secret", "")
 	session.Post("/instances", JSON{"chall_id": challID1}, http.StatusForbidden)

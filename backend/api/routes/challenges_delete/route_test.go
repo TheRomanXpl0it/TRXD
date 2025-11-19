@@ -1,6 +1,7 @@
 package challenges_delete_test
 
 import (
+	"math"
 	"net/http"
 	"testing"
 	"trxd/api"
@@ -40,6 +41,11 @@ var testData = []struct {
 		expectedResponse: errorf("ChallID must be at least 0"),
 	},
 	{
+		testBody:         JSON{"chall_id": math.MaxInt32 + 1},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.InvalidJSON),
+	},
+	{
 		testBody:       JSON{"chall_id": ""},
 		expectedStatus: http.StatusOK,
 	},
@@ -50,7 +56,7 @@ var testData = []struct {
 }
 
 func TestRoute(t *testing.T) {
-	app := api.SetupApp()
+	app := api.SetupApp(t.Context())
 	defer app.Shutdown()
 
 	test_utils.RegisterUser(t, "author", "author@test.test", "authorpass", sqlc.UserRoleAuthor)

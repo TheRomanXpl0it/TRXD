@@ -30,8 +30,8 @@ func InitInstancer() error {
 	return nil
 }
 
-func GetInterval() (time.Duration, error) {
-	conf, err := db.GetConfig(context.Background(), "reclaim-instance-interval")
+func GetInterval(ctx context.Context) (time.Duration, error) {
+	conf, err := db.GetConfig(ctx, "reclaim-instance-interval")
 	if err != nil {
 		return 0, err
 	}
@@ -56,7 +56,8 @@ func ReclaimLoop() {
 	}
 	defer containers.CloseCli()
 
-	_, err = networks.CreateNetwork(context.Background(), "trxd-shared", true)
+	ctx := context.Background()
+	_, err = networks.CreateNetwork(ctx, "trxd-shared", true)
 	if err != nil {
 		log.Fatal("Failed to initialize instancer:", "err", err)
 	}
@@ -74,7 +75,8 @@ func reclaimLoop() {
 		reclaimLoop()
 	}()
 
-	sleep, err := GetInterval()
+	ctx := context.Background()
+	sleep, err := GetInterval(ctx)
 	if err != nil {
 		log.Fatal("Failed to get reclaim interval:", "err", err)
 	}
@@ -88,7 +90,7 @@ func reclaimLoop() {
 			if err != sql.ErrNoRows {
 				log.Error("Failed to get next instance to delete:", "err", err)
 			} else {
-				sleep, err = GetInterval()
+				sleep, err = GetInterval(ctx)
 				if err != nil {
 					log.Fatal("Failed to get reclaim interval:", "err", err)
 				}

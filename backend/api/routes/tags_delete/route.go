@@ -10,7 +10,7 @@ import (
 
 func Route(c *fiber.Ctx) error {
 	var data struct {
-		ChallID *int32 `json:"chall_id" validate:"required,challenge_id"`
+		ChallID *int32 `json:"chall_id" validate:"required,id"`
 		Name    string `json:"name" validate:"required,tag_name"`
 	}
 	if err := c.BodyParser(&data); err != nil {

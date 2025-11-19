@@ -1,7 +1,7 @@
 package instances_create
 
 import (
-	"fmt"
+	"errors"
 	"time"
 	"trxd/api/validator"
 	"trxd/db"
@@ -21,7 +21,7 @@ func Route(c *fiber.Ctx) error {
 	}
 
 	var data struct {
-		ChallID *int32 `json:"chall_id" validate:"required,challenge_id"`
+		ChallID *int32 `json:"chall_id" validate:"required,id"`
 	}
 	if err := c.BodyParser(&data); err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidJSON)
@@ -65,7 +65,7 @@ func Route(c *fiber.Ctx) error {
 	}
 
 	if chall.DockerConfig.Lifetime == 0 {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.MissingLifetime, fmt.Errorf(consts.MissingLifetime))
+		return utils.Error(c, fiber.StatusInternalServerError, consts.MissingLifetime, errors.New(consts.MissingLifetime))
 	}
 	lifetime := time.Second * time.Duration(chall.DockerConfig.Lifetime.(int64))
 	expires_at := time.Now().Add(lifetime)

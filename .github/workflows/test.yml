@@ -26,7 +26,7 @@ defaults:
 
 
 jobs:
-  diff:
+  sqlc-diff:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v5
@@ -126,7 +126,7 @@ jobs:
 
     - name: Run Python Integration tests
       run: |
-        ./trxd -test-data-WARNING-DO-NOT-USE-IN-PRODUCTION
+        ./trxd -f
         ./trxd &
         echo $! > server.pid
         for i in {1..20}; do

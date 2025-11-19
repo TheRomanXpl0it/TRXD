@@ -63,14 +63,14 @@ var (
 	admin     = middlewares.Admin
 )
 
-func SetupApp() *fiber.App {
+func SetupApp(ctx context.Context) *fiber.App {
 	app := fiber.New(fiber.Config{
 		AppName:   consts.Name,
 		BodyLimit: 1024 * 1024 * 1024, // 1GB
 	})
 
 	SetupFeatures(app)
-	SetupApi(app)
+	SetupApi(ctx, app)
 
 	app.Static("/", "./frontend")
 	app.Static("/static", "./static")
@@ -124,7 +124,7 @@ func SetupFeatures(app *fiber.App) {
 	}))
 }
 
-func SetupApi(app *fiber.App) {
+func SetupApi(ctx context.Context, app *fiber.App) {
 	var api fiber.Router
 	if log.GetLevel() == log.DebugLevel {
 		api = app.Group("/api", middlewares.Debug)
@@ -144,7 +144,7 @@ func SetupApi(app *fiber.App) {
 	api.Get("/users", noAuth, users_all_get.Route)
 	api.Get("/users/:id", noAuth, users_get.Route)
 
-	mode, err := db.GetConfig(context.Background(), "user-mode")
+	mode, err := db.GetConfig(ctx, "user-mode")
 	if err != nil {
 		log.Error("Failed to get user-mode config:", "err", err)
 		mode = fmt.Sprint(consts.DefaultConfigs["user-mode"])

@@ -18,7 +18,7 @@ import (
 )
 
 type UpdateChallParams struct {
-	ChallID     *int32           `form:"chall_id" validate:"required,challenge_id"`
+	ChallID     *int32           `form:"chall_id" validate:"required,id"`
 	Name        string           `form:"name" validate:"challenge_name"`
 	Category    string           `form:"category" validate:"category_name"`
 	Description *string          `form:"description" validate:"omitempty,challenge_description"`
@@ -26,18 +26,18 @@ type UpdateChallParams struct {
 	Authors     *[]string        `form:"authors"`
 	Type        *sqlc.DeployType `form:"type" validate:"omitempty,challenge_type"`
 	Hidden      *bool            `form:"hidden"`
-	MaxPoints   *int             `form:"max_points" validate:"omitempty,challenge_max_points"`
+	MaxPoints   *int32           `form:"max_points" validate:"omitempty,challenge_max_points"`
 	ScoreType   *sqlc.ScoreType  `form:"score_type" validate:"omitempty,challenge_score_type"`
 	Host        *string          `form:"host"`
-	Port        *int             `form:"port" validate:"omitempty,challenge_port"`
+	Port        *int32           `form:"port" validate:"omitempty,challenge_port"`
 	Attachments *[]string        `form:"attachments"`
 
 	Image      *string `form:"image"`
 	Compose    *string `form:"compose"`
 	HashDomain *bool   `form:"hash_domain"`
-	Lifetime   *int    `form:"lifetime" validate:"omitempty,challenge_lifetime"`
+	Lifetime   *int32  `form:"lifetime" validate:"omitempty,challenge_lifetime"`
 	Envs       *string `form:"envs" validate:"omitempty,challenge_envs"`
-	MaxMemory  *int    `form:"max_memory" validate:"omitempty,challenge_max_memory"`
+	MaxMemory  *int32  `form:"max_memory" validate:"omitempty,challenge_max_memory"`
 	MaxCpu     *string `form:"max_cpu" validate:"omitempty,challenge_max_cpu"`
 }
 

@@ -2,6 +2,7 @@ package challenges_update_test
 
 import (
 	"fmt"
+	"math"
 	"net/http"
 	"strings"
 	"testing"
@@ -78,6 +79,11 @@ var testData = []struct {
 		expectedResponse: errorf("Lifetime must be at least 0"),
 	},
 	{
+		testBody:         JSON{"chall_id": "", "lifetime": math.MaxInt32 + 1},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.InvalidFormData),
+	},
+	{
 		testBody:         JSON{"chall_id": "", "envs": "<invalid-json>"},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(consts.InvalidEnvs),
@@ -88,7 +94,27 @@ var testData = []struct {
 		expectedResponse: errorf("MaxMemory must be at least 0"),
 	},
 	{
+		testBody:         JSON{"chall_id": "", "max_memory": math.MaxInt32 + 1},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.InvalidFormData),
+	},
+	{
 		testBody:         JSON{"chall_id": "", "max_cpu": "<invalid-float>"},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.InvalidMaxCpu),
+	},
+	{
+		testBody:         JSON{"chall_id": "", "max_cpu": "0.0"},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.InvalidMaxCpu),
+	},
+	{
+		testBody:         JSON{"chall_id": "", "max_cpu": "-1.0"},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.InvalidMaxCpu),
+	},
+	{
+		testBody:         JSON{"chall_id": "", "max_cpu": math.MaxInt32 + 1},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(consts.InvalidMaxCpu),
 	},
@@ -101,6 +127,11 @@ var testData = []struct {
 		testBody:         JSON{"chall_id": 9999, "name": "test"},
 		expectedStatus:   http.StatusNotFound,
 		expectedResponse: errorf(consts.ChallengeNotFound),
+	},
+	{
+		testBody:         JSON{"chall_id": math.MaxInt32 + 1},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.InvalidFormData),
 	},
 	{
 		testBody:         JSON{"chall_id": "", "name": "chall-2"},
@@ -141,7 +172,7 @@ var testData = []struct {
 }
 
 func TestRoute(t *testing.T) {
-	app := api.SetupApp()
+	app := api.SetupApp(t.Context())
 	defer app.Shutdown()
 
 	module := test_utils.GetModuleName(t)

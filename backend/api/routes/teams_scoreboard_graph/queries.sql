@@ -8,5 +8,5 @@ SELECT t.id AS team_id, c.id AS chall_id, c.points, s.first_blood, s."timestamp"
   JOIN submissions s ON s.user_id = u.id
   JOIN challenges c ON c.id = s.chall_id
   WHERE s.status = 'Correct'
-	AND u.role = 'Player'
+	  AND u.role = 'Player'
   ORDER BY s."timestamp" ASC;
