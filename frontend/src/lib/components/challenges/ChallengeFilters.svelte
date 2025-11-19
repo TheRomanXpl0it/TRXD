@@ -95,8 +95,8 @@
     }
 </script>
 
-<div class="mb-6 flex items-center gap-2">
-	<div class="relative flex-1 min-w-0">
+<div class="mb-6 flex flex-wrap items-center gap-2">
+	<div class="relative w-full sm:flex-1 sm:w-auto min-w-0">
 		<label for="search-challenges" class="sr-only">Search challenges</label>
 		<Input
 			id="search-challenges"
@@ -130,11 +130,6 @@
 				>
 					<Shapes class="h-4 w-4" aria-hidden="true" />
 					<span class="hidden sm:inline">Categories</span>
-					{#if filterCategories.length > 0}
-						<span class="ml-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-xs text-primary-foreground">
-							{filterCategories.length}
-						</span>
-					{/if}
 				</Button>
 			{/snippet}
 		</Popover.Trigger>
@@ -199,11 +194,6 @@
 				>
 					<Filter class="h-4 w-4" aria-hidden="true" />
 					<span class="hidden sm:inline">Tags</span>
-					{#if filterTags.length > 0}
-						<span class="ml-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-xs text-primary-foreground">
-							{filterTags.length}
-						</span>
-					{/if}
 				</Button>
 			{/snippet}
 		</Popover.Trigger>
