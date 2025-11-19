@@ -233,14 +233,19 @@
                             r={4}
                             fill={series.color}
                         />
-                        <!-- First blood points - larger with gold/yellow color and stroke -->
-                        <Points
-                            data={series.fbPoints}
-                            r={6}
-                            fill="#fbbf24"
-                            stroke="#f59e0b"
-                            strokeWidth={2}
-                        />
+                        <!-- First blood points - blood droplet icons -->
+                        {#each series.fbPoints as point}
+                            {@const x = $state.x(point.date)}
+                            {@const y = $state.y(point.value)}
+                            <g transform="translate({x}, {y})">
+                                <path
+                                    d="M0,-6 C-1,-6 -3,-5 -3,-3 C-3,-1 0,2 0,6 C0,2 3,-1 3,-3 C3,-5 1,-6 0,-6 Z"
+                                    fill="#dc2626"
+                                    stroke="#991b1b"
+                                    stroke-width="0.5"
+                                />
+                            </g>
+                        {/each}
                     {/each}
                     <Highlight points lines />
                 </Svg>
