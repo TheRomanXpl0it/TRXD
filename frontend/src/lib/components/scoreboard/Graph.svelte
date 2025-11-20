@@ -92,8 +92,6 @@
         const series: Array<{
             name: string;
             data: Array<{ date: Date; value: number; fb?: boolean }>;
-            regularPoints: Array<{ date: Date; value: number }>;
-            fbPoints: Array<{ date: Date; value: number }>;
             color: string;
         }> = [];
 
@@ -134,15 +132,9 @@
             }
 
             if (points.length > 0) {
-                // Pre-compute filtered arrays to avoid inline filtering in template
-                const regularPoints = points.filter(p => !p.fb);
-                const fbPoints = points.filter(p => p.fb);
-
                 series.push({
                     name,
                     data: points,
-                    regularPoints,
-                    fbPoints,
                     color: colors[index % colors.length]
                 });
             }
@@ -227,25 +219,11 @@
                             class="stroke-2"
                             style={`stroke: ${series.color}`}
                         />
-                        <!-- Regular points (non-first blood) -->
                         <Points
-                            data={series.regularPoints}
+                            data={series.data}
                             r={4}
                             fill={series.color}
                         />
-                        <!-- First blood points - blood droplet icons -->
-                        {#each series.fbPoints as point}
-                            {@const x = $state.x(point.date)}
-                            {@const y = $state.y(point.value)}
-                            <g transform="translate({x}, {y})">
-                                <path
-                                    d="M0,-6 C-1,-6 -3,-5 -3,-3 C-3,-1 0,2 0,6 C0,2 3,-1 3,-3 C3,-5 1,-6 0,-6 Z"
-                                    fill="#dc2626"
-                                    stroke="#991b1b"
-                                    stroke-width="0.5"
-                                />
-                            </g>
-                        {/each}
                     {/each}
                     <Highlight points lines />
                 </Svg>

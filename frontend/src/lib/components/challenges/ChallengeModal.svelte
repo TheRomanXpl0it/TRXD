@@ -18,7 +18,8 @@
 		onDelete,
 		onSolved,
 		onCountdownUpdate,
-		onOpenSolves
+		onOpenSolves,
+		onInstanceChange
 	}: {
 		open: boolean;
 		challenge: any;
@@ -29,6 +30,7 @@
 		onSolved?: () => void;
 		onCountdownUpdate?: (id: string | number, newCountdown: number) => void;
 		onOpenSolves?: () => void;
+		onInstanceChange?: () => void;
 	} = $props();
 
 	function copyToClipboard(text: string) {
@@ -186,7 +188,7 @@
 
 		<!-- Instance Controls -->
 		{#if challenge?.instance}
-			<InstanceControls {challenge} {countdown} {onCountdownUpdate} />
+			<InstanceControls {challenge} {countdown} {onCountdownUpdate} {onInstanceChange} />
 		{/if}
 
 		<!-- Submit Flag -->
