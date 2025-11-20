@@ -109,7 +109,7 @@ CREATE TRIGGER tr_points_chall_update
 BEFORE UPDATE ON challenges
 FOR EACH ROW
 WHEN ((NEW.score_type = 'Dynamic') AND 
-  ((NEW.solves != OLD.solves) OR (NEW.max_points != OLD.max_points)))
+  ((NEW.solves != OLD.solves) OR (NEW.max_points != OLD.max_points) OR (OLD.score_type = 'Static')))
 EXECUTE FUNCTION fn_points_chall_update();
 
 

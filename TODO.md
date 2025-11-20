@@ -24,6 +24,9 @@
  - challs SNI traefik
  - add DELETE tests with not found id (sould give 200)
  - add pagination on "all" GETs
+ - validators tests
+ - move backend tests in their own dir
+ - rename db tests
 
 ## Frontend
  - convert .pngs to webp
