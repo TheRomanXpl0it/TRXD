@@ -9,12 +9,6 @@ const solves = [
 ];
 
 describe('AccountScoreboard', () => {
-  it('renders count and total', () => {
-    render(AccountScoreboard, { props: { solves } });
-    expect(screen.getByText(/2 solves/)).toBeInTheDocument();
-    expect(screen.getByText(/200 pts total/)).toBeInTheDocument();
-  });
-
   it('sorts by clicking headers', async () => {
     render(AccountScoreboard, { props: { solves } });
 

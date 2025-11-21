@@ -92,8 +92,6 @@
         const series: Array<{
             name: string;
             data: Array<{ date: Date; value: number; fb?: boolean }>;
-            regularPoints: Array<{ date: Date; value: number }>;
-            fbPoints: Array<{ date: Date; value: number }>;
             color: string;
         }> = [];
 
@@ -134,15 +132,9 @@
             }
 
             if (points.length > 0) {
-                // Pre-compute filtered arrays to avoid inline filtering in template
-                const regularPoints = points.filter(p => !p.fb);
-                const fbPoints = points.filter(p => p.fb);
-
                 series.push({
                     name,
                     data: points,
-                    regularPoints,
-                    fbPoints,
                     color: colors[index % colors.length]
                 });
             }
@@ -227,19 +219,10 @@
                             class="stroke-2"
                             style={`stroke: ${series.color}`}
                         />
-                        <!-- Regular points (non-first blood) -->
                         <Points
-                            data={series.regularPoints}
+                            data={series.data}
                             r={4}
                             fill={series.color}
-                        />
-                        <!-- First blood points - larger with gold/yellow color and stroke -->
-                        <Points
-                            data={series.fbPoints}
-                            r={6}
-                            fill="#fbbf24"
-                            stroke="#f59e0b"
-                            strokeWidth={2}
                         />
                     {/each}
                     <Highlight points lines />

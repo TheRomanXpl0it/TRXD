@@ -81,12 +81,6 @@
   </div>
 
   <Table class="w-full">
-    <TableCaption class="text-sm">
-      {#if rows.length > 0}{rows.length} {rows.length === 1 ? 'solve' : 'solves'}{/if}
-      {#if totalPoints > 0 && rows.length > 0} • {/if}
-      {#if totalPoints > 0}{totalPoints} pts total{/if}
-    </TableCaption>
-
     <TableHeader>
       <TableRow>
         <TableHead class="w-[40%] cursor-pointer" onclick={() => toggleSort('name')}>

@@ -8,11 +8,13 @@
 	let {
 		challenge,
 		countdown = 0,
-		onCountdownUpdate
+		onCountdownUpdate,
+		onInstanceChange
 	}: {
 		challenge: any;
 		countdown?: number;
 		onCountdownUpdate?: (id: string | number, newCountdown: number) => void;
+		onInstanceChange?: () => void;
 	} = $props();
 
 	let creatingInstance = $state(false);
@@ -47,6 +49,8 @@
 				onCountdownUpdate(challenge.id, Math.max(0, timeout));
 			}
 			toast.success('Instance created!');
+			// Trigger refetch to update the challenges list with new port
+			onInstanceChange?.();
 		} catch (err: any) {
 			console.error(err);
 			toast.error(`Failed to create instance: ${err?.message ?? err}`);
@@ -66,6 +70,8 @@
 				onCountdownUpdate(challenge.id, 0);
 			}
 			toast.success('Instance stopped!');
+			// Trigger refetch to update the challenges list
+			onInstanceChange?.();
 		} catch (err: any) {
 			console.error(err);
 			toast.error(`Failed to stop instance: ${err?.message ?? err}`);

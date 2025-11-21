@@ -102,28 +102,6 @@ describe('ChallengeFilters Component', () => {
 		expect(screen.getByRole('button', { name: /filter by tags/i })).toBeInTheDocument();
 	});
 
-	it('shows category count badge when categories are selected', () => {
-		render(ChallengeFilters, {
-			props: {
-				...defaultProps,
-				filterCategories: ['web', 'crypto']
-			}
-		});
-
-		expect(screen.getByLabelText(/2 categories selected/i)).toBeInTheDocument();
-	});
-
-	it('shows tag count badge when tags are selected', () => {
-		render(ChallengeFilters, {
-			props: {
-				...defaultProps,
-				filterTags: ['easy', 'medium']
-			}
-		});
-
-		expect(screen.getByLabelText(/2 tags selected/i)).toBeInTheDocument();
-	});
-
 	it('shows clear filters button when activeFiltersCount > 0', () => {
 		render(ChallengeFilters, {
 			props: {

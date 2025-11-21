@@ -410,6 +410,7 @@
 	onSolved={handleChallengeSolved}
 	onCountdownUpdate={updateCountdown}
 	onOpenSolves={() => (solvesOpen = true)}
+	onInstanceChange={() => challengesQuery.refetch()}
 />
 
 <SolveListSheet bind:open={solvesOpen} challenge={selected} />

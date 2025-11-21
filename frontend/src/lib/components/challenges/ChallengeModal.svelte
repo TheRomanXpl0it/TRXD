@@ -18,7 +18,8 @@
 		onDelete,
 		onSolved,
 		onCountdownUpdate,
-		onOpenSolves
+		onOpenSolves,
+		onInstanceChange
 	}: {
 		open: boolean;
 		challenge: any;
@@ -29,6 +30,7 @@
 		onSolved?: () => void;
 		onCountdownUpdate?: (id: string | number, newCountdown: number) => void;
 		onOpenSolves?: () => void;
+		onInstanceChange?: () => void;
 	} = $props();
 
 	function copyToClipboard(text: string) {
@@ -99,7 +101,7 @@
 				<!-- Authors -->
 				{#if challenge?.authors && challenge.authors.length > 0}
 					<div class="mt-2 flex items-center gap-1 text-xs font-medium opacity-70">
-						<UserEditSolid class="h-3 w-3" aria-hidden="true" />
+						<UserEditSolid class="h-4 w-4" aria-hidden="true" />
 						<span>
 							By {#each challenge.authors as author, i (author)}{author}{i <
 								challenge.authors.length - 1 ? ', ' : ''}{/each}
@@ -186,7 +188,7 @@
 
 		<!-- Instance Controls -->
 		{#if challenge?.instance}
-			<InstanceControls {challenge} {countdown} {onCountdownUpdate} />
+			<InstanceControls {challenge} {countdown} {onCountdownUpdate} {onInstanceChange} />
 		{/if}
 
 		<!-- Submit Flag -->

@@ -20,10 +20,10 @@ test.describe("Team Create and Join Flow", () => {
 
       // Verify the TeamJoinCreate cards are visible by checking for the action buttons
       await expect(
-        page1.getByRole("button", { name: /^Join$/i }),
+        page1.getByRole("button", { name: /^Join Team$/i }),
       ).toBeVisible();
       await expect(
-        page1.getByRole("button", { name: /^Create$/i }),
+        page1.getByRole("button", { name: /^Create Team$/i }),
       ).toBeVisible(); // Step 3: User1 creates a team
       const teamName = `TestTeam_${Date.now()}`;
       const teamPassword = "TeamPass123";
@@ -72,7 +72,7 @@ test.describe("Team Create and Join Flow", () => {
       // Step 5: User2 should be on /team page with no team
       await expect(page2).toHaveURL(/\/#\/team/);
       await expect(
-        page2.getByRole("button", { name: /^Join$/i }),
+        page2.getByRole("button", { name: /^Join Team$/i }),
       ).toBeVisible(); // Step 6: User2 joins the team created by user1
       // Click the "Join" button to open the dialog
       await page2.getByRole("button", { name: "Join" }).click();
@@ -232,7 +232,7 @@ test.describe("Team Create and Join Flow", () => {
       await page2.waitForTimeout(2000); // Give time for error to appear
 
       await expect(
-        page2.getByRole("button", { name: /^Create$/i }).first(),
+        page2.getByRole("button", { name: /^Create Team$/i }).first(),
       ).toBeVisible();
     } finally {
       await context1.close();
@@ -261,7 +261,7 @@ test.describe("Team Create and Join Flow", () => {
 
     // Should still see join/create cards - check for Create button which is unique
     await expect(
-      page.getByRole("button", { name: /^Create$/i }).first(),
+      page.getByRole("button", { name: /^Create Team$/i }).first(),
     ).toBeVisible();
   });
 
@@ -318,8 +318,8 @@ test.describe("Team Create and Join Flow", () => {
 
     // Dialog should close, cards should still be visible
     await expect(page.getByRole("dialog")).not.toBeVisible();
-    await expect(page.getByRole("button", { name: /^Join$/i })).toBeVisible();
-    await expect(page.getByRole("button", { name: /^Create$/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Join Team$/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Create Team$/i })).toBeVisible();
   });
 
   test("can cancel team join dialog", async ({ page }) => {
@@ -336,7 +336,7 @@ test.describe("Team Create and Join Flow", () => {
 
     // Dialog should close and cards should be visible
     await expect(page.getByRole("dialog")).not.toBeVisible();
-    await expect(page.getByRole("button", { name: /^Create$/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Create Team$/i })).toBeVisible();
   });
 
   test("visual regression: team join/create page", async ({ page }) => {
