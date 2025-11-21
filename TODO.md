@@ -32,7 +32,7 @@
  - convert .pngs to webp
  - Better tags handling in /challenges page
  - Improve "Team join" page on smaller screens
- - Add custom buttons for first/second/third bloods?
+ - Add custom button themes for first/second/third bloods?
  - Improve challenge creation procedure
  - Fix admin flag submission 
 
