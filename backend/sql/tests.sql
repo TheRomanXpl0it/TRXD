@@ -340,6 +340,11 @@ BEGIN
   UPDATE challenges SET max_points=500 WHERE name='chall-3';
   PERFORM assert(points=max_points, 'check 62') FROM challenges WHERE name='chall-3';
 
+  -- changes 'chall-3' score type back to dynamic and recomputes the score
+  UPDATE configs SET value='50' WHERE key='chall-min-points';
+  UPDATE challenges SET score_type='Dynamic' WHERE name='chall-3';
+  PERFORM assert(points!=max_points, 'check 62-bis') FROM challenges WHERE name='chall-3';
+
   -- inserts a correct submission from 'd' on 'chall-1', but it doesn't have a team so it's an invalid submission
   INSERT INTO submissions (user_id, chall_id, status, flag) VALUES (
     (SELECT id FROM users WHERE name='d'),
