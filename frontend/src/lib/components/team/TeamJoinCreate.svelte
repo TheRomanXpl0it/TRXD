@@ -5,9 +5,9 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 
-	// Images (transparent PNGs)
-	import createTeamImg from '$lib/assets/createTeam.png?url';
-	import joinTeamImg from '$lib/assets/joinTeam.png?url';
+	// Images (WebP)
+	import createTeamImg from '$lib/assets/createTeam.webp?url';
+	import joinTeamImg from '$lib/assets/joinTeam.webp?url';
     import { joinTeam, createTeam } from '@/team';
     import { toast } from 'svelte-sonner';
 
@@ -104,42 +104,53 @@
 	}
 </script>
 
-<div class="mt-5 mb-10 flex flex-col items-stretch justify-center gap-6 xl:flex-row">
+<div class="mt-8 mb-12 flex flex-col items-center justify-center gap-8 xl:flex-row xl:gap-6">
 	<!-- Join card -->
-	<Card.Root class="flex w-full flex-col p-4 sm:w-[28rem] sm:p-5">
-		<Card.Header class="flex-1 pb-3">
+	<Card.Root class="flex w-full flex-col p-6 sm:w-[32rem] sm:p-8 transition-shadow hover:shadow-lg">
+		<Card.Header class="flex-1 pb-4 space-y-3">
 			<Card.Title class="Title">
-				<h3 class="text-lg font-bold">Join a Team</h3>
-				<p class="text-sm italic text-gray-400">Join an already existing team</p>
+				<h2 class="text-2xl font-bold tracking-tight">Join a Team</h2>
+				<p class="text-base text-muted-foreground mt-2">Collaborate with an existing team</p>
 			</Card.Title>
-			<Card.Content class="px-0">
-				<img
-					src={joinTeamImg}
-					alt="Join a Team"
-					class="mx-auto mt-2 h-auto w-full max-h-48 max-w-xs rounded-md object-contain dark:invert sm:max-h-64"
-				/>
+			<Card.Content class="px-0 pt-4">
+				<div class="mx-auto rounded-lg bg-muted/30 p-8 border border-border/50">
+					<img
+						src={joinTeamImg}
+						alt="Join a Team"
+						class="mx-auto h-auto w-full max-h-56 max-w-xs object-contain dark:invert"
+					/>
+				</div>
 			</Card.Content>
 		</Card.Header>
-		<Button variant="default" class="cursor-pointer" onclick={() => (joinOpen = true)}>Join</Button>
+		<Button variant="outline" size="lg" class="cursor-pointer w-full text-base font-semibold" onclick={() => (joinOpen = true)}>Join Team</Button>
 	</Card.Root>
 
+	<!-- OR divider -->
+	<div class="flex items-center justify-center xl:flex-col">
+		<div class="h-px w-16 bg-border xl:h-16 xl:w-px"></div>
+		<span class="px-4 text-sm font-medium text-muted-foreground xl:py-4 xl:px-0">OR</span>
+		<div class="h-px w-16 bg-border xl:h-16 xl:w-px"></div>
+	</div>
+
 	<!-- Create card -->
-	<Card.Root class="flex w-full flex-col p-4 sm:w-[28rem] sm:p-5">
-		<Card.Header class="flex-1 pb-3">
+	<Card.Root class="flex w-full flex-col p-6 sm:w-[32rem] sm:p-8 transition-shadow hover:shadow-lg">
+		<Card.Header class="flex-1 pb-4 space-y-3">
 			<Card.Title class="Title">
-				<h3 class="text-lg font-bold">Create a Team</h3>
-				<p class="text-sm italic text-gray-400">Create a new team from scratch</p>
+				<h2 class="text-2xl font-bold tracking-tight">Create a Team</h2>
+				<p class="text-base text-muted-foreground mt-2">Start fresh with a new team</p>
 			</Card.Title>
-			<Card.Content class="px-0">
-				<img
-					src={createTeamImg}
-					alt="Create a Team"
-					class="mx-auto mt-2 h-auto w-full max-h-48 max-w-xs rounded-md object-contain p-6 dark:invert sm:max-h-64 sm:p-8"
-				/>
+			<Card.Content class="px-0 pt-4">
+				<div class="mx-auto rounded-lg bg-muted/30 p-8 border border-border/50">
+					<img
+						src={createTeamImg}
+						alt="Create a Team"
+						class="mx-auto h-auto w-full max-h-56 max-w-xs object-contain dark:invert"
+					/>
+				</div>
 			</Card.Content>
 		</Card.Header>
-		<Button variant="default" class="cursor-pointer" onclick={() => (registerOpen = true)}>
-			Create
+		<Button variant="default" size="lg" class="cursor-pointer w-full text-base font-semibold" onclick={() => (registerOpen = true)}>
+			Create Team
 		</Button>
 	</Card.Root>
 </div>
