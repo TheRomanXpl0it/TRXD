@@ -166,14 +166,14 @@
 
 		<form onsubmit={onJoinSubmit} class="mt-2 space-y-4">
 			<div class="grid gap-2">
-				<Label for="join-team-name">Team name</Label>
-				<Input id="join-team-name" placeholder="e.g. ZeroDayCats" bind:value={joinName} required />
+				<Label for="team-name">Team name</Label>
+				<Input id="team-name" placeholder="e.g. ZeroDayCats" bind:value={joinName} required />
 			</div>
 
 			<div class="grid gap-2">
-				<Label for="join-team-pass">Team password</Label>
+				<Label for="team-pass">Team password</Label>
 				<Input
-					id="join-team-pass"
+					id="team-pass"
 					type="password"
 					placeholder="••••••"
 					bind:value={joinPassword}
@@ -204,14 +204,14 @@
 
 		<form onsubmit={onRegisterSubmit} class="mt-2 space-y-4">
 			<div class="grid gap-2">
-				<Label for="register-team-name">Team name</Label>
-				<Input id="register-team-name" placeholder="TRX" bind:value={registerName} required />
+				<Label for="team-name">Team name</Label>
+				<Input id="team-name" placeholder="TRX" bind:value={registerName} required />
 			</div>
 
 			<div class="grid gap-2">
-				<Label for="register-team-pass">Team password</Label>
+				<Label for="team-pass">Team password</Label>
 				<Input
-					id="register-team-pass"
+					id="team-pass"
 					type="password"
 					placeholder="••••••"
 					bind:value={registerPassword}
@@ -220,9 +220,9 @@
 			</div>
 
 			<div class="grid gap-2">
-				<Label for="register-confirm-pass">Confirm password</Label>
+				<Label for="confirm-pass">Confirm password</Label>
 				<Input
-					id="register-confirm-pass"
+					id="confirm-pass"
 					type="password"
 					placeholder="••••••"
 					bind:value={confirmRegisterPassword}

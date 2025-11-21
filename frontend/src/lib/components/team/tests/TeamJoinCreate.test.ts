@@ -36,8 +36,8 @@ describe('TeamJoinCreate Component', () => {
 		render(TeamJoinCreate);
 
 
-		expect(screen.getByRole('button', { name: /^join$/i })).toBeInTheDocument();
-		expect(screen.getByRole('button', { name: /^create$/i })).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /^join team$/i })).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /^create team$/i })).toBeInTheDocument();
 	});
 
 	it('opens join dialog when join button is clicked', async () => {
@@ -46,7 +46,7 @@ describe('TeamJoinCreate Component', () => {
 		render(TeamJoinCreate);
 		await flush();
 
-		await fireEvent.click(screen.getByRole('button', { name: /^join$/i }));
+		await fireEvent.click(screen.getByRole('button', { name: /^join team$/i }));
 
 		expect(screen.getByLabelText(/team name/i)).toBeInTheDocument();
 		expect(screen.getByLabelText(/team password/i)).toBeInTheDocument();
@@ -58,7 +58,7 @@ describe('TeamJoinCreate Component', () => {
 		render(TeamJoinCreate);
 		await flush();
 
-		const joinButtons = screen.getAllByRole('button', { name: /^join$/i });
+		const joinButtons = screen.getAllByRole('button', { name: /^join team$/i });
 		await fireEvent.click(joinButtons[0]);
 
 		const dialog = screen.getByRole('dialog');
@@ -76,7 +76,7 @@ describe('TeamJoinCreate Component', () => {
 		await flush();
 
 		// Open join dialog
-		const joinButtons = screen.getAllByRole('button', { name: /^join$/i });
+		const joinButtons = screen.getAllByRole('button', { name: /^join team$/i });
 		await fireEvent.click(joinButtons[0]);
 
 		// Scope all queries to the open join dialog to avoid matching hidden inputs
@@ -108,7 +108,7 @@ describe('TeamJoinCreate Component', () => {
 		await flush();
 
 		// Open join dialog
-		const joinButtons = screen.getAllByRole('button', { name: /^join$/i });
+		const joinButtons = screen.getAllByRole('button', { name: /^join team$/i });
 		await fireEvent.click(joinButtons[0]);
 
 		// Scope to the open dialog to avoid picking fields from other modals
@@ -135,7 +135,7 @@ describe('TeamJoinCreate Component', () => {
 
 		render(TeamJoinCreate);
 
-    const createButtons = screen.getAllByRole('button', { name: /^create$/i });
+    const createButtons = screen.getAllByRole('button', { name: /^create team$/i });
     await fireEvent.click(createButtons[0]);
 
 		// After dialog opens, verify fields are visible
@@ -150,7 +150,7 @@ describe('TeamJoinCreate Component', () => {
 		render(TeamJoinCreate);
 
 		// Open create dialog
-	const createButtons = screen.getAllByRole('button', { name: /^create$/i });
+	const createButtons = screen.getAllByRole('button', { name: /^create team$/i });
 	await fireEvent.click(createButtons[0]);
 
 		// Fill in form
@@ -176,7 +176,7 @@ describe('TeamJoinCreate Component', () => {
 		render(TeamJoinCreate);
 
 		// Open the create dialog
-	const openButtons = screen.getAllByRole('button', { name: /^create$/i });
+	const openButtons = screen.getAllByRole('button', { name: /^create team$/i });
 	await fireEvent.click(openButtons[0]);
 
 		await waitFor(() => {
@@ -210,7 +210,7 @@ describe('TeamJoinCreate Component', () => {
 		render(TeamJoinCreate);
 
       // Open create dialog
-    const createButtons = screen.getAllByRole('button', { name: /^create$/i });
+    const createButtons = screen.getAllByRole('button', { name: /^create team$/i });
     await fireEvent.click(createButtons[0]);
 
 		// Wait for dialog to open and fields to be available
@@ -249,7 +249,7 @@ describe('TeamJoinCreate Component', () => {
 		render(TeamJoinCreate);
 
 		// Open join dialog
-		const openButtons = screen.getAllByRole('button', { name: /^join$/i });
+		const openButtons = screen.getAllByRole('button', { name: /^join team$/i });
 		await fireEvent.click(openButtons[0]);
 
 		// Scope inputs to the open dialog and fill the form
@@ -285,7 +285,7 @@ describe('TeamJoinCreate Component', () => {
 		render(TeamJoinCreate);
 
 		// Open create dialog
-	const openButtons = screen.getAllByRole('button', { name: /^create$/i });
+	const openButtons = screen.getAllByRole('button', { name: /^create team$/i });
 	await fireEvent.click(openButtons[0]);
 
 		// Wait for fields to be available
@@ -320,7 +320,7 @@ describe('TeamJoinCreate Component', () => {
     render(TeamJoinCreate);
 
     // Open create dialog
-    const openButtons = screen.getAllByRole('button', { name: /^create$/i });
+    const openButtons = screen.getAllByRole('button', { name: /^create team$/i });
     await fireEvent.click(openButtons[0]);
 
     // Wait for fields to be available
