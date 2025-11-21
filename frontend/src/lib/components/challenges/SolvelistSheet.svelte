@@ -47,6 +47,11 @@
 		if (ev) ev.preventDefault();
 		$userMode ? push(`/account/${id}`) : push(`/team/${id}`);
 	}
+
+	function truncateName(name: string, maxLength = 32): string {
+		if (!name || name.length <= maxLength) return name;
+		return name.slice(0, maxLength) + '...';
+	}
 </script>
 
 <Sheet.Root bind:open>
@@ -87,11 +92,11 @@
 											onclick={(e) => goItem(s.id, e)}
 											class="cursor-pointer font-medium hover:underline"
 										>
-											{s?.name ?? 'Anonymous'}
+											{truncateName(s?.name ?? 'Anonymous')}
 										</a>
 									{/key}
 								{:else}
-									<span class="font-medium">{s?.name ?? 'Anonymous'}</span>
+									<span class="font-medium">{truncateName(s?.name ?? 'Anonymous')}</span>
 								{/if}
 							</Table.Cell>
 

@@ -44,6 +44,11 @@
     return `${s}s`;
   };
 
+  const truncateName = (name: string, maxLength = 32): string => {
+    if (!name || name.length <= maxLength) return name;
+    return name.slice(0, maxLength) + '...';
+  };
+
   function toggleSort(key: SortKey) {
     if (sortKey === key) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
     else { sortKey = key; sortDir = key === 'timestamp' ? 'desc' : 'asc'; }
@@ -138,14 +143,14 @@
       {:else}
         {#each rows as s (s.id ?? s.timestamp ?? s.name ?? Math.random())}
           <TableRow>
-            <TableCell class="font-medium">{s.name ?? '-'}</TableCell>
+            <TableCell class="font-medium">{truncateName(s.name ?? '-')}</TableCell>
             <TableCell>
               <span class="inline-flex items-center rounded border px-2 py-0.5 text-xs dark:border-gray-700">
                 {s.category ?? '-'}
               </span>
             </TableCell>
             <TableCell class="text-right">{getPoints(s)}</TableCell>
-            <TableCell>{solverName(s.user_id)}</TableCell>
+            <TableCell>{truncateName(solverName(s.user_id))}</TableCell>
             <TableCell>{fmtDate(s.timestamp)}</TableCell>
             <TableCell class="text-right">{timeSince(s.timestamp)}</TableCell>
           </TableRow>

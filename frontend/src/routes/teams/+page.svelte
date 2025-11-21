@@ -38,6 +38,11 @@
 		return country?.iso2?.toUpperCase() ?? null;
 	}
 
+	function truncateName(name: string, maxLength = 32): string {
+		if (!name || name.length <= maxLength) return name;
+		return name.slice(0, maxLength) + '...';
+	}
+
 	// Sort alphabetically by name
 	const sorted = $derived(
 		(Array.isArray(teamsData) ? [...teamsData] : []).sort(
@@ -124,7 +129,7 @@
 									class="text-primary cursor-pointer text-sm font-medium underline-offset-2 hover:underline sm:text-base"
 									title={`View team ${team.name}`}
 								>
-									{team.name}
+									{truncateName(team.name)}
 								</a>
 							</Table.Cell>
 
