@@ -44,5 +44,5 @@ func validFloat(fl validator.FieldLevel) bool {
 		return false
 	}
 
-	return 0.0 < res && res < math.MaxInt32
+	return 0.0 < res && res <= math.MaxInt32
 }

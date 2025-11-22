@@ -25,7 +25,6 @@ func init() {
 	deployTypes := []string{string(sqlc.DeployTypeNormal), string(sqlc.DeployTypeContainer), string(sqlc.DeployTypeCompose)}
 	scoreTypes := []string{string(sqlc.ScoreTypeStatic), string(sqlc.ScoreTypeDynamic)}
 
-	// TODO: put a max to integers (ex: "challenge_max_points") or test with more than maxint
 	validate.RegisterAlias("id", fmt.Sprintf("min=0,max=%d", math.MaxInt32))
 	validate.RegisterAlias("password", fmt.Sprintf("min=%d,max=%d", consts.MinPasswordLen, consts.MaxPasswordLen))
 	validate.RegisterValidation("country", validCountry)
