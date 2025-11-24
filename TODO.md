@@ -2,7 +2,7 @@
  - change name of chall containers from chall_PORT to chall_TID_CID
  - change name from _TID_CID to _CID_TID
  - change name of challs, network and so on, with $PROJECT_NAME prefix
- - single user mode, send user id instead of team id (ex scoreboard)
+ - single user mode, send user id instead of team id (ex. scoreboard)
  - tests with removal of trxd-shared (and fault tolerance)
  - https://doc.traefik.io/traefik/expose/docker/
  - password reset for players
@@ -24,9 +24,8 @@
  - challs SNI traefik
  - add DELETE tests with not found id (sould give 200)
  - add pagination on "all" GETs
- - validators tests
  - move backend tests in their own dir
- - rename db tests
+ - better names for binary flags
 
 ## Frontend
  - convert .pngs to webp
