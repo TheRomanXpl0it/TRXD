@@ -62,22 +62,22 @@ var testData = []struct {
 	{
 		testBody:         JSON{"name": "test", "email": "test@test.test", "password": strings.Repeat("a", consts.MinPasswordLen-1)},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("Password must be at least 8"),
+		expectedResponse: errorf(test_utils.Format(consts.MinError, "Password", consts.MinPasswordLen)),
 	},
 	{
 		testBody:         JSON{"name": "test", "email": "test@test.test", "password": strings.Repeat("a", consts.MaxPasswordLen+1)},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("Password must not exceed 64"),
+		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Password", consts.MaxPasswordLen)),
 	},
 	{
 		testBody:         JSON{"name": strings.Repeat("a", consts.MaxUserNameLen+1), "email": "test@test.test", "password": "testpass"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("Name must not exceed 64"),
+		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Name", consts.MaxUserNameLen)),
 	},
 	{
 		testBody:         JSON{"name": "test", "email": strings.Repeat("a", consts.MaxEmailLen+1), "password": "testpass"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("Email must not exceed 256"),
+		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Email", consts.MaxEmailLen)),
 	},
 	{
 		testBody:         JSON{"name": "test", "email": "invalid-email", "password": "testpass"},

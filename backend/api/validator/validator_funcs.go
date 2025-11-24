@@ -31,6 +31,7 @@ func validJson(fl validator.FieldLevel) bool {
 		return true
 	}
 	err := validate.Var(value, "json")
+	// TODO: make this a map[string]string
 	return err == nil
 }
 

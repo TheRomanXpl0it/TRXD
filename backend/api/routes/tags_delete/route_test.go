@@ -44,12 +44,12 @@ var testData = []struct {
 	{
 		testBody:         JSON{"chall_id": "", "name": strings.Repeat("a", consts.MaxTagNameLen+1)},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("Name must not exceed 32"),
+		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Name", consts.MaxTagNameLen)),
 	},
 	{
 		testBody:         JSON{"chall_id": -1, "name": "test"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("ChallID must be at least 0"),
+		expectedResponse: errorf(test_utils.Format(consts.MinError, "ChallID", 0)),
 	},
 	{
 		testBody:         JSON{"chall_id": math.MaxInt32 + 1, "name": "test"},

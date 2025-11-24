@@ -8,6 +8,7 @@ import (
 	"trxd/api/validator"
 	"trxd/db/sqlc"
 	"trxd/utils/consts"
+	"trxd/utils/test_utils"
 )
 
 func varTest(t *testing.T, tag string, v interface{}, results ...string) {
@@ -29,18 +30,17 @@ func varTest(t *testing.T, tag string, v interface{}, results ...string) {
 }
 
 func TestValidators(t *testing.T) {
-	varTest(t, "id", -1, "id must be at least 0")
+	varTest(t, "id", -1, test_utils.Format(consts.MinError, "id", 0))
 	varTest(t, "id", 0)
 	varTest(t, "id", 1337)
 	varTest(t, "id", math.MaxInt32)
-	varTest(t, "id", math.MaxInt32+1, "id must not exceed 2147483647")
+	varTest(t, "id", math.MaxInt32+1, test_utils.Format(consts.MaxError, "id", math.MaxInt32))
 
-	varTest(t, "password", "", "password must be at least 8")
-	varTest(t, "password", strings.Repeat("a", consts.MinPasswordLen-1), "password must be at least 8")
+	varTest(t, "password", "", test_utils.Format(consts.MinError, "password", consts.MinPasswordLen))
+	varTest(t, "password", strings.Repeat("a", consts.MinPasswordLen-1), test_utils.Format(consts.MinError, "password", consts.MinPasswordLen))
 	varTest(t, "password", strings.Repeat("a", consts.MinPasswordLen))
 	varTest(t, "password", strings.Repeat("a", consts.MaxPasswordLen))
-	varTest(t, "password", strings.Repeat("a", consts.MaxPasswordLen+1), "password must not exceed 64")
-
+	varTest(t, "password", strings.Repeat("a", consts.MaxPasswordLen+1), test_utils.Format(consts.MaxError, "password", consts.MaxPasswordLen))
 	varTest(t, "country", "")
 	varTest(t, "country", "a", consts.InvalidCountry)
 	varTest(t, "country", "aaa", consts.InvalidCountry)
@@ -63,61 +63,60 @@ func TestValidators(t *testing.T) {
 	varTest(t, "image_url", "https://a")
 	varTest(t, "image_url", "http://example.com")
 	varTest(t, "image_url", "https://example.com")
-	varTest(t, "image_url", strings.Repeat("a", consts.MaxImageLen+1), "image_url must not exceed 1024")
+	varTest(t, "image_url", strings.Repeat("a", consts.MaxImageLen+1), test_utils.Format(consts.MaxError, "image_url", consts.MaxImageLen))
 
 	varTest(t, "category_name", "")
 	varTest(t, "category_name", "a")
 	varTest(t, "category_name", strings.Repeat("a", consts.MaxCategoryLen))
-	varTest(t, "category_name", strings.Repeat("a", consts.MaxCategoryLen+1), "category_name must not exceed 32")
+	varTest(t, "category_name", strings.Repeat("a", consts.MaxCategoryLen+1), test_utils.Format(consts.MaxError, "category_name", consts.MaxCategoryLen))
 
 	varTest(t, "category_icon", "")
 	varTest(t, "category_icon", "a")
 	varTest(t, "category_icon", strings.Repeat("a", consts.MaxIconLen))
-	varTest(t, "category_icon", strings.Repeat("a", consts.MaxIconLen+1), "category_icon must not exceed 32")
+	varTest(t, "category_icon", strings.Repeat("a", consts.MaxIconLen+1), test_utils.Format(consts.MaxError, "category_icon", consts.MaxIconLen))
 
 	varTest(t, "challenge_name", "")
 	varTest(t, "challenge_name", "a")
 	varTest(t, "challenge_name", strings.Repeat("a", consts.MaxChallNameLen))
-	varTest(t, "challenge_name", strings.Repeat("a", consts.MaxChallNameLen+1), "challenge_name must not exceed 128")
+	varTest(t, "challenge_name", strings.Repeat("a", consts.MaxChallNameLen+1), test_utils.Format(consts.MaxError, "challenge_name", consts.MaxChallNameLen))
 
 	varTest(t, "challenge_description", "")
 	varTest(t, "challenge_description", "a")
 	varTest(t, "challenge_description", strings.Repeat("a", consts.MaxChallDescLen))
-	varTest(t, "challenge_description", strings.Repeat("a", consts.MaxChallDescLen+1), "challenge_description must not exceed 1024")
+	varTest(t, "challenge_description", strings.Repeat("a", consts.MaxChallDescLen+1), test_utils.Format(consts.MaxError, "challenge_description", consts.MaxChallDescLen))
 
 	varTest(t, "challenge_difficulty", "")
 	varTest(t, "challenge_difficulty", "a")
 	varTest(t, "challenge_difficulty", strings.Repeat("a", consts.MaxChallDifficultyLen))
-	varTest(t, "challenge_difficulty", strings.Repeat("a", consts.MaxChallDifficultyLen+1), "challenge_difficulty must not exceed 16")
+	varTest(t, "challenge_difficulty", strings.Repeat("a", consts.MaxChallDifficultyLen+1), test_utils.Format(consts.MaxError, "challenge_difficulty", consts.MaxChallDifficultyLen))
 
-	varTest(t, "challenge_type", "", "challenge_type must be one of: Normal Container Compose")
+	varTest(t, "challenge_type", "", test_utils.Format(consts.OneOfError, "challenge_type", strings.Join(consts.DeployTypesStr, " ")))
 	varTest(t, "challenge_type", sqlc.DeployTypeNormal)
 	varTest(t, "challenge_type", sqlc.DeployTypeContainer)
 	varTest(t, "challenge_type", sqlc.DeployTypeCompose)
-	varTest(t, "challenge_type", "aaa", "challenge_type must be one of: Normal Container Compose")
+	varTest(t, "challenge_type", "aaa", test_utils.Format(consts.OneOfError, "challenge_type", strings.Join(consts.DeployTypesStr, " ")))
 
-	varTest(t, "challenge_max_points", -1, "challenge_max_points must be at least 0")
+	varTest(t, "challenge_max_points", -1, test_utils.Format(consts.MinError, "challenge_max_points", 0))
 	varTest(t, "challenge_max_points", 0)
 	varTest(t, "challenge_max_points", 1337)
 	varTest(t, "challenge_max_points", math.MaxInt32)
-	varTest(t, "challenge_max_points", math.MaxInt32+1, "challenge_max_points must not exceed 2147483647")
+	varTest(t, "challenge_max_points", math.MaxInt32+1, test_utils.Format(consts.MaxError, "challenge_max_points", math.MaxInt32))
 
-	varTest(t, "challenge_score_type", "", "challenge_score_type must be one of: Static Dynamic")
+	varTest(t, "challenge_score_type", "", test_utils.Format(consts.OneOfError, "challenge_score_type", strings.Join(consts.ScoreTypesStr, " ")))
 	varTest(t, "challenge_score_type", sqlc.ScoreTypeStatic)
 	varTest(t, "challenge_score_type", sqlc.ScoreTypeDynamic)
-	varTest(t, "challenge_score_type", "aaa", "challenge_score_type must be one of: Static Dynamic")
+	varTest(t, "challenge_score_type", "aaa", test_utils.Format(consts.OneOfError, "challenge_score_type", strings.Join(consts.ScoreTypesStr, " ")))
 
-	varTest(t, "challenge_port", consts.MinPort-1, "challenge_port must be at least 0")
+	varTest(t, "challenge_port", consts.MinPort-1, test_utils.Format(consts.MinError, "challenge_port", consts.MinPort))
 	varTest(t, "challenge_port", consts.MinPort)
 	varTest(t, "challenge_port", consts.MaxPort)
-	varTest(t, "challenge_port", consts.MaxPort+1, "challenge_port must not exceed 65535")
+	varTest(t, "challenge_port", consts.MaxPort+1, test_utils.Format(consts.MaxError, "challenge_port", consts.MaxPort))
 
-	varTest(t, "challenge_lifetime", -1, "challenge_lifetime must be at least 0")
+	varTest(t, "challenge_lifetime", -1, test_utils.Format(consts.MinError, "challenge_lifetime", 0))
 	varTest(t, "challenge_lifetime", 0)
 	varTest(t, "challenge_lifetime", 1337)
 	varTest(t, "challenge_lifetime", math.MaxInt32)
-	varTest(t, "challenge_lifetime", math.MaxInt32+1, "challenge_lifetime must not exceed 2147483647")
-
+	varTest(t, "challenge_lifetime", math.MaxInt32+1, test_utils.Format(consts.MaxError, "challenge_lifetime", math.MaxInt32))
 	varTest(t, "challenge_envs", "")
 	varTest(t, "challenge_envs", "a", consts.InvalidEnvs)
 	varTest(t, "challenge_envs", "[]")
@@ -125,12 +124,11 @@ func TestValidators(t *testing.T) {
 	varTest(t, "challenge_envs", `{"key":"value","key2":"value2"}`)
 	varTest(t, "challenge_envs", `{"key": "value", "key2": "value2"}`)
 
-	varTest(t, "challenge_max_memory", -1, "challenge_max_memory must be at least 0")
+	varTest(t, "challenge_max_memory", -1, test_utils.Format(consts.MinError, "challenge_max_memory", 0))
 	varTest(t, "challenge_max_memory", 0)
 	varTest(t, "challenge_max_memory", 1337)
 	varTest(t, "challenge_max_memory", math.MaxInt32)
-	varTest(t, "challenge_max_memory", math.MaxInt32+1, "challenge_max_memory must not exceed 2147483647")
-
+	varTest(t, "challenge_max_memory", math.MaxInt32+1, test_utils.Format(consts.MaxError, "challenge_max_memory", math.MaxInt32))
 	varTest(t, "challenge_max_cpu", "-1", consts.InvalidMaxCpu)
 	varTest(t, "challenge_max_cpu", "0", consts.InvalidMaxCpu)
 	varTest(t, "challenge_max_cpu", "13.37")
@@ -141,31 +139,31 @@ func TestValidators(t *testing.T) {
 	varTest(t, "flag", "")
 	varTest(t, "flag", "a")
 	varTest(t, "flag", strings.Repeat("a", consts.MaxFlagLen))
-	varTest(t, "flag", strings.Repeat("a", consts.MaxFlagLen+1), "flag must not exceed 128")
+	varTest(t, "flag", strings.Repeat("a", consts.MaxFlagLen+1), test_utils.Format(consts.MaxError, "flag", consts.MaxFlagLen))
 
 	varTest(t, "tag_name", "")
 	varTest(t, "tag_name", "a")
 	varTest(t, "tag_name", strings.Repeat("a", consts.MaxTagNameLen))
-	varTest(t, "tag_name", strings.Repeat("a", consts.MaxTagNameLen+1), "tag_name must not exceed 32")
+	varTest(t, "tag_name", strings.Repeat("a", consts.MaxTagNameLen+1), test_utils.Format(consts.MaxError, "tag_name", consts.MaxTagNameLen))
 
 	varTest(t, "team_name", "")
 	varTest(t, "team_name", "a")
 	varTest(t, "team_name", strings.Repeat("a", consts.MaxTeamNameLen))
-	varTest(t, "team_name", strings.Repeat("a", consts.MaxTeamNameLen+1), "team_name must not exceed 64")
+	varTest(t, "team_name", strings.Repeat("a", consts.MaxTeamNameLen+1), test_utils.Format(consts.MaxError, "team_name", consts.MaxTeamNameLen))
 
 	varTest(t, "team_bio", "")
 	varTest(t, "team_bio", "a")
 	varTest(t, "team_bio", strings.Repeat("a", consts.MaxBioLen))
-	varTest(t, "team_bio", strings.Repeat("a", consts.MaxBioLen+1), "team_bio must not exceed 10240")
+	varTest(t, "team_bio", strings.Repeat("a", consts.MaxBioLen+1), test_utils.Format(consts.MaxError, "team_bio", consts.MaxBioLen))
 
 	varTest(t, "user_name", "")
 	varTest(t, "user_name", "a")
 	varTest(t, "user_name", strings.Repeat("a", consts.MaxUserNameLen))
-	varTest(t, "user_name", strings.Repeat("a", consts.MaxUserNameLen+1), "user_name must not exceed 64")
+	varTest(t, "user_name", strings.Repeat("a", consts.MaxUserNameLen+1), test_utils.Format(consts.MaxError, "user_name", consts.MaxUserNameLen))
 
 	varTest(t, "user_email", "", consts.InvalidEmail)
 	varTest(t, "user_email", "a", consts.InvalidEmail)
 	varTest(t, "user_email", "test@example.com")
 	varTest(t, "user_email", "test+alias@example.com")
-	varTest(t, "user_email", strings.Repeat("a", consts.MaxEmailLen+1), "user_email must not exceed 256")
+	varTest(t, "user_email", strings.Repeat("a", consts.MaxEmailLen+1), test_utils.Format(consts.MaxError, "user_email", consts.MaxEmailLen))
 }

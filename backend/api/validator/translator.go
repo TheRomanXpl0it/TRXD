@@ -19,7 +19,7 @@ func initTranslation() {
 	registerTranslation("required", consts.MissingRequiredFields)
 	registerTranslation("min", consts.MinError)
 	registerTranslation("max", consts.MaxError)
-	registerTranslation("oneof", consts.OneofError)
+	registerTranslation("oneof", consts.OneOfError)
 	registerTranslation("email", consts.InvalidEmail)
 
 	registerTranslation("valid_http_url", consts.InvalidHttpUrl)

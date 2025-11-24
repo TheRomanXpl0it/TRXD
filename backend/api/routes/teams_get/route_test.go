@@ -77,7 +77,7 @@ func TestRoute(t *testing.T) {
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Get(fmt.Sprintf("/teams/%d", -1), nil, http.StatusBadRequest)
-	session.CheckResponse(errorf("id must be at least 0"))
+	session.CheckResponse(errorf(test_utils.Format(consts.MinError, "id", 0)))
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Get(fmt.Sprintf("/teams/%d", 99999), nil, http.StatusNotFound)
@@ -85,7 +85,7 @@ func TestRoute(t *testing.T) {
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Get(fmt.Sprintf("/teams/%d", math.MaxInt32+1), nil, http.StatusBadRequest)
-	session.CheckResponse(errorf("id must be at least 0"))
+	session.CheckResponse(errorf(test_utils.Format(consts.MinError, "id", 0)))
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Get(fmt.Sprintf("/teams/%d", A.ID), nil, http.StatusOK)

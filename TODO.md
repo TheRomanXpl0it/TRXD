@@ -1,4 +1,5 @@
 # TODO
+ - resolve TODOs left into the code
  - change name of chall containers from chall_PORT to chall_TID_CID
  - change name from _TID_CID to _CID_TID
  - change name of challs, network and so on, with $PROJECT_NAME prefix
@@ -11,8 +12,6 @@
  - add tests with a lot of hash named challs (hard cap for networks on nginx?)
  - N instance limit per team
  - change csrf token name
- - error generator for tests
- - resolve TODOs left into the code
  - discord webhook tests in pipeline
  - tg webhook tests in pipeline
  - instance expire tests
@@ -26,6 +25,9 @@
  - add pagination on "all" GETs
  - move backend tests in their own dir
  - better names for binary flags
+ - pagination on all gets
+ - invisible teams
+ - api names more similar (categories_create -> name & categories_delete -> category)
 
 ## Frontend
  - convert .pngs to webp

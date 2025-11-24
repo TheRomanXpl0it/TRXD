@@ -45,12 +45,12 @@ var testData = []struct {
 	{
 		testBody:         JSON{"chall_id": "", "flag": strings.Repeat("a", consts.MaxFlagLen+1)},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("Flag must not exceed 128"),
+		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Flag", consts.MaxFlagLen)),
 	},
 	{
 		testBody:         JSON{"chall_id": -1, "flag": "flag{test}"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("ChallID must be at least 0"),
+		expectedResponse: errorf(test_utils.Format(consts.MinError, "ChallID", 0)),
 	},
 	{
 		testBody:         JSON{"chall_id": 99999, "flag": "flag{test}"},

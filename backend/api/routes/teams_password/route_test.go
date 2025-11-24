@@ -39,7 +39,7 @@ var testData = []struct {
 	{
 		testBody:         JSON{"team_id": -1},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("TeamID must be at least 0"),
+		expectedResponse: errorf(test_utils.Format(consts.MinError, "TeamID", 0)),
 	},
 	{
 		testBody:         JSON{"team_id": math.MaxInt32 + 1},

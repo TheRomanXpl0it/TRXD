@@ -22,7 +22,6 @@ func CreateInstance(ctx context.Context, tid, challID int32, internalPort *int32
 
 	defer func() {
 		r := recover()
-		// TODO: anti panic recover
 		if r == nil && !cleanup {
 			return
 		}
