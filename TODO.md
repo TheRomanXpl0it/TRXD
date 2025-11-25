@@ -18,6 +18,9 @@
  - Add custom button themes for first/second/third bloods?
  - Improve challenge creation procedure
  - Fix admin flag submission 
+ - Add debouncing to challenges search
+ - Make countdown timer more efficient
+ - Lazy load monaco editor
  - ~~Improve "Team join" page on smaller screens~~
 
 ## Ideas / Features

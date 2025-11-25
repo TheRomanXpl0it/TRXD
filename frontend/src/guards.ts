@@ -1,3 +1,5 @@
+// TODO: Refactor this file
+
 import { wrap } from 'svelte-spa-router/wrap';
 import { currentUser, loadUser, user as authUser } from '$lib/stores/auth';
 import { get } from 'svelte/store';

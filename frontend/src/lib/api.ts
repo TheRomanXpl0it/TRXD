@@ -1,4 +1,6 @@
 
+// TODO: Refactor this file
+
 const BASE = '/api';
 
 function urlOf(path: string) {
