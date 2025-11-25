@@ -103,7 +103,7 @@ jobs:
     - name: Install Python dependencies
       run: |
         python3 -m pip install --upgrade pip
-        python3 -m pip install -r ../tests/requirements.txt
+        python3 -m pip install -r ../tests/backend/requirements.txt
 
     - name: Wait for Postgres
       run: |
@@ -142,7 +142,7 @@ jobs:
           cat server.pid | xargs kill
           exit 1
         fi
-        cd ../tests/
+        cd ../tests/backend/
 
         for file in *.py; do
           echo "Running Test: $file"
@@ -151,7 +151,7 @@ jobs:
           ./trxd -test-data-WARNING-DO-NOT-USE-IN-PRODUCTION
           ./trxd -t
 
-          cd ../tests/
+          cd ../tests/backend/
           python3 $file
         done
 

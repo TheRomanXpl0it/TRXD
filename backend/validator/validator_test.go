@@ -5,10 +5,10 @@ import (
 	"math"
 	"strings"
 	"testing"
-	"trxd/api/validator"
 	"trxd/db/sqlc"
 	"trxd/utils/consts"
 	"trxd/utils/test_utils"
+	"trxd/validator"
 )
 
 func varTest(t *testing.T, tag string, v interface{}, results ...string) {

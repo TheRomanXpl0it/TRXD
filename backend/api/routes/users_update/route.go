@@ -3,10 +3,10 @@ package users_update
 import (
 	"fmt"
 	"trxd/api/routes/teams_update"
-	"trxd/api/validator"
 	"trxd/db"
 	"trxd/utils"
 	"trxd/utils/consts"
+	"trxd/validator"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/tde-nico/log"

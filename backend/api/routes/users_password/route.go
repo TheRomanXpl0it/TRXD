@@ -1,10 +1,10 @@
 package users_password
 
 import (
-	"trxd/api/validator"
 	"trxd/utils"
 	"trxd/utils/consts"
 	"trxd/utils/crypto_utils"
+	"trxd/validator"
 
 	"github.com/gofiber/fiber/v2"
 )

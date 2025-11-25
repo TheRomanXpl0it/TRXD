@@ -23,7 +23,6 @@
  - challs SNI traefik
  - add DELETE tests with not found id (sould give 200)
  - add pagination on "all" GETs
- - move backend tests in their own dir
  - better names for binary flags
  - pagination on all gets
  - invisible teams
