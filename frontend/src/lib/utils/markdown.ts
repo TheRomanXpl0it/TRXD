@@ -6,11 +6,6 @@ marked.setOptions({
 	gfm: true,
 });
 
-/**
- * Renders Markdown to sanitized HTML
- * @param markdown - Raw markdown string
- * @returns Sanitized HTML string safe for innerHTML
- */
 export function renderMarkdown(markdown: string): string {
     if (!markdown) return '';
     
@@ -31,11 +26,6 @@ export function renderMarkdown(markdown: string): string {
     });
 }
 
-/**
- * Renders inline Markdown (no block elements like paragraphs)
- * @param markdown - Raw markdown string
- * @returns Sanitized HTML string without wrapping <p> tags
- */
 export function renderMarkdownInline(markdown: string): string {
 	if (!markdown) return '';
 	

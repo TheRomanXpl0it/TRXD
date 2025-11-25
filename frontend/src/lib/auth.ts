@@ -1,3 +1,5 @@
+// TODO: Refactor this file
+
 import { api } from '$lib/api';
 
 export type User = {
