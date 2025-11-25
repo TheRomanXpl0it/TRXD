@@ -31,6 +31,7 @@ func validJson(fl validator.FieldLevel) bool {
 		return true
 	}
 	err := validate.Var(value, "json")
+	// TODO: make this a map[string]string
 	return err == nil
 }
 
@@ -44,5 +45,5 @@ func validFloat(fl validator.FieldLevel) bool {
 		return false
 	}
 
-	return 0.0 < res && res < math.MaxInt32
+	return 0.0 < res && res <= math.MaxInt32
 }

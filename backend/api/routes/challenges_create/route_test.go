@@ -64,27 +64,27 @@ var testData = []struct {
 	{
 		testBody:         JSON{"name": strings.Repeat("a", consts.MaxChallNameLen+1), "category": "cat", "description": "test-desc", "type": "Normal", "max_points": 1, "score_type": "Static"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("Name must not exceed 128"),
+		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Name", consts.MaxChallNameLen)),
 	},
 	{
 		testBody:         JSON{"name": "test", "category": strings.Repeat("a", consts.MaxCategoryLen+1), "description": "test-desc", "type": "Normal", "max_points": 1, "score_type": "Static"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("Category must not exceed 32"),
+		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Category", consts.MaxCategoryLen)),
 	},
 	{
 		testBody:         JSON{"name": "test", "category": "cat", "description": strings.Repeat("a", consts.MaxChallDescLen+1), "type": "Normal", "max_points": 1, "score_type": "Static"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("Description must not exceed 1024"),
+		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Description", consts.MaxChallDescLen)),
 	},
 	{
 		testBody:         JSON{"name": "test", "category": "cat", "description": "test-desc", "type": "aaaaa", "max_points": 1, "score_type": "Static"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("Type must be one of: Normal Container Compose"),
+		expectedResponse: errorf(test_utils.Format(consts.OneOfError, "Type", strings.Join(consts.DeployTypesStr, " "))),
 	},
 	{
 		testBody:         JSON{"name": "test", "category": "cat", "description": "test-desc", "type": "Normal", "max_points": -1, "score_type": "Static"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("MaxPoints must be at least 0"),
+		expectedResponse: errorf(test_utils.Format(consts.MinError, "MaxPoints", 0)),
 	},
 	{
 		testBody:         JSON{"name": "test", "category": "cat", "description": "test-desc", "type": "Normal", "max_points": math.MaxInt32 + 1, "score_type": "Static"},
@@ -94,7 +94,7 @@ var testData = []struct {
 	{
 		testBody:         JSON{"name": "test", "category": "cat", "description": "test-desc", "type": "Normal", "max_points": 1, "score_type": "aaaa"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("ScoreType must be one of: Static Dynamic"),
+		expectedResponse: errorf(test_utils.Format(consts.OneOfError, "ScoreType", strings.Join(consts.ScoreTypesStr, " "))),
 	},
 	{
 		testBody:         JSON{"name": "test3", "category": "cat2", "description": "test-desc", "type": "Normal", "max_points": 1, "score_type": "Static"},

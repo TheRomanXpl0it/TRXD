@@ -6,11 +6,11 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"trxd/api/validator"
 	"trxd/db"
 	"trxd/db/sqlc"
 	"trxd/utils"
 	"trxd/utils/consts"
+	"trxd/validator"
 
 	"github.com/go-playground/form/v4"
 	"github.com/gofiber/fiber/v2"

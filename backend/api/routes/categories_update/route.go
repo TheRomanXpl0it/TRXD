@@ -3,9 +3,9 @@ package categories_update
 import (
 	"trxd/api/routes/categories_create"
 	"trxd/api/routes/categories_delete"
-	"trxd/api/validator"
 	"trxd/utils"
 	"trxd/utils/consts"
+	"trxd/validator"
 
 	"github.com/gofiber/fiber/v2"
 )

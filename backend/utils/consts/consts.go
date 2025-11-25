@@ -1,5 +1,7 @@
 package consts
 
+import "trxd/db/sqlc"
+
 const Name = "TRXd"
 
 const (
@@ -8,7 +10,6 @@ const (
 	MaxChallDescLen       = 1024
 	MaxChallDifficultyLen = 16
 	MaxChallNameLen       = 128
-	MaxCountryLen         = 3 // TODO: remove
 	MaxEmailLen           = 256
 	MaxFlagLen            = 128
 	MaxIconLen            = 32
@@ -21,6 +22,11 @@ const (
 	MinPasswordLen        = 8
 	MinPort               = 0
 )
+
+var DeployTypes = []sqlc.DeployType{sqlc.DeployTypeNormal, sqlc.DeployTypeContainer, sqlc.DeployTypeCompose}
+var DeployTypesStr = []string{string(sqlc.DeployTypeNormal), string(sqlc.DeployTypeContainer), string(sqlc.DeployTypeCompose)}
+var ScoreTypes = []sqlc.ScoreType{sqlc.ScoreTypeStatic, sqlc.ScoreTypeDynamic}
+var ScoreTypesStr = []string{string(sqlc.ScoreTypeStatic), string(sqlc.ScoreTypeDynamic)}
 
 const (
 	Unauthorized        = "Unauthorized"
@@ -97,7 +103,7 @@ const (
 
 	MaxError   = "{0} must not exceed {1}"
 	MinError   = "{0} must be at least {1}"
-	OneofError = "{0} must be one of: {1}"
+	OneOfError = "{0} must be one of: {1}"
 
 	CategoryAlreadyExists      = "Category already exists"
 	ChallengeAlreadyExists     = "Challenge already exists"

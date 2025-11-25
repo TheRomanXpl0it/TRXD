@@ -8,7 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func Route(c *fiber.Ctx) error { // TODO: tests
+func Route(c *fiber.Ctx) error {
 	top, err := QueryTeamScoreboardGraph(c.Context())
 	if err != nil {
 		return utils.Error(c, http.StatusInternalServerError, consts.ErrorFetchingScoreboardGraph, err)

@@ -1,10 +1,10 @@
 package challenges_get
 
 import (
-	"trxd/api/validator"
 	"trxd/db/sqlc"
 	"trxd/utils"
 	"trxd/utils/consts"
+	"trxd/validator"
 
 	"github.com/gofiber/fiber/v2"
 )

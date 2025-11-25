@@ -36,9 +36,13 @@ var testData = []struct {
 		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
 	{
+		testBody:       JSON{"category": "aaaaaaaaaaaaaaaaaaaaaaaa"},
+		expectedStatus: http.StatusOK,
+	},
+	{
 		testBody:         JSON{"category": strings.Repeat("a", consts.MaxCategoryLen+1)},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("Category must not exceed 32"),
+		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Category", consts.MaxCategoryLen)),
 	},
 	{
 		testBody:       JSON{"category": "cat"},

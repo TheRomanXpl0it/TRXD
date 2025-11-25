@@ -248,3 +248,12 @@ func CreateFile(t *testing.T, file string, content string) {
 		t.Fatalf("Failed to write content to file %s: %v", file, err)
 	}
 }
+
+func Format(msg string, a ...any) string {
+	res := msg[:]
+	for i, v := range a {
+		placeholder := fmt.Sprintf("{%d}", i)
+		res = strings.ReplaceAll(res, placeholder, fmt.Sprint(v))
+	}
+	return res
+}

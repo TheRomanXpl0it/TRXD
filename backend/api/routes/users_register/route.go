@@ -3,10 +3,10 @@ package users_register
 import (
 	"fmt"
 	"trxd/api/routes/teams_register"
-	"trxd/api/validator"
 	"trxd/db"
 	"trxd/utils"
 	"trxd/utils/consts"
+	"trxd/validator"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/tde-nico/log"

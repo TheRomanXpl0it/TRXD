@@ -1,9 +1,9 @@
 package tags_delete
 
 import (
-	"trxd/api/validator"
 	"trxd/utils"
 	"trxd/utils/consts"
+	"trxd/validator"
 
 	"github.com/gofiber/fiber/v2"
 )

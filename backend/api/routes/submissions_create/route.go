@@ -2,12 +2,12 @@ package submissions_create
 
 import (
 	"strings"
-	"trxd/api/validator"
 	"trxd/db"
 	"trxd/db/sqlc"
 	"trxd/utils"
 	"trxd/utils/consts"
 	"trxd/utils/discord"
+	"trxd/validator"
 
 	"github.com/gofiber/fiber/v2"
 )

@@ -42,7 +42,7 @@ var testData = []struct {
 	{
 		testBody:         JSON{"image": strings.Repeat("a", consts.MaxImageLen+1)},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("Image must not exceed 1024"),
+		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Image", consts.MaxImageLen)),
 	},
 	{
 		testBody:         JSON{"image": "a"},
@@ -57,12 +57,12 @@ var testData = []struct {
 	{
 		testBody:         JSON{"bio": strings.Repeat("a", consts.MaxBioLen+1)},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("Bio must not exceed 10240"),
+		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Bio", consts.MaxBioLen)),
 	},
 	{
 		testBody:         JSON{"name": strings.Repeat("a", consts.MaxTeamNameLen+1)},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("Name must not exceed 64"),
+		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Name", consts.MaxTeamNameLen)),
 	},
 	{
 		testBody:         JSON{"name": "A"},

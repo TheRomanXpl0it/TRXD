@@ -1,12 +1,12 @@
 package instances_delete
 
 import (
-	"trxd/api/validator"
 	"trxd/db"
 	"trxd/db/sqlc"
 	"trxd/instancer"
 	"trxd/utils"
 	"trxd/utils/consts"
+	"trxd/validator"
 
 	"github.com/gofiber/fiber/v2"
 )

@@ -41,42 +41,42 @@ var testData = []struct {
 	{
 		testBody:         JSON{"chall_id": "", "name": strings.Repeat("a", consts.MaxChallNameLen+1)},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("Name must not exceed 128"),
+		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Name", consts.MaxChallNameLen)),
 	},
 	{
 		testBody:         JSON{"chall_id": "", "category": strings.Repeat("a", consts.MaxCategoryLen+1)},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("Category must not exceed 32"),
+		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Category", consts.MaxCategoryLen)),
 	},
 	{
 		testBody:         JSON{"chall_id": "", "description": strings.Repeat("a", consts.MaxChallDescLen+1)},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("Description must not exceed 1024"),
+		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Description", consts.MaxChallDescLen)),
 	},
 	{
 		testBody:         JSON{"chall_id": "", "difficulty": strings.Repeat("a", consts.MaxChallDifficultyLen+1)},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("Difficulty must not exceed 16"),
+		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Difficulty", consts.MaxChallDifficultyLen)),
 	},
 	{
 		testBody:         JSON{"chall_id": "", "max_points": -1},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("MaxPoints must be at least 0"),
+		expectedResponse: errorf(test_utils.Format(consts.MinError, "MaxPoints", 0)),
 	},
 	{
 		testBody:         JSON{"chall_id": "", "port": consts.MinPort - 1},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("Port must be at least 0"),
+		expectedResponse: errorf(test_utils.Format(consts.MinError, "Port", consts.MinPort)),
 	},
 	{
 		testBody:         JSON{"chall_id": "", "port": consts.MaxPort + 1},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("Port must not exceed 65535"),
+		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Port", consts.MaxPort)),
 	},
 	{
 		testBody:         JSON{"chall_id": "", "lifetime": -1},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("Lifetime must be at least 0"),
+		expectedResponse: errorf(test_utils.Format(consts.MinError, "Lifetime", 0)),
 	},
 	{
 		testBody:         JSON{"chall_id": "", "lifetime": math.MaxInt32 + 1},
@@ -91,7 +91,7 @@ var testData = []struct {
 	{
 		testBody:         JSON{"chall_id": "", "max_memory": -1},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("MaxMemory must be at least 0"),
+		expectedResponse: errorf(test_utils.Format(consts.MinError, "MaxMemory", 0)),
 	},
 	{
 		testBody:         JSON{"chall_id": "", "max_memory": math.MaxInt32 + 1},
@@ -121,7 +121,7 @@ var testData = []struct {
 	{
 		testBody:         JSON{"chall_id": -1, "name": "test"},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf("ChallID must be at least 0"),
+		expectedResponse: errorf(test_utils.Format(consts.MinError, "ChallID", 0)),
 	},
 	{
 		testBody:         JSON{"chall_id": 9999, "name": "test"},
