@@ -6,7 +6,6 @@
  - single user mode, send user id instead of team id (ex. scoreboard)
  - tests with removal of trxd-shared (and fault tolerance)
  - https://doc.traefik.io/traefik/expose/docker/
- - password reset for players
  - change image pfp system
  - configs changable by env
  - add tests with a lot of hash named challs (hard cap for networks on nginx?)

@@ -140,7 +140,7 @@ func SetupApi(ctx context.Context, app *fiber.App) {
 	api.Get("/scoreboard/graph", noAuth, teams_scoreboard_graph.Route)
 
 	api.Patch("/users", player, users_update.Route)
-	api.Patch("/users/password", admin, users_password.Route)
+	api.Patch("/users/password", spectator, users_password.Route)
 	api.Get("/users", noAuth, users_all_get.Route)
 	api.Get("/users/:id", noAuth, users_get.Route)
 
@@ -154,7 +154,7 @@ func SetupApi(ctx context.Context, app *fiber.App) {
 		api.Post("/teams/join", player, teams_join.Route)
 		// api.Get("/teams/join/:token", player, teams_join_token.Route)
 		api.Patch("/teams", player, team, teams_update.Route)
-		api.Patch("/teams/password", admin, teams_password.Route)
+		api.Patch("/teams/password", spectator, team, teams_password.Route)
 		api.Get("/teams", noAuth, teams_all_get.Route)
 		api.Get("/teams/:id", noAuth, teams_get.Route)
 	}
