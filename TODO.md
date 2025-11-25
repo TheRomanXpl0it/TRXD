@@ -1,31 +1,35 @@
 # TODO
  - resolve TODOs left into the code
- - change name of chall containers from chall_PORT to chall_TID_CID
- - change name from _TID_CID to _CID_TID
- - change name of challs, network and so on, with $PROJECT_NAME prefix
- - single user mode, send user id instead of team id (ex. scoreboard)
- - tests with removal of trxd-shared (and fault tolerance)
- - https://doc.traefik.io/traefik/expose/docker/
- - change image pfp system
- - configs changable by env
- - add tests with a lot of hash named challs (hard cap for networks on nginx?)
- - N instance limit per team
- - change csrf token name
- - discord webhook tests in pipeline
- - tg webhook tests in pipeline
- - instance expire tests
- - ingress only challenges (verify if useful)
- - attachments rework (own table) (own endpoint & update challenges to json)
- - attachments hash in path
- - authors rework (string list)
- - challenge remote type (table: (tcp & http) + format: ex. "nc {{host}} {{port}}" & "http://{{host}}:{{port}}")
- - challs SNI traefik
- - add DELETE tests with not found id (sould give 200)
- - add pagination on "all" GETs
- - better names for binary flags
- - pagination on all gets
- - invisible teams
- - api names more similar (categories_create -> name & categories_delete -> category)
+ - convention:
+   - change name of chall containers from chall_PORT to chall_TID_CID
+   - change name from _TID_CID to _CID_TID
+   - change name of challs, network and so on, with $PROJECT_NAME prefix
+   - change csrf token name
+   - api names more similar (categories_create -> name & categories_delete -> category)
+ - bugs:
+   - single user mode, send user id instead of team id (ex. scoreboard)
+   - change image pfp system
+   - attachments rework (own table) (own endpoint & update challenges to json)
+   - attachments hash in path
+   - authors rework (string list)
+ - tests:
+   - tests with removal of trxd-shared (and fault tolerance)
+   - discord webhook tests in pipeline
+   - tg webhook tests in pipeline
+   - add tests with a lot of hash named challs (hard cap for networks on nginx?)
+   - instance expire tests
+ - features:
+   - https://doc.traefik.io/traefik/expose/docker/
+   - challs SNI traefik
+   - N instance limit per team
+   - ingress only challenges (verify if useful)
+   - challenge remote type (table: (tcp & http) + format: ex. "nc {{host}} {{port}}" & "http://{{host}}:{{port}}")
+   - add pagination on "all" GETs
+   - invisible teams
+   - tag order
+ - utility:
+   - configs changable by env
+   - better names for binary flags
 
 ## Frontend
  - convert .pngs to webp

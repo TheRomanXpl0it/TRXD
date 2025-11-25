@@ -147,7 +147,7 @@ jobs:
         for file in *.py; do
           echo "Running Test: $file"
           
-          cd ../backend
+          cd ../../backend
           ./trxd -test-data-WARNING-DO-NOT-USE-IN-PRODUCTION
           ./trxd -t
 

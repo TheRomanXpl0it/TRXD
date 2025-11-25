@@ -56,6 +56,10 @@ var testData = []struct {
 		expectedResponse: errorf(consts.ChallengeNotFound),
 	},
 	{
+		testBody:       JSON{"chall_id": "", "flag": "aaaaaaaaaaaaaaaa"},
+		expectedStatus: http.StatusOK,
+	},
+	{
 		testBody:       JSON{"chall_id": "", "flag": "test"},
 		expectedStatus: http.StatusOK,
 	},
