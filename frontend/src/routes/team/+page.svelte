@@ -8,7 +8,6 @@
 	import Icon from '@iconify/svelte';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 
-	import TeamStatsCarousel from '$lib/components/team/TeamStatsCarousel.svelte';
 	import SolveListTable from '$lib/components/team/TeamScoreboard.svelte';
 	import TeamMembers from '$lib/components/team/TeamMemberlist.svelte';
 	import TeamJoinCreate from '$lib/components/team/TeamJoinCreate.svelte';

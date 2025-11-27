@@ -12,6 +12,8 @@
 	import countries from '$lib/data/countries.json';
 	import { userMode } from '$lib/stores/auth';
 	import { onMount } from 'svelte';
+	import EmptyState from '$lib/components/ui/empty-state.svelte';
+	import { Users } from '@lucide/svelte';
 
 	// Redirect to accounts page if in user mode
 	onMount(() => {
@@ -95,8 +97,8 @@
 			<Table.Body>
 				{#if pageRows.length === 0}
 					<Table.Row>
-						<Table.Cell colspan={3} class="py-8 text-center text-gray-500">
-							No teams yet.
+						<Table.Cell colspan={3} class="p-0">
+							<EmptyState icon={Users} title="No teams yet" description="There are no teams to display" />
 						</Table.Cell>
 					</Table.Row>
 				{:else}
