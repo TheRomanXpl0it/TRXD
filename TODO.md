@@ -21,6 +21,7 @@
  - Lazy load monaco editor
  - Remove all category icon features
  - Improve login/sign up error message handling
+ - Fix countries
  - ~~convert .pngs to webp~~
  - ~~Improve "Team join" page on smaller screens~~
  - ~~Add debouncing to challenges search~~
