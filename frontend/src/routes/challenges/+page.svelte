@@ -16,13 +16,29 @@
 
 	import { config } from '$lib/env';
 
-	// Lazy-loaded component handles
+	// Lazy-loaded admin component handles
 	type Cmp = typeof import('svelte').SvelteComponent;
 	let CreateModalCmp: Cmp | null = $state(null);
 	let DeleteDialogCmp: Cmp | null = $state(null);
 	let ChallengeEditSheetCmp: Cmp | null = $state(null);
 
-	// ** lazy load elements on first use **
+	const isAdmin = $derived($authUser?.role === 'Admin');
+
+	// Preload admin components when page loads if user is admin
+	onMount(() => {
+		if (isAdmin) {
+			import('$lib/components/challenges/CreateChallengeModal.svelte').then(mod => {
+				CreateModalCmp = mod.default;
+			});
+			import('$lib/components/challenges/DeleteChallengeDialog.svelte').then(mod => {
+				DeleteDialogCmp = mod.default;
+			});
+			import('$lib/components/challenges/ChallengeEditSheet.svelte').then(mod => {
+				ChallengeEditSheetCmp = mod.default;
+			});
+		}
+	});
+
 	async function openCreate() {
 		if (!CreateModalCmp) {
 			const mod = await import('$lib/components/challenges/CreateChallengeModal.svelte');
@@ -41,11 +57,11 @@
 	}
 
 	async function modifyChallenge(ch: any) {
-     	if (!ChallengeEditSheetCmp) {
-      		const mod = await import('$lib/components/challenges/ChallengeEditSheet.svelte');
-      		ChallengeEditSheetCmp = mod.default;
-     	}
-     	editOpen = true;
+		if (!ChallengeEditSheetCmp) {
+			const mod = await import('$lib/components/challenges/ChallengeEditSheet.svelte');
+			ChallengeEditSheetCmp = mod.default;
+		}
+		editOpen = true;
 	}
 
 	// Local state
@@ -86,17 +102,14 @@
 			.sort((a: any, b: any) => a.label.localeCompare(b.label))
 	);
 	
-	//comparators to sort challenges after filtering
-	const comparators: Record<string, (a: Challenge, b: Challenge) => number> = {
-        "points-min-to-max": (a, b) => (a.points ?? 0) - (b.points ?? 0),
-        "points-max-to-min": (a, b) => (b.points ?? 0) - (a.points ?? 0),
-        "alphabetical-a-to-z": (a, b) => (a.name ?? a.title ?? '').localeCompare(b.name ?? b.title ?? ''),
-        "alphabetical-z-to-a": (a, b) => (b.name ?? b.title ?? '').localeCompare(a.name ?? a.title ?? '')
-    };
-	
+	// Sort challenges by points (lowest first), stable sort for equal points
 	const sortedChallenges = $derived(
-        [...filteredChallenges].sort(comparators[sortMethod] ?? comparators["alphabetical-a-to-z"])
-    );
+		filteredChallenges.map((c, i) => ({ ...c, _index: i }))
+			.sort((a, b) => {
+				const pointsDiff = (a.points ?? 0) - (b.points ?? 0);
+				return pointsDiff !== 0 ? pointsDiff : a._index - b._index;
+			})
+	);
 
 	let points: number = $state(500);
 	let category: any = $state(null);
@@ -115,8 +128,8 @@
 	// Filters
 	let filterCategories = $state<string[]>([]);
 	let filterTags = $state<string[]>([]);
-	let sortMethod = $state<string>('points-min-to-max');
 	let search = $state('');
+	let debouncedSearch = $state('');
 	let tagsOpen = $state(false);
 	let categoriesOpen = $state(false);
 
@@ -170,9 +183,25 @@
 		).sort((a, b) => a.localeCompare(b))
 	);
 
+	// Debounce search input
+	let debounceTimeout: ReturnType<typeof setTimeout> | undefined;
+
+	function updateDebouncedSearch() {
+		if (debounceTimeout) clearTimeout(debounceTimeout);
+		debounceTimeout = setTimeout(() => {
+			debouncedSearch = search;
+		}, 300);
+	}
+
+	$effect(() => {
+		// React to search changes
+		search;
+		updateDebouncedSearch();
+	});
+
 	// Optimize filtering with early returns and memoization
 	const filteredChallenges = $derived.by(() => {
-		const hasSearch = search.trim().length > 0;
+		const hasSearch = debouncedSearch.trim().length > 0;
 		const hasCategoryFilter = filterCategories && filterCategories.length > 0;
 		const hasTagsFilter = filterTags && filterTags.length > 0;
 		
@@ -181,7 +210,7 @@
 			return challenges ?? [];
 		}
 		
-		const searchQuery = hasSearch ? norm(search) : '';
+		const searchQuery = hasSearch ? norm(debouncedSearch) : '';
 		
 		return (challenges ?? []).filter((c: any) => {
 			// Category filter
@@ -263,18 +292,18 @@
 	});
 
 
-	function groupByCategory(list: Challenge[], cmp: (a: Challenge, b: Challenge) => number) {
-        const map: Record<string, Challenge[]> = {};
-        for (const c of list) {
-            const label = (typeof c?.category === 'string' ? c.category : c?.category?.name) ?? 'Uncategorized';
-            (map[label] ??= []).push(c);
-        }
-        return Object.entries(map)
-            .sort(([a], [b]) => a.localeCompare(b))
-            .map(([cat, items]) => [cat, items.sort(cmp)]) as [string, Challenge[]][];
-    }
-    
-    const grouped = $derived.by(() => groupByCategory(sortedChallenges, comparators[sortMethod]));
+	function groupByCategory(list: Challenge[]) {
+		const map: Record<string, Challenge[]> = {};
+		for (const c of list) {
+			const label = (typeof c?.category === 'string' ? c.category : c?.category?.name) ?? 'Uncategorized';
+			(map[label] ??= []).push(c);
+		}
+		return Object.entries(map)
+			.sort(([a], [b]) => a.localeCompare(b))
+			.map(([cat, items]) => [cat, items]) as [string, Challenge[]][];
+	}
+
+	const grouped = $derived.by(() => groupByCategory(sortedChallenges));
 
 	function openChallenge(ch: any) {
 		selectedId = ch?.id ?? null;
@@ -330,7 +359,7 @@
 	"A man who loves to walk will walk more than a man who loves his destination"
 </p>
 
-{#if $authUser?.role === 'Admin'}
+{#if isAdmin}
 	<AdminControls
 		onopen-create={openCreate}
 		oncategory-created={() => {
@@ -344,7 +373,6 @@
 	bind:search
 	bind:filterCategories
 	bind:filterTags
-	bind:sortMethod
 	bind:compactView
 	{categories}
 	{allTags}
@@ -404,7 +432,7 @@
 	bind:open={openModal}
 	challenge={selected}
 	countdown={selected?.id ? countdowns[selected.id] ?? 0 : 0}
-	isAdmin={$authUser?.role === 'Admin'}
+	isAdmin={isAdmin}
 	onEdit={modifyChallenge}
 	onDelete={requestDelete}
 	onSolved={handleChallengeSolved}

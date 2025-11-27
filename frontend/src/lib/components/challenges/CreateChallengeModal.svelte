@@ -94,7 +94,7 @@
     <Dialog.Header class="pb-2">
       <Dialog.Title>Create Challenge</Dialog.Title>
       <Dialog.Description>
-        Create the barebones skeleton of the challenge; edit later to upload files and set advanced options.
+        Edit the challenge later to upload files and set advanced options
       </Dialog.Description>
     </Dialog.Header>
 

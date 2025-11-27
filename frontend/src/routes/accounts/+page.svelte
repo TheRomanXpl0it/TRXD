@@ -10,6 +10,8 @@
 	import Icon from '@iconify/svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import countries from '$lib/data/countries.json';
+	import EmptyState from '$lib/components/ui/empty-state.svelte';
+	import { UserCircle } from '@lucide/svelte';
 
 	let perPage = $state(20);
 
@@ -86,8 +88,8 @@
 			<Table.Body>
 				{#if pageRows.length === 0}
 					<Table.Row>
-						<Table.Cell colspan={3} class="py-8 text-center text-gray-500">
-							No accounts yet.
+						<Table.Cell colspan={3} class="p-0">
+							<EmptyState icon={UserCircle} title="No accounts yet" description="There are no accounts to display" />
 						</Table.Cell>
 					</Table.Row>
 				{:else}

@@ -1,87 +1,106 @@
 <script lang="ts">
-  import { Button } from '@/components/ui/button';
-  import * as Popover from '$lib/components/ui/popover/index.js';
-  import * as Command from '$lib/components/ui/command/index.js';
-  import Label from '@/components/ui/label/label.svelte';
-  import { Input } from '$lib/components/ui/input/index.js';
-  import { Spinner } from '$lib/components/ui/spinner/index.js';
-  import { Shapes, NotebookPenIcon } from '@lucide/svelte';
-  import { toast } from 'svelte-sonner';
-  import { createCategory as createCategoryApi } from '$lib/categories';
+	import { Button } from '@/components/ui/button';
+	import * as Popover from '$lib/components/ui/popover/index.js';
+	import Label from '@/components/ui/label/label.svelte';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Spinner } from '$lib/components/ui/spinner/index.js';
+	import { Shapes, Plus } from '@lucide/svelte';
+	import { toast } from 'svelte-sonner';
+	import { createCategory } from '$lib/categories';
 
-  let { 'onopen-create': onOpenCreate, 'oncategory-created': onCategoryCreated } = $props<{
-    'onopen-create'?: () => void;
-    'oncategory-created'?: () => void;
-  }>();
+	let {
+		'onopen-create': onOpenCreate,
+		'oncategory-created': onCategoryCreated
+	} = $props<{
+		'onopen-create'?: () => void;
+		'oncategory-created'?: () => void;
+	}>();
 
-  // local state
-  let catPopoverOpen = $state(false);
-  let creatingCat = $state(false);
-  let newCategoryName = $state('');
-  let newCategoryIcon = $state('');
+	let categoryPopoverOpen = $state(false);
+	let creating = $state(false);
+	let categoryName = $state('');
 
-  // categories are managed by parent; we just reload after creation
-  // parent listens to `category-created` and refreshes
-  async function submitCreateCategory(ev?: SubmitEvent) {
-    ev?.preventDefault();
-    const name = newCategoryName.trim();
-    const icon = newCategoryIcon.trim();
-    if (!name || !icon) {
-      toast.error('Please enter a category name and an icon.');
-      return;
-    }
-    creatingCat = true;
-    try {
-      await createCategoryApi(name, icon);
-      toast.success('Category created!');
-      newCategoryName = '';
-      newCategoryIcon = '';
-      catPopoverOpen = false;
-      onCategoryCreated?.();
-    } catch (e: any) {
-      toast.error(e?.message ?? 'Failed to create category.');
-    } finally {
-      creatingCat = false;
-    }
-  }
+	const isFormValid = $derived(categoryName.trim().length > 0);
+
+	async function handleCreateCategory(e?: SubmitEvent) {
+		e?.preventDefault();
+
+		const name = categoryName.trim();
+
+		if (!name) {
+			toast.error('Category name is required.');
+			return;
+		}
+
+		creating = true;
+
+		try {
+			await createCategory(name);
+			toast.success(`Category "${name}" created successfully.`);
+			categoryName = '';
+			categoryPopoverOpen = false;
+			onCategoryCreated?.();
+		} catch (err: any) {
+			toast.error(err?.message ?? 'Failed to create category.');
+		} finally {
+			creating = false;
+		}
+	}
 </script>
 
-<div class="mb-6 flex flex-wrap items-center gap-2">
-    <Button variant="outline" onclick={() => onOpenCreate?.()} class="cursor-pointer">
-        <NotebookPenIcon class="mr-2 h-4 w-4" />
-        Create Challenge
-    </Button>
+<div class="mb-6 flex flex-wrap items-center gap-3">
+	<Button variant="default" onclick={() => onOpenCreate?.()} class="cursor-pointer">
+		<Plus class="mr-2 h-4 w-4" />
+		Create Challenge
+	</Button>
 
-    <Popover.Root bind:open={catPopoverOpen}>
-        <Popover.Trigger>
-        {#snippet child({ props })}
-            <Button {...props} variant="outline" class="flex cursor-pointer items-center gap-2">
-            <Shapes class="h-4 w-4" />
-            New Category
-            </Button>
-        {/snippet}
-        </Popover.Trigger>
-        <Popover.Content class="w-[320px] p-3">
-        <form class="space-y-3" onsubmit={submitCreateCategory}>
-            <div>
-            <Label for="cat-name" class="mb-1 block text-sm">Category name</Label>
-            <Input id="cat-name" placeholder="e.g. Forensics" bind:value={newCategoryName} />
-            </div>
-            <div>
-            <Label for="cat-icon" class="mb-1 block text-sm">Icon (lucide component name)</Label>
-            <Input id="cat-icon" placeholder="e.g. Bug, Shield, Lock" bind:value={newCategoryIcon} />
-            <p class="mt-1 text-xs text-gray-500">Use any lucide-svelte icon component name.</p>
-            </div>
-            <div class="flex justify-end gap-2">
-            <Button type="button" variant="outline" class="cursor-pointer" onclick={() => (catPopoverOpen = false)}>
-                Cancel
-            </Button>
-            <Button type="submit" class="cursor-pointer" disabled={creatingCat || !newCategoryName.trim() || !newCategoryIcon.trim()}>
-                {#if creatingCat}<Spinner class="mr-2" />{/if}
-                Create
-            </Button>
-            </div>
-        </form>
-        </Popover.Content>
-    </Popover.Root>
+	<Popover.Root bind:open={categoryPopoverOpen}>
+		<Popover.Trigger>
+			{#snippet child({ props })}
+				<Button {...props} variant="outline" class="cursor-pointer">
+					<Shapes class="mr-2 h-4 w-4" />
+					New Category
+				</Button>
+			{/snippet}
+		</Popover.Trigger>
+		<Popover.Content class="w-[320px] p-4">
+			<div class="mb-4">
+				<h4 class="font-semibold text-base">Create Category</h4>
+				<p class="text-sm text-muted-foreground mt-1">Add a new challenge category</p>
+			</div>
+
+			<form class="space-y-4" onsubmit={handleCreateCategory}>
+				<div class="space-y-2">
+					<Label for="cat-name" class="text-sm font-medium">Category Name</Label>
+					<Input
+						id="cat-name"
+						placeholder="e.g., Forensics, Web, Crypto"
+						bind:value={categoryName}
+						disabled={creating}
+						autofocus
+					/>
+				</div>
+
+				<div class="flex justify-end gap-2 pt-2">
+					<Button
+						type="button"
+						variant="outline"
+						class="cursor-pointer"
+						onclick={() => (categoryPopoverOpen = false)}
+						disabled={creating}
+					>
+						Cancel
+					</Button>
+					<Button type="submit" class="cursor-pointer" disabled={creating || !isFormValid}>
+						{#if creating}
+							<Spinner class="mr-2 h-4 w-4" />
+							Creating...
+						{:else}
+							Create
+						{/if}
+					</Button>
+				</div>
+			</form>
+		</Popover.Content>
+	</Popover.Root>
 </div>
