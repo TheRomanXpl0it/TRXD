@@ -31,36 +31,26 @@ var testData = []struct {
 		expectedResponse: errorf(consts.InvalidJSON),
 	},
 	{
-		testBody:         JSON{"name": "test"},
+		testBody:         JSON{},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
 	{
-		testBody:         JSON{"icon": "test"},
-		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.MissingRequiredFields),
-	},
-	{
-		testBody:         JSON{"name": strings.Repeat("a", consts.MaxCategoryLen+1), "icon": "test"},
+		testBody:         JSON{"name": strings.Repeat("a", consts.MaxCategoryLen+1)},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Name", consts.MaxCategoryLen)),
 	},
 	{
-		testBody:         JSON{"name": "test", "icon": strings.Repeat("a", consts.MaxIconLen+1)},
-		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Icon", consts.MaxIconLen)),
-	},
-	{
-		testBody:       JSON{"name": "test", "icon": "test"},
+		testBody:       JSON{"name": "test"},
 		expectedStatus: http.StatusOK,
 	},
 	{
-		testBody:         JSON{"name": "test", "icon": "test"},
+		testBody:         JSON{"name": "test"},
 		expectedStatus:   http.StatusConflict,
 		expectedResponse: errorf(consts.CategoryAlreadyExists),
 	},
 	{
-		testBody:       JSON{"name": "test2", "icon": "test"},
+		testBody:       JSON{"name": "test2"},
 		expectedStatus: http.StatusOK,
 	},
 }

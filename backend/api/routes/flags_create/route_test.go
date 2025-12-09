@@ -77,7 +77,7 @@ func TestRoute(t *testing.T) {
 	test_utils.RegisterUser(t, "test", "test@test.test", "testpass", sqlc.UserRoleAuthor)
 	session := test_utils.NewApiTestSession(t, app)
 	session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
-	session.Post("/categories", JSON{"name": "cat", "icon": "icon"}, http.StatusOK)
+	session.Post("/categories", JSON{"name": "cat"}, http.StatusOK)
 	chall := test_utils.CreateChallenge(t, "chall", "cat", "test-desc", sqlc.DeployTypeNormal, 1, sqlc.ScoreTypeStatic)
 
 	for _, test := range testData {

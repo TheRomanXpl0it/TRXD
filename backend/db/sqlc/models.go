@@ -193,7 +193,6 @@ type Badge struct {
 type Category struct {
 	Name          string `json:"name"`
 	VisibleChalls int32  `json:"visible_challs"`
-	Icon          string `json:"icon"`
 }
 
 type Challenge struct {

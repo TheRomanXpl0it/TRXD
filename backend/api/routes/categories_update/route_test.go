@@ -36,33 +36,19 @@ var testData = []struct {
 		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
 	{
-		testBody:         JSON{"new_icon": "test"},
-		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.MissingRequiredFields),
-	},
-	{
-		testBody:         JSON{"name": strings.Repeat("a", consts.MaxCategoryLen+1), "new_icon": "test"},
+		testBody:         JSON{"name": strings.Repeat("a", consts.MaxCategoryLen+1), "new_name": "AAA"},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Name", consts.MaxCategoryLen)),
 	},
 	{
-		testBody:         JSON{"name": "test", "new_name": strings.Repeat("a", consts.MaxCategoryLen+1), "new_icon": "test"},
+		testBody:         JSON{"name": "test", "new_name": strings.Repeat("a", consts.MaxCategoryLen+1)},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(test_utils.Format(consts.MaxError, "NewName", consts.MaxCategoryLen)),
 	},
 	{
-		testBody:         JSON{"name": "test", "new_name": "test", "new_icon": strings.Repeat("a", consts.MaxIconLen+1)},
-		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(test_utils.Format(consts.MaxError, "NewIcon", consts.MaxIconLen)),
-	},
-	{
-		testBody:         JSON{"name": "test", "new_icon": "AAA"},
+		testBody:         JSON{"name": "test", "new_name": "AAA"},
 		expectedStatus:   http.StatusNotFound,
 		expectedResponse: errorf(consts.CategoryNotFound),
-	},
-	{
-		testBody:       JSON{"name": "cat-1", "new_icon": "AAA"},
-		expectedStatus: http.StatusOK,
 	},
 	{
 		testBody:       JSON{"name": "cat-1", "new_name": "category-1"},
@@ -74,7 +60,7 @@ var testData = []struct {
 		expectedResponse: errorf(consts.CategoryNotFound),
 	},
 	{
-		testBody:       JSON{"name": "category-1", "new_name": "challs-1", "new_icon": "BBB"},
+		testBody:       JSON{"name": "category-1", "new_name": "challs-1"},
 		expectedStatus: http.StatusOK,
 	},
 }

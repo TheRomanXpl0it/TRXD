@@ -162,9 +162,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.submitStmt, err = db.PrepareContext(ctx, submit); err != nil {
 		return nil, fmt.Errorf("error preparing query Submit: %w", err)
 	}
-	if q.updateCategoryIconStmt, err = db.PrepareContext(ctx, updateCategoryIcon); err != nil {
-		return nil, fmt.Errorf("error preparing query UpdateCategoryIcon: %w", err)
-	}
 	if q.updateChallengeStmt, err = db.PrepareContext(ctx, updateChallenge); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateChallenge: %w", err)
 	}
@@ -430,11 +427,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing submitStmt: %w", cerr)
 		}
 	}
-	if q.updateCategoryIconStmt != nil {
-		if cerr := q.updateCategoryIconStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing updateCategoryIconStmt: %w", cerr)
-		}
-	}
 	if q.updateChallengeStmt != nil {
 		if cerr := q.updateChallengeStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateChallengeStmt: %w", cerr)
@@ -570,7 +562,6 @@ type Queries struct {
 	resetTeamPasswordStmt        *sql.Stmt
 	resetUserPasswordStmt        *sql.Stmt
 	submitStmt                   *sql.Stmt
-	updateCategoryIconStmt       *sql.Stmt
 	updateChallengeStmt          *sql.Stmt
 	updateChallengesCategoryStmt *sql.Stmt
 	updateConfigStmt             *sql.Stmt
@@ -633,7 +624,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		resetTeamPasswordStmt:        q.resetTeamPasswordStmt,
 		resetUserPasswordStmt:        q.resetUserPasswordStmt,
 		submitStmt:                   q.submitStmt,
-		updateCategoryIconStmt:       q.updateCategoryIconStmt,
 		updateChallengeStmt:          q.updateChallengeStmt,
 		updateChallengesCategoryStmt: q.updateChallengesCategoryStmt,
 		updateConfigStmt:             q.updateConfigStmt,

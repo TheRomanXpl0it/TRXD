@@ -19,17 +19,11 @@ func TestRoute(t *testing.T) {
 
 	session := test_utils.NewApiTestSession(t, app)
 	session.Post("/login", JSON{"email": "admin@email.com", "password": "testpass"}, http.StatusOK)
-	session.Post("/categories", JSON{"name": "cat-3", "icon": "icon-cat-3"}, http.StatusOK)
+	session.Post("/categories", JSON{"name": "cat-3"}, http.StatusOK)
 
-	expected := []JSON{
-		{
-			"icon": "cat-1",
-			"name": "cat-1",
-		},
-		{
-			"icon": "cat-2",
-			"name": "cat-2",
-		},
+	expected := []string{
+		"cat-1",
+		"cat-2",
 	}
 
 	session = test_utils.NewApiTestSession(t, app)
@@ -38,19 +32,10 @@ func TestRoute(t *testing.T) {
 	session.Get("/categories", nil, http.StatusOK)
 	session.CheckResponse(expected)
 
-	expectedAdmin := []JSON{
-		{
-			"icon": "cat-1",
-			"name": "cat-1",
-		},
-		{
-			"icon": "cat-2",
-			"name": "cat-2",
-		},
-		{
-			"icon": "icon-cat-3",
-			"name": "cat-3",
-		},
+	expectedAdmin := []string{
+		"cat-1",
+		"cat-2",
+		"cat-3",
 	}
 
 	session = test_utils.NewApiTestSession(t, app)

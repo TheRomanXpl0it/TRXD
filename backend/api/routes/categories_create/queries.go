@@ -8,11 +8,8 @@ import (
 	"github.com/lib/pq"
 )
 
-func CreateCategory(ctx context.Context, name string, icon string) (*sqlc.Category, error) {
-	err := db.Sql.CreateCategory(ctx, sqlc.CreateCategoryParams{
-		Name: name,
-		Icon: icon,
-	})
+func CreateCategory(ctx context.Context, name string) (*sqlc.Category, error) {
+	err := db.Sql.CreateCategory(ctx, name)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
 			if pqErr.Code == "23505" { // Unique violation error code
@@ -21,5 +18,5 @@ func CreateCategory(ctx context.Context, name string, icon string) (*sqlc.Catego
 		}
 		return nil, err
 	}
-	return &sqlc.Category{Name: name, Icon: icon}, nil
+	return &sqlc.Category{Name: name}, nil
 }

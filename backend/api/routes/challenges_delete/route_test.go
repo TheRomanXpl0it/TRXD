@@ -69,7 +69,7 @@ func TestRoute(t *testing.T) {
 	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
 		session.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
-		session.Post("/categories", JSON{"name": "cat", "icon": "icon"}, -1)
+		session.Post("/categories", JSON{"name": "cat"}, -1)
 
 		chall := test_utils.TryCreateChallenge(t, "chall", "cat", "test-desc", sqlc.DeployTypeNormal, 1, sqlc.ScoreTypeStatic)
 		if chall != nil {

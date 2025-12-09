@@ -78,7 +78,6 @@ CREATE TABLE IF NOT EXISTS badges (
 CREATE TABLE IF NOT EXISTS categories (
   name VARCHAR(32) NOT NULL,
   visible_challs INTEGER NOT NULL DEFAULT 0,
-  icon VARCHAR(32) NOT NULL,
   PRIMARY KEY(name)
 );
 

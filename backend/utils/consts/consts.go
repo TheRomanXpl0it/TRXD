@@ -12,7 +12,6 @@ const (
 	MaxChallNameLen       = 128
 	MaxEmailLen           = 256
 	MaxFlagLen            = 128
-	MaxIconLen            = 32
 	MaxImageLen           = 1024
 	MaxUserNameLen        = 64
 	MaxTeamNameLen        = 64

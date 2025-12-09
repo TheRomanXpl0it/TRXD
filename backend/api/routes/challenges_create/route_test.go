@@ -123,7 +123,7 @@ func TestRoute(t *testing.T) {
 	test_utils.RegisterUser(t, "author", "author@test.test", "authorpass", sqlc.UserRoleAuthor)
 	session := test_utils.NewApiTestSession(t, app)
 	session.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
-	session.Post("/categories", JSON{"name": "cat", "icon": "icon"}, http.StatusOK)
+	session.Post("/categories", JSON{"name": "cat"}, http.StatusOK)
 
 	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)

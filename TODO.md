@@ -7,8 +7,8 @@
    - change csrf token name
    - api names more similar (categories_create -> name & categories_delete -> category)
  - bugs:
+   - remove image pfps & bio
    - single user mode, send user id instead of team id (ex. scoreboard)
-   - change image pfp system
    - attachments rework (own table) (own endpoint & update challenges to json)
    - attachments hash in path
    - authors rework (string list)
@@ -39,12 +39,11 @@
  - Fix admin flag submission 
  - ~~Improve "Team join" page on smaller screens~~
 
-## Alpha
+## Release
  - config to start and end ctf
  - integration tests (for generic behaviour)
  - tests for distributed functioning
  - role configuraion endpoint
- - dropdown menu categories
  - dropdown menu container
  - DOCUMENTATION
 
@@ -58,21 +57,21 @@
  - endpoint + cli cmd to parse a category/challenge file (maybe yaml) with all infos
  - extract data for ctftime
  - scoreboard freeze (idea: use a table or a view to take a snapshot of the scoreboard, update it every time someone solves if not in freeze time (or just prefetch and compute if not exists))
- - telegram bot for first bloods
+ - telegram bot for first bloods (and webhook generalization)
  - hash verifier flag or script
- - kube support
- - swarm support
+ - login via CTFTime
+ - default starting points for challenges as global config
 
 ## Bonus Ideas
- - maybe set default starting points for challenges as global config
+ - kube support
+ - swarm support
  - ctf stats page
  - flag submit that checks for all challenges and mark solved the one of the correct flag (credits to: midnightsun)
  - writeups for challs into the platform (visible after ctf ends)
- - signed flags (aes ecb with team id (4 byte) and chall id (4 byte))
+ - signed flags (AES ECB or hmac with team id (4 byte) and chall id (4 byte))
  - tls instances: https://github.com/inconshreveable/slt
  - likes and dislikes for challs (only for who actually solved)
  - kick user from team
- - timeout on endpoints
- - optional mail server
+ - mail server
  - endpoint to store image files (like badges and pfp)
  - flag format validator

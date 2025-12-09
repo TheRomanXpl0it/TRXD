@@ -28,7 +28,6 @@ func init() {
 	validate.RegisterAlias("image_url", fmt.Sprintf("max=%d,valid_http_url", consts.MaxImageLen))
 
 	validate.RegisterAlias("category_name", fmt.Sprintf("max=%d", consts.MaxCategoryLen))
-	validate.RegisterAlias("category_icon", fmt.Sprintf("max=%d", consts.MaxIconLen))
 
 	validate.RegisterAlias("challenge_name", fmt.Sprintf("max=%d", consts.MaxChallNameLen))
 	validate.RegisterAlias("challenge_description", fmt.Sprintf("max=%d", consts.MaxChallDescLen))

@@ -30,15 +30,3 @@ func UpdateChallengesCategory(ctx context.Context, oldName string, newName strin
 
 	return nil
 }
-
-func UpdateCategoryIcon(ctx context.Context, name string, newIcon string) error {
-	err := db.Sql.UpdateCategoryIcon(ctx, sqlc.UpdateCategoryIconParams{
-		Name: name,
-		Icon: newIcon,
-	})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}

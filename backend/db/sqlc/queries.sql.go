@@ -46,17 +46,12 @@ func (q *Queries) CheckFlags(ctx context.Context, arg CheckFlagsParams) (bool, e
 }
 
 const createCategory = `-- name: CreateCategory :exec
-INSERT INTO categories (name, icon) VALUES ($1, $2)
+INSERT INTO categories (name) VALUES ($1)
 `
 
-type CreateCategoryParams struct {
-	Name string `json:"name"`
-	Icon string `json:"icon"`
-}
-
 // Insert a new category
-func (q *Queries) CreateCategory(ctx context.Context, arg CreateCategoryParams) error {
-	_, err := q.exec(ctx, q.createCategoryStmt, createCategory, arg.Name, arg.Icon)
+func (q *Queries) CreateCategory(ctx context.Context, name string) error {
+	_, err := q.exec(ctx, q.createCategoryStmt, createCategory, name)
 	return err
 }
 
@@ -361,10 +356,10 @@ func (q *Queries) GetBadgesFromTeam(ctx context.Context, id int32) ([]GetBadgesF
 }
 
 const getCategories = `-- name: GetCategories :many
-SELECT name, visible_challs, icon FROM categories ORDER BY name ASC
+SELECT name, visible_challs FROM categories ORDER BY name ASC
 `
 
-// Retrieve all categories and icons
+// Retrieve all categories
 func (q *Queries) GetCategories(ctx context.Context) ([]Category, error) {
 	rows, err := q.query(ctx, q.getCategoriesStmt, getCategories)
 	if err != nil {
@@ -374,7 +369,7 @@ func (q *Queries) GetCategories(ctx context.Context) ([]Category, error) {
 	var items []Category
 	for rows.Next() {
 		var i Category
-		if err := rows.Scan(&i.Name, &i.VisibleChalls, &i.Icon); err != nil {
+		if err := rows.Scan(&i.Name, &i.VisibleChalls); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -389,14 +384,14 @@ func (q *Queries) GetCategories(ctx context.Context) ([]Category, error) {
 }
 
 const getCategory = `-- name: GetCategory :one
-SELECT name, visible_challs, icon FROM categories WHERE name = $1
+SELECT name, visible_challs FROM categories WHERE name = $1
 `
 
 // fetch category by name
 func (q *Queries) GetCategory(ctx context.Context, name string) (Category, error) {
 	row := q.queryRow(ctx, q.getCategoryStmt, getCategory, name)
 	var i Category
-	err := row.Scan(&i.Name, &i.VisibleChalls, &i.Icon)
+	err := row.Scan(&i.Name, &i.VisibleChalls)
 	return i, err
 }
 
@@ -1111,21 +1106,6 @@ func (q *Queries) Submit(ctx context.Context, arg SubmitParams) (SubmitRow, erro
 	var i SubmitRow
 	err := row.Scan(&i.Status, &i.FirstBlood)
 	return i, err
-}
-
-const updateCategoryIcon = `-- name: UpdateCategoryIcon :exec
-UPDATE categories SET icon = $2 WHERE name = $1
-`
-
-type UpdateCategoryIconParams struct {
-	Name string `json:"name"`
-	Icon string `json:"icon"`
-}
-
-// update category icon by name
-func (q *Queries) UpdateCategoryIcon(ctx context.Context, arg UpdateCategoryIconParams) error {
-	_, err := q.exec(ctx, q.updateCategoryIconStmt, updateCategoryIcon, arg.Name, arg.Icon)
-	return err
 }
 
 const updateChallenge = `-- name: UpdateChallenge :exec

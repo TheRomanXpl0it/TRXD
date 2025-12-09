@@ -1,3 +1,3 @@
 -- name: GetCategories :many
--- Retrieve all categories and icons
+-- Retrieve all categories
 SELECT * FROM categories ORDER BY name ASC;
