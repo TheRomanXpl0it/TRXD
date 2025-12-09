@@ -22,7 +22,6 @@ func TestRoute(t *testing.T) {
 		{
 			"country": "",
 			"email":   "",
-			"image":   "",
 			"name":    "a",
 			"role":    "",
 			"score":   1498,
@@ -30,7 +29,6 @@ func TestRoute(t *testing.T) {
 		{
 			"country": "",
 			"email":   "",
-			"image":   "",
 			"name":    "b",
 			"role":    "",
 			"score":   0,
@@ -38,7 +36,6 @@ func TestRoute(t *testing.T) {
 		{
 			"country": "",
 			"email":   "",
-			"image":   "",
 			"name":    "c",
 			"role":    "",
 			"score":   998,
@@ -46,7 +43,6 @@ func TestRoute(t *testing.T) {
 		{
 			"country": "",
 			"email":   "",
-			"image":   "",
 			"name":    "d",
 			"role":    "",
 			"score":   0,
@@ -66,7 +62,6 @@ func TestRoute(t *testing.T) {
 		{
 			"country": "",
 			"email":   "",
-			"image":   "",
 			"name":    "a",
 			"role":    "",
 			"score":   1498,
@@ -74,7 +69,6 @@ func TestRoute(t *testing.T) {
 		{
 			"country": "",
 			"email":   "",
-			"image":   "",
 			"name":    "b",
 			"role":    "",
 			"score":   0,
@@ -82,7 +76,6 @@ func TestRoute(t *testing.T) {
 		{
 			"country": "",
 			"email":   "",
-			"image":   "",
 			"name":    "c",
 			"role":    "",
 			"score":   998,
@@ -90,7 +83,6 @@ func TestRoute(t *testing.T) {
 		{
 			"country": "",
 			"email":   "",
-			"image":   "",
 			"name":    "d",
 			"role":    "",
 			"score":   0,
@@ -98,7 +90,6 @@ func TestRoute(t *testing.T) {
 		{
 			"country": "",
 			"email":   "",
-			"image":   "",
 			"name":    "test",
 			"role":    "",
 			"score":   0,
@@ -119,7 +110,6 @@ func TestRoute(t *testing.T) {
 		{
 			"country": "",
 			"email":   "a@a.a",
-			"image":   "",
 			"name":    "a",
 			"role":    "Player",
 			"score":   1498,
@@ -127,7 +117,6 @@ func TestRoute(t *testing.T) {
 		{
 			"country": "",
 			"email":   "b@b.b",
-			"image":   "",
 			"name":    "b",
 			"role":    "Player",
 			"score":   0,
@@ -135,7 +124,6 @@ func TestRoute(t *testing.T) {
 		{
 			"country": "",
 			"email":   "c@c.c",
-			"image":   "",
 			"name":    "c",
 			"role":    "Player",
 			"score":   998,
@@ -143,7 +131,6 @@ func TestRoute(t *testing.T) {
 		{
 			"country": "",
 			"email":   "d@d.d",
-			"image":   "",
 			"name":    "d",
 			"role":    "Player",
 			"score":   0,
@@ -151,7 +138,6 @@ func TestRoute(t *testing.T) {
 		{
 			"country": "",
 			"email":   "admin@email.com",
-			"image":   "",
 			"name":    "e",
 			"role":    "Admin",
 			"score":   0,
@@ -159,7 +145,6 @@ func TestRoute(t *testing.T) {
 		{
 			"country": "",
 			"email":   "f@f.f",
-			"image":   "",
 			"name":    "f",
 			"role":    "Author",
 			"score":   0,
@@ -167,7 +152,6 @@ func TestRoute(t *testing.T) {
 		{
 			"country": "",
 			"email":   "test@test.test",
-			"image":   "",
 			"name":    "test",
 			"role":    "Player",
 			"score":   0,
@@ -175,7 +159,6 @@ func TestRoute(t *testing.T) {
 		{
 			"country": "",
 			"email":   "admin@test.com",
-			"image":   "",
 			"name":    "admin",
 			"role":    "Admin",
 			"score":   0,

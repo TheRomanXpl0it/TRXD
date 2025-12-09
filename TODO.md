@@ -7,11 +7,11 @@
    - change csrf token name
    - api names more similar (categories_create -> name & categories_delete -> category)
  - bugs:
-   - remove image pfps & bio
+   - tags rework (string list)
+   - authors rework (string list)
    - single user mode, send user id instead of team id (ex. scoreboard)
    - attachments rework (own table) (own endpoint & update challenges to json)
    - attachments hash in path
-   - authors rework (string list)
  - tests:
    - tests with removal of trxd-shared (and fault tolerance)
    - discord webhook tests in pipeline

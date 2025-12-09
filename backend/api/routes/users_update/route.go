@@ -16,13 +16,12 @@ func Route(c *fiber.Ctx) error {
 	var data struct {
 		Name    string  `json:"name" validate:"user_name"`
 		Country *string `json:"country" validate:"omitempty,country"`
-		Image   *string `json:"image" validate:"omitempty,image_url"`
 	}
 	if err := c.BodyParser(&data); err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidJSON)
 	}
 
-	if data.Name == "" && data.Country == nil && data.Image == nil {
+	if data.Name == "" && data.Country == nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.MissingRequiredFields)
 	}
 	valid, err := validator.Struct(c, data)
@@ -38,7 +37,7 @@ func Route(c *fiber.Ctx) error {
 	}
 	defer tx.Rollback()
 
-	err = UpdateUser(c.Context(), tx, uid, data.Name, data.Country, data.Image)
+	err = UpdateUser(c.Context(), tx, uid, data.Name, data.Country)
 	if err != nil {
 		if err.Error() == "[name already taken]" {
 			return utils.Error(c, fiber.StatusConflict, consts.NameAlreadyTaken)
@@ -54,7 +53,7 @@ func Route(c *fiber.Ctx) error {
 	if mode == "true" {
 		tid := c.Locals("tid").(int32)
 
-		err = teams_update.UpdateTeam(c.Context(), tx, tid, data.Name, data.Country, data.Image)
+		err = teams_update.UpdateTeam(c.Context(), tx, tid, data.Name, data.Country)
 		if err != nil {
 			return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorUpdatingTeam, err)
 		}

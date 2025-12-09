@@ -5,7 +5,6 @@ SELECT
     t.name,
     t.score,
     t.country,
-    t.image,
     COALESCE(
       JSON_AGG(
         JSON_BUILD_OBJECT(
@@ -17,5 +16,5 @@ SELECT
     ) AS badges
   FROM teams t
   LEFT JOIN badges b ON b.team_id = t.id
-  GROUP BY t.id, t.name, t.score, t.country, t.image
+  GROUP BY t.id, t.name, t.score, t.country
   ORDER BY t.score DESC;

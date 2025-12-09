@@ -268,7 +268,6 @@ type Team struct {
 	PasswordSalt string         `json:"password_salt"`
 	Score        int32          `json:"score"`
 	Country      sql.NullString `json:"country"`
-	Image        sql.NullString `json:"image"`
 }
 
 type TeamCategorySolf struct {
@@ -288,5 +287,4 @@ type User struct {
 	Role         UserRole       `json:"role"`
 	TeamID       sql.NullInt32  `json:"team_id"`
 	Country      sql.NullString `json:"country"`
-	Image        sql.NullString `json:"image"`
 }

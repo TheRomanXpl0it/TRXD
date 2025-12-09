@@ -40,21 +40,6 @@ var testData = []struct {
 		expectedResponse: errorf(consts.InvalidCountry),
 	},
 	{
-		testBody:         JSON{"image": strings.Repeat("a", consts.MaxImageLen+1)},
-		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Image", consts.MaxImageLen)),
-	},
-	{
-		testBody:         JSON{"image": "a"},
-		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.InvalidHttpUrl),
-	},
-	{
-		testBody:         JSON{"image": "file://example.com/image.png"},
-		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.InvalidHttpUrl),
-	},
-	{
 		testBody:         JSON{"name": strings.Repeat("a", consts.MaxTeamNameLen+1)},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Name", consts.MaxTeamNameLen)),
@@ -65,23 +50,15 @@ var testData = []struct {
 		expectedResponse: errorf(consts.NameAlreadyTaken),
 	},
 	{
-		testBody:       JSON{"country": "USA", "image": "http://example.com/image.png"},
+		testBody:       JSON{"country": "USA"},
 		expectedStatus: http.StatusOK,
 	},
 	{
-		testBody:       JSON{"country": "USA", "image": "https://example.com/image.png"},
+		testBody:       JSON{"country": ""},
 		expectedStatus: http.StatusOK,
 	},
 	{
-		testBody:       JSON{"country": "", "image": ""},
-		expectedStatus: http.StatusOK,
-	},
-	{
-		testBody:       JSON{"country": "JPN", "image": "https://example.com/image.png"},
-		expectedStatus: http.StatusOK,
-	},
-	{
-		testBody:       JSON{"country": "ITA"},
+		testBody:       JSON{"country": "JPN"},
 		expectedStatus: http.StatusOK,
 	},
 }

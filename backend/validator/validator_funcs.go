@@ -16,15 +16,6 @@ func validCountry(fl validator.FieldLevel) bool {
 	return err == nil
 }
 
-func validHttpUrl(fl validator.FieldLevel) bool {
-	value := fl.Field().String()
-	if value == "" {
-		return true
-	}
-	err := validate.Var(value, "http_url")
-	return err == nil
-}
-
 func validJson(fl validator.FieldLevel) bool {
 	value := fl.Field().String()
 	if value == "" {

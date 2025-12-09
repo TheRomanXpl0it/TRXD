@@ -24,8 +24,6 @@ func init() {
 	validate.RegisterAlias("id", fmt.Sprintf("min=0,max=%d", math.MaxInt32))
 	validate.RegisterAlias("password", fmt.Sprintf("min=%d,max=%d", consts.MinPasswordLen, consts.MaxPasswordLen))
 	validate.RegisterValidation("country", validCountry)
-	validate.RegisterValidation("valid_http_url", validHttpUrl)
-	validate.RegisterAlias("image_url", fmt.Sprintf("max=%d,valid_http_url", consts.MaxImageLen))
 
 	validate.RegisterAlias("category_name", fmt.Sprintf("max=%d", consts.MaxCategoryLen))
 
@@ -46,7 +44,6 @@ func init() {
 	validate.RegisterAlias("tag_name", fmt.Sprintf("max=%d", consts.MaxTagNameLen))
 
 	validate.RegisterAlias("team_name", fmt.Sprintf("max=%d", consts.MaxTeamNameLen))
-	validate.RegisterAlias("team_bio", fmt.Sprintf("max=%d", consts.MaxBioLen))
 
 	validate.RegisterAlias("user_name", fmt.Sprintf("max=%d", consts.MaxUserNameLen))
 	validate.RegisterAlias("user_email", fmt.Sprintf("max=%d,email", consts.MaxEmailLen))

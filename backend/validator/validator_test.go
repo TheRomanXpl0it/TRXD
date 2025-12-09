@@ -41,29 +41,13 @@ func TestValidators(t *testing.T) {
 	varTest(t, "password", strings.Repeat("a", consts.MinPasswordLen))
 	varTest(t, "password", strings.Repeat("a", consts.MaxPasswordLen))
 	varTest(t, "password", strings.Repeat("a", consts.MaxPasswordLen+1), test_utils.Format(consts.MaxError, "password", consts.MaxPasswordLen))
+
 	varTest(t, "country", "")
 	varTest(t, "country", "a", consts.InvalidCountry)
 	varTest(t, "country", "aaa", consts.InvalidCountry)
 	varTest(t, "country", "USA")
 	varTest(t, "country", "JPN")
 	varTest(t, "country", "aaaa", consts.InvalidCountry)
-
-	varTest(t, "valid_http_url", "")
-	varTest(t, "valid_http_url", "a", consts.InvalidHttpUrl)
-	varTest(t, "valid_http_url", "file://a", consts.InvalidHttpUrl)
-	varTest(t, "valid_http_url", "http://a")
-	varTest(t, "valid_http_url", "https://a")
-	varTest(t, "valid_http_url", "http://example.com")
-	varTest(t, "valid_http_url", "https://example.com")
-
-	varTest(t, "image_url", "")
-	varTest(t, "image_url", "a", consts.InvalidHttpUrl)
-	varTest(t, "image_url", "file://a", consts.InvalidHttpUrl)
-	varTest(t, "image_url", "http://a")
-	varTest(t, "image_url", "https://a")
-	varTest(t, "image_url", "http://example.com")
-	varTest(t, "image_url", "https://example.com")
-	varTest(t, "image_url", strings.Repeat("a", consts.MaxImageLen+1), test_utils.Format(consts.MaxError, "image_url", consts.MaxImageLen))
 
 	varTest(t, "category_name", "")
 	varTest(t, "category_name", "a")
@@ -112,6 +96,7 @@ func TestValidators(t *testing.T) {
 	varTest(t, "challenge_lifetime", 1337)
 	varTest(t, "challenge_lifetime", math.MaxInt32)
 	varTest(t, "challenge_lifetime", math.MaxInt32+1, test_utils.Format(consts.MaxError, "challenge_lifetime", math.MaxInt32))
+
 	varTest(t, "challenge_envs", "")
 	varTest(t, "challenge_envs", "a", consts.InvalidEnvs)
 	varTest(t, "challenge_envs", "[]")
@@ -124,6 +109,7 @@ func TestValidators(t *testing.T) {
 	varTest(t, "challenge_max_memory", 1337)
 	varTest(t, "challenge_max_memory", math.MaxInt32)
 	varTest(t, "challenge_max_memory", math.MaxInt32+1, test_utils.Format(consts.MaxError, "challenge_max_memory", math.MaxInt32))
+
 	varTest(t, "challenge_max_cpu", "-1", consts.InvalidMaxCpu)
 	varTest(t, "challenge_max_cpu", "0", consts.InvalidMaxCpu)
 	varTest(t, "challenge_max_cpu", "13.37")
@@ -145,11 +131,6 @@ func TestValidators(t *testing.T) {
 	varTest(t, "team_name", "a")
 	varTest(t, "team_name", strings.Repeat("a", consts.MaxTeamNameLen))
 	varTest(t, "team_name", strings.Repeat("a", consts.MaxTeamNameLen+1), test_utils.Format(consts.MaxError, "team_name", consts.MaxTeamNameLen))
-
-	varTest(t, "team_bio", "")
-	varTest(t, "team_bio", "a")
-	varTest(t, "team_bio", strings.Repeat("a", consts.MaxBioLen))
-	varTest(t, "team_bio", strings.Repeat("a", consts.MaxBioLen+1), test_utils.Format(consts.MaxError, "team_bio", consts.MaxBioLen))
 
 	varTest(t, "user_name", "")
 	varTest(t, "user_name", "a")

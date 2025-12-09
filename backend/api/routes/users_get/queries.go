@@ -16,7 +16,6 @@ type UserData struct {
 	Role     string                  `json:"role"`
 	Score    int32                   `json:"score"`
 	Country  string                  `json:"country"`
-	Image    string                  `json:"image"`
 	TeamID   *int32                  `json:"team_id"`
 	JoinedAt *time.Time              `json:"joined_at,omitempty"`
 	Solves   []sqlc.GetUserSolvesRow `json:"solves,omitempty"`
@@ -46,9 +45,6 @@ func GetUser(ctx context.Context, id int32, admin bool) (*UserData, error) {
 	data.Score = user.Score
 	if user.Country.Valid {
 		data.Country = user.Country.String
-	}
-	if user.Image.Valid {
-		data.Image = user.Image.String
 	}
 
 	data.JoinedAt = &user.CreatedAt

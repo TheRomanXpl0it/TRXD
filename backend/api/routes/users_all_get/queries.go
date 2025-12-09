@@ -14,7 +14,6 @@ type UserData struct {
 	Role    string `json:"role"`
 	Score   int32  `json:"score"`
 	Country string `json:"country"`
-	Image   string `json:"image"`
 }
 
 func GetUsers(ctx context.Context, admin bool) ([]*UserData, error) {
@@ -40,9 +39,6 @@ func GetUsers(ctx context.Context, admin bool) ([]*UserData, error) {
 		}
 		if user.Country.Valid {
 			userData.Country = user.Country.String
-		}
-		if user.Image.Valid {
-			userData.Image = user.Image.String
 		}
 
 		usersData = append(usersData, userData)

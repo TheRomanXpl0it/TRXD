@@ -46,39 +46,20 @@ var testData = []struct {
 		expectedResponse: errorf(consts.InvalidCountry),
 	},
 	{
-		testBody:         JSON{"image": strings.Repeat("a", consts.MaxImageLen+1)},
-		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Image", consts.MaxImageLen)),
-	},
-	{
-		testBody:         JSON{"name": "a", "country": "USA", "image": "a"},
-		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.InvalidHttpUrl),
-	},
-	{
-		testBody:         JSON{"name": "a", "country": "USA", "image": "file://example.com/image.png"},
-		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.InvalidHttpUrl),
-	},
-	{
-		testBody:         JSON{"name": "a", "country": "USA", "image": "http://example.com/image.png"},
+		testBody:         JSON{"name": "a", "country": "USA"},
 		expectedStatus:   http.StatusConflict,
 		expectedResponse: errorf(consts.NameAlreadyTaken),
 	},
 	{
-		testBody:       JSON{"name": "aa", "country": "USA", "image": "http://example.com/image.png"},
+		testBody:       JSON{"name": "aa", "country": "USA"},
 		expectedStatus: http.StatusOK,
 	},
 	{
-		testBody:       JSON{"name": "aa", "country": "USA", "image": "https://example.com/image.png"},
+		testBody:       JSON{"name": "aa", "country": "USA"},
 		expectedStatus: http.StatusOK,
 	},
 	{
-		testBody:       JSON{"name": "aa", "country": "USA", "image": ""},
-		expectedStatus: http.StatusOK,
-	},
-	{
-		testBody:       JSON{"name": "aa", "country": "", "image": "https://example.com/image.png"},
+		testBody:       JSON{"name": "aa", "country": ""},
 		expectedStatus: http.StatusOK,
 	},
 	{
@@ -124,7 +105,7 @@ func TestRoute(t *testing.T) {
 
 	session.Post("/teams/register", JSON{"name": "team", "password": "teampass"}, http.StatusOK)
 	session.CheckResponse(nil)
-	session.Patch("/users", JSON{"name": "updated-name", "country": "USA", "image": "https://updated.com/image.png"}, http.StatusOK)
+	session.Patch("/users", JSON{"name": "updated-name", "country": "USA"}, http.StatusOK)
 	session.CheckResponse(nil)
 
 	session.Get("/info", nil, http.StatusOK)
@@ -147,8 +128,5 @@ func TestRoute(t *testing.T) {
 	}
 	if body.(map[string]interface{})["country"] != "USA" {
 		t.Fatal("Expected updated country")
-	}
-	if body.(map[string]interface{})["image"] != "https://updated.com/image.png" {
-		t.Fatal("Expected updated image")
 	}
 }

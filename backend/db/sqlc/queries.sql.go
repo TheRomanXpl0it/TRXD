@@ -678,7 +678,6 @@ SELECT
     t.name,
     t.score,
     t.country,
-    t.image,
     COALESCE(
       JSON_AGG(
         JSON_BUILD_OBJECT(
@@ -690,7 +689,7 @@ SELECT
     ) AS badges
   FROM teams t
   LEFT JOIN badges b ON b.team_id = t.id
-  GROUP BY t.id, t.name, t.score, t.country, t.image
+  GROUP BY t.id, t.name, t.score, t.country
   ORDER BY t.id
 `
 
@@ -699,7 +698,6 @@ type GetTeamsPreviewRow struct {
 	Name    string         `json:"name"`
 	Score   int32          `json:"score"`
 	Country sql.NullString `json:"country"`
-	Image   sql.NullString `json:"image"`
 	Badges  interface{}    `json:"badges"`
 }
 
@@ -718,7 +716,6 @@ func (q *Queries) GetTeamsPreview(ctx context.Context) ([]GetTeamsPreviewRow, er
 			&i.Name,
 			&i.Score,
 			&i.Country,
-			&i.Image,
 			&i.Badges,
 		); err != nil {
 			return nil, err
@@ -740,7 +737,6 @@ SELECT
     t.name,
     t.score,
     t.country,
-    t.image,
     COALESCE(
       JSON_AGG(
         JSON_BUILD_OBJECT(
@@ -752,7 +748,7 @@ SELECT
     ) AS badges
   FROM teams t
   LEFT JOIN badges b ON b.team_id = t.id
-  GROUP BY t.id, t.name, t.score, t.country, t.image
+  GROUP BY t.id, t.name, t.score, t.country
   ORDER BY t.score DESC
 `
 
@@ -761,7 +757,6 @@ type GetTeamsScoreboardRow struct {
 	Name    string         `json:"name"`
 	Score   int32          `json:"score"`
 	Country sql.NullString `json:"country"`
-	Image   sql.NullString `json:"image"`
 	Badges  interface{}    `json:"badges"`
 }
 
@@ -780,7 +775,6 @@ func (q *Queries) GetTeamsScoreboard(ctx context.Context) ([]GetTeamsScoreboardR
 			&i.Name,
 			&i.Score,
 			&i.Country,
-			&i.Image,
 			&i.Badges,
 		); err != nil {
 			return nil, err
@@ -798,7 +792,7 @@ func (q *Queries) GetTeamsScoreboard(ctx context.Context) ([]GetTeamsScoreboardR
 
 const getTeamsScoreboardGraph = `-- name: GetTeamsScoreboardGraph :many
 SELECT t.id AS team_id, c.id AS chall_id, c.points, s.first_blood, s."timestamp" FROM (
-	SELECT id, name, password_hash, password_salt, score, country, image FROM teams t
+	SELECT id, name, password_hash, password_salt, score, country FROM teams t
         ORDER BY t.score DESC
         LIMIT CAST((SELECT value FROM configs WHERE key='scoreboard-top') AS INT)) AS t
   JOIN users u ON u.team_id = t.id
@@ -848,7 +842,7 @@ func (q *Queries) GetTeamsScoreboardGraph(ctx context.Context) ([]GetTeamsScoreb
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, name, email, password_hash, password_salt, created_at, score, role, team_id, country, image FROM users WHERE email = $1
+SELECT id, name, email, password_hash, password_salt, created_at, score, role, team_id, country FROM users WHERE email = $1
 `
 
 // Retrieve a user by their email address
@@ -866,7 +860,6 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Role,
 		&i.TeamID,
 		&i.Country,
-		&i.Image,
 	)
 	return i, err
 }
@@ -920,7 +913,7 @@ func (q *Queries) GetUserSolves(ctx context.Context, userID int32) ([]GetUserSol
 }
 
 const getUsersPreview = `-- name: GetUsersPreview :many
-SELECT id, name, email, role, score, country, image
+SELECT id, name, email, role, score, country
   FROM users
   ORDER BY id ASC
 `
@@ -932,7 +925,6 @@ type GetUsersPreviewRow struct {
 	Role    UserRole       `json:"role"`
 	Score   int32          `json:"score"`
 	Country sql.NullString `json:"country"`
-	Image   sql.NullString `json:"image"`
 }
 
 // Retrieve all users
@@ -952,7 +944,6 @@ func (q *Queries) GetUsersPreview(ctx context.Context) ([]GetUsersPreviewRow, er
 			&i.Role,
 			&i.Score,
 			&i.Country,
-			&i.Image,
 		); err != nil {
 			return nil, err
 		}
@@ -977,7 +968,7 @@ WITH locked_user AS (
     INSERT INTO teams (name, password_hash, password_salt)
     SELECT $2, $3, $4
     FROM locked_user
-    RETURNING id, name, password_hash, password_salt, score, country, image
+    RETURNING id, name, password_hash, password_salt, score, country
   )
 UPDATE users
   SET team_id = new_team.id
@@ -1004,7 +995,7 @@ func (q *Queries) RegisterTeam(ctx context.Context, arg RegisterTeamParams) erro
 }
 
 const registerUser = `-- name: RegisterUser :one
-INSERT INTO users (name, email, password_hash, password_salt, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, email, password_hash, password_salt, created_at, score, role, team_id, country, image
+INSERT INTO users (name, email, password_hash, password_salt, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, email, password_hash, password_salt, created_at, score, role, team_id, country
 `
 
 type RegisterUserParams struct {
@@ -1036,7 +1027,6 @@ func (q *Queries) RegisterUser(ctx context.Context, arg RegisterUserParams) (Use
 		&i.Role,
 		&i.TeamID,
 		&i.Country,
-		&i.Image,
 	)
 	return i, err
 }
@@ -1298,8 +1288,7 @@ const updateTeam = `-- name: UpdateTeam :exec
 UPDATE teams
 SET
   name = COALESCE($2, name),
-  country = COALESCE($3, country),
-  image = COALESCE($4, image)
+  country = COALESCE($3, country)
 WHERE id = $1
 `
 
@@ -1307,17 +1296,11 @@ type UpdateTeamParams struct {
 	ID      int32          `json:"id"`
 	Name    sql.NullString `json:"name"`
 	Country sql.NullString `json:"country"`
-	Image   sql.NullString `json:"image"`
 }
 
 // Update team details
 func (q *Queries) UpdateTeam(ctx context.Context, arg UpdateTeamParams) error {
-	_, err := q.exec(ctx, q.updateTeamStmt, updateTeam,
-		arg.ID,
-		arg.Name,
-		arg.Country,
-		arg.Image,
-	)
+	_, err := q.exec(ctx, q.updateTeamStmt, updateTeam, arg.ID, arg.Name, arg.Country)
 	return err
 }
 
@@ -1325,8 +1308,7 @@ const updateUser = `-- name: UpdateUser :exec
 UPDATE users
 SET
   name = COALESCE($2, name),
-  country = COALESCE($3, country),
-  image = COALESCE($4, image)
+  country = COALESCE($3, country)
 WHERE id = $1
 `
 
@@ -1334,16 +1316,10 @@ type UpdateUserParams struct {
 	ID      int32          `json:"id"`
 	Name    sql.NullString `json:"name"`
 	Country sql.NullString `json:"country"`
-	Image   sql.NullString `json:"image"`
 }
 
 // Update user details
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
-	_, err := q.exec(ctx, q.updateUserStmt, updateUser,
-		arg.ID,
-		arg.Name,
-		arg.Country,
-		arg.Image,
-	)
+	_, err := q.exec(ctx, q.updateUserStmt, updateUser, arg.ID, arg.Name, arg.Country)
 	return err
 }

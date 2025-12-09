@@ -13,7 +13,6 @@ type TeamData struct {
 	Name    string                      `json:"name"`
 	Score   int32                       `json:"score"`
 	Country string                      `json:"country"`
-	Image   string                      `json:"image,omitempty"`
 	Members []sqlc.GetTeamMembersRow    `json:"members,omitempty"`
 	Solves  []sqlc.GetTeamSolvesRow     `json:"solves,omitempty"`
 	Badges  []sqlc.GetBadgesFromTeamRow `json:"badges,omitempty"`
@@ -35,9 +34,6 @@ func GetTeam(ctx context.Context, teamID int32, admin bool) (*TeamData, error) {
 	teamData.Score = team.Score
 	if team.Country.Valid {
 		teamData.Country = team.Country.String
-	}
-	if team.Image.Valid {
-		teamData.Image = team.Image.String
 	}
 
 	members, err := db.Sql.GetTeamMembers(ctx, sql.NullInt32{Int32: teamID, Valid: true})

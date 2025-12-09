@@ -11,7 +11,6 @@ type TeamData struct {
 	Name    string          `json:"name"`
 	Score   int32           `json:"score"`
 	Country string          `json:"country"`
-	Image   string          `json:"image"`
 	Badges  json.RawMessage `json:"badges"`
 }
 
@@ -30,9 +29,6 @@ func GetTeamScoreboard(ctx context.Context) ([]*TeamData, error) {
 		}
 		if team.Country.Valid {
 			teamData.Country = team.Country.String
-		}
-		if team.Image.Valid {
-			teamData.Image = team.Image.String
 		}
 
 		if js, ok := team.Badges.([]byte); ok {

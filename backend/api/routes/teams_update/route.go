@@ -14,13 +14,12 @@ func Route(c *fiber.Ctx) error {
 	var data struct {
 		Name    string  `json:"name" validate:"team_name"`
 		Country *string `json:"country" validate:"omitempty,country"`
-		Image   *string `json:"image" validate:"omitempty,image_url"`
 	}
 	if err := c.BodyParser(&data); err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidJSON)
 	}
 
-	if data.Name == "" && data.Country == nil && data.Image == nil {
+	if data.Name == "" && data.Country == nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.MissingRequiredFields)
 	}
 	valid, err := validator.Struct(c, data)
@@ -35,7 +34,7 @@ func Route(c *fiber.Ctx) error {
 	defer tx.Rollback()
 
 	tid := c.Locals("tid").(int32)
-	err = UpdateTeam(c.Context(), tx, tid, data.Name, data.Country, data.Image)
+	err = UpdateTeam(c.Context(), tx, tid, data.Name, data.Country)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
 			if pqErr.Code == "23505" { // Unique violation error code

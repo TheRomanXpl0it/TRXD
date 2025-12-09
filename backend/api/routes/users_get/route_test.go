@@ -49,7 +49,6 @@ func TestRoute(t *testing.T) {
 	expectedNoAuth := JSON{
 		"country": "",
 		"email":   "",
-		"image":   "",
 		"name":    "a",
 		"role":    "",
 		"score":   1498,
@@ -107,7 +106,6 @@ func TestRoute(t *testing.T) {
 	expectedPlayer := JSON{
 		"country": "",
 		"email":   "",
-		"image":   "",
 		"name":    "a",
 		"role":    "",
 		"score":   1498,
@@ -135,7 +133,6 @@ func TestRoute(t *testing.T) {
 	expectedSelf := JSON{
 		"country": "",
 		"email":   "self@test.com",
-		"image":   "",
 		"name":    "self",
 		"role":    "Player",
 		"score":   0,
@@ -168,7 +165,6 @@ func TestRoute(t *testing.T) {
 	expectedPlayerAdmin := JSON{
 		"country": "",
 		"email":   "a@a.a",
-		"image":   "",
 		"name":    "a",
 		"role":    "Player",
 		"score":   1498,
@@ -196,7 +192,6 @@ func TestRoute(t *testing.T) {
 	expectedAdmin := JSON{
 		"country": "",
 		"email":   "admin@test.com",
-		"image":   "",
 		"name":    "admin",
 		"role":    "Admin",
 		"score":   0,
