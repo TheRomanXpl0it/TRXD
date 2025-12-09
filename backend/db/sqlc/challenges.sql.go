@@ -7,6 +7,8 @@ package sqlc
 
 import (
 	"context"
+
+	"github.com/lib/pq"
 )
 
 const getChallengeByID = `-- name: GetChallengeByID :one
@@ -23,7 +25,7 @@ func (q *Queries) GetChallengeByID(ctx context.Context, id int32) (Challenge, er
 		&i.Category,
 		&i.Description,
 		&i.Difficulty,
-		&i.Authors,
+		pq.Array(&i.Authors),
 		&i.Type,
 		&i.Hidden,
 		&i.MaxPoints,

@@ -23,7 +23,7 @@ type UpdateChallParams struct {
 	Category    string           `form:"category" validate:"category_name"`
 	Description *string          `form:"description" validate:"omitempty,challenge_description"`
 	Difficulty  *string          `form:"difficulty" validate:"omitempty,challenge_difficulty"`
-	Authors     *[]string        `form:"authors"`
+	Authors     *[]string        `form:"authors"` // TODO: add a valdator for authors
 	Type        *sqlc.DeployType `form:"type" validate:"omitempty,challenge_type"`
 	Hidden      *bool            `form:"hidden"`
 	MaxPoints   *int32           `form:"max_points" validate:"omitempty,challenge_max_points"`

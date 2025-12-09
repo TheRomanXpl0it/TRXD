@@ -45,7 +45,7 @@ func UpdateChallenge(ctx context.Context, data *UpdateChallParams) error {
 		challParams.Difficulty = sql.NullString{String: *data.Difficulty, Valid: true}
 	}
 	if data.Authors != nil {
-		challParams.Authors = sql.NullString{String: strings.Join(*data.Authors, consts.Separator), Valid: true}
+		challParams.Authors = *data.Authors
 	}
 	if data.Type != nil {
 		challParams.Type = sqlc.NullDeployType{DeployType: *data.Type, Valid: true}

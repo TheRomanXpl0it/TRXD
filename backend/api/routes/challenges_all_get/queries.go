@@ -51,7 +51,7 @@ func GetChallenges(ctx context.Context, uid int32, tid int32, author bool) ([]Ch
 			Category:    challenge.Category,
 			Description: challenge.Description,
 			Difficulty:  challenge.Difficulty,
-			Authors:     []string{},
+			Authors:     challenge.Authors,
 			Instance:    challenge.Type != sqlc.DeployTypeNormal,
 			Hidden:      challenge.Hidden,
 			Points:      int(challenge.Points),
@@ -67,9 +67,6 @@ func GetChallenges(ctx context.Context, uid int32, tid int32, author bool) ([]Ch
 			Timeout:     0,
 		}
 
-		if challenge.Authors != "" {
-			chall.Authors = strings.Split(challenge.Authors, consts.Separator)
-		}
 		if challenge.Attachments != "" {
 			chall.Attachments = strings.Split(challenge.Attachments, consts.Separator)
 		}

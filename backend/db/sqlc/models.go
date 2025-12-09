@@ -201,7 +201,7 @@ type Challenge struct {
 	Category    string     `json:"category"`
 	Description string     `json:"description"`
 	Difficulty  string     `json:"difficulty"`
-	Authors     string     `json:"authors"`
+	Authors     []string   `json:"authors"`
 	Type        DeployType `json:"type"`
 	Hidden      bool       `json:"hidden"`
 	MaxPoints   int32      `json:"max_points"`

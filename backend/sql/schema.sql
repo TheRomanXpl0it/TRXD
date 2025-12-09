@@ -91,9 +91,10 @@ CREATE TABLE IF NOT EXISTS challenges (
   id SERIAL NOT NULL,
   name VARCHAR(128) UNIQUE NOT NULL,
   category VARCHAR(32) NOT NULL,
-  description VARCHAR(1024) NOT NULL,
+  description VARCHAR(10240) NOT NULL,
   difficulty VARCHAR(16) NOT NULL DEFAULT '',
-  authors TEXT NOT NULL DEFAULT '', -- TODO: use a list
+  authors VARCHAR(64)[] NOT NULL DEFAULT '{}',
+  -- tags VARCHAR(32)[] NOT NULL DEFAULT '{}',
   type deploy_type NOT NULL,
   hidden BOOLEAN NOT NULL DEFAULT TRUE,
 
@@ -102,9 +103,9 @@ CREATE TABLE IF NOT EXISTS challenges (
   points INTEGER NOT NULL,
   solves INTEGER NOT NULL DEFAULT 0,
 
-  -- conn_type conn_type NOT NULL DEFAULT 'TCP'
   host TEXT NOT NULL DEFAULT '',
   port INTEGER NOT NULL CHECK (port >= 0 AND port <= 65535) DEFAULT 0,
+  -- conn_type conn_type NOT NULL DEFAULT 'TCP',
   attachments TEXT NOT NULL DEFAULT '', -- TODO: use a list (maybe a table)
 
   FOREIGN KEY(category) REFERENCES categories(name),
@@ -124,8 +125,16 @@ CREATE TABLE IF NOT EXISTS docker_configs (
   PRIMARY KEY(chall_id)
 );
 
+-- CREATE TABLE IF NOT EXISTS attachments (
+--   chall_id INTEGER NOT NULL,
+--   name VARCHAR(128) NOT NULL,
+--   hash VARCHAR(64) NOT NULL,
+--   FOREIGN KEY(chall_id) REFERENCES challenges(id) ON DELETE CASCADE,
+--   PRIMARY KEY(chall_id, name)
+-- );
+
 CREATE TABLE IF NOT EXISTS flags (
-  flag VARCHAR(128) UNIQUE NOT NULL,
+  flag VARCHAR(256) UNIQUE NOT NULL,
   chall_id INTEGER NOT NULL,
   regex BOOLEAN NOT NULL DEFAULT FALSE,
   FOREIGN KEY(chall_id) REFERENCES challenges(id) ON DELETE CASCADE,

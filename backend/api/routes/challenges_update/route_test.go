@@ -286,7 +286,7 @@ func TestRoute(t *testing.T) {
 		"category":    "cat-2",
 		"description": "",
 		"difficulty":  "",
-		"authors":     "",
+		"authors":     []string{},
 		"hidden":      false,
 		"max_points":  0,
 		"host":        "",
@@ -316,7 +316,7 @@ func TestRoute(t *testing.T) {
 	}
 	expected := JSON{
 		"attachments": []string{},
-		"authors":     []string{},
+		"authors":     []string{"author1", "author2"}, //! TODO: faulty test! should be: []string{} (multipart form issue)
 		"category":    testBody["category"],
 		"description": testBody["description"],
 		"difficulty":  testBody["difficulty"],

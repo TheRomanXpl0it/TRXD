@@ -254,7 +254,7 @@ type GetAllChallengesInfoRow struct {
 	Category     string         `json:"category"`
 	Description  string         `json:"description"`
 	Difficulty   string         `json:"difficulty"`
-	Authors      string         `json:"authors"`
+	Authors      []string       `json:"authors"`
 	Type         DeployType     `json:"type"`
 	Hidden       bool           `json:"hidden"`
 	MaxPoints    int32          `json:"max_points"`
@@ -289,7 +289,7 @@ func (q *Queries) GetAllChallengesInfo(ctx context.Context, id int32) ([]GetAllC
 			&i.Category,
 			&i.Description,
 			&i.Difficulty,
-			&i.Authors,
+			pq.Array(&i.Authors),
 			&i.Type,
 			&i.Hidden,
 			&i.MaxPoints,
@@ -1121,7 +1121,7 @@ type UpdateChallengeParams struct {
 	Category    sql.NullString `json:"category"`
 	Description sql.NullString `json:"description"`
 	Difficulty  sql.NullString `json:"difficulty"`
-	Authors     sql.NullString `json:"authors"`
+	Authors     []string       `json:"authors"`
 	Type        NullDeployType `json:"type"`
 	Hidden      sql.NullBool   `json:"hidden"`
 	MaxPoints   sql.NullInt32  `json:"max_points"`
@@ -1139,7 +1139,7 @@ func (q *Queries) UpdateChallenge(ctx context.Context, arg UpdateChallengeParams
 		arg.Category,
 		arg.Description,
 		arg.Difficulty,
-		arg.Authors,
+		pq.Array(arg.Authors),
 		arg.Type,
 		arg.Hidden,
 		arg.MaxPoints,

@@ -7,11 +7,11 @@ const Name = "TRXd"
 const (
 	MaxBioLen             = 10240
 	MaxCategoryLen        = 32
-	MaxChallDescLen       = 1024
+	MaxChallDescLen       = 10240
 	MaxChallDifficultyLen = 16
 	MaxChallNameLen       = 128
 	MaxEmailLen           = 256
-	MaxFlagLen            = 128
+	MaxFlagLen            = 256
 	MaxImageLen           = 1024
 	MaxUserNameLen        = 64
 	MaxTeamNameLen        = 64
