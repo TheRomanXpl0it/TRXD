@@ -54,7 +54,7 @@ func Route(c *fiber.Ctx) error {
 	if mode == "true" {
 		tid := c.Locals("tid").(int32)
 
-		err = teams_update.UpdateTeam(c.Context(), tx, tid, data.Name, data.Country, data.Image, nil)
+		err = teams_update.UpdateTeam(c.Context(), tx, tid, data.Name, data.Country, data.Image)
 		if err != nil {
 			return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorUpdatingTeam, err)
 		}

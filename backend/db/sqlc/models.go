@@ -269,7 +269,6 @@ type Team struct {
 	Score        int32          `json:"score"`
 	Country      sql.NullString `json:"country"`
 	Image        sql.NullString `json:"image"`
-	Bio          sql.NullString `json:"bio"`
 }
 
 type TeamCategorySolf struct {

@@ -44,7 +44,6 @@ CREATE TABLE IF NOT EXISTS teams (
   score INTEGER NOT NULL DEFAULT 0,
   country VARCHAR(3),
   image VARCHAR(1024),
-  bio VARCHAR(10240),
   PRIMARY KEY(id)
 );
 

@@ -798,7 +798,7 @@ func (q *Queries) GetTeamsScoreboard(ctx context.Context) ([]GetTeamsScoreboardR
 
 const getTeamsScoreboardGraph = `-- name: GetTeamsScoreboardGraph :many
 SELECT t.id AS team_id, c.id AS chall_id, c.points, s.first_blood, s."timestamp" FROM (
-	SELECT id, name, password_hash, password_salt, score, country, image, bio FROM teams t
+	SELECT id, name, password_hash, password_salt, score, country, image FROM teams t
         ORDER BY t.score DESC
         LIMIT CAST((SELECT value FROM configs WHERE key='scoreboard-top') AS INT)) AS t
   JOIN users u ON u.team_id = t.id
@@ -977,7 +977,7 @@ WITH locked_user AS (
     INSERT INTO teams (name, password_hash, password_salt)
     SELECT $2, $3, $4
     FROM locked_user
-    RETURNING id, name, password_hash, password_salt, score, country, image, bio
+    RETURNING id, name, password_hash, password_salt, score, country, image
   )
 UPDATE users
   SET team_id = new_team.id
@@ -1299,8 +1299,7 @@ UPDATE teams
 SET
   name = COALESCE($2, name),
   country = COALESCE($3, country),
-  image = COALESCE($4, image),
-  bio = COALESCE($5, bio)
+  image = COALESCE($4, image)
 WHERE id = $1
 `
 
@@ -1309,7 +1308,6 @@ type UpdateTeamParams struct {
 	Name    sql.NullString `json:"name"`
 	Country sql.NullString `json:"country"`
 	Image   sql.NullString `json:"image"`
-	Bio     sql.NullString `json:"bio"`
 }
 
 // Update team details
@@ -1319,7 +1317,6 @@ func (q *Queries) UpdateTeam(ctx context.Context, arg UpdateTeamParams) error {
 		arg.Name,
 		arg.Country,
 		arg.Image,
-		arg.Bio,
 	)
 	return err
 }

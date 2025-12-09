@@ -55,11 +55,6 @@ var testData = []struct {
 		expectedResponse: errorf(consts.InvalidHttpUrl),
 	},
 	{
-		testBody:         JSON{"bio": strings.Repeat("a", consts.MaxBioLen+1)},
-		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Bio", consts.MaxBioLen)),
-	},
-	{
 		testBody:         JSON{"name": strings.Repeat("a", consts.MaxTeamNameLen+1)},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Name", consts.MaxTeamNameLen)),
@@ -70,15 +65,15 @@ var testData = []struct {
 		expectedResponse: errorf(consts.NameAlreadyTaken),
 	},
 	{
-		testBody:       JSON{"country": "USA", "image": "http://example.com/image.png", "bio": "a"},
+		testBody:       JSON{"country": "USA", "image": "http://example.com/image.png"},
 		expectedStatus: http.StatusOK,
 	},
 	{
-		testBody:       JSON{"country": "USA", "image": "https://example.com/image.png", "bio": "a"},
+		testBody:       JSON{"country": "USA", "image": "https://example.com/image.png"},
 		expectedStatus: http.StatusOK,
 	},
 	{
-		testBody:       JSON{"country": "", "image": "", "bio": ""},
+		testBody:       JSON{"country": "", "image": ""},
 		expectedStatus: http.StatusOK,
 	},
 	{
