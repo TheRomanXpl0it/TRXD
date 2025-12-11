@@ -59,15 +59,6 @@ func GetDockerConfigsByID(ctx context.Context, challengeID int32) (*sqlc.GetDock
 	return &dockerConfig, nil
 }
 
-func GetTagsByChallenge(ctx context.Context, challengeID int32) ([]string, error) {
-	tags, err := Sql.GetTagsByChallenge(ctx, challengeID)
-	if err != nil {
-		return nil, err
-	}
-
-	return tags, nil
-}
-
 func GetHiddenAndAttachments(ctx context.Context, challengeID int32) (*sqlc.GetHiddenAndAttachmentsRow, error) {
 	res, err := Sql.GetHiddenAndAttachments(ctx, challengeID)
 	if err != nil {

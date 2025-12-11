@@ -1,6 +1,5 @@
 import docker
 import requests
-from requests_toolbelt.multipart.encoder import MultipartEncoder
 from urllib.parse import urlparse
 import socket
 import json
@@ -47,19 +46,15 @@ def update_config(session, key, value):
 	assert r.status_code == 200, r.text
 
 def update_challenge(session, chall_id, hash_domain=None, image=None, compose=None):
-	fields={"chall_id": str(chall_id)}
+	fields={"chall_id": chall_id}
 	if hash_domain is not None:
 		fields['hash_domain'] = hash_domain
 	if image is not None:
 		fields['image'] = image
 	if compose is not None:
 		fields['compose'] = compose
-	m = MultipartEncoder(fields=fields)
-	r = session.patch(f'{url}/challenges',
-		data=m, headers={
-			'Content-Type': m.content_type,
-			'X-Csrf-Token': session.cookies.get('csrf_'),
-		})
+	r = session.patch(f'{url}/challenges', json=fields,
+		headers={'X-Csrf-Token': session.cookies.get('csrf_')})
 	assert r.status_code == 200, r.text
 
 def spawn_instance(session, chall_id):
@@ -155,8 +150,8 @@ def fail_hash_request(hash_name):
 
 
 ## DISABLE HASH DOMAIN
-update_challenge(admin, chall_id_3, hash_domain='false')
-update_challenge(admin, chall_id_4, hash_domain='false')
+update_challenge(admin, chall_id_3, hash_domain=False)
+update_challenge(admin, chall_id_4, hash_domain=False)
 
 #! KILL CONTAINER
 i1 = spawn_good_instance(s1, chall_id_3)
@@ -232,8 +227,8 @@ assert_request(r, False)
 kill_good_instance(s1, chall_id_4)
 
 ## ENABLE HASH DOMAIN
-update_challenge(admin, chall_id_3, hash_domain='true')
-update_challenge(admin, chall_id_4, hash_domain='true')
+update_challenge(admin, chall_id_3, hash_domain=True)
+update_challenge(admin, chall_id_4, hash_domain=True)
 
 #! DISCONNECT NETWORK
 i1 = spawn_good_instance(s1, chall_id_3)

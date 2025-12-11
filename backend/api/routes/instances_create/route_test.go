@@ -110,7 +110,7 @@ func TestRoute(t *testing.T) {
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
-	session.PatchMultipart("/challenges", JSON{"chall_id": challID3, "hash_domain": false}, []string{}, http.StatusOK)
+	session.Patch("/challenges", JSON{"chall_id": challID3, "hash_domain": false}, http.StatusOK)
 	session.CheckResponse(nil)
 
 	session = test_utils.NewApiTestSession(t, app)
@@ -137,7 +137,7 @@ func TestRoute(t *testing.T) {
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
-	session.PatchMultipart("/challenges", JSON{"chall_id": challID3, "host": "", "hash_domain": true}, []string{}, http.StatusOK)
+	session.Patch("/challenges", JSON{"chall_id": challID3, "host": "", "hash_domain": true}, http.StatusOK)
 	session.CheckResponse(nil)
 
 	session = test_utils.NewApiTestSession(t, app)
@@ -164,7 +164,7 @@ func TestRoute(t *testing.T) {
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
-	session.PatchMultipart("/challenges", JSON{"chall_id": challID3, "type": "Compose"}, []string{}, http.StatusOK)
+	session.Patch("/challenges", JSON{"chall_id": challID3, "type": "Compose"}, http.StatusOK)
 	session.CheckResponse(nil)
 
 	session = test_utils.NewApiTestSession(t, app)
@@ -174,10 +174,10 @@ func TestRoute(t *testing.T) {
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
-	session.PatchMultipart("/challenges", JSON{"chall_id": challID3, "type": "Container"}, []string{}, http.StatusOK)
+	session.Patch("/challenges", JSON{"chall_id": challID3, "type": "Container"}, http.StatusOK)
 	session.CheckResponse(nil)
 
-	session.PatchMultipart("/challenges", JSON{"chall_id": challID2, "type": "Container", "image": "aaaa"}, []string{}, http.StatusOK)
+	session.Patch("/challenges", JSON{"chall_id": challID2, "type": "Container", "image": "aaaa"}, http.StatusOK)
 	session.CheckResponse(nil)
 
 	session = test_utils.NewApiTestSession(t, app)

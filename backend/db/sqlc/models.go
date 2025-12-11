@@ -184,6 +184,12 @@ func (ns NullUserRole) Value() (driver.Value, error) {
 	return string(ns.UserRole), nil
 }
 
+type Attachment struct {
+	ChallID int32  `json:"chall_id"`
+	Name    string `json:"name"`
+	Hash    string `json:"hash"`
+}
+
 type Badge struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
@@ -202,6 +208,7 @@ type Challenge struct {
 	Description string     `json:"description"`
 	Difficulty  string     `json:"difficulty"`
 	Authors     []string   `json:"authors"`
+	Tags        []string   `json:"tags"`
 	Type        DeployType `json:"type"`
 	Hidden      bool       `json:"hidden"`
 	MaxPoints   int32      `json:"max_points"`
@@ -210,7 +217,6 @@ type Challenge struct {
 	Solves      int32      `json:"solves"`
 	Host        string     `json:"host"`
 	Port        int32      `json:"port"`
-	Attachments string     `json:"attachments"`
 }
 
 type Config struct {
@@ -254,11 +260,6 @@ type Submission struct {
 	FirstBlood bool             `json:"first_blood"`
 	Flag       string           `json:"flag"`
 	Timestamp  time.Time        `json:"timestamp"`
-}
-
-type Tag struct {
-	ChallID int32  `json:"chall_id"`
-	Name    string `json:"name"`
 }
 
 type Team struct {

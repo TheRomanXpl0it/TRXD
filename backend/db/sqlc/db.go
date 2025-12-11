@@ -30,6 +30,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.checkFlagsStmt, err = db.PrepareContext(ctx, checkFlags); err != nil {
 		return nil, fmt.Errorf("error preparing query CheckFlags: %w", err)
 	}
+	if q.createAttachmentStmt, err = db.PrepareContext(ctx, createAttachment); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateAttachment: %w", err)
+	}
 	if q.createCategoryStmt, err = db.PrepareContext(ctx, createCategory); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateCategory: %w", err)
 	}
@@ -45,8 +48,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createInstanceStmt, err = db.PrepareContext(ctx, createInstance); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateInstance: %w", err)
 	}
-	if q.createTagStmt, err = db.PrepareContext(ctx, createTag); err != nil {
-		return nil, fmt.Errorf("error preparing query CreateTag: %w", err)
+	if q.deleteAttachmentStmt, err = db.PrepareContext(ctx, deleteAttachment); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteAttachment: %w", err)
 	}
 	if q.deleteCategoryStmt, err = db.PrepareContext(ctx, deleteCategory); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteCategory: %w", err)
@@ -60,11 +63,11 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteInstanceStmt, err = db.PrepareContext(ctx, deleteInstance); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteInstance: %w", err)
 	}
-	if q.deleteTagStmt, err = db.PrepareContext(ctx, deleteTag); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteTag: %w", err)
-	}
 	if q.getAllChallengesInfoStmt, err = db.PrepareContext(ctx, getAllChallengesInfo); err != nil {
 		return nil, fmt.Errorf("error preparing query GetAllChallengesInfo: %w", err)
+	}
+	if q.getAttachmentHashStmt, err = db.PrepareContext(ctx, getAttachmentHash); err != nil {
+		return nil, fmt.Errorf("error preparing query GetAttachmentHash: %w", err)
 	}
 	if q.getBadgesFromTeamStmt, err = db.PrepareContext(ctx, getBadgesFromTeam); err != nil {
 		return nil, fmt.Errorf("error preparing query GetBadgesFromTeam: %w", err)
@@ -104,9 +107,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.getNextInstanceToDeleteStmt, err = db.PrepareContext(ctx, getNextInstanceToDelete); err != nil {
 		return nil, fmt.Errorf("error preparing query GetNextInstanceToDelete: %w", err)
-	}
-	if q.getTagsByChallengeStmt, err = db.PrepareContext(ctx, getTagsByChallenge); err != nil {
-		return nil, fmt.Errorf("error preparing query GetTagsByChallenge: %w", err)
 	}
 	if q.getTeamByIDStmt, err = db.PrepareContext(ctx, getTeamByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTeamByID: %w", err)
@@ -183,9 +183,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateInstanceExpireStmt, err = db.PrepareContext(ctx, updateInstanceExpire); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateInstanceExpire: %w", err)
 	}
-	if q.updateTagStmt, err = db.PrepareContext(ctx, updateTag); err != nil {
-		return nil, fmt.Errorf("error preparing query UpdateTag: %w", err)
-	}
 	if q.updateTeamStmt, err = db.PrepareContext(ctx, updateTeam); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateTeam: %w", err)
 	}
@@ -205,6 +202,11 @@ func (q *Queries) Close() error {
 	if q.checkFlagsStmt != nil {
 		if cerr := q.checkFlagsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing checkFlagsStmt: %w", cerr)
+		}
+	}
+	if q.createAttachmentStmt != nil {
+		if cerr := q.createAttachmentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createAttachmentStmt: %w", cerr)
 		}
 	}
 	if q.createCategoryStmt != nil {
@@ -232,9 +234,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing createInstanceStmt: %w", cerr)
 		}
 	}
-	if q.createTagStmt != nil {
-		if cerr := q.createTagStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing createTagStmt: %w", cerr)
+	if q.deleteAttachmentStmt != nil {
+		if cerr := q.deleteAttachmentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteAttachmentStmt: %w", cerr)
 		}
 	}
 	if q.deleteCategoryStmt != nil {
@@ -257,14 +259,14 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteInstanceStmt: %w", cerr)
 		}
 	}
-	if q.deleteTagStmt != nil {
-		if cerr := q.deleteTagStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteTagStmt: %w", cerr)
-		}
-	}
 	if q.getAllChallengesInfoStmt != nil {
 		if cerr := q.getAllChallengesInfoStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getAllChallengesInfoStmt: %w", cerr)
+		}
+	}
+	if q.getAttachmentHashStmt != nil {
+		if cerr := q.getAttachmentHashStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getAttachmentHashStmt: %w", cerr)
 		}
 	}
 	if q.getBadgesFromTeamStmt != nil {
@@ -330,11 +332,6 @@ func (q *Queries) Close() error {
 	if q.getNextInstanceToDeleteStmt != nil {
 		if cerr := q.getNextInstanceToDeleteStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getNextInstanceToDeleteStmt: %w", cerr)
-		}
-	}
-	if q.getTagsByChallengeStmt != nil {
-		if cerr := q.getTagsByChallengeStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getTagsByChallengeStmt: %w", cerr)
 		}
 	}
 	if q.getTeamByIDStmt != nil {
@@ -462,11 +459,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateInstanceExpireStmt: %w", cerr)
 		}
 	}
-	if q.updateTagStmt != nil {
-		if cerr := q.updateTagStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing updateTagStmt: %w", cerr)
-		}
-	}
 	if q.updateTeamStmt != nil {
 		if cerr := q.updateTeamStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateTeamStmt: %w", cerr)
@@ -518,18 +510,19 @@ type Queries struct {
 	tx                           *sql.Tx
 	addTeamMemberStmt            *sql.Stmt
 	checkFlagsStmt               *sql.Stmt
+	createAttachmentStmt         *sql.Stmt
 	createCategoryStmt           *sql.Stmt
 	createChallengeStmt          *sql.Stmt
 	createConfigStmt             *sql.Stmt
 	createFlagStmt               *sql.Stmt
 	createInstanceStmt           *sql.Stmt
-	createTagStmt                *sql.Stmt
+	deleteAttachmentStmt         *sql.Stmt
 	deleteCategoryStmt           *sql.Stmt
 	deleteChallengeStmt          *sql.Stmt
 	deleteFlagStmt               *sql.Stmt
 	deleteInstanceStmt           *sql.Stmt
-	deleteTagStmt                *sql.Stmt
 	getAllChallengesInfoStmt     *sql.Stmt
+	getAttachmentHashStmt        *sql.Stmt
 	getBadgesFromTeamStmt        *sql.Stmt
 	getCategoriesStmt            *sql.Stmt
 	getCategoryStmt              *sql.Stmt
@@ -543,7 +536,6 @@ type Queries struct {
 	getHiddenAndAttachmentsStmt  *sql.Stmt
 	getInstanceStmt              *sql.Stmt
 	getNextInstanceToDeleteStmt  *sql.Stmt
-	getTagsByChallengeStmt       *sql.Stmt
 	getTeamByIDStmt              *sql.Stmt
 	getTeamByNameStmt            *sql.Stmt
 	getTeamFromUserStmt          *sql.Stmt
@@ -569,7 +561,6 @@ type Queries struct {
 	updateFlagStmt               *sql.Stmt
 	updateInstanceDockerIDStmt   *sql.Stmt
 	updateInstanceExpireStmt     *sql.Stmt
-	updateTagStmt                *sql.Stmt
 	updateTeamStmt               *sql.Stmt
 	updateUserStmt               *sql.Stmt
 }
@@ -580,18 +571,19 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		tx:                           tx,
 		addTeamMemberStmt:            q.addTeamMemberStmt,
 		checkFlagsStmt:               q.checkFlagsStmt,
+		createAttachmentStmt:         q.createAttachmentStmt,
 		createCategoryStmt:           q.createCategoryStmt,
 		createChallengeStmt:          q.createChallengeStmt,
 		createConfigStmt:             q.createConfigStmt,
 		createFlagStmt:               q.createFlagStmt,
 		createInstanceStmt:           q.createInstanceStmt,
-		createTagStmt:                q.createTagStmt,
+		deleteAttachmentStmt:         q.deleteAttachmentStmt,
 		deleteCategoryStmt:           q.deleteCategoryStmt,
 		deleteChallengeStmt:          q.deleteChallengeStmt,
 		deleteFlagStmt:               q.deleteFlagStmt,
 		deleteInstanceStmt:           q.deleteInstanceStmt,
-		deleteTagStmt:                q.deleteTagStmt,
 		getAllChallengesInfoStmt:     q.getAllChallengesInfoStmt,
+		getAttachmentHashStmt:        q.getAttachmentHashStmt,
 		getBadgesFromTeamStmt:        q.getBadgesFromTeamStmt,
 		getCategoriesStmt:            q.getCategoriesStmt,
 		getCategoryStmt:              q.getCategoryStmt,
@@ -605,7 +597,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getHiddenAndAttachmentsStmt:  q.getHiddenAndAttachmentsStmt,
 		getInstanceStmt:              q.getInstanceStmt,
 		getNextInstanceToDeleteStmt:  q.getNextInstanceToDeleteStmt,
-		getTagsByChallengeStmt:       q.getTagsByChallengeStmt,
 		getTeamByIDStmt:              q.getTeamByIDStmt,
 		getTeamByNameStmt:            q.getTeamByNameStmt,
 		getTeamFromUserStmt:          q.getTeamFromUserStmt,
@@ -631,7 +622,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		updateFlagStmt:               q.updateFlagStmt,
 		updateInstanceDockerIDStmt:   q.updateInstanceDockerIDStmt,
 		updateInstanceExpireStmt:     q.updateInstanceExpireStmt,
-		updateTagStmt:                q.updateTagStmt,
 		updateTeamStmt:               q.updateTeamStmt,
 		updateUserStmt:               q.updateUserStmt,
 	}

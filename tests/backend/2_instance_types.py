@@ -1,5 +1,4 @@
 import requests
-from requests_toolbelt.multipart.encoder import MultipartEncoder
 from urllib.parse import urlparse
 import socket
 
@@ -32,19 +31,15 @@ for chall in r.json():
 
 
 def update_challenge(session, chall_id, hash_domain):
-	m = MultipartEncoder(fields={
-		"chall_id": str(chall_id),
-		"hash_domain": hash_domain,
-	})
 	r = session.patch(f'{url}/challenges',
-		data=m, headers={
-			'Content-Type': m.content_type,
-			'X-Csrf-Token': session.cookies.get('csrf_'),
-		})
+		json={
+			"chall_id": chall_id,
+			"hash_domain": hash_domain,
+		}, headers={'X-Csrf-Token': session.cookies.get('csrf_'),})
 	assert r.status_code == 200, r.text
 
-update_challenge(admin, chall_id_3, 'false')
-update_challenge(admin, chall_id_4, 'false')
+update_challenge(admin, chall_id_3, False)
+update_challenge(admin, chall_id_4, False)
 
 
 def spawn_instance(session, chall_id):
@@ -124,8 +119,8 @@ def custom_getaddrinfo(host, *args, **kwargs):
 socket.getaddrinfo = custom_getaddrinfo
 
 
-update_challenge(admin, chall_id_3, 'true')
-update_challenge(admin, chall_id_4, 'true')
+update_challenge(admin, chall_id_3, True)
+update_challenge(admin, chall_id_4, True)
 
 
 r = spawn_instance(s1, chall_id_3)

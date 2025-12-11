@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS challenges (
   description VARCHAR(10240) NOT NULL,
   difficulty VARCHAR(16) NOT NULL DEFAULT '',
   authors VARCHAR(64)[] NOT NULL DEFAULT '{}',
-  -- tags VARCHAR(32)[] NOT NULL DEFAULT '{}',
+  tags VARCHAR(32)[] NOT NULL DEFAULT '{}',
   type deploy_type NOT NULL,
   hidden BOOLEAN NOT NULL DEFAULT TRUE,
 
@@ -106,7 +106,6 @@ CREATE TABLE IF NOT EXISTS challenges (
   host TEXT NOT NULL DEFAULT '',
   port INTEGER NOT NULL CHECK (port >= 0 AND port <= 65535) DEFAULT 0,
   -- conn_type conn_type NOT NULL DEFAULT 'TCP',
-  attachments TEXT NOT NULL DEFAULT '', -- TODO: use a list (maybe a table)
 
   FOREIGN KEY(category) REFERENCES categories(name),
   PRIMARY KEY(id)
@@ -125,13 +124,13 @@ CREATE TABLE IF NOT EXISTS docker_configs (
   PRIMARY KEY(chall_id)
 );
 
--- CREATE TABLE IF NOT EXISTS attachments (
---   chall_id INTEGER NOT NULL,
---   name VARCHAR(128) NOT NULL,
---   hash VARCHAR(64) NOT NULL,
---   FOREIGN KEY(chall_id) REFERENCES challenges(id) ON DELETE CASCADE,
---   PRIMARY KEY(chall_id, name)
--- );
+CREATE TABLE IF NOT EXISTS attachments (
+  chall_id INTEGER NOT NULL,
+  name VARCHAR(128) NOT NULL,
+  hash VARCHAR(64) NOT NULL,
+  FOREIGN KEY(chall_id) REFERENCES challenges(id) ON DELETE CASCADE,
+  PRIMARY KEY(chall_id, name)
+);
 
 CREATE TABLE IF NOT EXISTS flags (
   flag VARCHAR(256) UNIQUE NOT NULL,
@@ -153,13 +152,6 @@ CREATE TABLE IF NOT EXISTS instances (
   PRIMARY KEY(team_id, chall_id)
 );
 
-CREATE TABLE IF NOT EXISTS tags (
-  chall_id INTEGER NOT NULL,
-  name VARCHAR(32) NOT NULL,
-  FOREIGN KEY(chall_id) REFERENCES challenges(id) ON DELETE CASCADE,
-  PRIMARY KEY(chall_id, name)
-);
-
 CREATE TABLE IF NOT EXISTS submissions (
   id SERIAL NOT NULL,
   user_id INTEGER NOT NULL,
@@ -177,6 +169,6 @@ CREATE TABLE IF NOT EXISTS submissions (
 CREATE INDEX IF NOT EXISTS idx_teams_name ON teams(name);
 CREATE INDEX IF NOT EXISTS idx_users_team_id ON users(team_id);
 CREATE INDEX IF NOT EXISTS idx_challenges_category ON challenges(category);
-CREATE INDEX IF NOT EXISTS idx_tags_chall_id ON tags(chall_id);
+CREATE INDEX IF NOT EXISTS idx_attachments_chall_id ON attachments(chall_id);
 CREATE INDEX IF NOT EXISTS idx_submissions_user_id ON submissions(user_id);
 CREATE INDEX IF NOT EXISTS idx_submissions_chall_id ON submissions(chall_id);

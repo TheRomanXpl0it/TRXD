@@ -30,6 +30,8 @@ func init() {
 	validate.RegisterAlias("challenge_name", fmt.Sprintf("max=%d", consts.MaxChallNameLen))
 	validate.RegisterAlias("challenge_description", fmt.Sprintf("max=%d", consts.MaxChallDescLen))
 	validate.RegisterAlias("challenge_difficulty", fmt.Sprintf("max=%d", consts.MaxChallDifficultyLen))
+	validate.RegisterAlias("challenge_authors", fmt.Sprintf("dive,max=%d", consts.MaxAuthorNameLen))
+	validate.RegisterAlias("challenge_tags", fmt.Sprintf("dive,max=%d", consts.MaxTagNameLen))
 	validate.RegisterAlias("challenge_type", "oneof="+strings.Join(consts.DeployTypesStr, " "))
 	validate.RegisterAlias("challenge_max_points", fmt.Sprintf("min=0,max=%d", math.MaxInt32))
 	validate.RegisterAlias("challenge_score_type", "oneof="+strings.Join(consts.ScoreTypesStr, " "))
@@ -39,9 +41,9 @@ func init() {
 	validate.RegisterAlias("challenge_max_memory", fmt.Sprintf("min=0,max=%d", math.MaxInt32))
 	validate.RegisterValidation("challenge_max_cpu", validFloat)
 
-	validate.RegisterAlias("flag", fmt.Sprintf("max=%d", consts.MaxFlagLen))
+	validate.RegisterAlias("attachments", fmt.Sprintf("dive,max=%d", consts.MaxAttachmentNameLen))
 
-	validate.RegisterAlias("tag_name", fmt.Sprintf("max=%d", consts.MaxTagNameLen))
+	validate.RegisterAlias("flag", fmt.Sprintf("max=%d", consts.MaxFlagLen))
 
 	validate.RegisterAlias("team_name", fmt.Sprintf("max=%d", consts.MaxTeamNameLen))
 

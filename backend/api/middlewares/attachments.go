@@ -14,7 +14,10 @@ import (
 
 func Attachments(c *fiber.Ctx) error {
 	path := strings.Split(c.Path(), "/")
-	if len(path) != 4 || len(path[2]) == 0 || len(path[3]) == 0 {
+	if len(path) != 5 || // "" + "attachments" + "{chall_id}" + "{file_hash}" + "{file_name}"
+		len(path[2]) == 0 || // chall_id
+		len(path[3]) == 0 || // file_hash
+		len(path[4]) == 0 { // file_name
 		return utils.Error(c, fiber.StatusNotFound, consts.NotFound)
 	}
 
@@ -34,9 +37,9 @@ func Attachments(c *fiber.Ctx) error {
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.InternalServerError, err)
 	}
-	if res == nil ||
-		(res.Hidden && !utils.In(role, []sqlc.UserRole{sqlc.UserRoleAuthor, sqlc.UserRoleAdmin})) ||
-		!utils.In(c.Path()[1:], strings.Split(res.Attachments, consts.Separator)) {
+	if res == nil || // challenge not found
+		(res.Hidden && !utils.In(role, []sqlc.UserRole{sqlc.UserRoleAuthor, sqlc.UserRoleAdmin})) || // hidden challenge and not author/admin
+		!utils.In(path[3]+"/"+path[4], res.Attachments) { // attachment not found
 		return utils.Error(c, fiber.StatusNotFound, consts.NotFound)
 	}
 

@@ -15,10 +15,13 @@ SELECT
 FROM docker_configs
 WHERE chall_id = $1;
 
--- name: GetTagsByChallenge :many
--- Retrieve all tags associated with a challenge
-SELECT name FROM tags WHERE chall_id = $1;
-
 -- name: GetHiddenAndAttachments :one
 -- Checks if a challenge is hidden
-SELECT hidden, attachments FROM challenges WHERE id = $1;
+SELECT
+  c.hidden, 
+  (ARRAY_AGG(a.hash || '/' || a.name) FILTER (WHERE a.name IS NOT NULL))::TEXT[] AS attachments
+FROM challenges c
+LEFT JOIN attachments a
+  ON a.chall_id = c.id
+WHERE c.id = $1
+GROUP BY c.hidden;

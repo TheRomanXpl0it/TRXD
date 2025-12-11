@@ -45,6 +45,22 @@ func (q *Queries) CheckFlags(ctx context.Context, arg CheckFlagsParams) (bool, e
 	return bool_or, err
 }
 
+const createAttachment = `-- name: CreateAttachment :exec
+INSERT INTO attachments (chall_id, name, hash) VALUES ($1, $2, $3)
+`
+
+type CreateAttachmentParams struct {
+	ChallID int32  `json:"chall_id"`
+	Name    string `json:"name"`
+	Hash    string `json:"hash"`
+}
+
+// Creates an attachment for a challenge
+func (q *Queries) CreateAttachment(ctx context.Context, arg CreateAttachmentParams) error {
+	_, err := q.exec(ctx, q.createAttachmentStmt, createAttachment, arg.ChallID, arg.Name, arg.Hash)
+	return err
+}
+
 const createCategory = `-- name: CreateCategory :exec
 INSERT INTO categories (name) VALUES ($1)
 `
@@ -139,18 +155,18 @@ func (q *Queries) CreateInstance(ctx context.Context, arg CreateInstanceParams) 
 	return i, err
 }
 
-const createTag = `-- name: CreateTag :exec
-INSERT INTO tags (chall_id, name) VALUES ($1, $2)
+const deleteAttachment = `-- name: DeleteAttachment :exec
+DELETE FROM attachments WHERE chall_id = $1 AND name = $2
 `
 
-type CreateTagParams struct {
+type DeleteAttachmentParams struct {
 	ChallID int32  `json:"chall_id"`
 	Name    string `json:"name"`
 }
 
-// Creates a named tag for a challenge
-func (q *Queries) CreateTag(ctx context.Context, arg CreateTagParams) error {
-	_, err := q.exec(ctx, q.createTagStmt, createTag, arg.ChallID, arg.Name)
+// Deletes a challenge attachment by name
+func (q *Queries) DeleteAttachment(ctx context.Context, arg DeleteAttachmentParams) error {
+	_, err := q.exec(ctx, q.deleteAttachmentStmt, deleteAttachment, arg.ChallID, arg.Name)
 	return err
 }
 
@@ -205,34 +221,21 @@ func (q *Queries) DeleteInstance(ctx context.Context, arg DeleteInstanceParams) 
 	return err
 }
 
-const deleteTag = `-- name: DeleteTag :exec
-DELETE FROM tags WHERE chall_id = $1 AND name = $2
-`
-
-type DeleteTagParams struct {
-	ChallID int32  `json:"chall_id"`
-	Name    string `json:"name"`
-}
-
-// Deletes a challenge tag by name
-func (q *Queries) DeleteTag(ctx context.Context, arg DeleteTagParams) error {
-	_, err := q.exec(ctx, q.deleteTagStmt, deleteTag, arg.ChallID, arg.Name)
-	return err
-}
-
 const getAllChallengesInfo = `-- name: GetAllChallengesInfo :many
 WITH tid AS (SELECT team_id FROM users WHERE users.id = $1)
 SELECT
-    c.id, c.name, c.category, c.description, c.difficulty, c.authors, c.type, c.hidden, c.max_points, c.score_type, c.points, c.solves, c.host, c.port, c.attachments,
-    (ARRAY_AGG(t.name) FILTER (WHERE t.name IS NOT NULL))::TEXT[] AS tags,
+    c.id, c.name, c.category, c.description, c.difficulty, c.authors, c.tags, c.type, c.hidden, c.max_points, c.score_type, c.points, c.solves, c.host, c.port,
     (s.first_blood IS NOT NULL)::BOOLEAN AS solved,
     COALESCE(s.first_blood, FALSE) AS first_blood,
+    (ARRAY_AGG('/' || a.hash || '/' || a.name ORDER BY a.name)
+      FILTER (WHERE a.name IS NOT NULL))::TEXT[] AS attachments,
     i.expires_at,
     i.host AS instance_host,
     i.port AS instance_port,
     i.docker_id
   FROM challenges c
-  LEFT JOIN tags t ON t.chall_id = c.id
+  LEFT JOIN attachments a
+    ON a.chall_id = c.id
   LEFT JOIN (
       SELECT submissions.chall_id, submissions.first_blood
         FROM submissions
@@ -255,6 +258,7 @@ type GetAllChallengesInfoRow struct {
 	Description  string         `json:"description"`
 	Difficulty   string         `json:"difficulty"`
 	Authors      []string       `json:"authors"`
+	Tags         []string       `json:"tags"`
 	Type         DeployType     `json:"type"`
 	Hidden       bool           `json:"hidden"`
 	MaxPoints    int32          `json:"max_points"`
@@ -263,10 +267,9 @@ type GetAllChallengesInfoRow struct {
 	Solves       int32          `json:"solves"`
 	Host         string         `json:"host"`
 	Port         int32          `json:"port"`
-	Attachments  string         `json:"attachments"`
-	Tags         []string       `json:"tags"`
 	Solved       bool           `json:"solved"`
 	FirstBlood   bool           `json:"first_blood"`
+	Attachments  []string       `json:"attachments"`
 	ExpiresAt    sql.NullTime   `json:"expires_at"`
 	InstanceHost sql.NullString `json:"instance_host"`
 	InstancePort sql.NullInt32  `json:"instance_port"`
@@ -290,6 +293,7 @@ func (q *Queries) GetAllChallengesInfo(ctx context.Context, id int32) ([]GetAllC
 			&i.Description,
 			&i.Difficulty,
 			pq.Array(&i.Authors),
+			pq.Array(&i.Tags),
 			&i.Type,
 			&i.Hidden,
 			&i.MaxPoints,
@@ -298,10 +302,9 @@ func (q *Queries) GetAllChallengesInfo(ctx context.Context, id int32) ([]GetAllC
 			&i.Solves,
 			&i.Host,
 			&i.Port,
-			&i.Attachments,
-			pq.Array(&i.Tags),
 			&i.Solved,
 			&i.FirstBlood,
+			pq.Array(&i.Attachments),
 			&i.ExpiresAt,
 			&i.InstanceHost,
 			&i.InstancePort,
@@ -318,6 +321,23 @@ func (q *Queries) GetAllChallengesInfo(ctx context.Context, id int32) ([]GetAllC
 		return nil, err
 	}
 	return items, nil
+}
+
+const getAttachmentHash = `-- name: GetAttachmentHash :one
+SELECT hash FROM attachments WHERE chall_id = $1 AND name = $2
+`
+
+type GetAttachmentHashParams struct {
+	ChallID int32  `json:"chall_id"`
+	Name    string `json:"name"`
+}
+
+// Retrieves the hash of a challenge attachment by name
+func (q *Queries) GetAttachmentHash(ctx context.Context, arg GetAttachmentHashParams) (string, error) {
+	row := q.queryRow(ctx, q.getAttachmentHashStmt, getAttachmentHash, arg.ChallID, arg.Name)
+	var hash string
+	err := row.Scan(&hash)
+	return hash, err
 }
 
 const getBadgesFromTeam = `-- name: GetBadgesFromTeam :many
@@ -1106,13 +1126,13 @@ SET
   description = COALESCE($3, description),
   difficulty = COALESCE($4, difficulty),
   authors = COALESCE($5, authors),
-  type = COALESCE($6, type),
-  hidden = COALESCE($7, hidden),
-  max_points = COALESCE($8, max_points),
-  score_type = COALESCE($9, score_type),
-  host = COALESCE($10, host),
-  port = COALESCE($11, port),
-  attachments = COALESCE($12, attachments)
+  tags = COALESCE($6, tags),
+  type = COALESCE($7, type),
+  hidden = COALESCE($8, hidden),
+  max_points = COALESCE($9, max_points),
+  score_type = COALESCE($10, score_type),
+  host = COALESCE($11, host),
+  port = COALESCE($12, port)
 WHERE id = $13
 `
 
@@ -1122,13 +1142,13 @@ type UpdateChallengeParams struct {
 	Description sql.NullString `json:"description"`
 	Difficulty  sql.NullString `json:"difficulty"`
 	Authors     []string       `json:"authors"`
+	Tags        []string       `json:"tags"`
 	Type        NullDeployType `json:"type"`
 	Hidden      sql.NullBool   `json:"hidden"`
 	MaxPoints   sql.NullInt32  `json:"max_points"`
 	ScoreType   NullScoreType  `json:"score_type"`
 	Host        sql.NullString `json:"host"`
 	Port        sql.NullInt32  `json:"port"`
-	Attachments sql.NullString `json:"attachments"`
 	ChallID     int32          `json:"chall_id"`
 }
 
@@ -1140,13 +1160,13 @@ func (q *Queries) UpdateChallenge(ctx context.Context, arg UpdateChallengeParams
 		arg.Description,
 		arg.Difficulty,
 		pq.Array(arg.Authors),
+		pq.Array(arg.Tags),
 		arg.Type,
 		arg.Hidden,
 		arg.MaxPoints,
 		arg.ScoreType,
 		arg.Host,
 		arg.Port,
-		arg.Attachments,
 		arg.ChallID,
 	)
 	return err
@@ -1265,22 +1285,6 @@ type UpdateInstanceExpireParams struct {
 // Update an instance expiration time
 func (q *Queries) UpdateInstanceExpire(ctx context.Context, arg UpdateInstanceExpireParams) error {
 	_, err := q.exec(ctx, q.updateInstanceExpireStmt, updateInstanceExpire, arg.TeamID, arg.ChallID, arg.ExpiresAt)
-	return err
-}
-
-const updateTag = `-- name: UpdateTag :exec
-UPDATE tags SET name = $2 WHERE chall_id = $1 AND name = $3
-`
-
-type UpdateTagParams struct {
-	ChallID int32  `json:"chall_id"`
-	NewName string `json:"new_name"`
-	OldName string `json:"old_name"`
-}
-
-// Updates the name of a challenge tag
-func (q *Queries) UpdateTag(ctx context.Context, arg UpdateTagParams) error {
-	_, err := q.exec(ctx, q.updateTagStmt, updateTag, arg.ChallID, arg.NewName, arg.OldName)
 	return err
 }
 

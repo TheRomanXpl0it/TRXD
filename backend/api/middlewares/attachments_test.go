@@ -38,8 +38,8 @@ func TestAttachments(t *testing.T) {
 			challID5 = int32(chall.(map[string]interface{})["id"].(float64))
 		}
 	}
-	session.PatchMultipart("/api/challenges", JSON{"chall_id": challID1}, []string{dir + "b.txt"}, http.StatusOK)
-	session.PatchMultipart("/api/challenges", JSON{"chall_id": challID5}, []string{dir + "b.txt"}, http.StatusOK)
+	session.PostMultipart("/api/attachments", JSON{"chall_id": challID1}, []string{dir + "b.txt"}, http.StatusOK)
+	session.PostMultipart("/api/attachments", JSON{"chall_id": challID5}, []string{dir + "b.txt"}, http.StatusOK)
 
 	invalids := []string{
 		"/invalid_file",
@@ -64,23 +64,23 @@ func TestAttachments(t *testing.T) {
 		fmt.Sprintf("/%d/a.txt/", challID1),
 		fmt.Sprintf("/%d/a.txt/a.txt", challID1),
 		fmt.Sprintf("/%d/b.txt/", challID1),
-		fmt.Sprintf("/%d/b.txt/b.txt", challID1),
+		// fmt.Sprintf("/%d/b.txt/b.txt", challID1),
 		fmt.Sprintf("/%d", challID5),
 		fmt.Sprintf("/%d/", challID5),
 		fmt.Sprintf("/%d/a.txt", challID5),
 		fmt.Sprintf("/%d/a.txt/", challID5),
 		fmt.Sprintf("/%d/a.txt/a.txt", challID5),
 		fmt.Sprintf("/%d/b.txt/", challID5),
-		fmt.Sprintf("/%d/b.txt/b.txt", challID5),
+		// fmt.Sprintf("/%d/b.txt/b.txt", challID5),
 	}
 	for _, url := range invalids {
 		session.Get("/attachments"+url, nil, http.StatusNotFound)
 		session.CheckResponse(errorf(consts.NotFound))
 	}
 
-	session.Get(fmt.Sprintf("/attachments/%d/b.txt", challID1), nil, http.StatusOK)
+	session.Get(fmt.Sprintf("/attachments/%d/b.txt/b.txt", challID1), nil, http.StatusOK)
 	session.CheckResponse(nil)
-	session.Get(fmt.Sprintf("/attachments/%d/b.txt", challID5), nil, http.StatusOK)
+	session.Get(fmt.Sprintf("/attachments/%d/b.txt/b.txt", challID5), nil, http.StatusOK)
 	session.CheckResponse(nil)
 
 	session = test_utils.NewApiTestSession(t, app, true)
@@ -94,8 +94,8 @@ func TestAttachments(t *testing.T) {
 		session.CheckResponse(errorf(consts.NotFound))
 	}
 
-	session.Get(fmt.Sprintf("/attachments/%d/b.txt", challID1), nil, http.StatusOK)
+	session.Get(fmt.Sprintf("/attachments/%d/b.txt/b.txt", challID1), nil, http.StatusOK)
 	session.CheckResponse(nil)
-	session.Get(fmt.Sprintf("/attachments/%d/b.txt", challID5), nil, http.StatusNotFound)
+	session.Get(fmt.Sprintf("/attachments/%d/b.txt/b.txt", challID5), nil, http.StatusNotFound)
 	session.CheckResponse(errorf(consts.NotFound))
 }

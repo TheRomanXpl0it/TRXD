@@ -12,7 +12,7 @@ import (
 )
 
 const getChallengeByID = `-- name: GetChallengeByID :one
-SELECT id, name, category, description, difficulty, authors, type, hidden, max_points, score_type, points, solves, host, port, attachments FROM challenges WHERE id = $1
+SELECT id, name, category, description, difficulty, authors, tags, type, hidden, max_points, score_type, points, solves, host, port FROM challenges WHERE id = $1
 `
 
 // Retrieve a challenge by its ID
@@ -26,6 +26,7 @@ func (q *Queries) GetChallengeByID(ctx context.Context, id int32) (Challenge, er
 		&i.Description,
 		&i.Difficulty,
 		pq.Array(&i.Authors),
+		pq.Array(&i.Tags),
 		&i.Type,
 		&i.Hidden,
 		&i.MaxPoints,
@@ -34,7 +35,6 @@ func (q *Queries) GetChallengeByID(ctx context.Context, id int32) (Challenge, er
 		&i.Solves,
 		&i.Host,
 		&i.Port,
-		&i.Attachments,
 	)
 	return i, err
 }
@@ -79,46 +79,25 @@ func (q *Queries) GetDockerConfigsByID(ctx context.Context, challID int32) (GetD
 }
 
 const getHiddenAndAttachments = `-- name: GetHiddenAndAttachments :one
-SELECT hidden, attachments FROM challenges WHERE id = $1
+SELECT
+  c.hidden, 
+  (ARRAY_AGG(a.hash || '/' || a.name) FILTER (WHERE a.name IS NOT NULL))::TEXT[] AS attachments
+FROM challenges c
+LEFT JOIN attachments a
+  ON a.chall_id = c.id
+WHERE c.id = $1
+GROUP BY c.hidden
 `
 
 type GetHiddenAndAttachmentsRow struct {
-	Hidden      bool   `json:"hidden"`
-	Attachments string `json:"attachments"`
+	Hidden      bool     `json:"hidden"`
+	Attachments []string `json:"attachments"`
 }
 
 // Checks if a challenge is hidden
 func (q *Queries) GetHiddenAndAttachments(ctx context.Context, id int32) (GetHiddenAndAttachmentsRow, error) {
 	row := q.queryRow(ctx, q.getHiddenAndAttachmentsStmt, getHiddenAndAttachments, id)
 	var i GetHiddenAndAttachmentsRow
-	err := row.Scan(&i.Hidden, &i.Attachments)
+	err := row.Scan(&i.Hidden, pq.Array(&i.Attachments))
 	return i, err
-}
-
-const getTagsByChallenge = `-- name: GetTagsByChallenge :many
-SELECT name FROM tags WHERE chall_id = $1
-`
-
-// Retrieve all tags associated with a challenge
-func (q *Queries) GetTagsByChallenge(ctx context.Context, challID int32) ([]string, error) {
-	rows, err := q.query(ctx, q.getTagsByChallengeStmt, getTagsByChallenge, challID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []string
-	for rows.Next() {
-		var name string
-		if err := rows.Scan(&name); err != nil {
-			return nil, err
-		}
-		items = append(items, name)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }

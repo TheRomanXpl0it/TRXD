@@ -7,13 +7,13 @@ SET
   description = COALESCE(sqlc.narg('description'), description),
   difficulty = COALESCE(sqlc.narg('difficulty'), difficulty),
   authors = COALESCE(sqlc.narg('authors'), authors),
+  tags = COALESCE(sqlc.narg('tags'), tags),
   type = COALESCE(sqlc.narg('type'), type),
   hidden = COALESCE(sqlc.narg('hidden'), hidden),
   max_points = COALESCE(sqlc.narg('max_points'), max_points),
   score_type = COALESCE(sqlc.narg('score_type'), score_type),
   host = COALESCE(sqlc.narg('host'), host),
-  port = COALESCE(sqlc.narg('port'), port),
-  attachments = COALESCE(sqlc.narg('attachments'), attachments)
+  port = COALESCE(sqlc.narg('port'), port)
 WHERE id = sqlc.arg('chall_id');
 
 -- name: UpdateDockerConfigs :exec

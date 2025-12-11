@@ -2,11 +2,9 @@ package challenges_all_get
 
 import (
 	"context"
-	"strings"
 	"time"
 	"trxd/db"
 	"trxd/db/sqlc"
-	"trxd/utils/consts"
 )
 
 type Chall struct {
@@ -22,10 +20,10 @@ type Chall struct {
 	Solves       int            `json:"solves"`
 	Solved       bool           `json:"solved"`
 	FirstBlood   bool           `json:"first_blood"`
-	Host         string         `json:"host"`
-	Port         int            `json:"port"`
 	Attachments  []string       `json:"attachments"`
 	Tags         []string       `json:"tags"`
+	Host         string         `json:"host"`
+	Port         int            `json:"port"`
 	MaxPoints    int            `json:"max_points"`
 	ScoreType    sqlc.ScoreType `json:"score_type"`
 	Timeout      int            `json:"timeout"`
@@ -67,8 +65,8 @@ func GetChallenges(ctx context.Context, uid int32, tid int32, author bool) ([]Ch
 			Timeout:     0,
 		}
 
-		if challenge.Attachments != "" {
-			chall.Attachments = strings.Split(challenge.Attachments, consts.Separator)
+		if challenge.Attachments != nil {
+			chall.Attachments = challenge.Attachments
 		}
 		if challenge.Tags != nil {
 			chall.Tags = challenge.Tags

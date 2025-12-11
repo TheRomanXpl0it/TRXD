@@ -69,6 +69,22 @@ func TestValidators(t *testing.T) {
 	varTest(t, "challenge_difficulty", strings.Repeat("a", consts.MaxChallDifficultyLen))
 	varTest(t, "challenge_difficulty", strings.Repeat("a", consts.MaxChallDifficultyLen+1), test_utils.Format(consts.MaxError, "challenge_difficulty", consts.MaxChallDifficultyLen))
 
+	varTest(t, "challenge_authors", []string{})
+	varTest(t, "challenge_authors", []string{""})
+	varTest(t, "challenge_authors", []string{"a"})
+	varTest(t, "challenge_authors", []string{"a", ""})
+	varTest(t, "challenge_authors", []string{"a", "a"})
+	varTest(t, "challenge_authors", []string{strings.Repeat("a", consts.MaxAuthorNameLen)})
+	varTest(t, "challenge_authors", []string{strings.Repeat("a", consts.MaxAuthorNameLen+1)}, test_utils.Format(consts.MaxError, "[0]", consts.MaxAuthorNameLen))
+
+	varTest(t, "challenge_tags", []string{})
+	varTest(t, "challenge_tags", []string{""})
+	varTest(t, "challenge_tags", []string{"a"})
+	varTest(t, "challenge_tags", []string{"a", ""})
+	varTest(t, "challenge_tags", []string{"a", "a"})
+	varTest(t, "challenge_tags", []string{strings.Repeat("a", consts.MaxTagNameLen)})
+	varTest(t, "challenge_tags", []string{strings.Repeat("a", consts.MaxTagNameLen+1)}, test_utils.Format(consts.MaxError, "[0]", consts.MaxTagNameLen))
+
 	varTest(t, "challenge_type", "", test_utils.Format(consts.OneOfError, "challenge_type", strings.Join(consts.DeployTypesStr, " ")))
 	varTest(t, "challenge_type", sqlc.DeployTypeNormal)
 	varTest(t, "challenge_type", sqlc.DeployTypeContainer)
@@ -117,15 +133,18 @@ func TestValidators(t *testing.T) {
 	varTest(t, "challenge_max_cpu", fmt.Sprint(math.MaxInt32))
 	varTest(t, "challenge_max_cpu", fmt.Sprint(math.MaxInt32+1), consts.InvalidMaxCpu)
 
+	varTest(t, "attachments", []string{})
+	varTest(t, "attachments", []string{""})
+	varTest(t, "attachments", []string{"a"})
+	varTest(t, "attachments", []string{"a", ""})
+	varTest(t, "attachments", []string{"a", "a"})
+	varTest(t, "attachments", []string{strings.Repeat("a", consts.MaxAttachmentNameLen)})
+	varTest(t, "attachments", []string{strings.Repeat("a", consts.MaxAttachmentNameLen+1)}, test_utils.Format(consts.MaxError, "[0]", consts.MaxAttachmentNameLen))
+
 	varTest(t, "flag", "")
 	varTest(t, "flag", "a")
 	varTest(t, "flag", strings.Repeat("a", consts.MaxFlagLen))
 	varTest(t, "flag", strings.Repeat("a", consts.MaxFlagLen+1), test_utils.Format(consts.MaxError, "flag", consts.MaxFlagLen))
-
-	varTest(t, "tag_name", "")
-	varTest(t, "tag_name", "a")
-	varTest(t, "tag_name", strings.Repeat("a", consts.MaxTagNameLen))
-	varTest(t, "tag_name", strings.Repeat("a", consts.MaxTagNameLen+1), test_utils.Format(consts.MaxError, "tag_name", consts.MaxTagNameLen))
 
 	varTest(t, "team_name", "")
 	varTest(t, "team_name", "a")

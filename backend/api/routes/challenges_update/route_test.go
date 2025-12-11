@@ -24,7 +24,6 @@ func TestMain(m *testing.M) {
 
 var testData = []struct {
 	testBody         JSON
-	testFiles        []string
 	expectedStatus   int
 	expectedResponse JSON
 }{
@@ -59,6 +58,21 @@ var testData = []struct {
 		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Difficulty", consts.MaxChallDifficultyLen)),
 	},
 	{
+		testBody:         JSON{"chall_id": "", "authors": ""},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(consts.InvalidJSON),
+	},
+	{
+		testBody:         JSON{"chall_id": "", "authors": []string{strings.Repeat("a", consts.MaxAuthorNameLen+1)}},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Authors[0]", consts.MaxAuthorNameLen)),
+	},
+	{
+		testBody:         JSON{"chall_id": "", "tags": []string{strings.Repeat("a", consts.MaxTagNameLen+1)}},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Tags[0]", consts.MaxTagNameLen)),
+	},
+	{
 		testBody:         JSON{"chall_id": "", "max_points": -1},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(test_utils.Format(consts.MinError, "MaxPoints", 0)),
@@ -81,7 +95,7 @@ var testData = []struct {
 	{
 		testBody:         JSON{"chall_id": "", "lifetime": math.MaxInt32 + 1},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.InvalidFormData),
+		expectedResponse: errorf(consts.InvalidJSON),
 	},
 	{
 		testBody:         JSON{"chall_id": "", "envs": "<invalid-json>"},
@@ -96,7 +110,7 @@ var testData = []struct {
 	{
 		testBody:         JSON{"chall_id": "", "max_memory": math.MaxInt32 + 1},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.InvalidFormData),
+		expectedResponse: errorf(consts.InvalidJSON),
 	},
 	{
 		testBody:         JSON{"chall_id": "", "max_cpu": "<invalid-float>"},
@@ -114,7 +128,7 @@ var testData = []struct {
 		expectedResponse: errorf(consts.InvalidMaxCpu),
 	},
 	{
-		testBody:         JSON{"chall_id": "", "max_cpu": math.MaxInt32 + 1},
+		testBody:         JSON{"chall_id": "", "max_cpu": fmt.Sprintf("%d.0", math.MaxInt32+1)},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(consts.InvalidMaxCpu),
 	},
@@ -131,7 +145,7 @@ var testData = []struct {
 	{
 		testBody:         JSON{"chall_id": math.MaxInt32 + 1},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(consts.InvalidFormData),
+		expectedResponse: errorf(consts.InvalidJSON),
 	},
 	{
 		testBody:         JSON{"chall_id": "", "name": "chall-2"},
@@ -151,6 +165,7 @@ var testData = []struct {
 			"description": "new test desc",
 			"difficulty":  "Ez",
 			"authors":     []string{"author1", "author2"},
+			"tags":        []string{"tag1", "tag2", "tag3"},
 			"type":        "Container",
 			"hidden":      false,
 			"max_points":  1000,
@@ -166,7 +181,6 @@ var testData = []struct {
 			"max_memory":  512,
 			"max_cpu":     "1.0",
 		},
-		testFiles:      []string{"f1.txt", "f2.txt", "f3.txt"},
 		expectedStatus: http.StatusOK,
 	},
 }
@@ -174,13 +188,6 @@ var testData = []struct {
 func TestRoute(t *testing.T) {
 	app := api.SetupApp(t.Context())
 	defer app.Shutdown()
-
-	module := test_utils.GetModuleName(t)
-	dir := "/tmp/" + module + "/"
-	test_utils.CreateDir(t, dir)
-	test_utils.CreateFile(t, dir+"f1.txt", "test-line 1\ntest-line 2")
-	test_utils.CreateFile(t, dir+"f2.txt", "")
-	test_utils.CreateFile(t, dir+"f3.txt", string([]byte{0, 0, 255, 255, 127, 97}))
 
 	test_utils.RegisterUser(t, "author", "author@test.test", "authorpass", sqlc.UserRoleAuthor)
 
@@ -195,10 +202,7 @@ func TestRoute(t *testing.T) {
 	}
 
 	session.Patch("/challenges", nil, http.StatusBadRequest)
-	session.CheckResponse(errorf(consts.InvalidMultipartForm))
-
-	session.RequestMultipart(http.MethodPatch, "/challenges", JSON{"chall_id": challID}, []string{dir + "f1.txt"}, []string{"/"}, http.StatusBadRequest)
-	session.CheckResponse(errorf(consts.InvalidFilePath))
+	session.CheckResponse(errorf(consts.InvalidJSON))
 
 	for i, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)
@@ -210,11 +214,7 @@ func TestRoute(t *testing.T) {
 			}
 		}
 
-		for i := range test.testFiles {
-			test.testFiles[i] = dir + test.testFiles[i]
-		}
-
-		session.PatchMultipart("/challenges", test.testBody, test.testFiles, test.expectedStatus)
+		session.Patch("/challenges", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 
 		if i == len(testData)-1 {
@@ -224,11 +224,7 @@ func TestRoute(t *testing.T) {
 				t.Fatal("Expected body to not be nil")
 			}
 			expected := JSON{
-				"attachments": []string{
-					fmt.Sprintf("attachments/%d/%s", challID, "f1.txt"),
-					fmt.Sprintf("attachments/%d/%s", challID, "f2.txt"),
-					fmt.Sprintf("attachments/%d/%s", challID, "f3.txt"),
-				},
+				"attachments": []string{},
 				"authors":     test.testBody["authors"],
 				"category":    test.testBody["category"],
 				"description": test.testBody["description"],
@@ -245,7 +241,7 @@ func TestRoute(t *testing.T) {
 				"score_type":  test.testBody["score_type"],
 				"solved":      false,
 				"solves":      0,
-				"tags":        []string{},
+				"tags":        test.testBody["tags"],
 				"timeout":     0,
 			}
 			var challengeBody interface{}
@@ -287,6 +283,7 @@ func TestRoute(t *testing.T) {
 		"description": "",
 		"difficulty":  "",
 		"authors":     []string{},
+		"tags":        []string{},
 		"hidden":      false,
 		"max_points":  0,
 		"host":        "",
@@ -299,14 +296,11 @@ func TestRoute(t *testing.T) {
 		"envs":        "",
 		"max_memory":  0,
 		"max_cpu":     "",
-
-		"attachments": "",
 	}
-	testFiles := []string{}
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
-	session.PatchMultipart("/challenges", testBody, testFiles, http.StatusOK)
+	session.Patch("/challenges", testBody, http.StatusOK)
 	session.CheckResponse(nil)
 
 	session.Get("/challenges/", nil, http.StatusOK)
@@ -316,7 +310,8 @@ func TestRoute(t *testing.T) {
 	}
 	expected := JSON{
 		"attachments": []string{},
-		"authors":     []string{"author1", "author2"}, //! TODO: faulty test! should be: []string{} (multipart form issue)
+		"authors":     testBody["authors"],
+		// "authors":     []string{"author1", "author2"}, //! TODO: faulty test! should be: []string{} (multipart form issue)
 		"category":    testBody["category"],
 		"description": testBody["description"],
 		"difficulty":  testBody["difficulty"],
@@ -332,8 +327,9 @@ func TestRoute(t *testing.T) {
 		"score_type":  "Dynamic",
 		"solved":      false,
 		"solves":      0,
-		"tags":        []string{},
-		"timeout":     0,
+		"tags":        testBody["tags"],
+		// "tags":    []string{"tag1", "tag2", "tag3"}, //! TODO: faulty test! should be: []string{} (multipart form issue)
+		"timeout": 0,
 	}
 	var challengeBody interface{}
 	for _, v := range body.([]interface{}) {

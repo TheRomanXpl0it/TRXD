@@ -3,7 +3,6 @@ import sys
 import requests
 import threading
 from random import randint
-from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 N = int(os.getenv("TEST_WORKERS", 25))
 if N > 25:
@@ -38,15 +37,12 @@ for c in challs:
 		chall_id = c['id']
 		break
 
-m = MultipartEncoder(fields={
-	"chall_id": str(chall_id),
-	"hash_domain": 'false',
-})
 r = s.patch('http://localhost:1337/api/challenges',
-	data=m, headers={
-		'Content-Type': m.content_type,
-		'X-Csrf-Token': s.cookies.get('csrf_')
+	json={
+		"chall_id": chall_id,
+		"hash_domain": False,
 	},
+	headers={'X-Csrf-Token': s.cookies.get('csrf_')},
 )
 
 

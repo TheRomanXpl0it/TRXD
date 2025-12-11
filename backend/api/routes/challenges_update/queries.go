@@ -4,16 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strings"
 	"trxd/db"
 	"trxd/db/sqlc"
-	"trxd/utils/consts"
 )
 
 func IsChallEmpty(data *UpdateChallParams) bool {
 	if data.Name == "" && data.Category == "" && data.Description == nil && data.Difficulty == nil &&
-		data.Authors == nil && data.Type == nil && data.Hidden == nil && data.MaxPoints == nil &&
-		data.ScoreType == nil && data.Host == nil && data.Port == nil && data.Attachments == nil {
+		data.Authors == nil && data.Tags == nil && data.Type == nil && data.Hidden == nil && data.MaxPoints == nil &&
+		data.ScoreType == nil && data.Host == nil && data.Port == nil {
 		return true
 	}
 	return false
@@ -47,6 +45,9 @@ func UpdateChallenge(ctx context.Context, data *UpdateChallParams) error {
 	if data.Authors != nil {
 		challParams.Authors = *data.Authors
 	}
+	if data.Tags != nil {
+		challParams.Tags = *data.Tags
+	}
 	if data.Type != nil {
 		challParams.Type = sqlc.NullDeployType{DeployType: *data.Type, Valid: true}
 	}
@@ -64,9 +65,6 @@ func UpdateChallenge(ctx context.Context, data *UpdateChallParams) error {
 	}
 	if data.Port != nil {
 		challParams.Port = sql.NullInt32{Int32: int32(*data.Port), Valid: true}
-	}
-	if data.Attachments != nil {
-		challParams.Attachments = sql.NullString{String: strings.Join(*data.Attachments, consts.Separator), Valid: true}
 	}
 
 	dockerParams := sqlc.UpdateDockerConfigsParams{

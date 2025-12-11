@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 	"trxd/api/middlewares"
+	"trxd/api/routes/attachments_create"
+	"trxd/api/routes/attachments_delete"
 	"trxd/api/routes/categories_create"
 	"trxd/api/routes/categories_delete"
 	"trxd/api/routes/categories_get"
@@ -23,9 +25,6 @@ import (
 	"trxd/api/routes/instances_delete"
 	"trxd/api/routes/instances_update"
 	"trxd/api/routes/submissions_create"
-	"trxd/api/routes/tags_create"
-	"trxd/api/routes/tags_delete"
-	"trxd/api/routes/tags_update"
 	"trxd/api/routes/teams_all_get"
 	"trxd/api/routes/teams_get"
 	"trxd/api/routes/teams_join"
@@ -179,9 +178,8 @@ func SetupApi(ctx context.Context, app *fiber.App) {
 	// api.Get("/submissions", admin, submissions_get.Route)
 	// api.Delete("/submissions", admin, submissions_delete.Route)
 
-	api.Post("/tags", author, tags_create.Route)
-	api.Patch("/tags", author, tags_update.Route)
-	api.Delete("/tags", author, tags_delete.Route)
+	api.Post("/attachments", author, attachments_create.Route)
+	api.Delete("/attachments", author, attachments_delete.Route)
 
 	api.Post("/flags", author, flags_create.Route)
 	api.Patch("/flags", author, flags_update.Route)

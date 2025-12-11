@@ -5,6 +5,7 @@ import "trxd/db/sqlc"
 const Name = "TRXd"
 
 const (
+	MaxAttachmentNameLen  = 128
 	MaxBioLen             = 10240
 	MaxCategoryLen        = 32
 	MaxChallDescLen       = 10240
@@ -17,6 +18,7 @@ const (
 	MaxTeamNameLen        = 64
 	MaxPasswordLen        = 64
 	MaxPort               = 65535
+	MaxAuthorNameLen      = 64
 	MaxTagNameLen         = 32
 	MinPasswordLen        = 8
 	MinPort               = 0
@@ -45,18 +47,19 @@ const (
 
 	ErrorBeginningTransaction    = "Error beginning transaction"
 	ErrorCommittingTransaction   = "Error committing transaction"
+	ErrorCreatingAttachments     = "Error creating attachments"
 	ErrorCreatingAttachmentsDir  = "Error creating attachments directory"
 	ErrorCreatingCategory        = "Error creating category"
 	ErrorCreatingChallenge       = "Error creating challenge"
 	ErrorCreatingFlag            = "Error creating flag"
 	ErrorCreatingInstance        = "Error creating instance"
-	ErrorCreatingTag             = "Error creating tag"
+	ErrorDeletingAttachment      = "Error deleting attachment"
 	ErrorDeletingCategory        = "Error deleting category"
 	ErrorDeletingChallenge       = "Error deleting challenge"
 	ErrorDeletingFlag            = "Error deleting flag"
 	ErrorDeletingInstance        = "Error deleting instance"
-	ErrorDeletingTag             = "Error deleting tag"
 	ErrorDestroyingSession       = "Error destroying session"
+	ErrorFetchingAttachment      = "Error fetching attachment"
 	ErrorFetchingCategories      = "Error fetching categories"
 	ErrorFetchingCategory        = "Error fetching category"
 	ErrorFetchingChallenge       = "Error fetching challenge"
@@ -80,7 +83,6 @@ const (
 	ErrorUpdatingCategory        = "Error updating category"
 	ErrorUpdatingChallenge       = "Error updating challenge"
 	ErrorUpdatingConfig          = "Error updating configuration"
-	ErrorUpdatingTag             = "Error updating tag"
 	ErrorUpdatingTeam            = "Error updating team"
 	ErrorUpdatingUser            = "Error updating user"
 
@@ -104,26 +106,25 @@ const (
 	MinError   = "{0} must be at least {1}"
 	OneOfError = "{0} must be one of: {1}"
 
+	AttachmentAlreadyExists    = "Attachment already exists"
 	CategoryAlreadyExists      = "Category already exists"
 	ChallengeAlreadyExists     = "Challenge already exists"
 	ChallengeNameAlreadyExists = "Challenge name already exists"
 	FlagAlreadyExists          = "Flag already exists"
 	NameAlreadyTaken           = "Name already taken"
-	TagAlreadyExists           = "Tag already exists"
 	TeamAlreadyExists          = "Team already exists"
 	UserAlreadyExists          = "User already exists"
 
-	CategoryNotFound  = "Category not found"
-	ChallengeNotFound = "Challenge not found"
-	ConfigNotFound    = "Configuration not found"
-	InstanceNotFound  = "Instance not found"
-	TeamNotFound      = "Team not found"
-	UserNotFound      = "User not found"
+	AttachmentNotFound = "Attachment not found"
+	CategoryNotFound   = "Category not found"
+	ChallengeNotFound  = "Challenge not found"
+	ConfigNotFound     = "Configuration not found"
+	InstanceNotFound   = "Instance not found"
+	TeamNotFound       = "Team not found"
+	UserNotFound       = "User not found"
 
 	MissingLifetime       = "global lifetime is missing"
 	MissingRequiredFields = "Missing required fields"
 	NoDataToUpdate        = "No data provided to update"
 	NotLoggedIn           = "Not logged in"
 )
-
-const Separator = "\x01"

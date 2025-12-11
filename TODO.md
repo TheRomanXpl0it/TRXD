@@ -7,11 +7,7 @@
    - change csrf token name
    - api names more similar (categories_create -> name & categories_delete -> category)
  - bugs:
-   - tags rework (string list)
-   - authors rework (string list)
    - single user mode, send user id instead of team id (ex. scoreboard)
-   - attachments rework (own table) (own endpoint & update challenges to json)
-   - attachments hash in path
  - tests:
    - tests with removal of trxd-shared (and fault tolerance)
    - discord webhook tests in pipeline
@@ -26,7 +22,6 @@
    - challenge remote type (table: (tcp & http) + format: ex. "nc {{host}} {{port}}" & "http://{{host}}:{{port}}")
    - add pagination on "all" GETs
    - invisible teams
-   - tag order
  - utility:
    - configs changable by env
    - better names for binary flags
