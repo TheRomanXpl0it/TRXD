@@ -15,6 +15,7 @@ import (
 	"trxd/db/sqlc"
 	"trxd/utils"
 	"trxd/utils/consts"
+	"trxd/utils/crypto_utils"
 )
 
 const PROJECT_DIR = "backend"
@@ -247,6 +248,21 @@ func CreateFile(t *testing.T, file string, content string) {
 	if err != nil {
 		t.Fatalf("Failed to write content to file %s: %v", file, err)
 	}
+}
+
+func HashFile(t *testing.T, file string) string {
+	f, err := os.Open(file)
+	if err != nil {
+		t.Fatalf("Failed to open file %s: %v", file, err)
+	}
+	defer f.Close()
+
+	hash, err := crypto_utils.HashFile(f)
+	if err != nil {
+		t.Fatalf("Failed to hash file %s: %v", file, err)
+	}
+
+	return hash
 }
 
 func Format(msg string, a ...any) string {

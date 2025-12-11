@@ -94,6 +94,10 @@ func TestRoute(t *testing.T) {
 	test_utils.CreateFile(t, dir+"test2.txt", "")
 	test_utils.CreateFile(t, dir+"test3.txt", string([]byte{0, 0, 255, 255, 127, 97}))
 
+	// h1 := test_utils.HashFile(t, dir+"test1.txt")
+	h2 := test_utils.HashFile(t, dir+"test2.txt")
+	h3 := test_utils.HashFile(t, dir+"test3.txt")
+
 	test_utils.RegisterUser(t, "author", "author@test.test", "authorpass", sqlc.UserRoleAuthor)
 
 	var challID int32
@@ -131,12 +135,12 @@ func TestRoute(t *testing.T) {
 		var attachments []string
 		if i == len(testData)-1 {
 			attachments = []string{
-				fmt.Sprintf("/%s/%s", "test3.txt", "test3.txt"),
+				fmt.Sprintf("/%s/%s", h3, "test3.txt"),
 			}
 		} else {
 			attachments = []string{
-				fmt.Sprintf("/%s/%s", "test2.txt", "test2.txt"),
-				fmt.Sprintf("/%s/%s", "test3.txt", "test3.txt"),
+				fmt.Sprintf("/%s/%s", h2, "test2.txt"),
+				fmt.Sprintf("/%s/%s", h3, "test3.txt"),
 			}
 		}
 
@@ -175,7 +179,8 @@ func TestRoute(t *testing.T) {
 		}
 		test_utils.Compare(t, expected, challengeBody)
 
-		path := fmt.Sprintf("attachments/%d/%s", challID, test.testBody["names"].([]string)[0])
+		hash := test_utils.HashFile(t, dir+test.testBody["names"].([]string)[0])
+		path := fmt.Sprintf("attachments/%d/%s", challID, hash)
 		if _, err := os.Stat(path); !os.IsNotExist(err) {
 			t.Fatalf("Expected attachment file %s to be deleted", path)
 		}

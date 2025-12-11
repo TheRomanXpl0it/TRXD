@@ -72,6 +72,7 @@ const (
 	ErrorFetchingTeam            = "Error fetching team"
 	ErrorFetchingUser            = "Error fetching user"
 	ErrorGeneratingPassword      = "Error generating random password"
+	ErrorHashingFile             = "Error hashing file"
 	ErrorLoggingIn               = "Error logging in"
 	ErrorRegisteringTeam         = "Error registering team"
 	ErrorRegisteringUser         = "Error registering user"

@@ -17,6 +17,7 @@ func TestAttachments(t *testing.T) {
 	dir := "/tmp/" + module + "/"
 	test_utils.CreateDir(t, dir)
 	test_utils.CreateFile(t, dir+"b.txt", "test-line 1\n")
+	hash := test_utils.HashFile(t, dir+"b.txt")
 
 	session := test_utils.NewApiTestSession(t, app, true)
 	session.Get("/attachments/invalid_file", nil, http.StatusUnauthorized)
@@ -64,23 +65,23 @@ func TestAttachments(t *testing.T) {
 		fmt.Sprintf("/%d/a.txt/", challID1),
 		fmt.Sprintf("/%d/a.txt/a.txt", challID1),
 		fmt.Sprintf("/%d/b.txt/", challID1),
-		// fmt.Sprintf("/%d/b.txt/b.txt", challID1),
+		fmt.Sprintf("/%d/b.txt/b.txt", challID1),
 		fmt.Sprintf("/%d", challID5),
 		fmt.Sprintf("/%d/", challID5),
 		fmt.Sprintf("/%d/a.txt", challID5),
 		fmt.Sprintf("/%d/a.txt/", challID5),
 		fmt.Sprintf("/%d/a.txt/a.txt", challID5),
 		fmt.Sprintf("/%d/b.txt/", challID5),
-		// fmt.Sprintf("/%d/b.txt/b.txt", challID5),
+		fmt.Sprintf("/%d/b.txt/b.txt", challID5),
 	}
 	for _, url := range invalids {
 		session.Get("/attachments"+url, nil, http.StatusNotFound)
 		session.CheckResponse(errorf(consts.NotFound))
 	}
 
-	session.Get(fmt.Sprintf("/attachments/%d/b.txt/b.txt", challID1), nil, http.StatusOK)
+	session.Get(fmt.Sprintf("/attachments/%d/%s/b.txt", challID1, hash), nil, http.StatusOK)
 	session.CheckResponse(nil)
-	session.Get(fmt.Sprintf("/attachments/%d/b.txt/b.txt", challID5), nil, http.StatusOK)
+	session.Get(fmt.Sprintf("/attachments/%d/%s/b.txt", challID5, hash), nil, http.StatusOK)
 	session.CheckResponse(nil)
 
 	session = test_utils.NewApiTestSession(t, app, true)
@@ -94,8 +95,8 @@ func TestAttachments(t *testing.T) {
 		session.CheckResponse(errorf(consts.NotFound))
 	}
 
-	session.Get(fmt.Sprintf("/attachments/%d/b.txt/b.txt", challID1), nil, http.StatusOK)
+	session.Get(fmt.Sprintf("/attachments/%d/%s/b.txt", challID1, hash), nil, http.StatusOK)
 	session.CheckResponse(nil)
-	session.Get(fmt.Sprintf("/attachments/%d/b.txt/b.txt", challID5), nil, http.StatusNotFound)
+	session.Get(fmt.Sprintf("/attachments/%d/%s/b.txt", challID5, hash), nil, http.StatusNotFound)
 	session.CheckResponse(errorf(consts.NotFound))
 }

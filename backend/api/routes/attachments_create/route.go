@@ -9,6 +9,7 @@ import (
 	"trxd/db"
 	"trxd/utils"
 	"trxd/utils/consts"
+	"trxd/utils/crypto_utils"
 	"trxd/validator"
 
 	"github.com/go-playground/form/v4"
@@ -24,7 +25,6 @@ func Route(c *fiber.Ctx) error {
 
 	var data struct {
 		ChallID *int32 `form:"chall_id" validate:"required,id"`
-		// Attachments *[]string `form:"attachments" validate:"required,attachments"`
 	}
 	decoder := form.NewDecoder()
 	if err = decoder.Decode(&data, multipartForm.Value); err != nil {
@@ -72,8 +72,22 @@ func Route(c *fiber.Ctx) error {
 
 	hashes := make([]string, 0, len(headers))
 	for _, file := range headers {
-		// crypto_utils.fileHash(file.Open())
-		hash := file.Filename //! TODO: replace with actual hash
+		cleanPath := filepath.Clean(dir + filepath.Base(file.Filename))
+		if !strings.HasPrefix(cleanPath, dir) {
+			return utils.Error(c, fiber.StatusBadRequest, consts.InvalidFilePath)
+		}
+
+		f, err := file.Open()
+		if err != nil {
+			return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorHashingFile, err)
+		}
+		defer f.Close()
+
+		hash, err := crypto_utils.HashFile(f)
+		if err != nil {
+			return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorHashingFile, err)
+		}
+
 		hashes = append(hashes, hash)
 
 		hashedPath := dir + hash + "/"
@@ -84,12 +98,12 @@ func Route(c *fiber.Ctx) error {
 			}
 		}
 
-		cleanPath := filepath.Clean(hashedPath + filepath.Base(file.Filename))
-		if !strings.HasPrefix(cleanPath, dir) {
+		cleanPath = filepath.Clean(hashedPath + filepath.Base(file.Filename))
+		if !strings.HasPrefix(cleanPath, hashedPath) {
 			return utils.Error(c, fiber.StatusBadRequest, consts.InvalidFilePath)
 		}
 
-		err := c.SaveFile(file, cleanPath)
+		err = c.SaveFile(file, cleanPath)
 		if err != nil {
 			return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorSavingFile, err)
 		}

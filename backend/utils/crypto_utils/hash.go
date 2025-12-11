@@ -2,6 +2,8 @@ package crypto_utils
 
 import (
 	"bytes"
+	"crypto/md5"
+	"io"
 	"trxd/utils"
 
 	"golang.org/x/crypto/argon2"
@@ -49,4 +51,23 @@ func Verify(password string, saltHex string, hashHex string) bool {
 	)
 
 	return bytes.Equal(hashed, hash)
+}
+
+func HashFile(file io.Reader) (string, error) {
+	data, err := io.ReadAll(file)
+	if err != nil {
+		return "", err
+	}
+
+	h := md5.New()
+	n, err := h.Write(data)
+	if err != nil {
+		return "", err
+	}
+	if n != len(data) {
+		return "", io.ErrShortWrite
+	}
+
+	hash := h.Sum(nil)
+	return utils.BytesToHex(hash), nil
 }

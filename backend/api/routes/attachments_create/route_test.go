@@ -85,6 +85,10 @@ func TestRoute(t *testing.T) {
 	test_utils.CreateFile(t, dir+"f2.txt", "")
 	test_utils.CreateFile(t, dir+"f3.txt", string([]byte{0, 0, 255, 255, 127, 97}))
 
+	h1 := test_utils.HashFile(t, dir+"f1.txt")
+	h2 := test_utils.HashFile(t, dir+"f2.txt")
+	h3 := test_utils.HashFile(t, dir+"f3.txt")
+
 	test_utils.RegisterUser(t, "author", "author@test.test", "authorpass", sqlc.UserRoleAuthor)
 
 	var challID int32
@@ -131,9 +135,9 @@ func TestRoute(t *testing.T) {
 		}
 		expected := JSON{
 			"attachments": []string{
-				fmt.Sprintf("/%s/%s", "f1.txt", "f1.txt"),
-				fmt.Sprintf("/%s/%s", "f2.txt", "f2.txt"),
-				fmt.Sprintf("/%s/%s", "f3.txt", "f3.txt"),
+				fmt.Sprintf("/%s/%s", h1, "f1.txt"),
+				fmt.Sprintf("/%s/%s", h2, "f2.txt"),
+				fmt.Sprintf("/%s/%s", h3, "f3.txt"),
 			},
 			"authors":     []string{},
 			"category":    "cat",
