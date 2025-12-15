@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"trxd/api/routes/challenges_create"
@@ -93,31 +94,36 @@ func Main(m *testing.M) {
 	os.Exit(exitCode)
 }
 
+func Fatalf(t *testing.T, msg string, a ...any) {
+	_, file, line, _ := runtime.Caller(2)
+	t.Fatalf("%s:%d: %s", file, line, fmt.Sprintf(msg, a...))
+}
+
 func UpdateConfig(t *testing.T, name string, value string) {
 	err := db.UpdateConfig(t.Context(), name, value)
 	if err != nil {
-		t.Fatalf("Failed to update config %s: %v", name, err)
+		Fatalf(t, "Failed to update config %s: %v", name, err)
 	}
 }
 
 func RegisterUser(t *testing.T, name, email, password string, role sqlc.UserRole) *sqlc.User {
 	tx, err := db.BeginTx(t.Context())
 	if err != nil {
-		t.Fatalf("Failed to begin transaction: %v", err)
+		Fatalf(t, "Failed to begin transaction: %v", err)
 	}
 	defer tx.Rollback()
 
 	user, err := users_register.RegisterUser(t.Context(), tx, name, email, password, role)
 	if err != nil {
-		t.Fatalf("Failed to register user %s: %v", name, err)
+		Fatalf(t, "Failed to register user %s: %v", name, err)
 	}
 	if user == nil {
-		t.Fatalf("Registered user '%s' is nil", name)
+		Fatalf(t, "Registered user '%s' is nil", name)
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		t.Fatalf("Failed to commit transaction: %v", err)
+		Fatalf(t, "Failed to commit transaction: %v", err)
 	}
 
 	return user
@@ -126,21 +132,21 @@ func RegisterUser(t *testing.T, name, email, password string, role sqlc.UserRole
 func RegisterTeam(t *testing.T, name, password string, userID int32) *sqlc.Team {
 	tx, err := db.BeginTx(t.Context())
 	if err != nil {
-		t.Fatalf("Failed to begin transaction: %v", err)
+		Fatalf(t, "Failed to begin transaction: %v", err)
 	}
 	defer tx.Rollback()
 
 	team, err := teams_register.RegisterTeam(t.Context(), tx, name, password, userID)
 	if err != nil {
-		t.Fatalf("Failed to register team %s: %v", name, err)
+		Fatalf(t, "Failed to register team %s: %v", name, err)
 	}
 	if team == nil {
-		t.Fatalf("Registered team '%s' is nil", name)
+		Fatalf(t, "Registered team '%s' is nil", name)
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		t.Fatalf("Failed to commit transaction: %v", err)
+		Fatalf(t, "Failed to commit transaction: %v", err)
 	}
 
 	return team
@@ -150,10 +156,10 @@ func CreateChallenge(t *testing.T, name string, category string, description str
 	challType sqlc.DeployType, maxPoints int32, scoreType sqlc.ScoreType) *sqlc.Challenge {
 	chall, err := challenges_create.CreateChallenge(t.Context(), name, category, description, challType, maxPoints, scoreType)
 	if err != nil {
-		t.Fatalf("Failed to create challenge %s: %v", name, err)
+		Fatalf(t, "Failed to create challenge %s: %v", name, err)
 	}
 	if chall == nil {
-		t.Fatalf("Challenge creation of '%s' returned nil", name)
+		Fatalf(t, "Challenge creation of '%s' returned nil", name)
 	}
 
 	return chall
@@ -163,7 +169,7 @@ func TryCreateChallenge(t *testing.T, name string, category string, description 
 	challType sqlc.DeployType, maxPoints int32, scoreType sqlc.ScoreType) *sqlc.Challenge {
 	chall, err := challenges_create.CreateChallenge(t.Context(), name, category, description, challType, maxPoints, scoreType)
 	if err != nil {
-		t.Fatalf("Failed to create challenge %s: %v", name, err)
+		Fatalf(t, "Failed to create challenge %s: %v", name, err)
 	}
 
 	return chall
@@ -176,26 +182,26 @@ func UnveilChallenge(t *testing.T, id int32) {
 		Hidden:  &False,
 	})
 	if err != nil {
-		t.Fatalf("Failed to update challenge %d: %v", id, err)
+		Fatalf(t, "Failed to update challenge %d: %v", id, err)
 	}
 }
 
 func GetTeamByName(t *testing.T, name string) *sqlc.Team {
 	team, err := db.GetTeamByName(t.Context(), name)
 	if err != nil {
-		t.Fatalf("Failed to get team %s: %v", name, err)
+		Fatalf(t, "Failed to get team %s: %v", name, err)
 	}
 	if team == nil {
-		t.Fatalf("Team %s not found", name)
+		Fatalf(t, "Team %s not found", name)
 	}
 
 	return team
 }
 
-func Compare(t *testing.T, a, b interface{}) {
-	err := utils.Compare(a, b)
+func Compare(t *testing.T, expected, value interface{}) {
+	err := utils.Compare(expected, value)
 	if err != nil {
-		t.Fatalf("Failed to compare values: %v", err)
+		Fatalf(t, "Failed to compare values: %v", err)
 	}
 }
 
@@ -224,7 +230,7 @@ func DeleteKeys(data interface{}, keys ...string) interface{} {
 func GetModuleName(t *testing.T) string {
 	dir, err := os.Getwd()
 	if err != nil {
-		t.Fatalf("Failed to get current directory: %v", err)
+		Fatalf(t, "Failed to get current directory: %v", err)
 	}
 
 	return filepath.Base(dir)
@@ -233,33 +239,33 @@ func GetModuleName(t *testing.T) string {
 func CreateDir(t *testing.T, dir string) {
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {
-		t.Fatalf("Failed to create directory %s: %v", dir, err)
+		Fatalf(t, "Failed to create directory %s: %v", dir, err)
 	}
 }
 
 func CreateFile(t *testing.T, file string, content string) {
 	f, err := os.Create(file)
 	if err != nil {
-		t.Fatalf("Failed to create file %s: %v", file, err)
+		Fatalf(t, "Failed to create file %s: %v", file, err)
 	}
 	defer f.Close()
 
 	_, err = f.WriteString(content)
 	if err != nil {
-		t.Fatalf("Failed to write content to file %s: %v", file, err)
+		Fatalf(t, "Failed to write content to file %s: %v", file, err)
 	}
 }
 
 func HashFile(t *testing.T, file string) string {
 	f, err := os.Open(file)
 	if err != nil {
-		t.Fatalf("Failed to open file %s: %v", file, err)
+		Fatalf(t, "Failed to open file %s: %v", file, err)
 	}
 	defer f.Close()
 
 	hash, err := crypto_utils.HashFile(f)
 	if err != nil {
-		t.Fatalf("Failed to hash file %s: %v", file, err)
+		Fatalf(t, "Failed to hash file %s: %v", file, err)
 	}
 
 	return hash

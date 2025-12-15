@@ -240,6 +240,6 @@ func (s *apiTestSession) CheckResponse(expectedResponse interface{}) {
 
 	err := utils.Compare(expectedResponse, jsonDecoded)
 	if err != nil {
-		s.t.Fatalf("Response body does not match: %v", err)
+		Fatalf(s.t, "Response body does not match: %v", err)
 	}
 }
