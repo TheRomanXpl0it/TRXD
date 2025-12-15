@@ -1,0 +1,51 @@
+openapi: '3.1.0'
+info:
+  title: TRXd
+  version: '1.0'
+servers:
+  - url: http://127.0.0.1/api/
+
+
+#! https://spec.openapis.org/oas/v3.1.0
+
+# TODO compose examples
+
+paths:
+  /register:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  $ref: "./types.yml#/components/schemas/user_name"
+                email:
+                  $ref: "./types.yml#/components/schemas/email"
+                password:
+                  $ref: "./types.yml#/components/schemas/password"
+              required: [name, email, password]
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                oneOf: # TODO: figure out a way to list all errors
+                  - $ref: "./errors.yml#/components/schemas/invalid_json"
+                  - $ref: "./errors.yml#/components/schemas/missing_field"
+                  - $ref: "./errors.yml#/components/schemas/short_password"
+                  - $ref: "./errors.yml#/components/schemas/long_password"
+                  - $ref: "./errors.yml#/components/schemas/long_name"
+                  - $ref: "./errors.yml#/components/schemas/long_email"
+                  - $ref: "./errors.yml#/components/schemas/invalid_email"
+        "409":
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: "./errors.yml#/components/schemas/user_already_exists"

@@ -1,0 +1,43 @@
+components:
+  schemas:
+    id:
+      type: integer
+      format: int32
+      minimum: 0
+
+    deploy_type:
+      type: string
+      enum:
+        - 'Normal'
+        - 'Container'
+        - 'Compose'
+
+    score_type:
+      type: string
+      enum:
+        - 'Static'
+        - 'Dynamic'
+
+    submission_status:
+      type: string
+      enum:
+        - 'Wrong'
+        - 'Correct'
+        - 'Repeated'
+        - 'Invalid'
+
+    user_name:
+      type: string
+      maxLength: 64
+      example: username
+
+    email:
+      type: string
+      format: email
+      maxLength: 256
+
+    password:
+      type: string
+      format: password
+      minLength: 8
+      maxLength: 64
