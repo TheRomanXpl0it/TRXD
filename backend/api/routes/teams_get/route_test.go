@@ -165,4 +165,70 @@ func TestRoute(t *testing.T) {
 	}
 	test_utils.DeleteKeys(body, "id", "timestamp", "user_id")
 	test_utils.Compare(t, expectedAdmin, body)
+
+	// User Mode tests
+	test_utils.UpdateConfig(t, "user-mode", "true")
+	session = test_utils.NewApiTestSession(t, app)
+	session.Post("/register", JSON{"name": "single", "email": "single@gmail.com", "password": "testpass"}, http.StatusOK)
+	session.Get("/info", nil, http.StatusOK)
+	body = session.Body()
+	if body == nil {
+		t.Fatal("Expected body to not be nil")
+	}
+	bodyMap := body.(map[string]interface{})
+	teamID := int32(bodyMap["team_id"].(float64))
+
+	expected := JSON{
+		"badges":  []interface{}{},
+		"country": "",
+		"id":      4,
+		"name":    "single",
+		"score":   0,
+		"solves":  []interface{}{},
+	}
+	session.Get(fmt.Sprintf("/teams/%d", teamID), nil, http.StatusOK)
+	body = session.Body()
+	if body == nil {
+		t.Fatal("Expected body to not be nil")
+	}
+	test_utils.Compare(t, expected, body)
+
+	expected = JSON{
+		"badges": []JSON{
+			{
+				"description": "Completed all cat-1 challenges",
+				"name":        "cat-1",
+			},
+		},
+		"country": "",
+		"name":    "A",
+		"score":   1498,
+		"solves": []JSON{
+			{
+				"category":    "cat-1",
+				"first_blood": true,
+				"name":        "chall-1",
+				"points":      500,
+			},
+			{
+				"category":    "cat-1",
+				"first_blood": true,
+				"name":        "chall-3",
+				"points":      500,
+			},
+			{
+				"category":    "cat-1",
+				"first_blood": true,
+				"name":        "chall-4",
+				"points":      498,
+			},
+		},
+	}
+	session.Get(fmt.Sprintf("/teams/%d", A.ID), nil, http.StatusOK)
+	body = session.Body()
+	if body == nil {
+		t.Fatal("Expected body to not be nil")
+	}
+	test_utils.DeleteKeys(body, "id", "timestamp")
+	test_utils.Compare(t, expected, body)
 }

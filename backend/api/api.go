@@ -124,6 +124,12 @@ func SetupFeatures(app *fiber.App) {
 }
 
 func SetupApi(ctx context.Context, app *fiber.App) {
+	mode, err := db.GetConfig(ctx, "user-mode")
+	if err != nil {
+		log.Error("Failed to get user-mode config:", "err", err)
+		mode = fmt.Sprint(consts.DefaultConfigs["user-mode"])
+	}
+
 	var api fiber.Router
 	if log.GetLevel() == log.DebugLevel {
 		api = app.Group("/api", middlewares.Debug)
@@ -140,23 +146,20 @@ func SetupApi(ctx context.Context, app *fiber.App) {
 
 	api.Patch("/users", player, users_update.Route)
 	api.Patch("/users/password", spectator, users_password.Route)
-	api.Get("/users", noAuth, users_all_get.Route)
-	api.Get("/users/:id", noAuth, users_get.Route)
-
-	mode, err := db.GetConfig(ctx, "user-mode")
-	if err != nil {
-		log.Error("Failed to get user-mode config:", "err", err)
-		mode = fmt.Sprint(consts.DefaultConfigs["user-mode"])
+	if mode != "true" {
+		api.Get("/users", noAuth, users_all_get.Route)
+		api.Get("/users/:id", noAuth, users_get.Route)
 	}
+
 	if mode != "true" {
 		api.Post("/teams/register", player, teams_register.Route)
 		api.Post("/teams/join", player, teams_join.Route)
 		// api.Get("/teams/join/:token", player, teams_join_token.Route)
 		api.Patch("/teams", player, team, teams_update.Route)
 		api.Patch("/teams/password", spectator, team, teams_password.Route)
-		api.Get("/teams", noAuth, teams_all_get.Route)
-		api.Get("/teams/:id", noAuth, teams_get.Route)
 	}
+	api.Get("/teams", noAuth, teams_all_get.Route)
+	api.Get("/teams/:id", noAuth, teams_get.Route)
 
 	api.Post("/categories", author, categories_create.Route)
 	api.Patch("/categories", author, categories_update.Route)

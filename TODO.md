@@ -6,15 +6,14 @@
    - change name of challs, network and so on, with $PROJECT_NAME prefix
    - change csrf token name
    - api names more similar (categories_create -> name & categories_delete -> category)
- - bugs:
-   - single user mode, send user id instead of team id (ex. scoreboard)
  - tests:
    - tests with removal of trxd-shared (and fault tolerance)
    - discord webhook tests in pipeline
    - tg webhook tests in pipeline
-   - add tests with a lot of hash named challs (hard cap for networks on nginx?)
+   - add tests with a lot of hash named challs (hard cap for networks on nginx?) (try change IPAM to /30 to preserve addrs)
    - instance expire tests
  - features:
+   - https://docs.gofiber.io/api/middleware/helmet/
    - https://doc.traefik.io/traefik/expose/docker/
    - challs SNI traefik
    - N instance limit per team
@@ -22,6 +21,7 @@
    - challenge remote type (table: (tcp & http) + format: ex. "nc {{host}} {{port}}" & "http://{{host}}:{{port}}")
    - add pagination on "all" GETs
    - invisible teams
+   - divide configs by section (secrets, instances, something like this...)
  - utility:
    - configs changable by env
    - better names for binary flags
@@ -42,7 +42,7 @@
  - dropdown menu container
  - DOCUMENTATION
 
-## Extra
+## Ideas / Features
  - editable homepage & theme
  - instanes page (admin only)
  - deletable instances (from admin)
@@ -56,8 +56,6 @@
  - hash verifier flag or script
  - login via CTFTime
  - default starting points for challenges as global config
-
-## Bonus Ideas
  - kube support
  - swarm support
  - ctf stats page

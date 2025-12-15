@@ -101,12 +101,12 @@ func TestUserMode(t *testing.T) {
 		method string
 		route  string
 	}{
+		{method: http.MethodGet, route: "/users"},
+		{method: http.MethodGet, route: "/users/0"},
 		{method: http.MethodPost, route: "/teams/register"},
 		{method: http.MethodPost, route: "/teams/join"},
 		{method: http.MethodPatch, route: "/teams"},
 		{method: http.MethodPatch, route: "/teams/password"},
-		{method: http.MethodGet, route: "/teams"},
-		{method: http.MethodGet, route: "/teams/0"},
 	}
 	session := test_utils.NewApiTestSession(t, app)
 	for _, ep := range enpoints {
