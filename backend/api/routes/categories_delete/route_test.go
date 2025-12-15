@@ -36,20 +36,20 @@ var testData = []struct {
 		expectedResponse: errorf(consts.MissingRequiredFields),
 	},
 	{
-		testBody:       JSON{"category": "aaaaaaaaaaaaaaaaaaaaaaaa"},
+		testBody:       JSON{"name": "aaaaaaaaaaaaaaaaaaaaaaaa"},
 		expectedStatus: http.StatusOK,
 	},
 	{
-		testBody:         JSON{"category": strings.Repeat("a", consts.MaxCategoryLen+1)},
+		testBody:         JSON{"name": strings.Repeat("a", consts.MaxCategoryLen+1)},
 		expectedStatus:   http.StatusBadRequest,
-		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Category", consts.MaxCategoryLen)),
+		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Name", consts.MaxCategoryLen)),
 	},
 	{
-		testBody:       JSON{"category": "cat"},
+		testBody:       JSON{"name": "cat"},
 		expectedStatus: http.StatusOK,
 	},
 	{
-		testBody:       JSON{"category": "cat"},
+		testBody:       JSON{"name": "cat"},
 		expectedStatus: http.StatusOK,
 	},
 }

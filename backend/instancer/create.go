@@ -60,7 +60,7 @@ func CreateInstance(ctx context.Context, tid, challID int32, internalPort *int32
 		Envs:         conf.Envs,
 		MaxMemory:    int32(conf.MaxMemory.(int64)),
 		MaxCpu:       conf.MaxCpu.(string),
-		NetName:      fmt.Sprintf("net_%d_%d", tid, challID),
+		NetName:      fmt.Sprintf("net_%d_%d", challID, tid),
 	}
 
 	if !conf.HashDomain && info.Port.Valid {
@@ -76,11 +76,11 @@ func CreateInstance(ctx context.Context, tid, challID int32, internalPort *int32
 		instanceInfo.NetID = netID
 	}
 
+	name := fmt.Sprintf("chall_%d_%d", challID, tid)
 	if deployType == sqlc.DeployTypeContainer && conf.Image != "" {
-		dockerID, err = containers.CreateContainer(ctx, conf.Image, instanceInfo)
+		dockerID, err = containers.CreateContainer(ctx, name, conf.Image, instanceInfo)
 	} else if deployType == sqlc.DeployTypeCompose && conf.Compose != "" {
-		projectName := fmt.Sprintf("chall_%d_%d", tid, challID)
-		dockerID, err = composes.CreateCompose(ctx, projectName, conf.Compose, instanceInfo)
+		dockerID, err = composes.CreateCompose(ctx, name, conf.Compose, instanceInfo)
 	} else {
 		return "", nil, errors.New("[no image or compose]")
 	}

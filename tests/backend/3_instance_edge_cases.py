@@ -155,32 +155,32 @@ update_challenge(admin, chall_id_4, hash_domain=False)
 
 #! KILL CONTAINER
 i1 = spawn_good_instance(s1, chall_id_3)
-kill_container_by_name(f"chall_{i1['port']}")
+kill_container_by_name(f"chall_{chall_id_3}_{team_id}")
 fail_connection(f'http://localhost:{i1["port"]}')
 kill_good_instance(s1, chall_id_3)
 
 #! REMOVE CONTAINER
 i1 = spawn_good_instance(s1, chall_id_3)
-remove_container_by_name(f"chall_{i1['port']}")
+remove_container_by_name(f"chall_{chall_id_3}_{team_id}")
 fail_connection(f'http://localhost:{i1["port"]}')
 kill_good_instance(s1, chall_id_3)
 
 #! KILL COMPOSE
 i1 = spawn_good_instance(s1, chall_id_4)
-kill_container_by_name(f"chall_{team_id}_{chall_id_4}")
+kill_container_by_name(f"chall_{chall_id_4}_{team_id}")
 fail_connection(f'http://localhost:{i1["port"]}')
 kill_good_instance(s1, chall_id_4)
 
 #! REMOVE COMPOSE
 i1 = spawn_good_instance(s1, chall_id_4)
-remove_container_by_name(f"chall_{team_id}_{chall_id_4}")
+remove_container_by_name(f"chall_{chall_id_4}_{team_id}")
 fail_connection(f'http://localhost:{i1["port"]}')
 kill_good_instance(s1, chall_id_4)
 
 #! CONTAINER ALREADY EXISTS
 update_config(admin, "min-port", "10000")
 update_config(admin, "max-port", "10000")
-container = client.containers.run(image="echo-server:latest", name="chall_10000", ports={'1337': '10000'}, detach=True)
+container = client.containers.run(image="echo-server:latest", name=f"chall_{chall_id_3}_{team_id}", ports={'1337': '10000'}, detach=True)
 print(container.id)
 i1 = spawn_good_instance(s1, chall_id_3)
 r = requests.get(f'http://localhost:{i1["port"]}')
@@ -195,7 +195,7 @@ update_config(admin, "min-port", "10000")
 update_config(admin, "max-port", "20000")
 
 #! CONTAINER ALREADY EXISTS (COMPOSE)
-container = client.containers.run(image="echo-server:latest", name=f"chall_{team_id}_{chall_id_4}", detach=True)
+container = client.containers.run(image="echo-server:latest", name=f"chall_{chall_id_4}_{team_id}", detach=True)
 print(container.id)
 r = spawn_instance(s1, chall_id_4)
 assert r.status_code == 500 and r.text == '{"error":"Error creating instance"}', r.text
@@ -208,17 +208,17 @@ compose = f'''
 services:
   chall:
     image: echo-server:latest
-    container_name: "chall_{team_id}_{chall_id_4}"
+    container_name: "chall_{chall_id_4}_{team_id}"
     ports:
       - "10000:1337"
 '''
 try:
-	os.mkdir(f'/tmp/chall_{team_id}_{chall_id_4}')
+	os.mkdir(f'/tmp/chall_{chall_id_4}_{team_id}')
 except FileExistsError:
 	pass
-with open(f'/tmp/chall_{team_id}_{chall_id_4}/compose.yml', 'w') as f:
+with open(f'/tmp/chall_{chall_id_4}_{team_id}/compose.yml', 'w') as f:
 	f.write(compose)
-res = os.system(f'cd /tmp/chall_{team_id}_{chall_id_4} && docker compose up -d')
+res = os.system(f'cd /tmp/chall_{chall_id_4}_{team_id} && docker compose up -d')
 assert res == 0, res
 i1 = spawn_good_instance(s1, chall_id_4)
 fail_connection('http://localhost:10000')
@@ -233,7 +233,7 @@ update_challenge(admin, chall_id_4, hash_domain=True)
 #! DISCONNECT NETWORK
 i1 = spawn_good_instance(s1, chall_id_3)
 hash_name = i1['host'].split('.')[0]
-net = get_network_by_name(f'net_{team_id}_{chall_id_3}')
+net = get_network_by_name(f'net_{chall_id_3}_{team_id}')
 net_disconnect(net, hash_name)
 r = hash_request(hash_name)
 assert r.status_code == 502, r.text
@@ -242,7 +242,7 @@ kill_good_instance(s1, chall_id_3)
 #! DISCONNECT NETWORK & KILL CONTAINER
 i1 = spawn_good_instance(s1, chall_id_3)
 hash_name = i1['host'].split('.')[0]
-net = get_network_by_name(f'net_{team_id}_{chall_id_3}')
+net = get_network_by_name(f'net_{chall_id_3}_{team_id}')
 net_disconnect(net, hash_name)
 kill_container_by_name(f'chall_{hash_name}')
 r = hash_request(hash_name)
@@ -252,7 +252,7 @@ kill_good_instance(s1, chall_id_3)
 #! DISCONNECT NETWORK & REMOVE CONTAINER
 i1 = spawn_good_instance(s1, chall_id_3)
 hash_name = i1['host'].split('.')[0]
-net = get_network_by_name(f'net_{team_id}_{chall_id_3}')
+net = get_network_by_name(f'net_{chall_id_3}_{team_id}')
 net_disconnect(net, hash_name)
 remove_container_by_name(f'chall_{hash_name}')
 r = hash_request(hash_name)
@@ -262,7 +262,7 @@ kill_good_instance(s1, chall_id_3)
 #! DISCONNECT NETWORK & KILL CONTAINER (COMPOSE)
 i1 = spawn_good_instance(s1, chall_id_4)
 hash_name = i1['host'].split('.')[0]
-net = get_network_by_name(f'net_{team_id}_{chall_id_4}')
+net = get_network_by_name(f'net_{chall_id_4}_{team_id}')
 net_disconnect(net, hash_name)
 kill_container_by_name(f'chall_{hash_name}')
 r = hash_request(hash_name)
@@ -272,7 +272,7 @@ kill_good_instance(s1, chall_id_4)
 #! DISCONNECT NETWORK & REMOVE CONTAINER (COMPOSE)
 i1 = spawn_good_instance(s1, chall_id_4)
 hash_name = i1['host'].split('.')[0]
-net = get_network_by_name(f'net_{team_id}_{chall_id_4}')
+net = get_network_by_name(f'net_{chall_id_4}_{team_id}')
 net_disconnect(net, hash_name)
 remove_container_by_name(f'chall_{hash_name}')
 r = hash_request(hash_name)
@@ -282,7 +282,7 @@ kill_good_instance(s1, chall_id_4)
 #! REMOVE NETWORK
 i1 = spawn_good_instance(s1, chall_id_3)
 hash_name = i1['host'].split('.')[0]
-net = get_network_by_name(f'net_{team_id}_{chall_id_3}')
+net = get_network_by_name(f'net_{chall_id_3}_{team_id}')
 net_disconnect(net, hash_name)
 net.remove()
 r = hash_request(hash_name)
@@ -292,7 +292,7 @@ kill_good_instance(s1, chall_id_3)
 #! REMOVE NETWORK & KILL CONTAINER
 i1 = spawn_good_instance(s1, chall_id_3)
 hash_name = i1['host'].split('.')[0]
-net = get_network_by_name(f'net_{team_id}_{chall_id_3}')
+net = get_network_by_name(f'net_{chall_id_3}_{team_id}')
 net_disconnect(net, hash_name)
 net.remove()
 kill_container_by_name(f'chall_{hash_name}')
@@ -303,7 +303,7 @@ kill_good_instance(s1, chall_id_3)
 #! REMOVE NETWORK & REMOVE CONTAINER
 i1 = spawn_good_instance(s1, chall_id_3)
 hash_name = i1['host'].split('.')[0]
-net = get_network_by_name(f'net_{team_id}_{chall_id_3}')
+net = get_network_by_name(f'net_{chall_id_3}_{team_id}')
 net_disconnect(net, hash_name)
 net.remove()
 remove_container_by_name(f'chall_{hash_name}')
@@ -314,7 +314,7 @@ kill_good_instance(s1, chall_id_3)
 #! REMOVE NETWORK & KILL CONTAINER (COMPOSE)
 i1 = spawn_good_instance(s1, chall_id_4)
 hash_name = i1['host'].split('.')[0]
-net = get_network_by_name(f'net_{team_id}_{chall_id_4}')
+net = get_network_by_name(f'net_{chall_id_4}_{team_id}')
 net_disconnect(net, hash_name)
 net.remove()
 kill_container_by_name(f'chall_{hash_name}')
@@ -325,7 +325,7 @@ kill_good_instance(s1, chall_id_4)
 #! REMOVE NETWORK & REMOVE CONTAINER (COMPOSE)
 i1 = spawn_good_instance(s1, chall_id_4)
 hash_name = i1['host'].split('.')[0]
-net = get_network_by_name(f'net_{team_id}_{chall_id_4}')
+net = get_network_by_name(f'net_{chall_id_4}_{team_id}')
 net_disconnect(net, hash_name)
 net.remove()
 remove_container_by_name(f'chall_{hash_name}')
@@ -334,14 +334,14 @@ assert r.status_code == 502, r.text
 kill_good_instance(s1, chall_id_4)
 
 #! SAME NAME NETWORK
-client.networks.create(name=f'net_{team_id}_{chall_id_3}')
+client.networks.create(name=f'net_{chall_id_3}_{team_id}')
 i1 = spawn_good_instance(s1, chall_id_3)
 r = hash_request(i1['host'].split('.')[0])
 assert_request(r, True)
 kill_good_instance(s1, chall_id_3)
 
 #! SAME NAME NETWORK (COMPOSE)
-client.networks.create(name=f'net_{team_id}_{chall_id_4}')
+client.networks.create(name=f'net_{chall_id_4}_{team_id}')
 i1 = spawn_good_instance(s1, chall_id_4)
 r = hash_request(i1['host'].split('.')[0])
 assert_request(r, True)

@@ -10,7 +10,7 @@ import (
 
 func Route(c *fiber.Ctx) error {
 	var data struct {
-		Category string `json:"category" validate:"required,category_name"`
+		Name string `json:"name" validate:"required,category_name"`
 	}
 	if err := c.BodyParser(&data); err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidJSON)
@@ -21,7 +21,7 @@ func Route(c *fiber.Ctx) error {
 		return err
 	}
 
-	err = DeleteCategory(c.Context(), data.Category)
+	err = DeleteCategory(c.Context(), data.Name)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorDeletingCategory, err)
 	}

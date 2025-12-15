@@ -14,7 +14,7 @@ import (
 	"github.com/tde-nico/log"
 )
 
-func CreateContainer(ctx context.Context, image string, info *infos.InstanceInfo) (string, error) {
+func CreateContainer(ctx context.Context, name string, image string, info *infos.InstanceInfo) (string, error) {
 	if info.ExternalPort != nil && info.InternalPort == nil {
 		return "", errors.New("[missing internal port]")
 	}
@@ -23,7 +23,7 @@ func CreateContainer(ctx context.Context, image string, info *infos.InstanceInfo
 		return "", nil
 	}
 
-	containerInfo, err := infos.SetupContainerInfo(image, info)
+	containerInfo, err := infos.SetupContainerInfo(name, image, info)
 	if err != nil {
 		return "", err
 	}
@@ -38,7 +38,7 @@ func CreateContainer(ctx context.Context, image string, info *infos.InstanceInfo
 	}
 
 	var containerID string
-	resp, err := Cli.ContainerCreate(ctx, containerConf, hostConf, networkingConfig, nil, "chall_"+containerInfo.Name)
+	resp, err := Cli.ContainerCreate(ctx, containerConf, hostConf, networkingConfig, nil, containerInfo.Name)
 	if err == nil {
 		containerID = resp.ID
 	} else {
@@ -46,7 +46,7 @@ func CreateContainer(ctx context.Context, image string, info *infos.InstanceInfo
 			return "", err
 		}
 
-		containerID, err = FetchContainerByName(ctx, "chall_"+containerInfo.Name)
+		containerID, err = FetchContainerByName(ctx, containerInfo.Name)
 		if err != nil {
 			return "", err
 		}

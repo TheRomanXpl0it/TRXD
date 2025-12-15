@@ -1,11 +1,8 @@
 # TODO
  - resolve TODOs left into the code
  - convention:
-   - change name of chall containers from chall_PORT to chall_TID_CID
-   - change name from _TID_CID to _CID_TID
    - change name of challs, network and so on, with $PROJECT_NAME prefix
    - change csrf token name
-   - api names more similar (categories_create -> name & categories_delete -> category)
  - tests:
    - tests with removal of trxd-shared (and fault tolerance)
    - discord webhook tests in pipeline

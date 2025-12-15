@@ -16,7 +16,7 @@ type ContainerInfo struct {
 	MaxCPUs         int64
 }
 
-func SetupContainerInfo(image string, info *InstanceInfo) (*ContainerInfo, error) {
+func SetupContainerInfo(name string, image string, info *InstanceInfo) (*ContainerInfo, error) {
 	containerInfo := ContainerInfo{
 		InstanceInfo: *info,
 		Image:        image,
@@ -24,11 +24,11 @@ func SetupContainerInfo(image string, info *InstanceInfo) (*ContainerInfo, error
 
 	if info.ExternalPort == nil {
 		splittedHost := strings.SplitN(info.Host, ".", 2)
-		containerInfo.Name = splittedHost[0]
+		containerInfo.Name = "chall_" + splittedHost[0]
 		containerInfo.Domain = splittedHost[1]
 	} else {
 		containerInfo.ExternalPortStr = strconv.Itoa(int(*info.ExternalPort))
-		containerInfo.Name = containerInfo.ExternalPortStr
+		containerInfo.Name = name
 		containerInfo.Domain = info.Host
 	}
 

@@ -12,7 +12,7 @@ import (
 )
 
 func DeleteInstance(ctx context.Context, tid int32, challID int32, dockerID sql.NullString) error {
-	log.Info("Deleting instance:", "team", tid, "challenge", challID)
+	log.Info("Deleting instance:", "challenge", challID, "team", tid)
 
 	if dockerID.Valid {
 		var err error
@@ -26,7 +26,7 @@ func DeleteInstance(ctx context.Context, tid int32, challID int32, dockerID sql.
 		}
 	}
 
-	err := networks.NetworkDelete(ctx, fmt.Sprintf("net_%d_%d", tid, challID))
+	err := networks.NetworkDelete(ctx, fmt.Sprintf("net_%d_%d", challID, tid))
 	if err != nil {
 		return err
 	}
