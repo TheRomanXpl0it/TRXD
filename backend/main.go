@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"io/fs"
 	"os"
 	"strings"
 	"trxd/api"
@@ -170,7 +171,11 @@ func main() {
 
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file", "err", err)
+		if pathErr, ok := err.(*fs.PathError); ok {
+			if pathErr.Err.Error() != "no such file or directory" {
+				log.Fatal("Error loading .env file", "err", err)
+			}
+		}
 	}
 
 	consts.LoadEnvConfigs()

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"io/fs"
 	"trxd/utils"
 	"trxd/utils/consts"
 
@@ -16,9 +17,13 @@ var tmp_db *sql.DB
 func OpenTestDB(testDBName string) error {
 	consts.Testing = true
 
-	err := godotenv.Load(".env")
+	err := godotenv.Load()
 	if err != nil {
-		return fmt.Errorf("failed to load .env file: %v", err)
+		if pathErr, ok := err.(*fs.PathError); ok {
+			if pathErr.Err.Error() != "no such file or directory" {
+				return fmt.Errorf("failed to load .env file: %v", err)
+			}
+		}
 	}
 
 	info, err := utils.GetDBInfoFromEnv()
