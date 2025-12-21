@@ -148,7 +148,11 @@ jobs:
           echo "Running Test: $file"
           
           cd ../../backend
-          ./trxd -test-data-WARNING-DO-NOT-USE-IN-PRODUCTION
+          if [[ $file == *lifetime""* ]]; then
+            RECLAIM_INSTANCE_INTERVAL=1 ./trxd -test-data-WARNING-DO-NOT-USE-IN-PRODUCTION
+          else
+            ./trxd -test-data-WARNING-DO-NOT-USE-IN-PRODUCTION
+          fi
           ./trxd -t
 
           cd ../tests/backend/

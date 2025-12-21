@@ -1,8 +1,6 @@
 # TODO
-
-  - remove secret from configs
-
  - resolve TODOs left into the code
+ - put descriptions on configs
  - convention:
    - change name of challs, network and so on, with $PROJECT_NAME prefix
    - change csrf token name
@@ -11,8 +9,8 @@
    - discord webhook tests in pipeline
    - tg webhook tests in pipeline
    - add tests with a lot of hash named challs (hard cap for networks on nginx?) (try change IPAM to /30 to preserve addrs)
-   - instance expire tests
  - features:
+   - remove secret from configs
    - https://docs.gofiber.io/api/middleware/helmet/
    - https://doc.traefik.io/traefik/expose/docker/
    - challs SNI traefik
