@@ -8,6 +8,41 @@ import (
 	"trxd/db/sqlc"
 )
 
+func nullString(src *string) sql.NullString {
+	if src == nil {
+		return sql.NullString{Valid: false}
+	}
+	return sql.NullString{String: *src, Valid: true}
+}
+
+func nullBool(src *bool) sql.NullBool {
+	if src == nil {
+		return sql.NullBool{Valid: false}
+	}
+	return sql.NullBool{Bool: *src, Valid: true}
+}
+
+func nullInt32(src *int32) sql.NullInt32 {
+	if src == nil {
+		return sql.NullInt32{Valid: false}
+	}
+	return sql.NullInt32{Int32: *src, Valid: true}
+}
+
+func nullDeployType(src *sqlc.DeployType) sqlc.NullDeployType {
+	if src == nil {
+		return sqlc.NullDeployType{Valid: false}
+	}
+	return sqlc.NullDeployType{DeployType: *src, Valid: true}
+}
+
+func nullScoreType(src *sqlc.ScoreType) sqlc.NullScoreType {
+	if src == nil {
+		return sqlc.NullScoreType{Valid: false}
+	}
+	return sqlc.NullScoreType{ScoreType: *src, Valid: true}
+}
+
 func IsChallEmpty(data *UpdateChallParams) bool {
 	if data.Name == "" && data.Category == "" && data.Description == nil && data.Difficulty == nil &&
 		data.Authors == nil && data.Tags == nil && data.Type == nil && data.Hidden == nil && data.MaxPoints == nil &&
@@ -31,73 +66,42 @@ func UpdateChallenge(ctx context.Context, data *UpdateChallParams) error {
 	}
 
 	challParams := sqlc.UpdateChallengeParams{
-		ChallID:  *data.ChallID,
-		Name:     sql.NullString{String: data.Name, Valid: data.Name != ""},
-		Category: sql.NullString{String: data.Category, Valid: data.Category != ""},
+		ChallID:     *data.ChallID,
+		Name:        sql.NullString{String: data.Name, Valid: data.Name != ""},
+		Category:    sql.NullString{String: data.Category, Valid: data.Category != ""},
+		Description: nullString(data.Description),
+		Difficulty:  nullString(data.Difficulty),
+		Type:        nullDeployType(data.Type),
+		Hidden:      nullBool(data.Hidden),
+		MaxPoints:   nullInt32(data.MaxPoints),
+		ScoreType:   nullScoreType(data.ScoreType),
+		Host:        nullString(data.Host),
+		Port:        nullInt32(data.Port),
 	}
 
-	if data.Description != nil {
-		challParams.Description = sql.NullString{String: *data.Description, Valid: true}
-	}
-	if data.Difficulty != nil {
-		challParams.Difficulty = sql.NullString{String: *data.Difficulty, Valid: true}
-	}
 	if data.Authors != nil {
 		challParams.Authors = *data.Authors
 	}
 	if data.Tags != nil {
 		challParams.Tags = *data.Tags
 	}
-	if data.Type != nil {
-		challParams.Type = sqlc.NullDeployType{DeployType: *data.Type, Valid: true}
-	}
-	if data.Hidden != nil {
-		challParams.Hidden = sql.NullBool{Bool: *data.Hidden, Valid: true}
-	}
-	if data.MaxPoints != nil {
-		challParams.MaxPoints = sql.NullInt32{Int32: int32(*data.MaxPoints), Valid: true}
-	}
-	if data.ScoreType != nil {
-		challParams.ScoreType = sqlc.NullScoreType{ScoreType: *data.ScoreType, Valid: true}
-	}
-	if data.Host != nil {
-		challParams.Host = sql.NullString{String: *data.Host, Valid: true}
-	}
-	if data.Port != nil {
-		challParams.Port = sql.NullInt32{Int32: int32(*data.Port), Valid: true}
-	}
 
 	dockerParams := sqlc.UpdateDockerConfigsParams{
-		ChallID: *data.ChallID,
-	}
-
-	if data.Image != nil {
-		dockerParams.Image = sql.NullString{String: *data.Image, Valid: true}
-	}
-	if data.Compose != nil {
-		dockerParams.Compose = sql.NullString{String: *data.Compose, Valid: true}
-	}
-	if data.HashDomain != nil {
-		dockerParams.HashDomain = sql.NullBool{Bool: *data.HashDomain, Valid: true}
-	}
-	if data.Lifetime != nil {
-		dockerParams.Lifetime = sql.NullInt32{Int32: int32(*data.Lifetime), Valid: true}
-	}
-	if data.Envs != nil {
-		dockerParams.Envs = sql.NullString{String: *data.Envs, Valid: true}
-	}
-	if data.MaxMemory != nil {
-		dockerParams.MaxMemory = sql.NullInt32{Int32: int32(*data.MaxMemory), Valid: true}
-	}
-	if data.MaxCpu != nil {
-		dockerParams.MaxCpu = sql.NullString{String: *data.MaxCpu, Valid: true}
+		ChallID:    *data.ChallID,
+		Image:      nullString(data.Image),
+		Compose:    nullString(data.Compose),
+		HashDomain: nullBool(data.HashDomain),
+		Lifetime:   nullInt32(data.Lifetime),
+		Envs:       nullString(data.Envs),
+		MaxMemory:  nullInt32(data.MaxMemory),
+		MaxCpu:     nullString(data.MaxCpu),
 	}
 
 	tx, err := db.BeginTx(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer tx.Rollback()
+	defer db.Rollback(tx)
 	queries := db.Sql.WithTx(tx)
 
 	if !IsChallEmpty(data) {

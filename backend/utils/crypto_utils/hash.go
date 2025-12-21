@@ -31,15 +31,29 @@ func Hash(password string) (string, string, error) {
 		KEY_LEN,
 	)
 
-	hashedHex := utils.BytesToHex(hashed)
-	saltHex := utils.BytesToHex(salt)
+	hashedHex, err := utils.BytesToHex(hashed)
+	if err != nil {
+		return "", "", err
+	}
+
+	saltHex, err := utils.BytesToHex(salt)
+	if err != nil {
+		return "", "", err
+	}
 
 	return hashedHex, saltHex, nil
 }
 
-func Verify(password string, saltHex string, hashHex string) bool {
-	hash := utils.HextoBytes(hashHex)
-	salt := utils.HextoBytes(saltHex)
+func Verify(password string, saltHex string, hashHex string) (bool, error) {
+	hash, err := utils.HextoBytes(hashHex)
+	if err != nil {
+		return false, err
+	}
+
+	salt, err := utils.HextoBytes(saltHex)
+	if err != nil {
+		return false, err
+	}
 
 	hashed := argon2.IDKey(
 		[]byte(password),
@@ -50,7 +64,7 @@ func Verify(password string, saltHex string, hashHex string) bool {
 		KEY_LEN,
 	)
 
-	return bytes.Equal(hashed, hash)
+	return bytes.Equal(hashed, hash), nil
 }
 
 func HashFile(file io.Reader) (string, error) {
@@ -69,5 +83,10 @@ func HashFile(file io.Reader) (string, error) {
 	}
 
 	hash := h.Sum(nil)
-	return utils.BytesToHex(hash), nil
+	hashHex, err := utils.BytesToHex(hash)
+	if err != nil {
+		return "", err
+	}
+
+	return hashHex, nil
 }

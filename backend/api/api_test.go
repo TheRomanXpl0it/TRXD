@@ -22,7 +22,7 @@ func TestMain(m *testing.M) {
 
 func Test404(t *testing.T) {
 	app := api.SetupApp(t.Context())
-	defer app.Shutdown()
+	defer api.Shutdown(app)
 
 	session := test_utils.NewApiTestSession(t, app)
 	session.Get("/nonexistent-endpoint", nil, http.StatusNotFound)
@@ -38,7 +38,7 @@ func TestPanic(t *testing.T) {
 	})
 	api.SetupFeatures(app)
 	api.SetupApi(t.Context(), app)
-	defer app.Shutdown()
+	defer api.Shutdown(app)
 
 	app.Get("/api/panic", func(c *fiber.Ctx) error {
 		panic("test panic")
@@ -54,7 +54,7 @@ func TestPanic(t *testing.T) {
 // 	defer func() { consts.Testing = true }()
 
 // 	app := api.SetupApp(t.Context())
-// 	defer app.Shutdown()
+// 	defer api.Shutdown(app)
 
 // 	session := test_utils.NewApiTestSession(t, app)
 // 	for range limiter.ConfigDefault.Max - 1 {
@@ -69,7 +69,7 @@ func TestPanic(t *testing.T) {
 
 func TestCSRF(t *testing.T) {
 	app := api.SetupApp(t.Context())
-	defer app.Shutdown()
+	defer api.Shutdown(app)
 
 	session := test_utils.NewApiTestSession(t, app)
 	session.Post("/logout", nil, http.StatusOK)
@@ -84,7 +84,7 @@ func TestCSRF(t *testing.T) {
 
 func TestStatic(t *testing.T) {
 	app := api.SetupApp(t.Context())
-	defer app.Shutdown()
+	defer api.Shutdown(app)
 
 	session := test_utils.NewApiTestSession(t, app, true)
 	session.Get("/static/invalid_file", nil, http.StatusNotFound)
@@ -95,7 +95,7 @@ func TestStatic(t *testing.T) {
 func TestUserMode(t *testing.T) {
 	test_utils.UpdateConfig(t, "user-mode", "true")
 	app := api.SetupApp(t.Context())
-	defer app.Shutdown()
+	defer api.Shutdown(app)
 
 	enpoints := []struct {
 		method string

@@ -79,7 +79,7 @@ var testData = []struct {
 
 func TestRoute(t *testing.T) {
 	app := api.SetupApp(t.Context())
-	defer app.Shutdown()
+	defer api.Shutdown(app)
 
 	session := test_utils.NewApiTestSession(t, app)
 	session.Post("/register", JSON{"name": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)

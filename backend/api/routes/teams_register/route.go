@@ -38,7 +38,7 @@ func Route(c *fiber.Ctx) error {
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorBeginningTransaction, err)
 	}
-	defer tx.Rollback()
+	defer db.Rollback(tx)
 
 	team, err = RegisterTeam(c.Context(), tx, data.Name, data.Password, uid)
 	if err != nil {

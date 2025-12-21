@@ -5,7 +5,6 @@ import (
 	"testing"
 	"trxd/api"
 	"trxd/db/sqlc"
-	"trxd/utils"
 	"trxd/utils/test_utils"
 )
 
@@ -17,7 +16,7 @@ func TestMain(m *testing.M) {
 
 func TestRoute(t *testing.T) {
 	app := api.SetupApp(t.Context())
-	defer app.Shutdown()
+	defer api.Shutdown(app)
 
 	session := test_utils.NewApiTestSession(t, app)
 
@@ -33,7 +32,12 @@ func TestRoute(t *testing.T) {
 		t.Fatal("Expected body to not be nil")
 	}
 	test_utils.DeleteKeys(body, "id")
-	utils.Compare(body, JSON{"name": "test", "role": sqlc.UserRolePlayer, "team_id": nil})
+	test_utils.Compare(t, body, JSON{
+		"name":      "test",
+		"role":      sqlc.UserRolePlayer,
+		"team_id":   nil,
+		"user_mode": false,
+	})
 
 	session.Post("/teams/register", JSON{"name": "test", "password": "testpass"}, http.StatusOK)
 
@@ -47,5 +51,9 @@ func TestRoute(t *testing.T) {
 		t.Errorf("Expected team_id to be set, got nil")
 	}
 	test_utils.DeleteKeys(body, "team_id")
-	test_utils.Compare(t, body, JSON{"name": "test", "role": sqlc.UserRolePlayer, "user_mode": false})
+	test_utils.Compare(t, body, JSON{
+		"name":      "test",
+		"role":      sqlc.UserRolePlayer,
+		"user_mode": false,
+	})
 }

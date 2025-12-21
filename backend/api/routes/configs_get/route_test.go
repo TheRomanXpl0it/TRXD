@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 
 func TestRoute(t *testing.T) {
 	app := api.SetupApp(t.Context())
-	defer app.Shutdown()
+	defer api.Shutdown(app)
 
 	expected := make([]JSON, 0, len(consts.DefaultConfigs))
 	for key, value := range consts.DefaultConfigs {

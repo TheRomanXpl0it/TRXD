@@ -54,7 +54,12 @@ func ReclaimLoop() {
 	if err != nil {
 		log.Fatal("Failed to initialize instancer:", "err", err)
 	}
-	defer containers.CloseCli()
+	defer func() {
+		err := containers.CloseCli()
+		if err != nil {
+			log.Error("Failed to close container client:", "err", err)
+		}
+	}()
 
 	ctx := context.Background()
 	_, err = networks.CreateNetwork(ctx, "trxd-shared", true)

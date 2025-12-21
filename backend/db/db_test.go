@@ -17,7 +17,13 @@ func TestMain(m *testing.M) {
 		fmt.Printf("Failed to open test database: %v\n", err)
 		os.Exit(1)
 	}
-	defer CloseTestDB()
+	defer func() {
+		err := CloseTestDB()
+		if err != nil {
+			fmt.Printf("Failed to close test database: %v\n", err)
+			os.Exit(1)
+		}
+	}()
 
 	exitCode := m.Run()
 	os.Exit(exitCode)

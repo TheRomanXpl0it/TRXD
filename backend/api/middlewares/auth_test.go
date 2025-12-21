@@ -47,7 +47,7 @@ var testAuthMiddlewares = []struct {
 
 func TestAuthMiddlewares(t *testing.T) {
 	app := api.SetupApp(t.Context())
-	defer app.Shutdown()
+	defer api.Shutdown(app)
 
 	users := [6]*sqlc.User{}
 	users[1] = test_utils.RegisterUser(t, "spectator", "spectator@test.test", "testpass", sqlc.UserRoleSpectator)

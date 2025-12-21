@@ -126,7 +126,7 @@ func (s *apiTestSession) RequestMultipart(method string, url string, body map[st
 			if err != nil {
 				s.t.Fatalf("Failed to create form field %s: %v", field, err)
 			}
-			_, err = fieldWriter.Write([]byte(fmt.Sprintf("%v", content)))
+			_, err = fmt.Fprintf(fieldWriter, "%v", content)
 			if err != nil {
 				s.t.Fatalf("Failed to write form field %s: %v", field, err)
 			}
@@ -138,7 +138,12 @@ func (s *apiTestSession) RequestMultipart(method string, url string, body map[st
 		if err != nil {
 			s.t.Fatalf("Failed to open file %s: %v", filePath, err)
 		}
-		defer file.Close()
+		defer func() {
+			err := file.Close()
+			if err != nil {
+				s.t.Fatalf("Failed to close file %s: %v", filePath, err)
+			}
+		}()
 
 		fileName := filepath.Base(filePath)
 		if i < len(fileNames) {
@@ -220,7 +225,12 @@ func (s *apiTestSession) DeleteMultipart(url string, body map[string]interface{}
 }
 
 func (s *apiTestSession) Body() interface{} {
-	defer s.lastResp.Body.Close()
+	defer func() {
+		err := s.lastResp.Body.Close()
+		if err != nil {
+			s.t.Fatalf("Failed to close response body: %v", err)
+		}
+	}()
 	bodyBytes, err := io.ReadAll(s.lastResp.Body)
 	if err != nil {
 		s.t.Fatalf("Failed to read response body: %v", err)

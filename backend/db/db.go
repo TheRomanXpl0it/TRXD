@@ -60,16 +60,26 @@ func ConnectDB(info *utils.DBInfo, test ...bool) error {
 	return nil
 }
 
-func CloseDB() {
+func CloseDB() error {
 	if rdb != nil {
-		rdb.Close()
+		err := rdb.Close()
+		if err != nil {
+			return err
+		}
 	}
 	if Sql != nil {
-		Sql.Close()
+		err := Sql.Close()
+		if err != nil {
+			return err
+		}
 	}
 	if db != nil {
-		db.Close()
+		err := db.Close()
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func ExecSQLFile(path string) (bool, error) {
@@ -85,7 +95,12 @@ func ExecSQLFile(path string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	defer file.Close()
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			log.Error("Error closing file", "err", err)
+		}
+	}()
 
 	data, err := io.ReadAll(file)
 	if err != nil {
@@ -189,4 +204,10 @@ func BeginTx(ctx context.Context) (*sql.Tx, error) {
 	}
 
 	return tx, nil
+}
+
+func Rollback(tx *sql.Tx) {
+	if err := tx.Rollback(); err != nil && err != sql.ErrTxDone {
+		log.Error("Failed to rollback transaction", "err", err)
+	}
 }

@@ -23,7 +23,7 @@ func TestMain(m *testing.M) {
 
 func TestRoute(t *testing.T) {
 	app := api.SetupApp(t.Context())
-	defer app.Shutdown()
+	defer api.Shutdown(app)
 
 	test_utils.RegisterUser(t, "author", "author@test.test", "authorpass", sqlc.UserRoleAuthor)
 	test_utils.RegisterUser(t, "test", "test@test.test", "testpass", sqlc.UserRolePlayer)

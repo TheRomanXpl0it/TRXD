@@ -16,7 +16,7 @@ func TestMain(m *testing.M) {
 
 func TestRoute(t *testing.T) {
 	app := api.SetupApp(t.Context())
-	defer app.Shutdown()
+	defer api.Shutdown(app)
 
 	expectedNoAuth := []JSON{
 		{

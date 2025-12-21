@@ -14,7 +14,11 @@ func initTranslation() {
 	en := en.New()
 	uni = ut.New(en, en)
 	trans, _ = uni.GetTranslator("en")
-	en_translations.RegisterDefaultTranslations(validate, trans)
+	err := en_translations.RegisterDefaultTranslations(validate, trans)
+	if err != nil {
+		log.Error("Failed to register default translations", "err", err)
+		return
+	}
 
 	registerTranslation("required", consts.MissingRequiredFields)
 	registerTranslation("min", consts.MinError)

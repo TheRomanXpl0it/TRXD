@@ -87,6 +87,13 @@ func SetupApp(ctx context.Context) *fiber.App {
 	return app
 }
 
+func Shutdown(app *fiber.App) {
+	err := app.Shutdown()
+	if err != nil {
+		log.Error("Failed to shutdown Fiber app:", "err", err)
+	}
+}
+
 func SetupFeatures(app *fiber.App) {
 	if !consts.Testing {
 		app.Use(func(c *fiber.Ctx) error {

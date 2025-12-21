@@ -218,7 +218,7 @@ var testData = []struct {
 
 func TestRoute(t *testing.T) {
 	app := api.SetupApp(t.Context())
-	defer app.Shutdown()
+	defer api.Shutdown(app)
 
 	user := test_utils.RegisterUser(t, "player", "player@test.test", "testpass", sqlc.UserRolePlayer)
 	teamPlayer := test_utils.RegisterTeam(t, "playerTeam", "testpass", user.ID)

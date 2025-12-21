@@ -10,11 +10,19 @@ import (
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/tde-nico/log"
 )
 
 var validate *validator.Validate
 var uni *ut.UniversalTranslator
 var trans ut.Translator
+
+func registerValidation(tag string, fn validator.Func) {
+	err := validate.RegisterValidation(tag, fn)
+	if err != nil {
+		log.Error("Failed to register validation", "tag", tag, "err", err)
+	}
+}
 
 func init() {
 	validate = validator.New()
@@ -23,7 +31,7 @@ func init() {
 
 	validate.RegisterAlias("id", fmt.Sprintf("min=0,max=%d", math.MaxInt32))
 	validate.RegisterAlias("password", fmt.Sprintf("min=%d,max=%d", consts.MinPasswordLen, consts.MaxPasswordLen))
-	validate.RegisterValidation("country", validCountry)
+	registerValidation("country", validCountry)
 
 	validate.RegisterAlias("category_name", fmt.Sprintf("max=%d", consts.MaxCategoryLen))
 
@@ -37,9 +45,9 @@ func init() {
 	validate.RegisterAlias("challenge_score_type", "oneof="+strings.Join(consts.ScoreTypesStr, " "))
 	validate.RegisterAlias("challenge_port", fmt.Sprintf("min=%d,max=%d", consts.MinPort, consts.MaxPort))
 	validate.RegisterAlias("challenge_lifetime", fmt.Sprintf("min=0,max=%d", math.MaxInt32))
-	validate.RegisterValidation("challenge_envs", validJson)
+	registerValidation("challenge_envs", validJson)
 	validate.RegisterAlias("challenge_max_memory", fmt.Sprintf("min=0,max=%d", math.MaxInt32))
-	validate.RegisterValidation("challenge_max_cpu", validFloat)
+	registerValidation("challenge_max_cpu", validFloat)
 
 	validate.RegisterAlias("attachments", fmt.Sprintf("dive,max=%d", consts.MaxAttachmentNameLen))
 

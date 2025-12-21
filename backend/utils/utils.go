@@ -29,16 +29,26 @@ func Error(c *fiber.Ctx, status int, message string, err ...error) error {
 	return c.Status(status).JSON(fiber.Map{"error": message})
 }
 
-func BytesToHex(data []byte) string {
+func BytesToHex(data []byte) (string, error) {
 	dataHex := make([]byte, len(data)*2)
-	hex.Encode(dataHex, data)
-	return string(dataHex)
+
+	n := hex.Encode(dataHex, data)
+	if n != len(data)*2 {
+		return "", errors.New("failed to encode bytes to hex")
+	}
+
+	return string(dataHex), nil
 }
 
-func HextoBytes(dataHex string) []byte {
+func HextoBytes(dataHex string) ([]byte, error) {
 	data := make([]byte, (len(dataHex)+1)/2)
-	hex.Decode(data, []byte(dataHex))
-	return data
+
+	_, err := hex.Decode(data, []byte(dataHex))
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }
 
 func Compare(a, b interface{}) error {

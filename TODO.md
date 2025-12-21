@@ -9,19 +9,24 @@
    - discord webhook tests in pipeline
    - tg webhook tests in pipeline
    - add tests with a lot of hash named challs (hard cap for networks on nginx?) (try change IPAM to /30 to preserve addrs)
+   - integration tests (for generic behaviour)
+   - tests for distributed functioning
  - features:
-   - remove secret from configs
    - https://docs.gofiber.io/api/middleware/helmet/
    - https://doc.traefik.io/traefik/expose/docker/
    - challs SNI traefik
    - N instance limit per team
-   - ingress only challenges (verify if useful)
    - challenge remote type (table: (tcp & http) + format: ex. "nc {{host}} {{port}}" & "http://{{host}}:{{port}}")
    - add pagination on "all" GETs
    - invisible teams
    - divide configs by section (secrets, instances, something like this...)
+   - remove secret from configs
+   - config to start and end ctf
+   - dropdown menu for containers (for container instances)
+   - role configuraion endpoint
  - utility:
    - better names for binary flags
+   - DOCUMENTATION
 
 ## Frontend
  - convert .pngs to webp
@@ -30,14 +35,6 @@
  - Improve challenge creation procedure
  - Fix admin flag submission 
  - ~~Improve "Team join" page on smaller screens~~
-
-## Release
- - config to start and end ctf
- - integration tests (for generic behaviour)
- - tests for distributed functioning
- - role configuraion endpoint
- - dropdown menu container
- - DOCUMENTATION
 
 ## Ideas / Features
  - editable homepage & theme
@@ -65,3 +62,4 @@
  - mail server
  - endpoint to store image files (like badges and pfp)
  - flag format validator
+ - ingress only challenges (verify if useful)

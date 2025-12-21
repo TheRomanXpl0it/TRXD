@@ -11,7 +11,7 @@ func CreateAttachments(ctx context.Context, challID int32, names []string, hashe
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer db.Rollback(tx)
 
 	sqlx := db.Sql.WithTx(tx)
 	for i := range len(names) {

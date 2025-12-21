@@ -1,3 +1,0 @@
-#!/bin/bash
-
-REDIS_DISABLE=true go test -v ./...

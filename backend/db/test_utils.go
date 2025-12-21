@@ -8,6 +8,7 @@ import (
 	"trxd/utils/consts"
 
 	"github.com/joho/godotenv"
+	"github.com/lib/pq"
 )
 
 var tmp_db *sql.DB
@@ -15,7 +16,10 @@ var tmp_db *sql.DB
 func OpenTestDB(testDBName string) error {
 	consts.Testing = true
 
-	godotenv.Load(".env")
+	err := godotenv.Load(".env")
+	if err != nil {
+		return fmt.Errorf("failed to load .env file: %v", err)
+	}
 
 	info, err := utils.GetDBInfoFromEnv()
 	if err != nil {
@@ -35,7 +39,17 @@ func OpenTestDB(testDBName string) error {
 	if err != nil {
 		return err
 	}
-	defer tmp_db.Exec(fmt.Sprintf(`DROP DATABASE IF EXISTS %s;`, testDBName))
+	defer func() {
+		_, err := tmp_db.Exec(fmt.Sprintf(`DROP DATABASE IF EXISTS %s;`, testDBName))
+		if err != nil {
+			if pqErr, ok := err.(*pq.Error); ok {
+				if pqErr.Code == "55006" { // database is being accessed by other users
+					return
+				}
+			}
+			fmt.Printf("failed to drop test database \"%s\": %v\n", testDBName, err)
+		}
+	}()
 
 	info.PgDBName = testDBName
 	err = ConnectDB(info, true)
@@ -46,11 +60,22 @@ func OpenTestDB(testDBName string) error {
 	return nil
 }
 
-func CloseTestDB() {
-	CloseDB()
-	if tmp_db != nil {
-		tmp_db.Close()
+func CloseTestDB() error {
+	err := CloseDB()
+	if err != nil {
+		return err
 	}
+
+	if tmp_db == nil {
+		return nil
+	}
+
+	err = tmp_db.Close()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func DeleteAll(ctx context.Context) error {

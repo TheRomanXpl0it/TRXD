@@ -4,6 +4,7 @@ redis_data/
 .redis_data/
 tmp/
 attachments/
+frontend/
 
 .env
 trxd

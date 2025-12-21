@@ -28,8 +28,13 @@ func BroadcastWebhook(url string, body interface{}) error {
 	if err != nil {
 		return err
 	}
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			log.Error("Error closing response body", "err", err)
+		}
+	}()
 
-	defer resp.Body.Close()
 	if resp.StatusCode >= 400 {
 		return fmt.Errorf("discord returned status: %s", resp.Status)
 	}

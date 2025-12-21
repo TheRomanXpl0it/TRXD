@@ -17,8 +17,9 @@ func LoginUser(ctx context.Context, email, password string) (*sqlc.User, error) 
 		return nil, err
 	}
 
-	if !crypto_utils.Verify(password, user.PasswordSalt, user.PasswordHash) {
-		return nil, nil
+	valid, err := crypto_utils.Verify(password, user.PasswordSalt, user.PasswordHash)
+	if err != nil || !valid {
+		return nil, err
 	}
 
 	return &user, nil

@@ -57,7 +57,12 @@ func Main(m *testing.M) {
 	if err != nil {
 		fatalf("Failed to open test database: %v\n", err)
 	}
-	defer db.CloseTestDB()
+	defer func() {
+		err := db.CloseTestDB()
+		if err != nil {
+			fatalf("Failed to close test database: %v\n", err)
+		}
+	}()
 
 	err = db.DeleteAll(ctx)
 	if err != nil {
@@ -111,7 +116,7 @@ func RegisterUser(t *testing.T, name, email, password string, role sqlc.UserRole
 	if err != nil {
 		Fatalf(t, "Failed to begin transaction: %v", err)
 	}
-	defer tx.Rollback()
+	defer db.Rollback(tx)
 
 	user, err := users_register.RegisterUser(t.Context(), tx, name, email, password, role)
 	if err != nil {
@@ -134,7 +139,7 @@ func RegisterTeam(t *testing.T, name, password string, userID int32) *sqlc.Team 
 	if err != nil {
 		Fatalf(t, "Failed to begin transaction: %v", err)
 	}
-	defer tx.Rollback()
+	defer db.Rollback(tx)
 
 	team, err := teams_register.RegisterTeam(t.Context(), tx, name, password, userID)
 	if err != nil {
@@ -248,7 +253,12 @@ func CreateFile(t *testing.T, file string, content string) {
 	if err != nil {
 		Fatalf(t, "Failed to create file %s: %v", file, err)
 	}
-	defer f.Close()
+	defer func() {
+		err := f.Close()
+		if err != nil {
+			t.Fatalf("Failed to close file %s: %v", file, err)
+		}
+	}()
 
 	_, err = f.WriteString(content)
 	if err != nil {
@@ -261,7 +271,12 @@ func HashFile(t *testing.T, file string) string {
 	if err != nil {
 		Fatalf(t, "Failed to open file %s: %v", file, err)
 	}
-	defer f.Close()
+	defer func() {
+		err := f.Close()
+		if err != nil {
+			t.Fatalf("Failed to close file %s: %v", file, err)
+		}
+	}()
 
 	hash, err := crypto_utils.HashFile(f)
 	if err != nil {

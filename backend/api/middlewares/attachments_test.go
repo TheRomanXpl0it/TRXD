@@ -11,7 +11,7 @@ import (
 
 func TestAttachments(t *testing.T) {
 	app := api.SetupApp(t.Context())
-	defer app.Shutdown()
+	defer api.Shutdown(app)
 
 	module := test_utils.GetModuleName(t)
 	dir := "/tmp/" + module + "/"

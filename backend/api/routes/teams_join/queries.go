@@ -17,8 +17,9 @@ func authTeam(ctx context.Context, name, password string) (*sqlc.Team, error) {
 		return nil, nil
 	}
 
-	if !crypto_utils.Verify(password, team.PasswordSalt, team.PasswordHash) {
-		return nil, nil
+	valid, err := crypto_utils.Verify(password, team.PasswordSalt, team.PasswordHash)
+	if err != nil || !valid {
+		return nil, err
 	}
 
 	return team, nil

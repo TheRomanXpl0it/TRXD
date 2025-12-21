@@ -15,8 +15,10 @@ func InitCli() error {
 	return nil
 }
 
-func CloseCli() {
-	if Cli != nil {
-		Cli.Close()
+func CloseCli() error {
+	if Cli == nil {
+		return nil
 	}
+
+	return Cli.Close()
 }

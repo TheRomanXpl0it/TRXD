@@ -34,7 +34,7 @@ var testData = []struct {
 
 func TestRoute(t *testing.T) {
 	app := api.SetupApp(t.Context())
-	defer app.Shutdown()
+	defer api.Shutdown(app)
 
 	for _, test := range testData {
 		session := test_utils.NewApiTestSession(t, app)

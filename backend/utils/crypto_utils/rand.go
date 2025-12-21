@@ -19,7 +19,12 @@ func GeneratePassword() (string, error) {
 		return "", fmt.Errorf("expected to read %d bytes, but got %d", PassLen, n)
 	}
 
-	return utils.BytesToHex(data), nil
+	password, err := utils.BytesToHex(data)
+	if err != nil {
+		return "", err
+	}
+
+	return password, nil
 }
 
 func GenerateSalt() ([]byte, error) {

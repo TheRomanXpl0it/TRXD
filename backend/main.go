@@ -80,7 +80,7 @@ func registerAdmin(ctx context.Context, userInfo string) {
 	if err != nil {
 		log.Fatal("Error beginning transaction", "err", err)
 	}
-	defer tx.Rollback()
+	defer db.Rollback(tx)
 
 	user, err := users_register.RegisterUser(ctx, tx, name, email, password, sqlc.UserRoleAdmin)
 	if err != nil {
@@ -168,7 +168,10 @@ func main() {
 		log.SetReportCaller(false)
 	}
 
-	godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file", "err", err)
+	}
 
 	consts.LoadEnvConfigs()
 
@@ -181,7 +184,12 @@ func main() {
 	if err != nil {
 		log.Fatal("Error connecting to database", "err", err)
 	}
-	defer db.CloseDB()
+	defer func() {
+		err := db.CloseDB()
+		if err != nil {
+			log.Error("Error closing database", "err", err)
+		}
+	}()
 
 	ctx := context.Background()
 	parseFlags(ctx)
