@@ -1,4 +1,7 @@
 # TODO
+
+  - remove secret from configs
+
  - resolve TODOs left into the code
  - convention:
    - change name of challs, network and so on, with $PROJECT_NAME prefix
@@ -20,7 +23,6 @@
    - invisible teams
    - divide configs by section (secrets, instances, something like this...)
  - utility:
-   - configs changable by env
    - better names for binary flags
 
 ## Frontend

@@ -170,14 +170,11 @@ func main() {
 
 	godotenv.Load()
 
+	consts.LoadEnvConfigs()
+
 	info, err := utils.GetDBInfoFromEnv()
 	if err != nil {
 		log.Fatal("Error getting database info from env", "err", err)
-	}
-
-	if os.Getenv("TESTING") != "" {
-		consts.Testing = true
-		log.Warn("Running in TESTING mode")
 	}
 
 	err = db.ConnectDB(info)

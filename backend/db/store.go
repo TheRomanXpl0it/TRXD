@@ -37,7 +37,7 @@ func initStorage(host string, port int, password string) {
 		})
 		storeConf.Storage = fiberRedis.NewFromConnection(rdb)
 	} else if !consts.Testing {
-		log.Warn("Redis storage disabled")
+		log.Warn("Redis storage disabled, not recommended for distributed workloads")
 	}
 
 	Store = session.New(storeConf)
