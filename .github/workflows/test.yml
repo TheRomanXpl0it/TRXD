@@ -126,41 +126,9 @@ jobs:
 
     - name: Run Python Integration tests
       run: |
-        ./trxd -f
-        ./trxd &
-        echo $! > server.pid
-        for i in {1..20}; do
-          if nc -z localhost 1337; then
-            echo "Go server is up!"
-            break
-          fi
-          echo "Waiting for Go server..."
-          sleep 1
-        done
-        if ! nc -z localhost 1337; then
-          echo "Server did not start in time" >&2
-          cat server.pid | xargs kill
-          exit 1
-        fi
-        cd ../tests/backend/
-
-        for file in *.py; do
-          echo "Running Test: $file"
-          
-          cd ../../backend
-          if [[ $file == *lifetime""* ]]; then
-            RECLAIM_INSTANCE_INTERVAL=1 ./trxd -test-data-WARNING-DO-NOT-USE-IN-PRODUCTION
-          else
-            ./trxd -test-data-WARNING-DO-NOT-USE-IN-PRODUCTION
-          fi
-          ./trxd -t
-
-          cd ../tests/backend/
-          python3 $file
-        done
-
-        cd -
-        kill $(cat ./server.pid)
+        cd ../tests/backend
+        chmod +x ./run.sh
+        ./run.sh
 
     - name: Infra Teardown
       run: |
