@@ -25,7 +25,7 @@ services:
     command: ["tail", "-f", "/dev/null"] #! Debugging
 
   postgres:
-    image: postgres:18rc1-alpine
+    image: postgres:18rc1-alpine # TODO: 18-alpine
     restart: always
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
@@ -39,6 +39,16 @@ services:
     networks:
       - internal
       - default #! Debugging
+
+  adminer:
+    image: adminer:latest # TODO: fixed version
+    ports:
+      - 8080:8080
+    depends_on:
+      - postgres
+    networks:
+      - internal
+      - default
 
   redis:
     image: redis:8.2-alpine

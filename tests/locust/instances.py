@@ -165,7 +165,6 @@ def setup_challenges(environment, **kwargs):
 
     # Minimal configs to enable flows
     admin.set_config("allow-register", "true")
-    admin.set_config("secret", "locust-secret")
     admin.set_config("domain", "localhost")
 
     # Category

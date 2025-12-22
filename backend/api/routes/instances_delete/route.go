@@ -30,14 +30,6 @@ func Route(c *fiber.Ctx) error {
 		return err
 	}
 
-	secret, err := db.GetConfig(c.Context(), "secret")
-	if err != nil {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingConfig, err)
-	}
-	if secret == "" {
-		return utils.Error(c, fiber.StatusForbidden, consts.DisabledInstances)
-	}
-
 	chall, err := db.GetChallenge(c.Context(), *data.ChallID)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingChallenge, err)

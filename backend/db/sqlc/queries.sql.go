@@ -119,7 +119,6 @@ func (q *Queries) CreateFlag(ctx context.Context, arg CreateFlagParams) error {
 const createInstance = `-- name: CreateInstance :one
 WITH info AS (
     SELECT generate_instance_remote(
-      $1,
       $2,
       $4::BOOLEAN
     ) AS remote

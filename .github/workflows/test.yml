@@ -35,6 +35,7 @@ jobs:
         sqlc-version: '1.29.0'
     - run: sqlc diff
 
+
   frontend-tests:
     runs-on: ubuntu-latest
     steps:
@@ -58,6 +59,7 @@ jobs:
       working-directory: ./frontend
       run: npm run test:run
 
+
   backend-tests:
     timeout-minutes: 30
     runs-on: ubuntu-latest
@@ -72,7 +74,7 @@ jobs:
     - name: Set up Infra
       run: |
         cd ../
-        docker compose -p $PROJECT_NAME up -d
+        docker compose -p $PROJECT_NAME up -d postgres redis nginx
 
     - name: Build Test Service
       run: |

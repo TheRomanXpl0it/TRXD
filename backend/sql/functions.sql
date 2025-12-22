@@ -34,41 +34,14 @@ END;
 $$ LANGUAGE plpgsql;
 
 
--- generate_team_hash
+-- generate_instance_remote
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
-CREATE OR REPLACE FUNCTION generate_team_hash_trimmed(team_id INTEGER, chall_id INTEGER)
-RETURNS TEXT AS $$
-DECLARE
-  secret TEXT;
-BEGIN
-  secret := (SELECT value FROM configs WHERE key='secret');
-  RETURN encode(
-    hmac(team_id::TEXT || '|' || chall_id::TEXT, secret, 'sha256'),
-    'hex'
-  );
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION generate_team_hash(team_id INTEGER, chall_id INTEGER)
-RETURNS TEXT AS $$
-DECLARE
-  len INTEGER;
-  full_hash TEXT;
-BEGIN
-  len := CAST((SELECT value FROM configs WHERE key = 'hash-len') AS INT);
-  full_hash := generate_team_hash_trimmed(team_id, chall_id);
-  RETURN substring(full_hash FROM 1 FOR len);
-END;
-$$ LANGUAGE plpgsql;
-
-
--- generate_instance_remote
-
-CREATE OR REPLACE FUNCTION generate_instance_remote(team_id INTEGER, chall_id INTEGER, hash_domain BOOLEAN)
+CREATE OR REPLACE FUNCTION generate_instance_remote(chall_id INTEGER, hash_domain BOOLEAN)
 RETURNS TABLE(host TEXT, port INTEGER) AS $$
 DECLARE
+  len INTEGER;
   hash TEXT;
 BEGIN
   host := (SELECT challenges.host FROM challenges WHERE id = chall_id);
@@ -78,11 +51,10 @@ BEGIN
   END IF;
 
   IF hash_domain THEN
-    hash := generate_team_hash(team_id, chall_id);
+    len := CAST((SELECT value FROM configs WHERE key = 'hash-len') AS INT);
+    hash := encode(gen_random_bytes(len/2),'hex');
     host := hash || '.' || host;
-  END IF;
-
-  IF NOT hash_domain THEN
+  ELSE
     port := get_random_available_port();
   END IF;
 

@@ -18,7 +18,6 @@ SELECT team_id, chall_id, expires_at, docker_id
 -- Creates a new instance for a team
 WITH info AS (
     SELECT generate_instance_remote(
-      sqlc.arg(team_id),
       sqlc.arg(chall_id),
       sqlc.arg(hash_domain)::BOOLEAN
     ) AS remote

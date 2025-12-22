@@ -20,7 +20,6 @@
    - add pagination on "all" GETs
    - invisible teams
    - divide configs by section (secrets, instances, something like this...)
-   - remove secret from configs
    - config to start and end ctf
    - dropdown menu for containers (for container instances)
    - role configuraion endpoint

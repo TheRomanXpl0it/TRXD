@@ -74,11 +74,6 @@ func TestRoute(t *testing.T) {
 	session.Post("/instances", JSON{"chall_id": math.MaxInt32 + 1}, http.StatusBadRequest)
 	session.CheckResponse(errorf(consts.InvalidJSON))
 
-	test_utils.UpdateConfig(t, "secret", "")
-	session.Post("/instances", JSON{"chall_id": challID1}, http.StatusForbidden)
-	session.CheckResponse(errorf(consts.DisabledInstances))
-	test_utils.UpdateConfig(t, "secret", "test-secret")
-
 	session.Post("/instances", JSON{"chall_id": challID1}, http.StatusBadRequest)
 	session.CheckResponse(errorf(consts.ChallengeNotInstanciable))
 

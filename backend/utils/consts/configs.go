@@ -21,7 +21,6 @@ var DefaultConfigs = map[string]any{
 	"min-port":                  10000,
 	"max-port":                  20000,
 	"hash-len":                  12,
-	"secret":                    "",
 	"domain":                    "",
 	"discord-webhook":           "",
 	"project-name":              "trxd",
