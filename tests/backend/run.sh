@@ -24,12 +24,13 @@ for file in "${files[@]}"; do
 	fi
 	./trxd -t
 	./trxd &
-	echo $! > server.pid
+	PID=$!
 
 	cd -
 	python3 $file
 
 	cd -
-	kill $(cat ./server.pid)
+	kill $PID
+	wait $PID || true
 	cd -
 done

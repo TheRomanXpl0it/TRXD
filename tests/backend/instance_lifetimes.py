@@ -335,7 +335,7 @@ assert_request(r, True)
 kill_instance(s2, chall_id_3)
 
 
-time.sleep(10) #! TODO: NGINX VALID=10S NEEDS TO BE FIXED
+time.sleep(12) #! TODO: NGINX VALID=10S NEEDS TO BE FIXED
 
 #! (HASH DOMAIN) CONTAINER EXPIRES, SO RECREATED
 
