@@ -68,10 +68,6 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v5
-
-    - name: Enable Debug
-      run: |
-        touch DEV
     
     - name: Set up Infra
       run: |

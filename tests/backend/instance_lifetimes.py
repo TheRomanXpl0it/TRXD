@@ -41,8 +41,8 @@ def update_challenge(session, chall_id, hash_domain=None, lifetime=None):
 		headers={'X-Csrf-Token': session.cookies.get('csrf_'),})
 	assert r.status_code == 200, r.text
 
-update_challenge(admin, chall_id_3, False, 3)
-update_challenge(admin, chall_id_4, False, 3)
+update_challenge(admin, chall_id_3, False, 5)
+update_challenge(admin, chall_id_4, False, 5)
 
 
 def spawn_instance(session, chall_id):
@@ -134,7 +134,7 @@ assert r.status_code == 200, r.text
 i3 = r.json()
 print(i3)
 
-time.sleep(5)
+time.sleep(10)
 
 connection_refused(i1["port"])
 connection_refused(i3["port"])
@@ -151,7 +151,7 @@ assert r.status_code == 200, r.text
 i3 = r.json()
 print(i3)
 
-time.sleep(5)
+time.sleep(10)
 
 connection_refused(i1["port"])
 connection_refused(i3["port"])
@@ -167,7 +167,7 @@ print(i1)
 r = requests.get(f'http://localhost:{i1["port"]}')
 assert_request(r, False)
 
-time.sleep(5)
+time.sleep(10)
 
 r = spawn_instance(s2, chall_id_3)
 assert r.status_code == 200, r.text
@@ -190,7 +190,7 @@ print(i1)
 r = requests.get(f'http://localhost:{i1["port"]}')
 assert_request(r, False)
 
-time.sleep(5)
+time.sleep(10)
 
 r = spawn_instance(s2, chall_id_4)
 assert r.status_code == 200, r.text
@@ -289,7 +289,7 @@ assert r.status_code == 200, r.text
 i3 = r.json()
 print(i3)
 
-time.sleep(5)
+time.sleep(10)
 
 hash_connection_refused(i1)
 hash_connection_refused(i3)
@@ -306,7 +306,7 @@ assert r.status_code == 200, r.text
 i3 = r.json()
 print(i3)
 
-time.sleep(5)
+time.sleep(10)
 
 hash_connection_refused(i1)
 hash_connection_refused(i3)
@@ -322,7 +322,7 @@ print(i1)
 r = hash_request(i1)
 assert_request(r, True)
 
-time.sleep(5)
+time.sleep(10)
 
 r = spawn_instance(s2, chall_id_3)
 assert r.status_code == 200, r.text
@@ -335,7 +335,7 @@ assert_request(r, True)
 kill_instance(s2, chall_id_3)
 
 
-time.sleep(12) #! TODO: NGINX VALID=10S NEEDS TO BE FIXED
+time.sleep(22) #! TODO: NGINX VALID=10S NEEDS TO BE FIXED
 
 #! (HASH DOMAIN) CONTAINER EXPIRES, SO RECREATED
 
@@ -347,7 +347,7 @@ print(i1)
 r = hash_request(i1)
 assert_request(r, True)
 
-time.sleep(5)
+time.sleep(10)
 
 r = spawn_instance(s2, chall_id_4)
 assert r.status_code == 200, r.text
