@@ -78,7 +78,7 @@ func SetupApp(ctx context.Context) *fiber.App {
 	app.Static("/", "./frontend")
 	app.Static("/static", "./static")
 
-	app.Use("/attachments", spectator, team, middlewares.Attachments)
+	app.Use("/attachments", spectator, team, start, middlewares.Attachments)
 	app.Static("/attachments", "./attachments", fiber.Static{
 		Download: true,
 	})
@@ -179,7 +179,7 @@ func SetupApi(ctx context.Context, app *fiber.App) {
 	api.Post("/categories", author, categories_create.Route)
 	api.Patch("/categories", author, categories_update.Route)
 	api.Delete("/categories", author, categories_delete.Route)
-	api.Get("/categories", player, team, categories_get.Route)
+	api.Get("/categories", spectator, team, start, categories_get.Route)
 
 	api.Post("/challenges", author, challenges_create.Route)
 	api.Patch("/challenges", author, challenges_update.Route)
@@ -187,9 +187,9 @@ func SetupApi(ctx context.Context, app *fiber.App) {
 	api.Get("/challenges", spectator, team, start, challenges_all_get.Route)
 	api.Get("/challenges/:id", spectator, team, start, challenges_get.Route)
 
-	api.Post("/instances", player, team, instances_create.Route)
-	api.Patch("/instances", player, team, instances_update.Route)
-	api.Delete("/instances", player, team, instances_delete.Route)
+	api.Post("/instances", player, team, start, instances_create.Route)
+	api.Patch("/instances", player, team, start, instances_update.Route)
+	api.Delete("/instances", player, team, start, instances_delete.Route)
 	// api.Get("/instances", admin, instances_get.Route)
 
 	api.Post("/submissions", spectator, team, start, end, submissions_create.Route)

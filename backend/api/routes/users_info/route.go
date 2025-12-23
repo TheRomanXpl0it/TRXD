@@ -29,16 +29,33 @@ func Route(c *fiber.Ctx) error {
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingConfig, err)
 	}
+	startTime, err := db.GetConfig(c.Context(), "start-time")
+	if err != nil {
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingConfig, err)
+	}
+	endTime, err := db.GetConfig(c.Context(), "end-time")
+	if err != nil {
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingConfig, err)
+	}
 
 	var teamID *int32
 	if user.TeamID.Valid {
 		teamID = &user.TeamID.Int32
 	}
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	info := fiber.Map{
 		"id":        user.ID,
 		"name":      user.Name,
 		"role":      user.Role,
 		"team_id":   teamID,
 		"user_mode": userMode == "true",
-	})
+	}
+
+	if startTime != "" {
+		info["start_time"] = startTime
+	}
+	if endTime != "" {
+		info["end_time"] = endTime
+	}
+
+	return c.Status(fiber.StatusOK).JSON(info)
 }
