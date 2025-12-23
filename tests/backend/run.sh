@@ -10,6 +10,7 @@ files=(
 	instance_create_race.py
 	instance_create_race_team.py
 	instance_lifetimes.py
+	discord_webhook.py
 )
 
 for file in "${files[@]}"; do
