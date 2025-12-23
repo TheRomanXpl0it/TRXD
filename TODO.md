@@ -15,7 +15,6 @@
    - https://doc.traefik.io/traefik/expose/docker/
    - challs SNI traefik
    - challenge remote type (table: (tcp & http) + format: ex. "nc {{host}} {{port}}" & "http://{{host}}:{{port}}")
-   - config to start and end ctf
    - role configuraion endpoint
    - add pagination on "all" GETs
    - mail server (github.com/wneessen/go-mail)

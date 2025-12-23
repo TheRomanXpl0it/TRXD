@@ -26,6 +26,8 @@ var DefaultConfigs = map[string]any{
 	"project-name":              "trxd",
 	"user-mode":                 false,
 	"scoreboard-top":            10,
+	"start-time":                "",
+	"end-time":                  "",
 }
 
 func LoadEnvConfigs() {

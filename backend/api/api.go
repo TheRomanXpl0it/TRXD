@@ -57,9 +57,13 @@ var (
 	noAuth    = middlewares.NoAuth
 	spectator = middlewares.Spectator
 	player    = middlewares.Player
-	team      = middlewares.Team
 	author    = middlewares.Author
 	admin     = middlewares.Admin
+
+	team = middlewares.Team
+
+	start = middlewares.Start
+	end   = middlewares.End
 )
 
 func SetupApp(ctx context.Context) *fiber.App {
@@ -180,15 +184,15 @@ func SetupApi(ctx context.Context, app *fiber.App) {
 	api.Post("/challenges", author, challenges_create.Route)
 	api.Patch("/challenges", author, challenges_update.Route)
 	api.Delete("/challenges", author, challenges_delete.Route)
-	api.Get("/challenges", spectator, team, challenges_all_get.Route)
-	api.Get("/challenges/:id", spectator, team, challenges_get.Route)
+	api.Get("/challenges", spectator, team, start, challenges_all_get.Route)
+	api.Get("/challenges/:id", spectator, team, start, challenges_get.Route)
 
 	api.Post("/instances", player, team, instances_create.Route)
 	api.Patch("/instances", player, team, instances_update.Route)
 	api.Delete("/instances", player, team, instances_delete.Route)
 	// api.Get("/instances", admin, instances_get.Route)
 
-	api.Post("/submissions", spectator, team, submissions_create.Route)
+	api.Post("/submissions", spectator, team, start, end, submissions_create.Route)
 	// api.Get("/submissions", admin, submissions_get.Route)
 	// api.Delete("/submissions", admin, submissions_delete.Route)
 

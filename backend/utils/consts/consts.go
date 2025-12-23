@@ -42,7 +42,6 @@ const (
 
 	ChallengeNotInstanciable = "Challenge is not instanciable"
 
-	DisabledInstances     = "Instances are disabled"
 	DisabledRegistrations = "Registrations are disabled"
 
 	ErrorBeginningTransaction    = "Error beginning transaction"
@@ -74,6 +73,7 @@ const (
 	ErrorGeneratingPassword      = "Error generating random password"
 	ErrorHashingFile             = "Error hashing file"
 	ErrorLoggingIn               = "Error logging in"
+	ErrorParsingTime             = "Error parsing time"
 	ErrorRegisteringTeam         = "Error registering team"
 	ErrorRegisteringUser         = "Error registering user"
 	ErrorResettingTeamPassword   = "Error resetting team password"
@@ -128,4 +128,6 @@ const (
 	MissingRequiredFields = "Missing required fields"
 	NoDataToUpdate        = "No data provided to update"
 	NotLoggedIn           = "Not logged in"
+	NotStartedYet         = "Not started yet"
+	AlreadyEnded          = "Already ended"
 )
