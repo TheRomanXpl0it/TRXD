@@ -311,7 +311,6 @@ func TestRoute(t *testing.T) {
 	expected := JSON{
 		"attachments": []string{},
 		"authors":     testBody["authors"],
-		// "authors":     []string{"author1", "author2"}, //! TODO: faulty test! should be: []string{} (multipart form issue)
 		"category":    testBody["category"],
 		"description": testBody["description"],
 		"difficulty":  testBody["difficulty"],
@@ -328,8 +327,7 @@ func TestRoute(t *testing.T) {
 		"solved":      false,
 		"solves":      0,
 		"tags":        testBody["tags"],
-		// "tags":    []string{"tag1", "tag2", "tag3"}, //! TODO: faulty test! should be: []string{} (multipart form issue)
-		"timeout": 0,
+		"timeout":     0,
 	}
 	var challengeBody interface{}
 	for _, v := range body.([]interface{}) {

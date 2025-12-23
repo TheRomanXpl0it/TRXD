@@ -9,7 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func NoAuth(c *fiber.Ctx) error {
+func withUser(c *fiber.Ctx, requireAuth bool, allowedRoles []sqlc.UserRole) error {
 	sess, err := db.Store.Get(c)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingSession, err)
@@ -17,154 +17,60 @@ func NoAuth(c *fiber.Ctx) error {
 
 	uid := sess.Get("uid")
 	if uid == nil {
-		return c.Next()
+		if !requireAuth {
+			return c.Next()
+		}
+		return utils.Error(c, fiber.StatusUnauthorized, consts.Unauthorized)
 	}
 
 	user, err := db.GetUserByID(c.Context(), uid.(int32))
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
 	}
-	if user == nil {
-		return c.Next()
+	if user == nil || !utils.In(user.Role, allowedRoles) {
+		return utils.Error(c, fiber.StatusForbidden, consts.Forbidden)
 	}
 
+	tid := int32(-1)
 	if user.TeamID.Valid {
-		c.Locals("tid", user.TeamID.Int32)
-	} else {
-		c.Locals("tid", int32(-1))
+		tid = user.TeamID.Int32
 	}
 	c.Locals("uid", uid)
 	c.Locals("role", user.Role)
+	c.Locals("tid", tid)
 
 	return c.Next()
+}
+
+func NoAuth(c *fiber.Ctx) error {
+	return withUser(c, false, []sqlc.UserRole{sqlc.UserRoleSpectator, sqlc.UserRolePlayer, sqlc.UserRoleAuthor, sqlc.UserRoleAdmin})
 }
 
 func Spectator(c *fiber.Ctx) error {
-	sess, err := db.Store.Get(c)
-	if err != nil {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingSession, err)
-	}
-
-	uid := sess.Get("uid")
-	if uid == nil {
-		return utils.Error(c, fiber.StatusUnauthorized, consts.Unauthorized)
-	}
-
-	user, err := db.GetUserByID(c.Context(), uid.(int32))
-	if err != nil {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
-	}
-	if user == nil {
-		return utils.Error(c, fiber.StatusForbidden, consts.Forbidden)
-	}
-
-	if user.TeamID.Valid {
-		c.Locals("tid", user.TeamID.Int32)
-	} else {
-		c.Locals("tid", int32(-1))
-	}
-	c.Locals("uid", uid)
-	c.Locals("role", user.Role)
-
-	return c.Next()
-}
-
-func Team(c *fiber.Ctx) error {
-	tid := c.Locals("tid").(int32)
-	role := c.Locals("role").(sqlc.UserRole)
-
-	if role == sqlc.UserRolePlayer && tid == -1 {
-		return utils.Error(c, fiber.StatusForbidden, consts.Forbidden)
-	}
-
-	return c.Next()
+	return withUser(c, true, []sqlc.UserRole{sqlc.UserRoleSpectator, sqlc.UserRolePlayer, sqlc.UserRoleAuthor, sqlc.UserRoleAdmin})
 }
 
 func Player(c *fiber.Ctx) error {
-	sess, err := db.Store.Get(c)
-	if err != nil {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingSession, err)
-	}
-
-	uid := sess.Get("uid")
-	if uid == nil {
-		return utils.Error(c, fiber.StatusUnauthorized, consts.Unauthorized)
-	}
-
-	user, err := db.GetUserByID(c.Context(), uid.(int32))
-	if err != nil {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
-	}
-	if user == nil || (user.Role != sqlc.UserRolePlayer &&
-		user.Role != sqlc.UserRoleAuthor && user.Role != sqlc.UserRoleAdmin) {
-		return utils.Error(c, fiber.StatusForbidden, consts.Forbidden)
-	}
-
-	if user.TeamID.Valid {
-		c.Locals("tid", user.TeamID.Int32)
-	} else {
-		c.Locals("tid", int32(-1))
-	}
-	c.Locals("uid", uid)
-	c.Locals("role", user.Role)
-
-	return c.Next()
+	return withUser(c, true, []sqlc.UserRole{sqlc.UserRolePlayer, sqlc.UserRoleAuthor, sqlc.UserRoleAdmin})
 }
 
 func Author(c *fiber.Ctx) error {
-	sess, err := db.Store.Get(c)
-	if err != nil {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingSession, err)
-	}
-
-	uid := sess.Get("uid")
-	if uid == nil {
-		return utils.Error(c, fiber.StatusUnauthorized, consts.Unauthorized)
-	}
-
-	user, err := db.GetUserByID(c.Context(), uid.(int32))
-	if err != nil {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
-	}
-	if user == nil || (user.Role != sqlc.UserRoleAuthor && user.Role != sqlc.UserRoleAdmin) {
-		return utils.Error(c, fiber.StatusForbidden, consts.Forbidden)
-	}
-
-	if user.TeamID.Valid {
-		c.Locals("tid", user.TeamID.Int32)
-	} else {
-		c.Locals("tid", int32(-1))
-	}
-	c.Locals("uid", uid)
-	c.Locals("role", user.Role)
-	return c.Next()
+	return withUser(c, true, []sqlc.UserRole{sqlc.UserRoleAuthor, sqlc.UserRoleAdmin})
 }
 
 func Admin(c *fiber.Ctx) error {
-	sess, err := db.Store.Get(c)
-	if err != nil {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingSession, err)
-	}
+	return withUser(c, true, []sqlc.UserRole{sqlc.UserRoleAdmin})
+}
 
-	uid := sess.Get("uid")
-	if uid == nil {
-		return utils.Error(c, fiber.StatusUnauthorized, consts.Unauthorized)
-	}
+func Team(c *fiber.Ctx) error {
+	tid := c.Locals("tid")
+	role := c.Locals("role")
 
-	user, err := db.GetUserByID(c.Context(), uid.(int32))
-	if err != nil {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
-	}
-	if user == nil || user.Role != sqlc.UserRoleAdmin {
+	if role == nil ||
+		(role.(sqlc.UserRole) == sqlc.UserRolePlayer &&
+			(tid == nil || tid.(int32) == -1)) {
 		return utils.Error(c, fiber.StatusForbidden, consts.Forbidden)
 	}
 
-	if user.TeamID.Valid {
-		c.Locals("tid", user.TeamID.Int32)
-	} else {
-		c.Locals("tid", int32(-1))
-	}
-	c.Locals("uid", uid)
-	c.Locals("role", user.Role)
 	return c.Next()
 }

@@ -120,6 +120,10 @@ func SetupFeatures(app *fiber.App) {
 		Session:           db.Store,
 	}))
 
+	// app.Use(helmet.New(helmet.Config{
+	// 	ContentSecurityPolicy:   "",
+	// }))
+
 	app.Use(favicon.New(favicon.Config{
 		File: "./static/favicon.ico",
 		URL:  "/favicon.ico",

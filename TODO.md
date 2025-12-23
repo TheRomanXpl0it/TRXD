@@ -1,6 +1,5 @@
 # TODO
  - resolve TODOs left into the code
- - put descriptions on configs
  - convention:
    - change name of challs, network and so on, with $PROJECT_NAME prefix
    - change csrf token name
@@ -15,14 +14,11 @@
    - https://docs.gofiber.io/api/middleware/helmet/
    - https://doc.traefik.io/traefik/expose/docker/
    - challs SNI traefik
-   - N instance limit per team
    - challenge remote type (table: (tcp & http) + format: ex. "nc {{host}} {{port}}" & "http://{{host}}:{{port}}")
-   - add pagination on "all" GETs
-   - invisible teams
-   - divide configs by section (secrets, instances, something like this...)
    - config to start and end ctf
-   - dropdown menu for containers (for container instances)
    - role configuraion endpoint
+   - add pagination on "all" GETs
+   - mail server (github.com/wneessen/go-mail)
  - utility:
    - better names for binary flags
    - DOCUMENTATION
@@ -36,6 +32,9 @@
  - ~~Improve "Team join" page on smaller screens~~
 
 ## Ideas / Features
+ - put descriptions on configs
+ - divide configs by section (secrets, instances, something like this...)
+ - dropdown menu for containers (for container instances)
  - editable homepage & theme
  - instanes page (admin only)
  - deletable instances (from admin)
@@ -44,6 +43,8 @@
  - link to join team
  - endpoint + cli cmd to parse a category/challenge file (maybe yaml) with all infos
  - extract data for ctftime
+ - invisible teams
+ - N instance limit per team
  - scoreboard freeze (idea: use a table or a view to take a snapshot of the scoreboard, update it every time someone solves if not in freeze time (or just prefetch and compute if not exists))
  - telegram bot for first bloods (and webhook generalization)
  - hash verifier flag or script
@@ -58,7 +59,6 @@
  - tls instances: https://github.com/inconshreveable/slt
  - likes and dislikes for challs (only for who actually solved)
  - kick user from team
- - mail server
  - endpoint to store image files (like badges and pfp)
  - flag format validator
  - ingress only challenges (verify if useful)

@@ -14,32 +14,32 @@ var testAuthMiddlewares = []struct {
 	expectedStatuses []int
 }{
 	{
-		method:           "POST",
+		method:           http.MethodPost,
 		endpoint:         "/login",
 		expectedStatuses: []int{http.StatusBadRequest, http.StatusForbidden, http.StatusForbidden, http.StatusForbidden, http.StatusForbidden, http.StatusForbidden},
 	},
 	{
-		method:           "GET",
+		method:           http.MethodGet,
 		endpoint:         "/info",
 		expectedStatuses: []int{http.StatusOK, http.StatusOK, http.StatusOK, http.StatusOK, http.StatusOK, http.StatusOK},
 	},
 	{
-		method:           "GET",
+		method:           http.MethodGet,
 		endpoint:         "/challenges",
 		expectedStatuses: []int{http.StatusUnauthorized, http.StatusOK, http.StatusForbidden, http.StatusOK, http.StatusOK, http.StatusOK},
 	},
 	{
-		method:           "POST",
+		method:           http.MethodPost,
 		endpoint:         "/teams/register",
 		expectedStatuses: []int{http.StatusUnauthorized, http.StatusForbidden, http.StatusBadRequest, http.StatusBadRequest, http.StatusBadRequest, http.StatusBadRequest},
 	},
 	{
-		method:           "POST",
+		method:           http.MethodPost,
 		endpoint:         "/categories",
 		expectedStatuses: []int{http.StatusUnauthorized, http.StatusForbidden, http.StatusForbidden, http.StatusForbidden, http.StatusBadRequest, http.StatusBadRequest},
 	},
 	{
-		method:           "PATCH",
+		method:           http.MethodPatch,
 		endpoint:         "/configs",
 		expectedStatuses: []int{http.StatusUnauthorized, http.StatusForbidden, http.StatusForbidden, http.StatusForbidden, http.StatusForbidden, http.StatusBadRequest},
 	},
