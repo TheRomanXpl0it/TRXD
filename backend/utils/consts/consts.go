@@ -28,6 +28,8 @@ var DeployTypes = []sqlc.DeployType{sqlc.DeployTypeNormal, sqlc.DeployTypeContai
 var DeployTypesStr = []string{string(sqlc.DeployTypeNormal), string(sqlc.DeployTypeContainer), string(sqlc.DeployTypeCompose)}
 var ScoreTypes = []sqlc.ScoreType{sqlc.ScoreTypeStatic, sqlc.ScoreTypeDynamic}
 var ScoreTypesStr = []string{string(sqlc.ScoreTypeStatic), string(sqlc.ScoreTypeDynamic)}
+var ConnTypes = []sqlc.ConnType{sqlc.ConnTypeNONE, sqlc.ConnTypeTCP, sqlc.ConnTypeTCPTLS, sqlc.ConnTypeHTTP, sqlc.ConnTypeHTTPS}
+var ConnTypesStr = []string{string(sqlc.ConnTypeNONE), string(sqlc.ConnTypeTCP), string(sqlc.ConnTypeTCPTLS), string(sqlc.ConnTypeHTTP), string(sqlc.ConnTypeHTTPS)}
 
 const (
 	Unauthorized        = "Unauthorized"

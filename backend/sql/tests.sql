@@ -53,10 +53,10 @@ BEGIN
   */
   INSERT INTO categories (name) VALUES ('cat-1');
   INSERT INTO categories (name) VALUES ('cat-2');
-  INSERT INTO challenges (name, category, description, difficulty, authors, tags, type, max_points, score_type, host, port, hidden) VALUES ('chall-1', 'cat-1', 'TEST chall-1 DESC', 'Easy', ARRAY['author1', 'author2'], ARRAY['tag-1', 'test-tag'], 'Normal', 500, 'Dynamic', 'http://theromanxpl0.it', 1234, false);
+  INSERT INTO challenges (name, category, description, difficulty, authors, tags, type, max_points, score_type, host, port, conn_type, hidden) VALUES ('chall-1', 'cat-1', 'TEST chall-1 DESC', 'Easy', ARRAY['author1', 'author2'], ARRAY['tag-1', 'test-tag'], 'Normal', 500, 'Dynamic', 'ctf.theromanxpl0.it', 1234, 'TCP', false);
   INSERT INTO challenges (name, category, description, difficulty, authors, tags, type, max_points, score_type, hidden) VALUES ('chall-2', 'cat-2', 'TEST chall-2 DESC', 'Medium', ARRAY['author1', 'author2', 'author3'], ARRAY['tag-2'], 'Normal', 500, 'Dynamic', false);
-  INSERT INTO challenges (name, category, description, difficulty, authors, tags, type, max_points, score_type, host, port, hidden) VALUES ('chall-3', 'cat-1', 'TEST chall-3 DESC', 'Hard', ARRAY['author1'], ARRAY['tag-3'], 'Container', 500, 'Dynamic', 'chall-3.test.com', 1337, false);
-  INSERT INTO challenges (name, category, description, difficulty, authors, tags, type, max_points, score_type, hidden) VALUES ('chall-4', 'cat-1', 'TEST chall-4 DESC', 'Insane', ARRAY['author2'], ARRAY['tag-4'], 'Compose', 500, 'Dynamic', false);
+  INSERT INTO challenges (name, category, description, difficulty, authors, tags, type, max_points, score_type, host, port, conn_type, hidden) VALUES ('chall-3', 'cat-1', 'TEST chall-3 DESC', 'Hard', ARRAY['author1'], ARRAY['tag-3'], 'Container', 500, 'Dynamic', 'chall-3.test.com', 1337, 'HTTP', false);
+  INSERT INTO challenges (name, category, description, difficulty, authors, tags, type, max_points, score_type, conn_type, hidden) VALUES ('chall-4', 'cat-1', 'TEST chall-4 DESC', 'Insane', ARRAY['author2'], ARRAY['tag-4'], 'Compose', 500, 'Dynamic', 'HTTP', false);
   INSERT INTO challenges (name, category, description, difficulty, authors, tags, type, max_points, score_type) VALUES ('chall-5', 'cat-2', 'TEST chall-5 DESC', 'Easy', ARRAY['author3'], ARRAY['tag-5'], 'Normal', 500, 'Static');
   UPDATE docker_configs SET image='echo-server:latest', hash_domain=TRUE WHERE chall_id=(SELECT id FROM challenges WHERE name='chall-3');
   UPDATE docker_configs SET compose='

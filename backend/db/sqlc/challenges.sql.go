@@ -12,7 +12,7 @@ import (
 )
 
 const getChallengeByID = `-- name: GetChallengeByID :one
-SELECT id, name, category, description, difficulty, authors, tags, type, hidden, max_points, score_type, points, solves, host, port FROM challenges WHERE id = $1
+SELECT id, name, category, description, difficulty, authors, tags, type, hidden, max_points, score_type, points, solves, host, port, conn_type FROM challenges WHERE id = $1
 `
 
 // Retrieve a challenge by its ID
@@ -35,6 +35,7 @@ func (q *Queries) GetChallengeByID(ctx context.Context, id int32) (Challenge, er
 		&i.Solves,
 		&i.Host,
 		&i.Port,
+		&i.ConnType,
 	)
 	return i, err
 }

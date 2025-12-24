@@ -153,6 +153,7 @@ func TestRoute(t *testing.T) {
 			"attachments": attachments,
 			"authors":     []string{},
 			"category":    "cat",
+			"conn_type":   "NONE",
 			"description": "test-desc",
 			"difficulty":  "",
 			"first_blood": false,

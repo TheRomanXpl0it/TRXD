@@ -43,10 +43,17 @@ func nullScoreType(src *sqlc.ScoreType) sqlc.NullScoreType {
 	return sqlc.NullScoreType{ScoreType: *src, Valid: true}
 }
 
+func nullConnType(src *sqlc.ConnType) sqlc.NullConnType {
+	if src == nil {
+		return sqlc.NullConnType{Valid: false}
+	}
+	return sqlc.NullConnType{ConnType: *src, Valid: true}
+}
+
 func IsChallEmpty(data *UpdateChallParams) bool {
 	if data.Name == "" && data.Category == "" && data.Description == nil && data.Difficulty == nil &&
 		data.Authors == nil && data.Tags == nil && data.Type == nil && data.Hidden == nil && data.MaxPoints == nil &&
-		data.ScoreType == nil && data.Host == nil && data.Port == nil {
+		data.ScoreType == nil && data.Host == nil && data.Port == nil && data.ConnType == nil {
 		return true
 	}
 	return false
@@ -77,6 +84,7 @@ func UpdateChallenge(ctx context.Context, data *UpdateChallParams) error {
 		ScoreType:   nullScoreType(data.ScoreType),
 		Host:        nullString(data.Host),
 		Port:        nullInt32(data.Port),
+		ConnType:    nullConnType(data.ConnType),
 	}
 
 	if data.Authors != nil {

@@ -24,6 +24,7 @@ type Chall struct {
 	Tags         []string       `json:"tags"`
 	Host         string         `json:"host"`
 	Port         int            `json:"port"`
+	ConnType     sqlc.ConnType  `json:"conn_type"`
 	MaxPoints    int            `json:"max_points"`
 	ScoreType    sqlc.ScoreType `json:"score_type"`
 	Timeout      int            `json:"timeout"`
@@ -60,6 +61,7 @@ func GetChallenges(ctx context.Context, uid int32, tid int32, author bool) ([]Ch
 			Tags:        []string{},
 			Host:        challenge.Host,
 			Port:        int(challenge.Port),
+			ConnType:    challenge.ConnType,
 			MaxPoints:   int(challenge.MaxPoints),
 			ScoreType:   challenge.ScoreType,
 			Timeout:     0,

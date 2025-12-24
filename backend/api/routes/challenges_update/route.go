@@ -25,6 +25,7 @@ type UpdateChallParams struct {
 	ScoreType   *sqlc.ScoreType  `json:"score_type" validate:"omitempty,challenge_score_type"`
 	Host        *string          `json:"host"`
 	Port        *int32           `json:"port" validate:"omitempty,challenge_port"`
+	ConnType    *sqlc.ConnType   `json:"conn_type" validate:"omitempty,challenge_conn_type"`
 
 	Image      *string `json:"image"`
 	Compose    *string `json:"compose"`

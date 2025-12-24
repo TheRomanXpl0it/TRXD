@@ -44,6 +44,7 @@ func init() {
 	validate.RegisterAlias("challenge_max_points", fmt.Sprintf("min=0,max=%d", math.MaxInt32))
 	validate.RegisterAlias("challenge_score_type", "oneof="+strings.Join(consts.ScoreTypesStr, " "))
 	validate.RegisterAlias("challenge_port", fmt.Sprintf("min=%d,max=%d", consts.MinPort, consts.MaxPort))
+	validate.RegisterAlias("challenge_conn_type", "oneof="+strings.Join(consts.ConnTypesStr, " "))
 	validate.RegisterAlias("challenge_lifetime", fmt.Sprintf("min=0,max=%d", math.MaxInt32))
 	registerValidation("challenge_envs", validJson)
 	validate.RegisterAlias("challenge_max_memory", fmt.Sprintf("min=0,max=%d", math.MaxInt32))

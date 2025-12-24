@@ -223,7 +223,7 @@ func (q *Queries) DeleteInstance(ctx context.Context, arg DeleteInstanceParams) 
 const getAllChallengesInfo = `-- name: GetAllChallengesInfo :many
 WITH tid AS (SELECT team_id FROM users WHERE users.id = $1)
 SELECT
-    c.id, c.name, c.category, c.description, c.difficulty, c.authors, c.tags, c.type, c.hidden, c.max_points, c.score_type, c.points, c.solves, c.host, c.port,
+    c.id, c.name, c.category, c.description, c.difficulty, c.authors, c.tags, c.type, c.hidden, c.max_points, c.score_type, c.points, c.solves, c.host, c.port, c.conn_type,
     (s.first_blood IS NOT NULL)::BOOLEAN AS solved,
     COALESCE(s.first_blood, FALSE) AS first_blood,
     (ARRAY_AGG('/' || a.hash || '/' || a.name ORDER BY a.name)
@@ -266,6 +266,7 @@ type GetAllChallengesInfoRow struct {
 	Solves       int32          `json:"solves"`
 	Host         string         `json:"host"`
 	Port         int32          `json:"port"`
+	ConnType     ConnType       `json:"conn_type"`
 	Solved       bool           `json:"solved"`
 	FirstBlood   bool           `json:"first_blood"`
 	Attachments  []string       `json:"attachments"`
@@ -301,6 +302,7 @@ func (q *Queries) GetAllChallengesInfo(ctx context.Context, id int32) ([]GetAllC
 			&i.Solves,
 			&i.Host,
 			&i.Port,
+			&i.ConnType,
 			&i.Solved,
 			&i.FirstBlood,
 			pq.Array(&i.Attachments),
@@ -1131,8 +1133,9 @@ SET
   max_points = COALESCE($9, max_points),
   score_type = COALESCE($10, score_type),
   host = COALESCE($11, host),
-  port = COALESCE($12, port)
-WHERE id = $13
+  port = COALESCE($12, port),
+  conn_type = COALESCE($13, conn_type)
+WHERE id = $14
 `
 
 type UpdateChallengeParams struct {
@@ -1148,6 +1151,7 @@ type UpdateChallengeParams struct {
 	ScoreType   NullScoreType  `json:"score_type"`
 	Host        sql.NullString `json:"host"`
 	Port        sql.NullInt32  `json:"port"`
+	ConnType    NullConnType   `json:"conn_type"`
 	ChallID     int32          `json:"chall_id"`
 }
 
@@ -1166,6 +1170,7 @@ func (q *Queries) UpdateChallenge(ctx context.Context, arg UpdateChallengeParams
 		arg.ScoreType,
 		arg.Host,
 		arg.Port,
+		arg.ConnType,
 		arg.ChallID,
 	)
 	return err

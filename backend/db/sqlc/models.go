@@ -11,6 +11,51 @@ import (
 	"time"
 )
 
+type ConnType string
+
+const (
+	ConnTypeNONE   ConnType = "NONE"
+	ConnTypeTCP    ConnType = "TCP"
+	ConnTypeTCPTLS ConnType = "TCP_TLS"
+	ConnTypeHTTP   ConnType = "HTTP"
+	ConnTypeHTTPS  ConnType = "HTTPS"
+)
+
+func (e *ConnType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ConnType(s)
+	case string:
+		*e = ConnType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ConnType: %T", src)
+	}
+	return nil
+}
+
+type NullConnType struct {
+	ConnType ConnType `json:"conn_type"`
+	Valid    bool     `json:"valid"` // Valid is true if ConnType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullConnType) Scan(value interface{}) error {
+	if value == nil {
+		ns.ConnType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ConnType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullConnType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ConnType), nil
+}
+
 type DeployType string
 
 const (
@@ -217,6 +262,7 @@ type Challenge struct {
 	Solves      int32      `json:"solves"`
 	Host        string     `json:"host"`
 	Port        int32      `json:"port"`
+	ConnType    ConnType   `json:"conn_type"`
 }
 
 type Config struct {

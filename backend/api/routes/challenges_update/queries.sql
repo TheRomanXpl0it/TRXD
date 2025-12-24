@@ -13,7 +13,8 @@ SET
   max_points = COALESCE(sqlc.narg('max_points'), max_points),
   score_type = COALESCE(sqlc.narg('score_type'), score_type),
   host = COALESCE(sqlc.narg('host'), host),
-  port = COALESCE(sqlc.narg('port'), port)
+  port = COALESCE(sqlc.narg('port'), port),
+  conn_type = COALESCE(sqlc.narg('conn_type'), conn_type)
 WHERE id = sqlc.arg('chall_id');
 
 -- name: UpdateDockerConfigs :exec
