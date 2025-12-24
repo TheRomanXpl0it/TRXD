@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"io/fs"
 	"os"
@@ -44,6 +45,38 @@ func toggleRegister(ctx context.Context) {
 	log.Notice("allow-register set to:", "value", toggle)
 }
 
+func validateUserData(name string, email string, password string) error {
+	if name == "" || email == "" || password == "" {
+		return errors.New("username, email, and password must not be empty")
+	}
+
+	valid, err := validator.Var(nil, name, "user_name")
+	if err != nil {
+		return err
+	}
+	if !valid {
+		return errors.New("invalid username format")
+	}
+
+	valid, err = validator.Var(nil, email, "user_email")
+	if err != nil {
+		return err
+	}
+	if !valid {
+		return errors.New("invalid email format")
+	}
+
+	valid, err = validator.Var(nil, password, "password")
+	if err != nil {
+		return err
+	}
+	if !valid {
+		return errors.New("invalid password format")
+	}
+
+	return nil
+}
+
 func registerAdmin(ctx context.Context, userInfo string) {
 	parts := strings.SplitN(userInfo, ":", 3)
 	var name, email, password string
@@ -61,19 +94,8 @@ func registerAdmin(ctx context.Context, userInfo string) {
 		log.Fatal("Invalid format for registration. Use 'username:email:password'")
 	}
 
-	if name == "" || email == "" || password == "" {
-		log.Fatal("Username, email, and password must not be empty")
-	}
-	valid, err := validator.Var(nil, name, "user_name")
-	if err != nil || !valid {
-		log.Fatal(err)
-	}
-	valid, err = validator.Var(nil, email, "user_email")
-	if err != nil || !valid {
-		log.Fatal(err)
-	}
-	valid, err = validator.Var(nil, password, "password")
-	if err != nil || !valid {
+	err := validateUserData(name, email, password)
+	if err != nil {
 		log.Fatal(err)
 	}
 
@@ -189,12 +211,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Error connecting to database", "err", err)
 	}
-	defer func() {
-		err := db.CloseDB()
-		if err != nil {
-			log.Error("Error closing database", "err", err)
-		}
-	}()
+	defer db.CloseDBSafe()
 
 	ctx := context.Background()
 	parseFlags(ctx)

@@ -10,6 +10,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/lib/pq"
+	"github.com/tde-nico/log"
 )
 
 var tmp_db *sql.DB
@@ -81,6 +82,13 @@ func CloseTestDB() error {
 	}
 
 	return nil
+}
+
+func CloseDBSafe() {
+	err := CloseDB()
+	if err != nil {
+		log.Error("Error closing database", "err", err)
+	}
 }
 
 func DeleteAll(ctx context.Context) error {

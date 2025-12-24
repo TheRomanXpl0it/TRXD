@@ -132,33 +132,18 @@ func InitConfigs() error {
 	return nil
 }
 
-func initDB(test ...bool) (bool, error) {
-	if db == nil {
-		return false, fmt.Errorf("database connection is not established")
-	}
-
-	success, err := ExecSQLFile("sql/schema.sql")
-	if err != nil {
-		return false, err
-	}
-	if !success {
-		return false, nil
-	}
-
-	err = InitConfigs()
-	if err != nil {
-		return false, fmt.Errorf("failed to initialize configs: %v", err)
-	}
-
+func initTriggers() (bool, error) {
 	files, err := os.ReadDir("sql/triggers")
 	if err != nil {
 		return false, err
 	}
+
 	for _, file := range files {
 		if file.IsDir() || !strings.HasSuffix(file.Name(), ".sql") {
 			continue
 		}
-		success, err = ExecSQLFile("sql/triggers/" + file.Name())
+
+		success, err := ExecSQLFile("sql/triggers/" + file.Name())
 		if err != nil {
 			return false, fmt.Errorf("failed to execute trigger SQL file %s: %v", file.Name(), err)
 		}
@@ -167,21 +152,38 @@ func initDB(test ...bool) (bool, error) {
 		}
 	}
 
-	success, err = ExecSQLFile("sql/functions.sql")
-	if err != nil {
+	return true, nil
+}
+
+func initDB(test ...bool) (bool, error) {
+	if db == nil {
+		return false, fmt.Errorf("database connection is not established")
+	}
+
+	success, err := ExecSQLFile("sql/schema.sql")
+	if err != nil || !success {
 		return false, err
 	}
-	if !success {
-		return false, nil
+
+	err = InitConfigs()
+	if err != nil {
+		return false, fmt.Errorf("failed to initialize configs: %v", err)
+	}
+
+	success, err = initTriggers()
+	if err != nil || !success {
+		return false, err
+	}
+
+	success, err = ExecSQLFile("sql/functions.sql")
+	if err != nil || !success {
+		return false, err
 	}
 
 	if len(test) > 0 && test[0] {
 		success, err = ExecSQLFile("sql/tests.sql")
-		if err != nil {
+		if err != nil || !success {
 			return false, err
-		}
-		if !success {
-			return false, nil
 		}
 	}
 

@@ -24,15 +24,18 @@ CREATE TYPE submission_status AS ENUM (
 );
 
 -- CREATE TYPE conn_type AS ENUM (
+--   'NONE',
 --   'TCP',
+--   'TCP_TLS',
 --   'HTTP',
+--   'HTTPS'
 -- );
 
 CREATE TABLE IF NOT EXISTS configs (
   key TEXT NOT NULL,
-  type TEXT NOT NULL DEFAULT 'text',
+  type TEXT NOT NULL DEFAULT 'string',
   value TEXT NOT NULL DEFAULT '',
-  description TEXT,
+  description TEXT NOT NULL DEFAULT '',
   PRIMARY KEY(key)
 );
 
@@ -56,8 +59,8 @@ CREATE TABLE IF NOT EXISTS users (
 
   score INTEGER NOT NULL DEFAULT 0,
   role user_role NOT NULL,
-
   team_id INTEGER,
+
   country VARCHAR(3),
 
   FOREIGN KEY(team_id) REFERENCES teams(id),
@@ -105,7 +108,7 @@ CREATE TABLE IF NOT EXISTS challenges (
 
   host TEXT NOT NULL DEFAULT '',
   port INTEGER NOT NULL CHECK (port >= 0 AND port <= 65535) DEFAULT 0,
-  -- conn_type conn_type NOT NULL DEFAULT 'TCP',
+  -- conn_type conn_type NOT NULL DEFAULT 'NONE',
 
   FOREIGN KEY(category) REFERENCES categories(name),
   PRIMARY KEY(id)

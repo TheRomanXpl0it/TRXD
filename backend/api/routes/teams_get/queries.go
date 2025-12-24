@@ -29,6 +29,53 @@ type TeamData struct {
 	Badges  []sqlc.GetBadgesFromTeamRow `json:"badges"`
 }
 
+func getMembers(ctx context.Context, teamID int32, admin bool) ([]sqlc.GetTeamMembersRow, error) {
+	allMembers, err := db.Sql.GetTeamMembers(ctx, sql.NullInt32{Int32: teamID, Valid: true})
+	if err != nil {
+		return nil, err
+	}
+
+	members := make([]sqlc.GetTeamMembersRow, 0)
+	for _, member := range allMembers {
+		if !admin && utils.In(member.Role, []sqlc.UserRole{sqlc.UserRoleAuthor, sqlc.UserRoleAdmin}) {
+			continue
+		}
+
+		members = append(members, member)
+	}
+
+	return members, nil
+}
+
+func getSolves(ctx context.Context, teamID int32, userMode bool) ([]Solve, error) {
+	solvesRaw, err := db.Sql.GetTeamSolves(ctx, teamID)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return nil, err
+		}
+	}
+
+	solves := make([]Solve, 0, len(solvesRaw))
+	for _, solveRaw := range solvesRaw {
+		solve := Solve{
+			ID:         solveRaw.ID,
+			Name:       solveRaw.Name,
+			Category:   solveRaw.Category,
+			Points:     solveRaw.Points,
+			FirstBlood: solveRaw.FirstBlood,
+			Timestamp:  solveRaw.Timestamp,
+		}
+
+		if !userMode {
+			solve.UserID = solveRaw.UserID
+		}
+
+		solves = append(solves, solve)
+	}
+
+	return solves, nil
+}
+
 func GetTeam(ctx context.Context, teamID int32, admin bool) (*TeamData, error) {
 	teamData := TeamData{}
 
@@ -54,39 +101,16 @@ func GetTeam(ctx context.Context, teamID int32, admin bool) (*TeamData, error) {
 	}
 
 	if !userMode {
-		members, err := db.Sql.GetTeamMembers(ctx, sql.NullInt32{Int32: teamID, Valid: true})
+		members, err := getMembers(ctx, teamID, admin)
 		if err != nil {
 			return nil, err
 		}
-		teamData.Members = make([]sqlc.GetTeamMembersRow, 0)
-		for _, member := range members {
-			if !admin && utils.In(member.Role, []sqlc.UserRole{sqlc.UserRoleAuthor, sqlc.UserRoleAdmin}) {
-				continue
-			}
-			teamData.Members = append(teamData.Members, member)
-		}
+		teamData.Members = members
 	}
 
-	solvesRaw, err := db.Sql.GetTeamSolves(ctx, teamID)
+	solves, err := getSolves(ctx, teamID, userMode)
 	if err != nil {
-		if err != sql.ErrNoRows {
-			return nil, err
-		}
-	}
-	solves := make([]Solve, 0, len(solvesRaw))
-	for _, solveRaw := range solvesRaw {
-		solve := Solve{
-			ID:         solveRaw.ID,
-			Name:       solveRaw.Name,
-			Category:   solveRaw.Category,
-			Points:     solveRaw.Points,
-			FirstBlood: solveRaw.FirstBlood,
-			Timestamp:  solveRaw.Timestamp,
-		}
-		if !userMode {
-			solve.UserID = solveRaw.UserID
-		}
-		solves = append(solves, solve)
+		return nil, err
 	}
 	teamData.Solves = solves
 

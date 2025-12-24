@@ -220,10 +220,10 @@ type Challenge struct {
 }
 
 type Config struct {
-	Key         string         `json:"key"`
-	Type        string         `json:"type"`
-	Value       string         `json:"value"`
-	Description sql.NullString `json:"description"`
+	Key         string `json:"key"`
+	Type        string `json:"type"`
+	Value       string `json:"value"`
+	Description string `json:"description"`
 }
 
 type DockerConfig struct {

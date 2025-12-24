@@ -18,6 +18,37 @@ import (
 	"github.com/tde-nico/log"
 )
 
+type Data struct {
+	ChallID *int32 `form:"chall_id" validate:"required,id"`
+}
+
+func extractValidatedAttachments(c *fiber.Ctx, multipartForm *multipart.Form, data Data) ([]string, []*multipart.FileHeader, error) {
+	if len(multipartForm.File) == 0 {
+		return nil, nil, utils.Error(c, fiber.StatusBadRequest, consts.MissingRequiredFields)
+	}
+
+	valid, err := validator.Struct(c, data)
+	if err != nil || !valid {
+		return nil, nil, err
+	}
+
+	names := make([]string, 0)
+	headers := make([]*multipart.FileHeader, 0)
+	for _, files := range multipartForm.File {
+		for _, file := range files {
+			names = append(names, file.Filename)
+			headers = append(headers, file)
+		}
+	}
+
+	valid, err = validator.Var(c, names, "attachments")
+	if err != nil || !valid {
+		return nil, nil, err
+	}
+
+	return names, headers, nil
+}
+
 func saveFiles(c *fiber.Ctx, challID int32, headers []*multipart.FileHeader) ([]string, error) {
 	dir := fmt.Sprintf("attachments/%d/", challID)
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
@@ -80,34 +111,14 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidMultipartForm)
 	}
 
-	var data struct {
-		ChallID *int32 `form:"chall_id" validate:"required,id"`
-	}
+	var data Data
 	decoder := form.NewDecoder()
 	if err = decoder.Decode(&data, multipartForm.Value); err != nil {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidFormData)
 	}
 
-	if len(multipartForm.File) == 0 {
-		return utils.Error(c, fiber.StatusBadRequest, consts.MissingRequiredFields)
-	}
-
-	valid, err := validator.Struct(c, data)
-	if err != nil || !valid {
-		return err
-	}
-
-	names := make([]string, 0)
-	headers := make([]*multipart.FileHeader, 0)
-	for _, files := range multipartForm.File {
-		for _, file := range files {
-			names = append(names, file.Filename)
-			headers = append(headers, file)
-		}
-	}
-
-	valid, err = validator.Var(c, names, "attachments")
-	if err != nil || !valid {
+	names, headers, err := extractValidatedAttachments(c, multipartForm, data)
+	if err != nil || names == nil || headers == nil {
 		return err
 	}
 

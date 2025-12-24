@@ -28,3 +28,6 @@ lint:
 	@gocyclo -ignore "sqlc|_test|test_" -over 20 .
 	@misspell -error .
 	@golangci-lint run
+
+cyclo:
+	@gocyclo -ignore "sqlc|_test|test_" -top 15 .
