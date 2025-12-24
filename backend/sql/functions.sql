@@ -52,7 +52,7 @@ BEGIN
 
   IF hash_domain THEN
     len := CAST((SELECT value FROM configs WHERE key = 'hash-len') AS INT);
-    hash := encode(gen_random_bytes(len/2),'hex');
+    hash := SUBSTRING(encode(gen_random_bytes((len+1)/2),'hex'), 0, len+1);
     host := hash || '.' || host;
   ELSE
     port := get_random_available_port();

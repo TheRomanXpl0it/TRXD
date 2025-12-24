@@ -59,9 +59,9 @@ func BroadcastFirstBlood(ctx context.Context, challenge *sqlc.Challenge, uid int
 	}
 
 	// TODO: not hardcoded format (maybe into a config)
-	challengeName := strings.ReplaceAll(challenge.Name, "@", "@\u200b")
-	teamName := strings.ReplaceAll(team.Name, "@", "@\u200b")
-	msg := fmt.Sprintf("First blood for **%s** goes to **%s**! 🩸", challengeName, teamName)
+	challengeName := strings.ReplaceAll(challenge.Name, "`", "'")
+	teamName := strings.ReplaceAll(team.Name, "`", "'")
+	msg := fmt.Sprintf("First blood for `%s` goes to `%s`! 🩸", challengeName, teamName)
 	body := map[string]string{"content": msg}
 
 	if err := BroadcastWebhook(conf, body); err != nil {

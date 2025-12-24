@@ -21,8 +21,32 @@ func TestRoute(t *testing.T) {
 
 	expectedPlayer := []JSON{
 		{
-			"attachments": []interface{}{},
-			"authors": []interface{}{
+			"attachments": []string{},
+			"authors": []string{
+				"author2",
+			},
+			"category":    "cat-1",
+			"description": "TEST chall-4 DESC",
+			"difficulty":  "Insane",
+			"first_blood": false,
+			"hidden":      false,
+			"host":        "",
+			"instance":    true,
+			"max_points":  500,
+			"name":        "chall-4",
+			"points":      498,
+			"port":        0,
+			"score_type":  "Dynamic",
+			"solved":      false,
+			"solves":      2,
+			"tags": []string{
+				"tag-4",
+			},
+			"timeout": 0,
+		},
+		{
+			"attachments": []string{},
+			"authors": []string{
 				"author1",
 				"author2",
 			},
@@ -40,15 +64,15 @@ func TestRoute(t *testing.T) {
 			"score_type":  "Dynamic",
 			"solved":      false,
 			"solves":      1,
-			"tags": []interface{}{
+			"tags": []string{
 				"tag-1",
 				"test-tag",
 			},
 			"timeout": 0,
 		},
 		{
-			"attachments": []interface{}{},
-			"authors": []interface{}{
+			"attachments": []string{},
+			"authors": []string{
 				"author1",
 				"author2",
 				"author3",
@@ -67,14 +91,14 @@ func TestRoute(t *testing.T) {
 			"score_type":  "Dynamic",
 			"solved":      false,
 			"solves":      1,
-			"tags": []interface{}{
+			"tags": []string{
 				"tag-2",
 			},
 			"timeout": 0,
 		},
 		{
-			"attachments": []interface{}{},
-			"authors": []interface{}{
+			"attachments": []string{},
+			"authors": []string{
 				"author1",
 			},
 			"category":    "cat-1",
@@ -91,32 +115,8 @@ func TestRoute(t *testing.T) {
 			"score_type":  "Dynamic",
 			"solved":      false,
 			"solves":      1,
-			"tags": []interface{}{
+			"tags": []string{
 				"tag-3",
-			},
-			"timeout": 0,
-		},
-		{
-			"attachments": []interface{}{},
-			"authors": []interface{}{
-				"author2",
-			},
-			"category":    "cat-1",
-			"description": "TEST chall-4 DESC",
-			"difficulty":  "Insane",
-			"first_blood": false,
-			"hidden":      false,
-			"host":        "",
-			"instance":    true,
-			"max_points":  500,
-			"name":        "chall-4",
-			"points":      498,
-			"port":        0,
-			"score_type":  "Dynamic",
-			"solved":      false,
-			"solves":      2,
-			"tags": []interface{}{
-				"tag-4",
 			},
 			"timeout": 0,
 		},
@@ -142,8 +142,31 @@ func TestRoute(t *testing.T) {
 
 	expectedAuthor := []JSON{
 		{
-			"attachments": []interface{}{},
-			"authors": []interface{}{
+			"attachments": []string{},
+			"authors": []string{
+				"author2",
+			},
+			"category":    "cat-1",
+			"description": "TEST chall-4 DESC",
+			"difficulty":  "Insane",
+			"first_blood": true,
+			"hidden":      false,
+			"host":        "",
+			"instance":    true,
+			"max_points":  500,
+			"name":        "chall-4",
+			"points":      498,
+			"port":        0,
+			"score_type":  "Dynamic",
+			"solved":      true,
+			"solves":      2,
+			"tags": []string{
+				"tag-4",
+			},
+		},
+		{
+			"attachments": []string{},
+			"authors": []string{
 				"author1",
 				"author2",
 			},
@@ -161,14 +184,14 @@ func TestRoute(t *testing.T) {
 			"score_type":  "Dynamic",
 			"solved":      true,
 			"solves":      1,
-			"tags": []interface{}{
+			"tags": []string{
 				"tag-1",
 				"test-tag",
 			},
 		},
 		{
-			"attachments": []interface{}{},
-			"authors": []interface{}{
+			"attachments": []string{},
+			"authors": []string{
 				"author1",
 				"author2",
 				"author3",
@@ -187,13 +210,13 @@ func TestRoute(t *testing.T) {
 			"score_type":  "Dynamic",
 			"solved":      false,
 			"solves":      1,
-			"tags": []interface{}{
+			"tags": []string{
 				"tag-2",
 			},
 		},
 		{
-			"attachments": []interface{}{},
-			"authors": []interface{}{
+			"attachments": []string{},
+			"authors": []string{
 				"author1",
 			},
 			"category":    "cat-1",
@@ -210,36 +233,13 @@ func TestRoute(t *testing.T) {
 			"score_type":  "Dynamic",
 			"solved":      true,
 			"solves":      1,
-			"tags": []interface{}{
+			"tags": []string{
 				"tag-3",
 			},
 		},
 		{
-			"attachments": []interface{}{},
-			"authors": []interface{}{
-				"author2",
-			},
-			"category":    "cat-1",
-			"description": "TEST chall-4 DESC",
-			"difficulty":  "Insane",
-			"first_blood": true,
-			"hidden":      false,
-			"host":        "",
-			"instance":    true,
-			"max_points":  500,
-			"name":        "chall-4",
-			"points":      498,
-			"port":        0,
-			"score_type":  "Dynamic",
-			"solved":      true,
-			"solves":      2,
-			"tags": []interface{}{
-				"tag-4",
-			},
-		},
-		{
-			"attachments": []interface{}{},
-			"authors": []interface{}{
+			"attachments": []string{},
+			"authors": []string{
 				"author3",
 			},
 			"category":    "cat-2",
@@ -256,7 +256,7 @@ func TestRoute(t *testing.T) {
 			"score_type":  "Static",
 			"solved":      false,
 			"solves":      0,
-			"tags": []interface{}{
+			"tags": []string{
 				"tag-5",
 			},
 		},
@@ -282,8 +282,14 @@ func TestRoute(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to parse config value: %v", err)
 	}
-	if timeout, ok := body.([]interface{})[2].(map[string]interface{})["timeout"]; ok &&
-		(int(timeout.(float64)) < lifetime-100 || int(timeout.(float64)) > lifetime) {
+	timeout := 0
+	for _, chall := range body.([]interface{}) {
+		if int32(chall.(map[string]interface{})["id"].(float64)) == challID {
+			timeout = int(chall.(map[string]interface{})["timeout"].(float64))
+			break
+		}
+	}
+	if timeout < lifetime-100 || timeout > lifetime {
 		t.Fatalf("Expected timeout to be around %d, got %v", lifetime, timeout)
 	}
 	test_utils.DeleteKeys(body, "id", "timeout")

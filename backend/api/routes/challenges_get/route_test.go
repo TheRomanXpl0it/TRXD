@@ -33,7 +33,13 @@ func TestRoute(t *testing.T) {
 	if body == nil {
 		t.Fatal("Expected body to not be nil")
 	}
-	id := int32(body.([]interface{})[0].(map[string]interface{})["id"].(float64))
+	var id int32
+	for _, chall := range body.([]interface{}) {
+		if chall.(map[string]interface{})["name"] == "chall-1" {
+			id = int32(chall.(map[string]interface{})["id"].(float64))
+			break
+		}
+	}
 
 	expectedPlayer := JSON{
 		"solves_list": []JSON{
@@ -121,8 +127,15 @@ func TestRoute(t *testing.T) {
 	if body == nil {
 		t.Fatal("Expected body to not be nil")
 	}
-	id5 := int32(body.([]interface{})[4].(map[string]interface{})["id"].(float64))
-	id3 := int32(body.([]interface{})[2].(map[string]interface{})["id"].(float64))
+	var id3, id5 int32
+	for _, chall := range body.([]interface{}) {
+		switch chall.(map[string]interface{})["name"] {
+		case "chall-3":
+			id3 = int32(chall.(map[string]interface{})["id"].(float64))
+		case "chall-5":
+			id5 = int32(chall.(map[string]interface{})["id"].(float64))
+		}
+	}
 
 	session.Get(fmt.Sprintf("/challenges/%d", id5), nil, http.StatusOK)
 	body = session.Body()

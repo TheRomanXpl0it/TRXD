@@ -34,8 +34,15 @@ func TestRoute(t *testing.T) {
 	if body == nil {
 		t.Fatal("Expected body to not be nil")
 	}
-	idPlayer := int32(body.([]interface{})[0].(map[string]interface{})["id"].(float64))
-	idAdmin := int32(body.([]interface{})[len(body.([]interface{}))-1].(map[string]interface{})["id"].(float64))
+	var idPlayer, idAdmin int32
+	for _, user := range body.([]interface{}) {
+		switch user.(map[string]interface{})["name"] {
+		case "a":
+			idPlayer = int32(user.(map[string]interface{})["id"].(float64))
+		case "admin":
+			idAdmin = int32(user.(map[string]interface{})["id"].(float64))
+		}
+	}
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/register", JSON{"name": "self", "email": "self@test.com", "password": "testpass"}, http.StatusOK)

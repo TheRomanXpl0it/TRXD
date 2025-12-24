@@ -3,6 +3,8 @@ import sys
 import requests
 import threading
 
+url = 'http://localhost:1337/api'
+
 N = int(os.getenv("TEST_WORKERS", 50))
 print(f"Running with {N} threads")
 
@@ -19,20 +21,20 @@ def gen_name():
 user = gen_name()
 email = user + "@test.test"
 s = requests.Session()
-s.get('http://localhost:1337/api/info')
+s.get(f'{url}/info')
 
-r = s.post('http://localhost:1337/api/register', json={
+r = s.post(f'{url}/register', json={
 	"name": user,
 	"email": email,
 	"password": "test1234",
 }, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
 
-r = s.post('http://localhost:1337/api/teams/register', json={
+r = s.post(f'{url}/teams/register', json={
 	"name": "test-team",
 	"password": "test1234",
 }, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
 
-r = s.get('http://localhost:1337/api/challenges')
+r = s.get(f'{url}/challenges')
 challs = r.json()
 for c in challs:
 	if c['name'] == "chall-1":
@@ -49,20 +51,20 @@ lock = threading.Lock()
 def submit(user):
 	email = user + "@test.test"
 	s = requests.Session()
-	s.get('http://localhost:1337/api/info')
+	s.get(f'{url}/info')
 
-	r = s.post('http://localhost:1337/api/register', json={
+	r = s.post(f'{url}/register', json={
 		"name": user,
 		"email": email,
 		"password": "test1234",
 	}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
 
-	r = s.post('http://localhost:1337/api/teams/join', json={
+	r = s.post(f'{url}/teams/join', json={
 		"name": "test-team",
 		"password": "test1234",
 	}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
 
-	r = s.post('http://localhost:1337/api/submissions', json={
+	r = s.post(f'{url}/submissions', json={
 		"chall_id": chall_id,
 		"flag": "flag{test-1}",
 	}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})

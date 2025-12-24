@@ -1,5 +1,6 @@
 import requests
 import os
+import time
 
 webhook_url = os.getenv('DISCORD_WEBHOOK_URL', None)
 if webhook_url is None:
@@ -98,3 +99,7 @@ r = player.post(f'{url}/submissions',
 	}, 
 	headers={"X-Csrf-Token": player.cookies.get('csrf_')})
 assert r.status_code == 200, r.text
+
+time.sleep(6) # Wait for the webhook message to be sent
+
+print("Discord webhook test passed.")

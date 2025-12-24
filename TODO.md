@@ -5,7 +5,6 @@
    - change csrf token name
  - tests:
    - tests with removal of trxd-shared (and fault tolerance)
-   - discord webhook tests in pipeline
    - tg webhook tests in pipeline
    - add tests with a lot of hash named challs (hard cap for networks on nginx?) (try change IPAM to /30 to preserve addrs)
    - integration tests (for generic behaviour)
@@ -31,6 +30,7 @@
  - ~~Improve "Team join" page on smaller screens~~
 
 ## Ideas / Features
+ - rename "hash domain" (not an hash anymore, only rand bytes)
  - put descriptions on configs
  - divide configs by section (secrets, instances, something like this...)
  - dropdown menu for containers (for container instances)
@@ -46,7 +46,6 @@
  - N instance limit per team
  - scoreboard freeze (idea: use a table or a view to take a snapshot of the scoreboard, update it every time someone solves if not in freeze time (or just prefetch and compute if not exists))
  - telegram bot for first bloods (and webhook generalization)
- - hash verifier flag or script
  - login via CTFTime
  - default starting points for challenges as global config
  - kube support
@@ -61,3 +60,4 @@
  - endpoint to store image files (like badges and pfp)
  - flag format validator
  - ingress only challenges (verify if useful)
+ - chall time schedule release

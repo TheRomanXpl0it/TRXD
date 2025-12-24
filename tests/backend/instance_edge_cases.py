@@ -26,11 +26,11 @@ def login(mail, password):
 admin = login('admin@email.com', 'testpass')
 s1 = login('a@a.a', 'testpass')
 
-r = s1.get('http://localhost:1337/api/info')
+r = s1.get(f'{url}/info')
 assert r.status_code == 200
 team_id = r.json()['team_id']
 
-r = s1.get('http://localhost:1337/api/challenges')
+r = s1.get(f'{url}/challenges')
 assert r.status_code == 200
 for chall in r.json():
 	if chall['name'] == "chall-3":

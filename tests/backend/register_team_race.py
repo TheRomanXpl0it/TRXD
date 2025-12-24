@@ -3,6 +3,8 @@ import sys
 import requests
 import threading
 
+url = 'http://localhost:1337/api'
+
 N = int(os.getenv("TEST_WORKERS", 50))
 print(f"Running with {N} threads")
 
@@ -20,9 +22,9 @@ email = user + "@test.test"
 # print(user, email)
 
 s = requests.Session()
-s.get('http://localhost:1337/api/info')
+s.get(f'{url}/info')
 
-r = s.post('http://localhost:1337/api/register', json={
+r = s.post(f'{url}/register', json={
 	"name": user,
 	"email": email,
 	"password": "test1234",
@@ -30,7 +32,7 @@ r = s.post('http://localhost:1337/api/register', json={
 
 if r.status_code == 409:
 	print("User already exists, logging in with existing user.")
-	r = s.post('http://localhost:1337/api/login', json={
+	r = s.post(f'{url}/login', json={
 		"email": email,
 		"password": "test1234",
 	}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
@@ -44,7 +46,7 @@ counter = {
 lock = threading.Lock()
 
 def register_team(name):
-	r = s.post('http://localhost:1337/api/teams/register', json={
+	r = s.post(f'{url}/teams/register', json={
 		"name": name,
 		"password": "testpass",
 	}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})

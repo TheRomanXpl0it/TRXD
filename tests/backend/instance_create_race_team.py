@@ -4,6 +4,8 @@ import requests
 import threading
 from random import randint
 
+url = 'http://localhost:1337/api'
+
 N = int(os.getenv("TEST_WORKERS", 25))
 if N > 25:
 	print("Limiting to 25 threads")
@@ -23,21 +25,21 @@ def gen_name():
 
 
 s = requests.Session()
-s.get('http://localhost:1337/api/info')
+s.get(f'{url}/info')
 
-r = s.post('http://localhost:1337/api/login', json={
+r = s.post(f'{url}/login', json={
 	"email": 'admin@email.com',
 	"password": "testpass",
 }, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
 
-r = s.get('http://localhost:1337/api/challenges')
+r = s.get(f'{url}/challenges')
 challs = r.json()
 for c in challs:
 	if c['name'] == "chall-3":
 		chall_id = c['id']
 		break
 
-r = s.patch('http://localhost:1337/api/challenges',
+r = s.patch(f'{url}/challenges',
 	json={
 		"chall_id": chall_id,
 		"hash_domain": False,
@@ -51,27 +53,27 @@ for i in range(N):
 	user = gen_name()
 	email = user + "@test.test"
 	s = requests.Session()
-	s.get('http://localhost:1337/api/info')
+	s.get(f'{url}/info')
 
-	r = s.post('http://localhost:1337/api/register', json={
+	r = s.post(f'{url}/register', json={
 		"name": user,
 		"email": email,
 		"password": "test1234",
 	}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
 
 	if r.status_code == 200:
-		r = s.post('http://localhost:1337/api/teams/register', json={
+		r = s.post(f'{url}/teams/register', json={
 			"name": "test-team",
 			"password": "test1234",
 		}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
 		if r.status_code != 200:
-			r = s.post('http://localhost:1337/api/teams/join', json={
+			r = s.post(f'{url}/teams/join', json={
 				"name": "test-team",
 				"password": "test1234",
 			}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
 			assert r.status_code == 200, r.text
 	else:
-		r = s.post('http://localhost:1337/api/login', json={
+		r = s.post(f'{url}/login', json={
 			"email": email,
 			"password": "test1234",
 		}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
@@ -88,7 +90,7 @@ lock = threading.Lock()
 
 def instance(i):
 	s = sessions[i]
-	r = s.post('http://localhost:1337/api/instances', json={
+	r = s.post(f'{url}/instances', json={
 		"chall_id": chall_id,
 	}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
 	resp = r.json()
@@ -114,7 +116,7 @@ for thread in threads:
 for key, value in counter.items():
 	print(f"{key}: {value}")
 
-r = sessions[0].delete('http://localhost:1337/api/instances', json={
+r = sessions[0].delete(f'{url}/instances', json={
 	"chall_id": chall_id,
 }, headers={'X-Csrf-Token': sessions[0].cookies.get('csrf_')})
 if r.status_code != 200:

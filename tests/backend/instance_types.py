@@ -21,7 +21,7 @@ s1 = login('a@a.a', 'testpass')
 s2 = login('b@b.b', 'testpass')
 s3 = login('c@c.c', 'testpass')
 
-r = s1.get('http://localhost:1337/api/challenges')
+r = s1.get(f'{url}/challenges')
 assert r.status_code == 200
 for chall in r.json():
 	if chall['name'] == "chall-3":
