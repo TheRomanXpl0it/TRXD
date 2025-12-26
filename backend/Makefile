@@ -14,6 +14,10 @@ HIGH_RED		= \033[91m
 default:
 	@echo "${YELLOW}[Warn] This makefile is not to built, but for testing purposes only.${END}"
 
+sqlc:
+	@sqlc generate
+sql: sqlc
+
 run:
 	@go run . -test-data-WARNING-DO-NOT-USE-IN-PRODUCTION
 	@go run . -t

@@ -42,6 +42,7 @@ services:
 
   adminer:
     image: adminer:5.4.1
+    restart: always
     ports:
       - 8080:8080
     depends_on:

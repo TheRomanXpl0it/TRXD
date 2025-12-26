@@ -712,7 +712,14 @@ SELECT
   LEFT JOIN badges b ON b.team_id = t.id
   GROUP BY t.id, t.name, t.score, t.country
   ORDER BY t.id
+  OFFSET $1
+  LIMIT $2
 `
+
+type GetTeamsPreviewParams struct {
+	Offset int32         `json:"offset"`
+	Limit  sql.NullInt32 `json:"limit"`
+}
 
 type GetTeamsPreviewRow struct {
 	ID      int32          `json:"id"`
@@ -723,8 +730,8 @@ type GetTeamsPreviewRow struct {
 }
 
 // Retrieve all teams
-func (q *Queries) GetTeamsPreview(ctx context.Context) ([]GetTeamsPreviewRow, error) {
-	rows, err := q.query(ctx, q.getTeamsPreviewStmt, getTeamsPreview)
+func (q *Queries) GetTeamsPreview(ctx context.Context, arg GetTeamsPreviewParams) ([]GetTeamsPreviewRow, error) {
+	rows, err := q.query(ctx, q.getTeamsPreviewStmt, getTeamsPreview, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -771,7 +778,14 @@ SELECT
   LEFT JOIN badges b ON b.team_id = t.id
   GROUP BY t.id, t.name, t.score, t.country
   ORDER BY t.score DESC
+  OFFSET $1
+  LIMIT $2
 `
+
+type GetTeamsScoreboardParams struct {
+	Offset int32         `json:"offset"`
+	Limit  sql.NullInt32 `json:"limit"`
+}
 
 type GetTeamsScoreboardRow struct {
 	ID      int32          `json:"id"`
@@ -782,8 +796,8 @@ type GetTeamsScoreboardRow struct {
 }
 
 // Retrieve all teams
-func (q *Queries) GetTeamsScoreboard(ctx context.Context) ([]GetTeamsScoreboardRow, error) {
-	rows, err := q.query(ctx, q.getTeamsScoreboardStmt, getTeamsScoreboard)
+func (q *Queries) GetTeamsScoreboard(ctx context.Context, arg GetTeamsScoreboardParams) ([]GetTeamsScoreboardRow, error) {
+	rows, err := q.query(ctx, q.getTeamsScoreboardStmt, getTeamsScoreboard, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -933,13 +947,23 @@ func (q *Queries) GetUserSolves(ctx context.Context, userID int32) ([]GetUserSol
 	return items, nil
 }
 
-const getUsersPreview = `-- name: GetUsersPreview :many
+const getUsers = `-- name: GetUsers :many
 SELECT id, name, email, role, score, country
   FROM users
+  WHERE $1::BOOLEAN
+    OR role = 'Player'
   ORDER BY id ASC
+  OFFSET $2
+  LIMIT $3
 `
 
-type GetUsersPreviewRow struct {
+type GetUsersParams struct {
+	IsAdmin bool          `json:"is_admin"`
+	Offset  int32         `json:"offset"`
+	Limit   sql.NullInt32 `json:"limit"`
+}
+
+type GetUsersRow struct {
 	ID      int32          `json:"id"`
 	Name    string         `json:"name"`
 	Email   string         `json:"email"`
@@ -949,15 +973,15 @@ type GetUsersPreviewRow struct {
 }
 
 // Retrieve all users
-func (q *Queries) GetUsersPreview(ctx context.Context) ([]GetUsersPreviewRow, error) {
-	rows, err := q.query(ctx, q.getUsersPreviewStmt, getUsersPreview)
+func (q *Queries) GetUsers(ctx context.Context, arg GetUsersParams) ([]GetUsersRow, error) {
+	rows, err := q.query(ctx, q.getUsersStmt, getUsers, arg.IsAdmin, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetUsersPreviewRow
+	var items []GetUsersRow
 	for rows.Next() {
-		var i GetUsersPreviewRow
+		var i GetUsersRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,

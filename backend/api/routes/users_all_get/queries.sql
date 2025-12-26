@@ -1,5 +1,9 @@
--- name: GetUsersPreview :many
+-- name: GetUsers :many
 -- Retrieve all users
 SELECT id, name, email, role, score, country
   FROM users
-  ORDER BY id ASC;
+  WHERE sqlc.arg('is_admin')::BOOLEAN
+    OR role = 'Player'
+  ORDER BY id ASC
+  OFFSET sqlc.arg('offset')
+  LIMIT sqlc.narg('limit');

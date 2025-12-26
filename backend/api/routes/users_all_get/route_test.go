@@ -1,14 +1,21 @@
 package users_all_get_test
 
 import (
+	"fmt"
+	"math"
 	"net/http"
 	"testing"
 	"trxd/api"
 	"trxd/db/sqlc"
+	"trxd/utils/consts"
 	"trxd/utils/test_utils"
 )
 
 type JSON map[string]interface{}
+
+func errorf(val interface{}) JSON {
+	return JSON{"error": val}
+}
 
 func TestMain(m *testing.M) {
 	test_utils.Main(m)
@@ -106,6 +113,25 @@ func TestRoute(t *testing.T) {
 	test_utils.DeleteKeys(body, "id")
 	test_utils.Compare(t, expectedPlayer, body)
 
+	session.Get("/users?start=-1", nil, http.StatusBadRequest)
+	session.CheckResponse(errorf(consts.InvalidParam))
+	session.Get("/users?end=-1", nil, http.StatusBadRequest)
+	session.CheckResponse(errorf(consts.InvalidParam))
+	session.Get(fmt.Sprintf("/users?start=%d", math.MaxInt32+1), nil, http.StatusBadRequest)
+	session.CheckResponse(errorf(consts.InvalidParam))
+	session.Get(fmt.Sprintf("/users?end=%d", math.MaxInt32+1), nil, http.StatusBadRequest)
+	session.CheckResponse(errorf(consts.InvalidParam))
+	session.Get("/users?start=2&end=1", nil, http.StatusBadRequest)
+	session.CheckResponse(errorf(consts.InvalidParam))
+
+	session.Get("/users?start=1&end=3", nil, http.StatusOK)
+	body = session.Body()
+	if body == nil {
+		t.Fatal("Expected body to not be nil")
+	}
+	test_utils.DeleteKeys(body, "id")
+	test_utils.Compare(t, expectedPlayer[1:3], body)
+
 	expectedAdmin := []JSON{
 		{
 			"country": "",
@@ -176,4 +202,12 @@ func TestRoute(t *testing.T) {
 	}
 	test_utils.DeleteKeys(body, "id")
 	test_utils.Compare(t, expectedAdmin, body)
+
+	session.Get("/users?start=1", nil, http.StatusOK)
+	body = session.Body()
+	if body == nil {
+		t.Fatal("Expected body to not be nil")
+	}
+	test_utils.DeleteKeys(body, "id")
+	test_utils.Compare(t, expectedAdmin[1:], body)
 }

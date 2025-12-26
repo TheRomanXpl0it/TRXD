@@ -26,8 +26,8 @@ func FetchContainerByName(ctx context.Context, name string) (string, error) {
 	return summary[0].ID, nil
 }
 
-func FetchNginxID(ctx context.Context) (string, error) {
-	id, err := db.StorageGet(ctx, "nginx-id")
+func FetchProxyID(ctx context.Context) (string, error) {
+	id, err := db.StorageGet(ctx, "proxy-id")
 	if err != nil {
 		return "", err
 	}
@@ -48,7 +48,7 @@ func FetchNginxID(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	err = db.StorageSet(ctx, "nginx-id", containerID)
+	err = db.StorageSet(ctx, "proxy-id", containerID)
 	if err != nil {
 		return "", err
 	}

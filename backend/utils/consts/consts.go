@@ -101,6 +101,7 @@ const (
 	InvalidJSON            = "Invalid JSON format"
 	InvalidMaxCpu          = "Invalid Max CPU, must be a positive 32-bit integer"
 	InvalidMultipartForm   = "Invalid multipart form"
+	InvalidParam           = "Invalid parameter"
 	InvalidTeamCredentials = "Invalid name or password"
 	InvalidTeamID          = "Invalid team ID, must be non negative"
 	InvalidUserID          = "Invalid user ID, must be non negative"

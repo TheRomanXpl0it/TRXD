@@ -1,14 +1,21 @@
 package teams_all_get_test
 
 import (
+	"fmt"
+	"math"
 	"net/http"
 	"testing"
 	"trxd/api"
 	"trxd/db/sqlc"
+	"trxd/utils/consts"
 	"trxd/utils/test_utils"
 )
 
 type JSON map[string]interface{}
+
+func errorf(val interface{}) JSON {
+	return JSON{"error": val}
+}
 
 func TestMain(m *testing.M) {
 	test_utils.Main(m)
@@ -70,4 +77,21 @@ func TestRoute(t *testing.T) {
 	session.Post("/login", JSON{"email": "admin@admin.com", "password": "adminpass"}, http.StatusOK)
 	session.Get("/teams", nil, http.StatusOK)
 	session.CheckResponse(expected)
+
+	session.Get("/teams?start=-1", nil, http.StatusBadRequest)
+	session.CheckResponse(errorf(consts.InvalidParam))
+	session.Get("/teams?end=-1", nil, http.StatusBadRequest)
+	session.CheckResponse(errorf(consts.InvalidParam))
+	session.Get(fmt.Sprintf("/teams?start=%d", math.MaxInt32+1), nil, http.StatusBadRequest)
+	session.CheckResponse(errorf(consts.InvalidParam))
+	session.Get(fmt.Sprintf("/teams?end=%d", math.MaxInt32+1), nil, http.StatusBadRequest)
+	session.CheckResponse(errorf(consts.InvalidParam))
+	session.Get("/teams?start=2&end=1", nil, http.StatusBadRequest)
+	session.CheckResponse(errorf(consts.InvalidParam))
+
+	session.Get("/teams?start=1&end=2", nil, http.StatusOK)
+	session.CheckResponse(expected[1:2])
+
+	session.Get("/teams?start=1", nil, http.StatusOK)
+	session.CheckResponse(expected[1:])
 }

@@ -131,7 +131,7 @@ var testData = []struct {
 		testBody:         JSON{"chall_id": "", "max_cpu": fmt.Sprintf("%d.0", math.MaxInt32+1)},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(consts.InvalidMaxCpu),
-	},
+	}, // TODO: add enum tests
 	{
 		testBody:         JSON{"chall_id": -1, "name": "test"},
 		expectedStatus:   http.StatusBadRequest,

@@ -14,7 +14,6 @@
    - https://doc.traefik.io/traefik/expose/docker/
    - challs SNI traefik
    - role configuraion endpoint
-   - add pagination on "all" GETs
    - mail server (github.com/wneessen/go-mail)
  - utility:
    - better names for binary flags

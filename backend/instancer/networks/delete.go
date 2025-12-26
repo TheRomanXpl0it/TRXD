@@ -27,20 +27,20 @@ func NetworkDelete(ctx context.Context, name string) error {
 		return nil
 	}
 
-	nginxID, err := containers.FetchNginxID(ctx)
+	proxyID, err := containers.FetchProxyID(ctx)
 	if err != nil {
 		if !strings.HasPrefix(err.Error(), "container not found") {
 			return err
 		}
-		nginxID = ""
+		proxyID = ""
 	}
 
-	if nginxID != "" {
-		err = containers.Cli.NetworkDisconnect(ctx, summary[0].ID, nginxID, true)
+	if proxyID != "" {
+		err = containers.Cli.NetworkDisconnect(ctx, summary[0].ID, proxyID, true)
 		if err != nil {
 			not_found := strings.Contains(err.Error(), "not found")
 			if not_found {
-				err := db.StorageDelete(ctx, "nginx-id")
+				err := db.StorageDelete(ctx, "proxy-id")
 				if err != nil {
 					return err
 				}

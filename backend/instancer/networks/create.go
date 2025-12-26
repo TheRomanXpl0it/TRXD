@@ -11,12 +11,12 @@ import (
 )
 
 func proxyConnect(ctx context.Context, netID string) error {
-	nginxID, err := containers.FetchNginxID(ctx)
+	proxyID, err := containers.FetchProxyID(ctx)
 	if err != nil {
 		return err
 	}
 
-	err = containers.Cli.NetworkConnect(ctx, netID, nginxID, nil)
+	err = containers.Cli.NetworkConnect(ctx, netID, proxyID, nil)
 	if err != nil {
 		if !strings.Contains(err.Error(), "already exists in network") {
 			return err
@@ -69,7 +69,7 @@ func CreateNetwork(ctx context.Context, name string, disableICC bool) (string, e
 			return "", err
 		}
 
-		err := db.StorageDelete(ctx, "nginx-id")
+		err := db.StorageDelete(ctx, "proxy-id")
 		if err != nil {
 			return "", err
 		}

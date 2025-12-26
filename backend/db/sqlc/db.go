@@ -144,8 +144,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getUserSolvesStmt, err = db.PrepareContext(ctx, getUserSolves); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserSolves: %w", err)
 	}
-	if q.getUsersPreviewStmt, err = db.PrepareContext(ctx, getUsersPreview); err != nil {
-		return nil, fmt.Errorf("error preparing query GetUsersPreview: %w", err)
+	if q.getUsersStmt, err = db.PrepareContext(ctx, getUsers); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUsers: %w", err)
 	}
 	if q.registerTeamStmt, err = db.PrepareContext(ctx, registerTeam); err != nil {
 		return nil, fmt.Errorf("error preparing query RegisterTeam: %w", err)
@@ -394,9 +394,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getUserSolvesStmt: %w", cerr)
 		}
 	}
-	if q.getUsersPreviewStmt != nil {
-		if cerr := q.getUsersPreviewStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getUsersPreviewStmt: %w", cerr)
+	if q.getUsersStmt != nil {
+		if cerr := q.getUsersStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUsersStmt: %w", cerr)
 		}
 	}
 	if q.registerTeamStmt != nil {
@@ -548,7 +548,7 @@ type Queries struct {
 	getUserByIDStmt              *sql.Stmt
 	getUserByNameStmt            *sql.Stmt
 	getUserSolvesStmt            *sql.Stmt
-	getUsersPreviewStmt          *sql.Stmt
+	getUsersStmt                 *sql.Stmt
 	registerTeamStmt             *sql.Stmt
 	registerUserStmt             *sql.Stmt
 	resetTeamPasswordStmt        *sql.Stmt
@@ -609,7 +609,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getUserByIDStmt:              q.getUserByIDStmt,
 		getUserByNameStmt:            q.getUserByNameStmt,
 		getUserSolvesStmt:            q.getUserSolvesStmt,
-		getUsersPreviewStmt:          q.getUsersPreviewStmt,
+		getUsersStmt:                 q.getUsersStmt,
 		registerTeamStmt:             q.registerTeamStmt,
 		registerUserStmt:             q.registerUserStmt,
 		resetTeamPasswordStmt:        q.resetTeamPasswordStmt,

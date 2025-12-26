@@ -17,4 +17,6 @@ SELECT
   FROM teams t
   LEFT JOIN badges b ON b.team_id = t.id
   GROUP BY t.id, t.name, t.score, t.country
-  ORDER BY t.id;
+  ORDER BY t.id
+  OFFSET sqlc.arg('offset')
+  LIMIT sqlc.narg('limit');

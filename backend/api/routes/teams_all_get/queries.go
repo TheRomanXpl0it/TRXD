@@ -2,8 +2,10 @@ package teams_all_get
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"trxd/db"
+	"trxd/db/sqlc"
 )
 
 type TeamData struct {
@@ -14,8 +16,11 @@ type TeamData struct {
 	Badges  json.RawMessage `json:"badges"`
 }
 
-func GetTeams(ctx context.Context) ([]*TeamData, error) {
-	teams, err := db.Sql.GetTeamsPreview(ctx)
+func GetTeams(ctx context.Context, start int32, end int32) ([]*TeamData, error) {
+	teams, err := db.Sql.GetTeamsPreview(ctx, sqlc.GetTeamsPreviewParams{
+		Offset: start,
+		Limit:  sql.NullInt32{Int32: end - start, Valid: end != 0},
+	})
 	if err != nil {
 		return nil, err
 	}

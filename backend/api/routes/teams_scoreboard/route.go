@@ -1,6 +1,7 @@
 package teams_scoreboard
 
 import (
+	"math"
 	"trxd/utils"
 	"trxd/utils/consts"
 
@@ -8,7 +9,21 @@ import (
 )
 
 func Route(c *fiber.Ctx) error {
-	teamsData, err := GetTeamScoreboard(c.Context())
+	start := c.QueryInt("start", 0)
+	if start < 0 || start > math.MaxInt32 {
+		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidParam)
+	}
+
+	end := c.QueryInt("end", 0)
+	if end < 0 || end > math.MaxInt32 {
+		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidParam)
+	}
+
+	if end != 0 && end <= start {
+		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidParam)
+	}
+
+	teamsData, err := GetTeamScoreboard(c.Context(), int32(start), int32(end))
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
 	}
