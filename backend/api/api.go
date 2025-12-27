@@ -119,6 +119,7 @@ func SetupFeatures(app *fiber.App) {
 	app.Use(compress.New())
 
 	app.Use(csrf.New(csrf.Config{
+		KeyLookup:         "header:X-CSRF-Token",
 		CookieSameSite:    fiber.CookieSameSiteLaxMode,
 		CookieSessionOnly: true,
 		Expiration:        1 * time.Hour,

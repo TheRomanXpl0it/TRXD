@@ -1,8 +1,5 @@
 # TODO
  - resolve TODOs left into the code
- - convention:
-   - change name of challs, network and so on, with $PROJECT_NAME prefix
-   - change csrf token name
  - tests:
    - tests with removal of trxd-shared (and fault tolerance)
    - tg webhook tests in pipeline

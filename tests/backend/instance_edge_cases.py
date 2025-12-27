@@ -19,7 +19,7 @@ def login(mail, password):
 	r = s.post(f'{url}/login', json={
 		"email": mail,
 		"password": password,
-	}, headers={"X-Csrf-Token": s.cookies.get('csrf_')})
+	}, headers={"X-CSRF-Token": s.cookies.get('csrf_')})
 	assert r.status_code == 200, r.text
 	return s
 
@@ -42,7 +42,7 @@ def update_config(session, key, value):
 	r = session.patch(f'{url}/configs', json={
 		"key": key,
 		"value": value,
-	}, headers={"X-Csrf-Token": session.cookies.get('csrf_')})
+	}, headers={"X-CSRF-Token": session.cookies.get('csrf_')})
 	assert r.status_code == 200, r.text
 
 def update_challenge(session, chall_id, hash_domain=None, image=None, compose=None):
@@ -54,13 +54,13 @@ def update_challenge(session, chall_id, hash_domain=None, image=None, compose=No
 	if compose is not None:
 		fields['compose'] = compose
 	r = session.patch(f'{url}/challenges', json=fields,
-		headers={'X-Csrf-Token': session.cookies.get('csrf_')})
+		headers={'X-CSRF-Token': session.cookies.get('csrf_')})
 	assert r.status_code == 200, r.text
 
 def spawn_instance(session, chall_id):
 	r = session.post(f'{url}/instances', json={
 		"chall_id": chall_id,
-	}, headers={"X-Csrf-Token": session.cookies.get('csrf_')})
+	}, headers={"X-CSRF-Token": session.cookies.get('csrf_')})
 	return r
 
 def spawn_good_instance(session, chall_id):
@@ -90,7 +90,7 @@ def fail_connection(url):
 def kill_instance(session, chall_id):
 	r = session.delete(f'{url}/instances', json={
 		"chall_id": chall_id,
-	}, headers={"X-Csrf-Token": session.cookies.get('csrf_')})
+	}, headers={"X-CSRF-Token": session.cookies.get('csrf_')})
 	return r
 
 def kill_good_instance(session, chall_id):

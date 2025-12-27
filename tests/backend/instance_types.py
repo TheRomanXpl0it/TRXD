@@ -12,7 +12,7 @@ def login(mail, password):
 	r = s.post(f'{url}/login', json={
 		"email": mail,
 		"password": password,
-	}, headers={"X-Csrf-Token": s.cookies.get('csrf_')})
+	}, headers={"X-CSRF-Token": s.cookies.get('csrf_')})
 	assert r.status_code == 200, r.text
 	return s
 
@@ -35,7 +35,7 @@ def update_challenge(session, chall_id, hash_domain):
 		json={
 			"chall_id": chall_id,
 			"hash_domain": hash_domain,
-		}, headers={'X-Csrf-Token': session.cookies.get('csrf_'),})
+		}, headers={'X-CSRF-Token': session.cookies.get('csrf_'),})
 	assert r.status_code == 200, r.text
 
 update_challenge(admin, chall_id_3, False)
@@ -45,13 +45,13 @@ update_challenge(admin, chall_id_4, False)
 def spawn_instance(session, chall_id):
 	r = session.post(f'{url}/instances', json={
 		"chall_id": chall_id,
-	}, headers={"X-Csrf-Token": session.cookies.get('csrf_')})
+	}, headers={"X-CSRF-Token": session.cookies.get('csrf_')})
 	return r
 
 def kill_instance(session, chall_id):
 	r = session.delete(f'{url}/instances', json={
 		"chall_id": chall_id,
-	}, headers={"X-Csrf-Token": session.cookies.get('csrf_')})
+	}, headers={"X-CSRF-Token": session.cookies.get('csrf_')})
 	assert r.status_code == 200, r.text
 
 def format_request(r: requests.Response, hash_domain):

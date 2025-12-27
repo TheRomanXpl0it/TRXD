@@ -30,7 +30,7 @@ s.get(f'{url}/info')
 r = s.post(f'{url}/login', json={
 	"email": 'admin@email.com',
 	"password": "testpass",
-}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
+}, headers={'X-CSRF-Token': s.cookies.get('csrf_')})
 
 r = s.get(f'{url}/challenges')
 challs = r.json()
@@ -44,7 +44,7 @@ r = s.patch(f'{url}/challenges',
 		"chall_id": chall_id,
 		"hash_domain": False,
 	},
-	headers={'X-Csrf-Token': s.cookies.get('csrf_')},
+	headers={'X-CSRF-Token': s.cookies.get('csrf_')},
 )
 
 
@@ -59,24 +59,24 @@ for i in range(N):
 		"name": user,
 		"email": email,
 		"password": "test1234",
-	}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
+	}, headers={'X-CSRF-Token': s.cookies.get('csrf_')})
 
 	if r.status_code == 200:
 		r = s.post(f'{url}/teams/register', json={
 			"name": "test-team",
 			"password": "test1234",
-		}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
+		}, headers={'X-CSRF-Token': s.cookies.get('csrf_')})
 		if r.status_code != 200:
 			r = s.post(f'{url}/teams/join', json={
 				"name": "test-team",
 				"password": "test1234",
-			}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
+			}, headers={'X-CSRF-Token': s.cookies.get('csrf_')})
 			assert r.status_code == 200, r.text
 	else:
 		r = s.post(f'{url}/login', json={
 			"email": email,
 			"password": "test1234",
-		}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
+		}, headers={'X-CSRF-Token': s.cookies.get('csrf_')})
 
 	sessions[i] = s
 
@@ -92,7 +92,7 @@ def instance(i):
 	s = sessions[i]
 	r = s.post(f'{url}/instances', json={
 		"chall_id": chall_id,
-	}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
+	}, headers={'X-CSRF-Token': s.cookies.get('csrf_')})
 	resp = r.json()
 
 	with lock:
@@ -118,7 +118,7 @@ for key, value in counter.items():
 
 r = sessions[0].delete(f'{url}/instances', json={
 	"chall_id": chall_id,
-}, headers={'X-Csrf-Token': sessions[0].cookies.get('csrf_')})
+}, headers={'X-CSRF-Token': sessions[0].cookies.get('csrf_')})
 if r.status_code != 200:
 	print("Error", r.text)
 	sys.exit(1)

@@ -50,16 +50,16 @@ class AdminAPI:
         return token or ""
 
     def post_json(self, path: str, data: dict) -> requests.Response:
-        headers = {"Content-Type": "application/json", "X-Csrf-Token": self._csrf()}
+        headers = {"Content-Type": "application/json", "X-CSRF-Token": self._csrf()}
         return self.sess.post(self.base_url + path, headers=headers, json=data)
 
     def patch_json(self, path: str, data: dict) -> requests.Response:
-        headers = {"Content-Type": "application/json", "X-Csrf-Token": self._csrf()}
+        headers = {"Content-Type": "application/json", "X-CSRF-Token": self._csrf()}
         return self.sess.patch(self.base_url + path, headers=headers, json=data)
 
     def patch_multipart(self, path: str, fields: dict) -> requests.Response:
         enc = MultipartEncoder(fields=fields)
-        headers = {"Content-Type": enc.content_type, "X-Csrf-Token": self._csrf()}
+        headers = {"Content-Type": enc.content_type, "X-CSRF-Token": self._csrf()}
         return self.sess.patch(self.base_url + path, headers=headers, data=enc)
 
     def get(self, path: str) -> requests.Response:
@@ -207,7 +207,7 @@ class TeamUser(HttpUser):
         self.password = rand_str("pass")
 
         csrf = get_csrf(self.client)
-        headers = {"Content-Type": "application/json", "X-Csrf-Token": csrf}
+        headers = {"Content-Type": "application/json", "X-CSRF-Token": csrf}
         r = self.client.post(
             "/api/register",
             json={"name": self.name, "email": self.email, "password": self.password},
@@ -222,7 +222,7 @@ class TeamUser(HttpUser):
         team_name = rand_str("team")
         team_pass = rand_str("tpass")
         csrf = get_csrf(self.client)
-        headers = {"Content-Type": "application/json", "X-Csrf-Token": csrf}
+        headers = {"Content-Type": "application/json", "X-CSRF-Token": csrf}
         tr = self.client.post(
             "/api/teams/register",
             json={"name": team_name, "password": team_pass},
@@ -254,7 +254,7 @@ class TeamUser(HttpUser):
 
     def create_instance(self, chall_id: int) -> Optional[Tuple[str, Optional[int]]]:
         csrf = get_csrf(self.client)
-        headers = {"Content-Type": "application/json", "X-Csrf-Token": csrf}
+        headers = {"Content-Type": "application/json", "X-CSRF-Token": csrf}
         r = self.client.post(
             "/api/instances",
             json={"chall_id": chall_id},
@@ -271,7 +271,7 @@ class TeamUser(HttpUser):
 
     def delete_instance(self, chall_id: int) -> bool:
         csrf = get_csrf(self.client)
-        headers = {"Content-Type": "application/json", "X-Csrf-Token": csrf}
+        headers = {"Content-Type": "application/json", "X-CSRF-Token": csrf}
         r = self.client.delete(
             "/api/instances",
             json={"chall_id": chall_id},

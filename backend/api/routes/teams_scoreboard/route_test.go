@@ -81,11 +81,13 @@ func TestRoute(t *testing.T) {
 	if body == nil {
 		t.Fatal("Expected body to not be nil")
 	}
-	var challID1, challID3, challID4 int32
+	var challID1, challID2, challID3, challID4 int32
 	for _, chall := range body.([]interface{}) {
 		switch chall.(map[string]interface{})["name"] {
 		case "chall-1":
 			challID1 = int32(chall.(map[string]interface{})["id"].(float64))
+		case "chall-2":
+			challID2 = int32(chall.(map[string]interface{})["id"].(float64))
 		case "chall-3":
 			challID3 = int32(chall.(map[string]interface{})["id"].(float64))
 		case "chall-4":
@@ -134,6 +136,106 @@ func TestRoute(t *testing.T) {
 			"score":   992,
 		},
 	}
+	session.Get("/scoreboard", nil, http.StatusOK)
+	session.CheckResponse(expected)
+
+	session.Post("/submissions", JSON{"chall_id": challID2, "flag": "flag{test-2}"}, http.StatusOK)
+	expected = []JSON{
+		{
+			"badges": []JSON{
+				{
+					"description": "Completed all cat-1 challenges",
+					"name":        "cat-1",
+				},
+				{
+					"description": "Completed all cat-2 challenges",
+					"name":        "cat-2",
+				},
+			},
+			"country": "",
+			"id":      C.ID,
+			"name":    "C",
+			"score":   1986,
+		},
+		{
+			"badges": []JSON{
+				{
+					"description": "Completed all cat-1 challenges",
+					"name":        "cat-1",
+				},
+			},
+			"country": "",
+			"id":      A.ID,
+			"name":    "A",
+			"score":   1488,
+		},
+		{
+			"badges": []JSON{
+				{
+					"description": "Completed all cat-2 challenges",
+					"name":        "cat-2",
+				},
+			},
+			"country": "",
+			"id":      B.ID,
+			"name":    "B",
+			"score":   990,
+		},
+	}
+	session.Get("/scoreboard", nil, http.StatusOK)
+	session.CheckResponse(expected)
+
+	session = test_utils.NewApiTestSession(t, app)
+	session.Post("/login", JSON{"email": "a@a.a", "password": "testpass"}, http.StatusOK)
+	session.Post("/submissions", JSON{"chall_id": challID2, "flag": "flag{test-2}"}, http.StatusOK)
+	expected = []JSON{
+		{
+			"badges": []JSON{
+				{
+					"description": "Completed all cat-1 challenges",
+					"name":        "cat-1",
+				},
+				{
+					"description": "Completed all cat-2 challenges",
+					"name":        "cat-2",
+				},
+			},
+			"country": "",
+			"id":      C.ID,
+			"name":    "C",
+			"score":   1980,
+		},
+		{
+			"badges": []JSON{
+				{
+					"description": "Completed all cat-1 challenges",
+					"name":        "cat-1",
+				},
+				{
+					"description": "Completed all cat-2 challenges",
+					"name":        "cat-2",
+				},
+			},
+			"country": "",
+			"id":      A.ID,
+			"name":    "A",
+			"score":   1980,
+		},
+		{
+			"badges": []JSON{
+				{
+					"description": "Completed all cat-2 challenges",
+					"name":        "cat-2",
+				},
+			},
+			"country": "",
+			"id":      B.ID,
+			"name":    "B",
+			"score":   984,
+		},
+	}
+	session.Get("/scoreboard", nil, http.StatusOK)
+	session.CheckResponse(expected)
 
 	test_utils.RegisterUser(t, "admin", "admin@test.test", "adminpass", sqlc.UserRoleAdmin)
 	session = test_utils.NewApiTestSession(t, app)

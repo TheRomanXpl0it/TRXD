@@ -27,12 +27,12 @@ r = s.post(f'{url}/register', json={
 	"name": user,
 	"email": email,
 	"password": "test1234",
-}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
+}, headers={'X-CSRF-Token': s.cookies.get('csrf_')})
 
 r = s.post(f'{url}/teams/register', json={
 	"name": "test-team",
 	"password": "test1234",
-}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
+}, headers={'X-CSRF-Token': s.cookies.get('csrf_')})
 
 r = s.get(f'{url}/challenges')
 challs = r.json()
@@ -57,17 +57,17 @@ def submit(user):
 		"name": user,
 		"email": email,
 		"password": "test1234",
-	}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
+	}, headers={'X-CSRF-Token': s.cookies.get('csrf_')})
 
 	r = s.post(f'{url}/teams/join', json={
 		"name": "test-team",
 		"password": "test1234",
-	}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
+	}, headers={'X-CSRF-Token': s.cookies.get('csrf_')})
 
 	r = s.post(f'{url}/submissions', json={
 		"chall_id": chall_id,
 		"flag": "flag{test-1}",
-	}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
+	}, headers={'X-CSRF-Token': s.cookies.get('csrf_')})
 
 	resp = r.json()
 	with lock:

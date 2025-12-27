@@ -90,8 +90,8 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 	// CSRF: mirror cookie into header if caller didn’t set it
 	const csrf = pickCsrfToken();
-	if (csrf && !headers.has('X-Csrf-Token')) {
-		headers.set('X-Csrf-Token', csrf);
+	if (csrf && !headers.has('X-CSRF-Token')) {
+		headers.set('X-CSRF-Token', csrf);
 	}
 
 	const res = await fetch(urlOf(path), {

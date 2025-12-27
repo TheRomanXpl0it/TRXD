@@ -28,14 +28,14 @@ r = s.post(f'{url}/register', json={
 	"name": user,
 	"email": email,
 	"password": "test1234",
-}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
+}, headers={'X-CSRF-Token': s.cookies.get('csrf_')})
 
 if r.status_code == 409:
 	print("User already exists, logging in with existing user.")
 	r = s.post(f'{url}/login', json={
 		"email": email,
 		"password": "test1234",
-	}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
+	}, headers={'X-CSRF-Token': s.cookies.get('csrf_')})
 
 
 counter = {
@@ -49,7 +49,7 @@ def register_team(name):
 	r = s.post(f'{url}/teams/register', json={
 		"name": name,
 		"password": "testpass",
-	}, headers={'X-Csrf-Token': s.cookies.get('csrf_')})
+	}, headers={'X-CSRF-Token': s.cookies.get('csrf_')})
 	if r.status_code != 200:
 		res = r.json()
 	else:

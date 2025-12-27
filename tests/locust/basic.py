@@ -46,7 +46,7 @@ class PlayerUser(HttpUser):
         password = rand_str("pass")
 
         csrf = get_csrf(self.client)
-        headers = {"Content-Type": "application/json", "X-Csrf-Token": csrf}
+        headers = {"Content-Type": "application/json", "X-CSRF-Token": csrf}
         resp = self.client.post(
             "/api/register",
             json={"name": name, "email": email, "password": password},
@@ -68,7 +68,7 @@ class PlayerUser(HttpUser):
         team_name = rand_str("team")
         team_pass = rand_str("tpass")
         csrf = get_csrf(self.client)
-        headers = {"Content-Type": "application/json", "X-Csrf-Token": csrf}
+        headers = {"Content-Type": "application/json", "X-CSRF-Token": csrf}
         resp = self.client.post(
             "/api/teams/register",
             json={"name": team_name, "password": team_pass},
@@ -82,7 +82,7 @@ class PlayerUser(HttpUser):
         if not getattr(self, "_registered", False):
             return
         csrf = get_csrf(self.client)
-        headers = {"Content-Type": "application/json", "X-Csrf-Token": csrf}
+        headers = {"Content-Type": "application/json", "X-CSRF-Token": csrf}
         self.client.post(
             "/api/login",
             json={"email": self._email, "password": self._password},

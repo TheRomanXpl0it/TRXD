@@ -73,9 +73,19 @@ var testData = []struct {
 		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Tags[0]", consts.MaxTagNameLen)),
 	},
 	{
+		testBody:         JSON{"chall_id": "", "type": "aaa"},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(test_utils.Format(consts.OneOfError, "Type", consts.DeployTypesStr)),
+	},
+	{
 		testBody:         JSON{"chall_id": "", "max_points": -1},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(test_utils.Format(consts.MinError, "MaxPoints", 0)),
+	},
+	{
+		testBody:         JSON{"chall_id": "", "score_type": "aaa"},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(test_utils.Format(consts.OneOfError, "ScoreType", consts.ScoreTypesStr)),
 	},
 	{
 		testBody:         JSON{"chall_id": "", "port": consts.MinPort - 1},
@@ -86,6 +96,11 @@ var testData = []struct {
 		testBody:         JSON{"chall_id": "", "port": consts.MaxPort + 1},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(test_utils.Format(consts.MaxError, "Port", consts.MaxPort)),
+	},
+	{
+		testBody:         JSON{"chall_id": "", "conn_type": "aaa"},
+		expectedStatus:   http.StatusBadRequest,
+		expectedResponse: errorf(test_utils.Format(consts.OneOfError, "ConnType", consts.ConnTypesStr)),
 	},
 	{
 		testBody:         JSON{"chall_id": "", "lifetime": -1},
@@ -131,7 +146,7 @@ var testData = []struct {
 		testBody:         JSON{"chall_id": "", "max_cpu": fmt.Sprintf("%d.0", math.MaxInt32+1)},
 		expectedStatus:   http.StatusBadRequest,
 		expectedResponse: errorf(consts.InvalidMaxCpu),
-	}, // TODO: add enum tests
+	},
 	{
 		testBody:         JSON{"chall_id": -1, "name": "test"},
 		expectedStatus:   http.StatusBadRequest,
