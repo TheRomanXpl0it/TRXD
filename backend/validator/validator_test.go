@@ -107,6 +107,14 @@ func TestValidators(t *testing.T) {
 	varTest(t, "challenge_port", consts.MaxPort)
 	varTest(t, "challenge_port", consts.MaxPort+1, test_utils.Format(consts.MaxError, "challenge_port", consts.MaxPort))
 
+	varTest(t, "challenge_conn_type", "", test_utils.Format(consts.OneOfError, "challenge_conn_type", strings.Join(consts.ConnTypesStr, " ")))
+	varTest(t, "challenge_conn_type", sqlc.ConnTypeNONE)
+	varTest(t, "challenge_conn_type", sqlc.ConnTypeTCP)
+	varTest(t, "challenge_conn_type", sqlc.ConnTypeTCPTLS)
+	varTest(t, "challenge_conn_type", sqlc.ConnTypeHTTP)
+	varTest(t, "challenge_conn_type", sqlc.ConnTypeHTTPS)
+	varTest(t, "challenge_conn_type", "aaa", test_utils.Format(consts.OneOfError, "challenge_conn_type", strings.Join(consts.ConnTypesStr, " ")))
+
 	varTest(t, "challenge_lifetime", -1, test_utils.Format(consts.MinError, "challenge_lifetime", 0))
 	varTest(t, "challenge_lifetime", 0)
 	varTest(t, "challenge_lifetime", 1337)
@@ -161,4 +169,11 @@ func TestValidators(t *testing.T) {
 	varTest(t, "user_email", "test@example.com")
 	varTest(t, "user_email", "test+alias@example.com")
 	varTest(t, "user_email", strings.Repeat("a", consts.MaxEmailLen+1), test_utils.Format(consts.MaxError, "user_email", consts.MaxEmailLen))
+
+	varTest(t, "user_role", "", test_utils.Format(consts.OneOfError, "user_role", strings.Join(consts.RolesStr, " ")))
+	varTest(t, "user_role", sqlc.UserRoleSpectator)
+	varTest(t, "user_role", sqlc.UserRolePlayer)
+	varTest(t, "user_role", sqlc.UserRoleAuthor)
+	varTest(t, "user_role", sqlc.UserRoleAdmin)
+	varTest(t, "user_role", "aaa", test_utils.Format(consts.OneOfError, "user_role", strings.Join(consts.RolesStr, " ")))
 }

@@ -29,6 +29,36 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION fn_solve_add(chall_id INTEGER, user_id INTEGER)
+RETURNS VOID AS $$
+BEGIN
+  UPDATE users AS u
+    SET score = score + c.points
+    FROM challenges AS c
+    WHERE c.id = chall_id
+      AND u.id = user_id;
+
+  UPDATE challenges AS c
+    SET solves = solves + 1
+    WHERE c.id = chall_id;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION fn_solve_del(chall_id INTEGER, user_id INTEGER)
+RETURNS VOID AS $$
+BEGIN
+  UPDATE challenges AS c
+    SET solves = solves - 1
+    WHERE c.id = chall_id;
+
+  UPDATE users AS u
+    SET score = score - c.points
+    FROM challenges AS c
+    WHERE c.id = chall_id
+      AND u.id = user_id;
+END;
+$$ LANGUAGE plpgsql;
+
 
 -- tr_points_add_solve
 
@@ -39,16 +69,8 @@ BEGIN
     RETURN NEW;
   END IF;
 
-  UPDATE users
-    SET score = score + challenges.points
-    FROM challenges
-    WHERE challenges.id = NEW.chall_id
-      AND users.id = NEW.user_id;
-
-  UPDATE challenges
-    SET solves = solves + 1
-    WHERE id = NEW.chall_id;
-
+  PERFORM fn_solve_add(NEW.chall_id, NEW.user_id);
+  
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -69,16 +91,8 @@ BEGIN
     RETURN OLD;
   END IF;
 
-  UPDATE challenges
-    SET solves = solves - 1
-    WHERE id = OLD.chall_id;
-
-  UPDATE users
-    SET score = score - challenges.points
-    FROM challenges
-    WHERE challenges.id = OLD.chall_id
-      AND users.id = OLD.user_id;
-
+  PERFORM fn_solve_del(OLD.chall_id, OLD.user_id);
+  
   RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;
@@ -226,3 +240,48 @@ CREATE TRIGGER tr_points_user_del
 BEFORE DELETE ON users
 FOR EACH ROW
 EXECUTE FUNCTION fn_points_user_del();
+
+
+-- tr_points_player_role_change
+
+CREATE OR REPLACE FUNCTION fn_points_player_role_change()
+RETURNS TRIGGER AS $$
+DECLARE
+  chall INTEGER;
+BEGIN
+  FOR chall IN (SELECT chall_id FROM submissions WHERE status='Correct' AND user_id=NEW.id)
+  LOOP
+    PERFORM fn_solve_del(chall, NEW.id);
+  END LOOP;
+  UPDATE users SET score = 0 WHERE id = NEW.id;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tr_points_player_role_change
+AFTER UPDATE ON users
+FOR EACH ROW
+WHEN (OLD.role = 'Player' AND NEW.role != 'Player')
+EXECUTE FUNCTION fn_points_player_role_change();
+
+
+-- tr_points_non_player_role_change
+
+CREATE OR REPLACE FUNCTION fn_points_non_player_role_change()
+RETURNS TRIGGER AS $$
+DECLARE
+  chall INTEGER;
+BEGIN
+  FOR chall IN (SELECT chall_id FROM submissions WHERE status='Correct' AND user_id=NEW.id)
+  LOOP
+    PERFORM fn_solve_add(chall, NEW.id);
+  END LOOP;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tr_points_non_player_role_change
+AFTER UPDATE ON users
+FOR EACH ROW
+WHEN (OLD.role != 'Player' AND NEW.role = 'Player')
+EXECUTE FUNCTION fn_points_non_player_role_change();

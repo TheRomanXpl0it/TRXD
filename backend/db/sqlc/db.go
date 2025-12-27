@@ -27,6 +27,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.addTeamMemberStmt, err = db.PrepareContext(ctx, addTeamMember); err != nil {
 		return nil, fmt.Errorf("error preparing query AddTeamMember: %w", err)
 	}
+	if q.changeUserRoleStmt, err = db.PrepareContext(ctx, changeUserRole); err != nil {
+		return nil, fmt.Errorf("error preparing query ChangeUserRole: %w", err)
+	}
 	if q.checkFlagsStmt, err = db.PrepareContext(ctx, checkFlags); err != nil {
 		return nil, fmt.Errorf("error preparing query CheckFlags: %w", err)
 	}
@@ -197,6 +200,11 @@ func (q *Queries) Close() error {
 	if q.addTeamMemberStmt != nil {
 		if cerr := q.addTeamMemberStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing addTeamMemberStmt: %w", cerr)
+		}
+	}
+	if q.changeUserRoleStmt != nil {
+		if cerr := q.changeUserRoleStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing changeUserRoleStmt: %w", cerr)
 		}
 	}
 	if q.checkFlagsStmt != nil {
@@ -509,6 +517,7 @@ type Queries struct {
 	db                           DBTX
 	tx                           *sql.Tx
 	addTeamMemberStmt            *sql.Stmt
+	changeUserRoleStmt           *sql.Stmt
 	checkFlagsStmt               *sql.Stmt
 	createAttachmentStmt         *sql.Stmt
 	createCategoryStmt           *sql.Stmt
@@ -570,6 +579,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		db:                           tx,
 		tx:                           tx,
 		addTeamMemberStmt:            q.addTeamMemberStmt,
+		changeUserRoleStmt:           q.changeUserRoleStmt,
 		checkFlagsStmt:               q.checkFlagsStmt,
 		createAttachmentStmt:         q.createAttachmentStmt,
 		createCategoryStmt:           q.createCategoryStmt,

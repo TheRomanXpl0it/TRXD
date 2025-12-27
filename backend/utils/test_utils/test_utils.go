@@ -284,8 +284,15 @@ func HashFile(t *testing.T, file string) string {
 func Format(msg string, a ...any) string {
 	res := msg[:]
 	for i, v := range a {
+		var value string
+		if _, ok := v.([]string); ok {
+			value = strings.Join(v.([]string), " ")
+		} else {
+			value = fmt.Sprint(v)
+		}
+
 		placeholder := fmt.Sprintf("{%d}", i)
-		res = strings.ReplaceAll(res, placeholder, fmt.Sprint(v))
+		res = strings.ReplaceAll(res, placeholder, value)
 	}
 	return res
 }

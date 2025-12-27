@@ -40,6 +40,7 @@ import (
 	"trxd/api/routes/users_logout"
 	"trxd/api/routes/users_password"
 	"trxd/api/routes/users_register"
+	"trxd/api/routes/users_role"
 	"trxd/api/routes/users_update"
 	"trxd/db"
 	"trxd/utils"
@@ -160,6 +161,7 @@ func SetupApi(ctx context.Context, app *fiber.App) {
 	api.Get("/scoreboard/graph", noAuth, teams_scoreboard_graph.Route)
 
 	api.Patch("/users", player, users_update.Route)
+	api.Patch("/users/role", admin, users_role.Route)
 	api.Patch("/users/password", spectator, users_password.Route)
 	if mode != "true" {
 		api.Get("/users", noAuth, users_all_get.Route)

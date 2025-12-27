@@ -58,6 +58,7 @@ func init() {
 
 	validate.RegisterAlias("user_name", fmt.Sprintf("max=%d", consts.MaxUserNameLen))
 	validate.RegisterAlias("user_email", fmt.Sprintf("max=%d,email", consts.MaxEmailLen))
+	validate.RegisterAlias("user_role", "oneof="+strings.Join(consts.RolesStr, " "))
 }
 
 func errHandle(c *fiber.Ctx, err error) error {

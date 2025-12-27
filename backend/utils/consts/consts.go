@@ -24,6 +24,8 @@ const (
 	MinPort               = 0
 )
 
+var Roles = []sqlc.UserRole{sqlc.UserRoleSpectator, sqlc.UserRolePlayer, sqlc.UserRoleAuthor, sqlc.UserRoleAdmin}
+var RolesStr = []string{string(sqlc.UserRoleSpectator), string(sqlc.UserRolePlayer), string(sqlc.UserRoleAuthor), string(sqlc.UserRoleAdmin)}
 var DeployTypes = []sqlc.DeployType{sqlc.DeployTypeNormal, sqlc.DeployTypeContainer, sqlc.DeployTypeCompose}
 var DeployTypesStr = []string{string(sqlc.DeployTypeNormal), string(sqlc.DeployTypeContainer), string(sqlc.DeployTypeCompose)}
 var ScoreTypes = []sqlc.ScoreType{sqlc.ScoreTypeStatic, sqlc.ScoreTypeDynamic}
@@ -47,6 +49,7 @@ const (
 	DisabledRegistrations = "Registrations are disabled"
 
 	ErrorBeginningTransaction    = "Error beginning transaction"
+	ErrorChangingUserRole        = "Error changing user role"
 	ErrorCommittingTransaction   = "Error committing transaction"
 	ErrorCreatingAttachments     = "Error creating attachments"
 	ErrorCreatingAttachmentsDir  = "Error creating attachments directory"
@@ -102,6 +105,7 @@ const (
 	InvalidMaxCpu          = "Invalid Max CPU, must be a positive 32-bit integer"
 	InvalidMultipartForm   = "Invalid multipart form"
 	InvalidParam           = "Invalid parameter"
+	InvalidRole            = "Invalid role"
 	InvalidTeamCredentials = "Invalid name or password"
 	InvalidTeamID          = "Invalid team ID, must be non negative"
 	InvalidUserID          = "Invalid user ID, must be non negative"

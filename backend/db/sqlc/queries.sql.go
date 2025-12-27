@@ -28,6 +28,21 @@ func (q *Queries) AddTeamMember(ctx context.Context, arg AddTeamMemberParams) er
 	return err
 }
 
+const changeUserRole = `-- name: ChangeUserRole :exec
+UPDATE users SET role = $2 WHERE id = $1
+`
+
+type ChangeUserRoleParams struct {
+	ID   int32    `json:"id"`
+	Role UserRole `json:"role"`
+}
+
+// Changes the role of a user
+func (q *Queries) ChangeUserRole(ctx context.Context, arg ChangeUserRoleParams) error {
+	_, err := q.exec(ctx, q.changeUserRoleStmt, changeUserRole, arg.ID, arg.Role)
+	return err
+}
+
 const checkFlags = `-- name: CheckFlags :one
 SELECT BOOL_OR(($1 = flag) OR (regex AND $1 ~ flag)) FROM flags WHERE chall_id = $2
 `

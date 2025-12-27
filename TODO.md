@@ -13,7 +13,6 @@
    - https://docs.gofiber.io/api/middleware/helmet/
    - https://doc.traefik.io/traefik/expose/docker/
    - challs SNI traefik
-   - role configuraion endpoint
    - mail server (github.com/wneessen/go-mail)
  - utility:
    - better names for binary flags
