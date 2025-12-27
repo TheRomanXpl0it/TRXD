@@ -8,6 +8,7 @@ package sqlc
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"time"
 
 	"github.com/lib/pq"
@@ -780,19 +781,35 @@ SELECT
     t.name,
     t.score,
     t.country,
-    COALESCE(
-      JSON_AGG(
-        JSON_BUILD_OBJECT(
-          'name', b.name,
-          'description', b.description
-        )
-      ) FILTER (WHERE b.name IS NOT NULL),
-      '[]'
-    ) AS badges
+    COALESCE(b.badges, '[]') AS badges,
+    lc.last_correct_at
   FROM teams t
-  LEFT JOIN badges b ON b.team_id = t.id
-  GROUP BY t.id, t.name, t.score, t.country
-  ORDER BY t.score DESC
+  LEFT JOIN ( -- Badges per team
+      SELECT
+        team_id,
+        JSON_AGG(
+          JSON_BUILD_OBJECT(
+            'name', name,
+            'description', description
+          )
+        ) AS badges
+      FROM badges
+      GROUP BY team_id
+    ) b ON b.team_id = t.id
+  LEFT JOIN ( -- Last correct submission per team
+      SELECT
+        u.team_id,
+        MAX(s.timestamp) AS last_correct_at
+      FROM users u
+      JOIN submissions s
+          ON s.user_id = u.id
+        AND s.status = 'Correct'
+      WHERE u.role = 'Player'
+      GROUP BY u.team_id
+    ) lc ON lc.team_id = t.id
+  ORDER BY
+    t.score DESC,
+    lc.last_correct_at ASC NULLS LAST
   OFFSET $1
   LIMIT $2
 `
@@ -803,11 +820,12 @@ type GetTeamsScoreboardParams struct {
 }
 
 type GetTeamsScoreboardRow struct {
-	ID      int32          `json:"id"`
-	Name    string         `json:"name"`
-	Score   int32          `json:"score"`
-	Country sql.NullString `json:"country"`
-	Badges  interface{}    `json:"badges"`
+	ID            int32           `json:"id"`
+	Name          string          `json:"name"`
+	Score         int32           `json:"score"`
+	Country       sql.NullString  `json:"country"`
+	Badges        json.RawMessage `json:"badges"`
+	LastCorrectAt interface{}     `json:"last_correct_at"`
 }
 
 // Retrieve all teams
@@ -826,6 +844,7 @@ func (q *Queries) GetTeamsScoreboard(ctx context.Context, arg GetTeamsScoreboard
 			&i.Score,
 			&i.Country,
 			&i.Badges,
+			&i.LastCorrectAt,
 		); err != nil {
 			return nil, err
 		}
@@ -841,16 +860,18 @@ func (q *Queries) GetTeamsScoreboard(ctx context.Context, arg GetTeamsScoreboard
 }
 
 const getTeamsScoreboardGraph = `-- name: GetTeamsScoreboardGraph :many
-SELECT t.id AS team_id, c.id AS chall_id, c.points, s.first_blood, s."timestamp" FROM (
-	SELECT id, name, password_hash, password_salt, score, country FROM teams t
-        ORDER BY t.score DESC
-        LIMIT CAST((SELECT value FROM configs WHERE key='scoreboard-top') AS INT)) AS t
+SELECT t.id AS team_id, c.id AS chall_id, c.points, s.first_blood, s."timestamp"
+  FROM (
+      SELECT id, name, password_hash, password_salt, score, country FROM teams t
+      ORDER BY t.score DESC
+      LIMIT CAST((SELECT value FROM configs WHERE key='scoreboard-top') AS INT)
+    ) AS t
   JOIN users u ON u.team_id = t.id
   JOIN submissions s ON s.user_id = u.id
   JOIN challenges c ON c.id = s.chall_id
   WHERE s.status = 'Correct'
-	  AND u.role = 'Player'
-  ORDER BY s."timestamp" ASC
+    AND u.role = 'Player'
+  ORDER BY s."timestamp" ASC NULLS LAST
 `
 
 type GetTeamsScoreboardGraphRow struct {

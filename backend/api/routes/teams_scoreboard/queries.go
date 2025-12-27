@@ -28,16 +28,13 @@ func GetTeamScoreboard(ctx context.Context, start int32, end int32) ([]*TeamData
 	var teamsData []*TeamData
 	for _, team := range teams {
 		teamData := &TeamData{
-			ID:    team.ID,
-			Name:  team.Name,
-			Score: team.Score,
+			ID:     team.ID,
+			Name:   team.Name,
+			Score:  team.Score,
+			Badges: team.Badges,
 		}
 		if team.Country.Valid {
 			teamData.Country = team.Country.String
-		}
-
-		if js, ok := team.Badges.([]byte); ok {
-			teamData.Badges = js
 		}
 
 		teamsData = append(teamsData, teamData)

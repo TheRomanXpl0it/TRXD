@@ -5,18 +5,34 @@ SELECT
     t.name,
     t.score,
     t.country,
-    COALESCE(
-      JSON_AGG(
-        JSON_BUILD_OBJECT(
-          'name', b.name,
-          'description', b.description
-        )
-      ) FILTER (WHERE b.name IS NOT NULL),
-      '[]'
-    ) AS badges
+    COALESCE(b.badges, '[]') AS badges,
+    lc.last_correct_at
   FROM teams t
-  LEFT JOIN badges b ON b.team_id = t.id
-  GROUP BY t.id, t.name, t.score, t.country
-  ORDER BY t.score DESC
+  LEFT JOIN ( -- Badges per team
+      SELECT
+        team_id,
+        JSON_AGG(
+          JSON_BUILD_OBJECT(
+            'name', name,
+            'description', description
+          )
+        ) AS badges
+      FROM badges
+      GROUP BY team_id
+    ) b ON b.team_id = t.id
+  LEFT JOIN ( -- Last correct submission per team
+      SELECT
+        u.team_id,
+        MAX(s.timestamp) AS last_correct_at
+      FROM users u
+      JOIN submissions s
+          ON s.user_id = u.id
+        AND s.status = 'Correct'
+      WHERE u.role = 'Player'
+      GROUP BY u.team_id
+    ) lc ON lc.team_id = t.id
+  ORDER BY
+    t.score DESC,
+    lc.last_correct_at ASC NULLS LAST
   OFFSET sqlc.arg('offset')
   LIMIT sqlc.narg('limit');
