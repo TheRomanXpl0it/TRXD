@@ -8,7 +8,7 @@ import (
 	"github.com/tde-nico/log"
 )
 
-var Testing = false
+var Testing = false // TODO: rename mode
 
 var DefaultConfigs = map[string]any{
 	"allow-register":            false,
@@ -24,10 +24,16 @@ var DefaultConfigs = map[string]any{
 	"domain":                    "",
 	"discord-webhook":           "",
 	"project-name":              "trxd",
+	"proxy-id":                  "",
 	"user-mode":                 false,
 	"scoreboard-top":            10,
 	"start-time":                "",
 	"end-time":                  "",
+	"jwt-secret":                "",
+	"email-server":              "",
+	"email-port":                587,
+	"email-addr":                "",
+	"email-passwd":              "",
 }
 
 func LoadEnvConfigs() {

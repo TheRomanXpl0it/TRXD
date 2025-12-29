@@ -89,6 +89,11 @@ func Main(m *testing.M) {
 	if err != nil {
 		fatalf("Failed to update config: %v\n", err)
 	}
+	consts.DefaultConfigs["jwt-secret"] = "414243"
+	err = db.UpdateConfig(ctx, "jwt-secret", "414243")
+	if err != nil {
+		fatalf("Failed to update config: %v\n", err)
+	}
 
 	exitCode := m.Run()
 	os.Exit(exitCode)
@@ -113,7 +118,7 @@ func RegisterUser(t *testing.T, name, email, password string, role sqlc.UserRole
 	}
 	defer db.Rollback(tx)
 
-	user, err := users_register.RegisterUser(t.Context(), tx, name, email, password, role)
+	user, err := users_register.DBRegisterUser(t.Context(), tx, name, email, password, role)
 	if err != nil {
 		Fatalf(t, "Failed to register user %s: %v", name, err)
 	}

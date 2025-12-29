@@ -10,7 +10,7 @@ import (
 	"github.com/lib/pq"
 )
 
-func RegisterUser(ctx context.Context, tx *sql.Tx, name, email, password string, role ...sqlc.UserRole) (*sqlc.User, error) {
+func DBRegisterUser(ctx context.Context, tx *sql.Tx, name, email, password string, role ...sqlc.UserRole) (*sqlc.User, error) {
 	hash, salt, err := crypto_utils.Hash(password)
 	if err != nil {
 		return nil, err

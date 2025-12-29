@@ -1,11 +1,17 @@
 package users_register
 
 import (
+	"context"
+	"database/sql"
+	"encoding/json"
 	"fmt"
+	"time"
 	"trxd/api/routes/teams_register"
 	"trxd/db"
 	"trxd/utils"
 	"trxd/utils/consts"
+	"trxd/utils/email"
+	"trxd/utils/jwt"
 	"trxd/validator"
 
 	"github.com/gofiber/fiber/v2"
@@ -18,14 +24,90 @@ type Data struct {
 	Password string `json:"password" validate:"required,password"`
 }
 
-func registerUser(c *fiber.Ctx, data Data) (int32, error) {
+const VerifyPrefix = "verify-"
+const SUBJECT = "Email Verification Required"
+const BODY_TEMPLATE = "Hello %s,\n\nTo Confirm your email address, please click the link below:\nhttp://%s/api/verify?token=%s\n\nThank you!"
+
+func setNXUserData(ctx context.Context, data Data) (bool, error) {
+	content, err := json.Marshal(data)
+	if err != nil {
+		return false, err
+	}
+
+	res, err := db.StorageSetNX(ctx, VerifyPrefix+data.Email, string(content), 1*time.Minute)
+	if err != nil {
+		return false, err
+	}
+	if !res {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func registerViaMail(c *fiber.Ctx, data Data) (bool, error) {
+	server, err := db.GetConfig(c.Context(), "email-server")
+	if err != nil {
+		return false, utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingConfig, err)
+	}
+	if server == "" {
+		return false, nil
+	}
+
+	domain, err := db.GetConfig(c.Context(), "domain")
+	if err != nil {
+		return true, utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingConfig, err)
+	}
+	if domain == "" {
+		return true, utils.Error(c, fiber.StatusInternalServerError, consts.InvalidDomain)
+	}
+
+	exists, err := db.Sql.UserExistsByEmail(c.Context(), data.Email)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return true, utils.Error(c, fiber.StatusInternalServerError, consts.ErrorRegisteringUser, err)
+		}
+	}
+	if exists {
+		return true, utils.Error(c, fiber.StatusConflict, consts.UserAlreadyExists)
+	}
+
+	err = email.InitEmailClientFromConfigs(c.Context())
+	if err != nil {
+		return true, utils.Error(c, fiber.StatusInternalServerError, consts.ErrorInitializingEmailClient, err)
+	}
+
+	success, err := setNXUserData(c.Context(), data)
+	if err != nil {
+		return true, utils.Error(c, fiber.StatusInternalServerError, consts.ErrorRegisteringUser, err)
+	}
+	if !success {
+		// TODO: make retries
+		return true, utils.Error(c, fiber.StatusTooManyRequests, consts.VerificationAlreadySent)
+	}
+
+	signed, err := jwt.GenerateJWT(c.Context(), jwt.Map{"email": data.Email})
+	if err != nil {
+		return true, utils.Error(c, fiber.StatusInternalServerError, consts.ErrorSigningVerificationToken, err)
+	}
+
+	body := fmt.Sprintf(BODY_TEMPLATE, data.Name, domain, signed)
+	err = email.SendEmail(c.Context(), data.Email, SUBJECT, body)
+	if err != nil {
+		return true, utils.Error(c, fiber.StatusInternalServerError, consts.ErrorSendingVerificationEmail, err)
+	}
+
+	return true, c.SendStatus(fiber.StatusOK)
+}
+
+func RegisterUser(c *fiber.Ctx, data Data) (int32, error) {
 	tx, err := db.BeginTx(c.Context())
 	if err != nil {
 		return -1, utils.Error(c, fiber.StatusInternalServerError, consts.ErrorBeginningTransaction, err)
 	}
 	defer db.Rollback(tx)
 
-	user, err := RegisterUser(c.Context(), tx, data.Name, data.Email, data.Password)
+	user, err := DBRegisterUser(c.Context(), tx, data.Name, data.Email, data.Password)
 	if err != nil {
 		return -1, utils.Error(c, fiber.StatusInternalServerError, consts.ErrorRegisteringUser, err)
 	}
@@ -80,7 +162,12 @@ func Route(c *fiber.Ctx) error {
 		return err
 	}
 
-	userID, err := registerUser(c, data)
+	enabled, err := registerViaMail(c, data)
+	if err != nil || enabled {
+		return err
+	}
+
+	userID, err := RegisterUser(c, data)
 	if err != nil || userID == -1 {
 		return err
 	}

@@ -1391,3 +1391,15 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
 	_, err := q.exec(ctx, q.updateUserStmt, updateUser, arg.ID, arg.Name, arg.Country)
 	return err
 }
+
+const userExistsByEmail = `-- name: UserExistsByEmail :one
+SELECT EXISTS(SELECT 1 FROM users WHERE email = $1) AS exists
+`
+
+// Check if a user exists by email
+func (q *Queries) UserExistsByEmail(ctx context.Context, email string) (bool, error) {
+	row := q.queryRow(ctx, q.userExistsByEmailStmt, userExistsByEmail, email)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}

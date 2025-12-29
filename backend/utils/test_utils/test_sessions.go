@@ -57,7 +57,7 @@ func (s *apiTestSession) updateCookies(newCookies []*http.Cookie) {
 func (s *apiTestSession) SendRequest(req *http.Request, expectedStatus int) *http.Response {
 	for _, cookie := range s.Cookies {
 		if cookie.Name == "csrf_" {
-			req.Header.Set("X-Csrf-Token", cookie.Value)
+			req.Header.Set("X-CSRF-Token", cookie.Value)
 		}
 		req.AddCookie(cookie)
 	}

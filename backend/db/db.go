@@ -11,6 +11,7 @@ import (
 	"trxd/db/sqlc"
 	"trxd/utils"
 	"trxd/utils/consts"
+	"trxd/utils/crypto_utils"
 
 	"github.com/lib/pq"
 	"github.com/tde-nico/log"
@@ -120,15 +121,25 @@ func ExecSQLFile(path string) (bool, error) {
 }
 
 func InitConfigs() error {
+	if secret, ok := consts.DefaultConfigs["jwt-secret"]; ok && secret == "" {
+		randSecret, err := crypto_utils.GeneratePassword()
+		if err != nil {
+			return fmt.Errorf("failed to generate random secret: %v", err)
+		}
+		consts.DefaultConfigs["jwt-secret"] = randSecret
+	}
+
 	for key, value := range consts.DefaultConfigs {
 		valid, err := CreateConfig(context.Background(), key, value)
 		if err != nil {
 			return fmt.Errorf("failed to create config for key %s=%v: %v", key, value, err)
 		}
+
 		if !valid {
 			return fmt.Errorf("failed to create config for key %s=%v: config already exists", key, value)
 		}
 	}
+
 	return nil
 }
 

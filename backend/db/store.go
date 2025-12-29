@@ -59,8 +59,9 @@ func StorageSet(ctx context.Context, key string, val string) error {
 	return nil
 }
 
-func StorageSetNX(ctx context.Context, key string, val string) (bool, error) {
+func StorageSetNX(ctx context.Context, key string, val string, expiration ...time.Duration) (bool, error) {
 	if rdb == nil {
+		log.Warn("Expiration parameter is ignored in in-memory storage")
 		storageRWMutex.Lock()
 		defer storageRWMutex.Unlock()
 		if _, ok := storage[key]; ok {
@@ -70,7 +71,12 @@ func StorageSetNX(ctx context.Context, key string, val string) (bool, error) {
 		return true, nil
 	}
 
-	res, err := rdb.SetNX(ctx, key, []byte(val), 0).Result()
+	exp := 0 * time.Second
+	if len(expiration) > 0 {
+		exp = expiration[0]
+	}
+
+	res, err := rdb.SetNX(ctx, key, []byte(val), exp).Result()
 	if err != nil {
 		return false, err
 	}

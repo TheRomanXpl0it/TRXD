@@ -105,7 +105,7 @@ func registerAdmin(ctx context.Context, userInfo string) {
 	}
 	defer db.Rollback(tx)
 
-	user, err := users_register.RegisterUser(ctx, tx, name, email, password, sqlc.UserRoleAdmin)
+	user, err := users_register.DBRegisterUser(ctx, tx, name, email, password, sqlc.UserRoleAdmin)
 	if err != nil {
 		log.Fatal("Error registering admin user", "err", err)
 	}

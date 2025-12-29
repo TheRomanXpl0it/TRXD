@@ -10,7 +10,6 @@
    - https://docs.gofiber.io/api/middleware/helmet/
    - https://doc.traefik.io/traefik/expose/docker/
    - challs SNI traefik
-   - mail server (github.com/wneessen/go-mail)
  - utility:
    - better names for binary flags
    - DOCUMENTATION
@@ -55,3 +54,4 @@
  - flag format validator
  - ingress only challenges (verify if useful)
  - chall time schedule release
+ - login via /verify with a valid token
