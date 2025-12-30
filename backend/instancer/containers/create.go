@@ -14,7 +14,7 @@ import (
 	"github.com/tde-nico/log"
 )
 
-func CreateContainer(ctx context.Context, name string, image string, info *infos.InstanceInfo) (string, error) {
+func CreateContainer(ctx context.Context, info *infos.InstanceInfo, image string) (string, error) {
 	if info.ExternalPort != nil && info.InternalPort == nil {
 		return "", errors.New("[missing internal port]")
 	}
@@ -23,7 +23,7 @@ func CreateContainer(ctx context.Context, name string, image string, info *infos
 		return "", nil
 	}
 
-	containerInfo, err := infos.SetupContainerInfo(name, image, info)
+	containerInfo, err := infos.SetupContainerInfo(info, image)
 	if err != nil {
 		return "", err
 	}
@@ -75,6 +75,7 @@ func setupContainerConf(info *infos.ContainerInfo) (*container.Config, *containe
 		Domainname:   info.Domain,
 		Env:          info.Env,
 		Image:        info.Image,
+		Labels:       info.Labels,
 		ExposedPorts: nat.PortSet{},
 	}
 
@@ -89,7 +90,12 @@ func setupContainerConf(info *infos.ContainerInfo) (*container.Config, *containe
 		},
 	}
 
-	var networkingConfig *network.NetworkingConfig
+	networkingConfig := &network.NetworkingConfig{
+		EndpointsConfig: map[string]*network.EndpointSettings{
+			info.NetID: {},
+		},
+	}
+
 	if info.ExternalPortStr != "" {
 		natPort := nat.Port(strconv.Itoa(int(*info.InternalPort)) + "/tcp")
 		containerConf.ExposedPorts[natPort] = struct{}{}
@@ -97,17 +103,6 @@ func setupContainerConf(info *infos.ContainerInfo) (*container.Config, *containe
 			HostIP:   "0.0.0.0",
 			HostPort: info.ExternalPortStr,
 		}}
-		networkingConfig = &network.NetworkingConfig{
-			EndpointsConfig: map[string]*network.EndpointSettings{
-				info.NetID: {},
-			},
-		}
-	} else {
-		networkingConfig = &network.NetworkingConfig{
-			EndpointsConfig: map[string]*network.EndpointSettings{
-				info.NetID: {},
-			},
-		}
 	}
 
 	return containerConf, hostConf, networkingConfig, nil

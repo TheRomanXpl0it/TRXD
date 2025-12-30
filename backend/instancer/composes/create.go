@@ -12,12 +12,12 @@ import (
 	"github.com/tde-nico/log"
 )
 
-func CreateCompose(ctx context.Context, projectName string, composeBody string, info *infos.InstanceInfo) (string, error) {
+func CreateCompose(ctx context.Context, info *infos.InstanceInfo, composeBody string) (string, error) {
 	if ComposeCli == nil {
 		return "", nil
 	}
 
-	composeInfo, err := infos.SetupComposeInfo(projectName, composeBody, info)
+	composeInfo, err := infos.SetupComposeInfo(info, composeBody)
 	if err != nil {
 		return "", err
 	}
@@ -41,7 +41,7 @@ func CreateCompose(ctx context.Context, projectName string, composeBody string, 
 
 func setupComposeProject(ctx context.Context, info *infos.ComposeInfo) (*types.Project, error) {
 	configDetails := types.ConfigDetails{
-		WorkingDir: "/" + info.ProjectName + "/",
+		WorkingDir: "/" + info.Name + "/",
 		ConfigFiles: []types.ConfigFile{
 			{Filename: "compose.yml", Content: []byte(info.ComposeBody)},
 		},
@@ -49,7 +49,7 @@ func setupComposeProject(ctx context.Context, info *infos.ComposeInfo) (*types.P
 	}
 
 	project, err := loader.LoadWithContext(ctx, configDetails, func(options *loader.Options) {
-		options.SetProjectName(info.ProjectName, true)
+		options.SetProjectName(info.Name, true)
 	})
 	if err != nil {
 		return nil, err
@@ -64,6 +64,13 @@ func setupComposeProject(ctx context.Context, info *infos.ComposeInfo) (*types.P
 			api.ConfigFilesLabel: strings.Join(project.ComposeFiles, ","),
 			api.OneoffLabel:      "False",
 		}
+
+		if s.Name == "chall" {
+			for k, v := range info.Labels {
+				s.CustomLabels[k] = v
+			}
+		}
+
 		project.Services[i] = s
 	}
 

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 	"trxd/db/sqlc"
 	"trxd/instancer/composes"
@@ -30,29 +31,26 @@ func recoverBrokenInstance(ctx context.Context, tid int32, challID int32, docker
 	log.Error("Failed to expire instance after creation failure", "team", tid, "challenge", challID, "err", err)
 }
 
-func spawnInstance(ctx context.Context, instanceInfo *infos.InstanceInfo,
-	conf *sqlc.GetDockerConfigsByIDRow, deployType sqlc.DeployType, port *int32, name string) (string, error) {
+func spawnInstance(ctx context.Context, info *infos.InstanceInfo,
+	conf *sqlc.GetDockerConfigsByIDRow, deployType sqlc.DeployType) (string, error) {
 
 	var dockerID string
 	var err error
 
-	if !conf.HashDomain && port != nil {
-		instanceInfo.ExternalPort = port
-		if deployType == sqlc.DeployTypeContainer {
-			instanceInfo.NetID = "trxd-shared"
-		}
-	} else {
-		netID, err := networks.CreateNetwork(ctx, instanceInfo.NetName, false)
+	if info.UseDomain {
+		netID, err := networks.CreateNetwork(ctx, info.NetName, false)
 		if err != nil {
 			return "", err
 		}
-		instanceInfo.NetID = netID
+		info.NetID = netID
+	} else if deployType == sqlc.DeployTypeContainer {
+		info.NetID = "trxd-shared"
 	}
 
 	if deployType == sqlc.DeployTypeContainer && conf.Image != "" {
-		dockerID, err = containers.CreateContainer(ctx, name, conf.Image, instanceInfo)
+		dockerID, err = containers.CreateContainer(ctx, info, conf.Image)
 	} else if deployType == sqlc.DeployTypeCompose && conf.Compose != "" {
-		dockerID, err = composes.CreateCompose(ctx, name, conf.Compose, instanceInfo)
+		dockerID, err = composes.CreateCompose(ctx, info, conf.Compose)
 	} else {
 		return "", errors.New("[no image or compose]")
 	}
@@ -92,21 +90,49 @@ func CreateInstance(ctx context.Context, tid int32, challID int32, internalPort 
 		return "", nil, errors.New("[race condition]")
 	}
 
+	var name string
+	if !conf.HashDomain {
+		name = fmt.Sprintf("chall_%d_%d", challID, tid)
+	} else {
+		name = "chall_" + strings.Split(info.Host, ".")[0]
+	}
+
+	var externalPort *int32
+	if info.Port.Valid {
+		externalPort = &info.Port.Int32
+	}
+
+	hostRule := fmt.Sprintf("Host(`%s`)", info.Host)
+	traefikRule := fmt.Sprintf("traefik.http.routers.%s.rule", name)
+	traefikPort := fmt.Sprintf("traefik.http.services.%s.loadbalancer.server.port", name)
+	traefikEntrypoints := fmt.Sprintf("traefik.http.routers.%s.entrypoints", name)
+	traefikPriority := fmt.Sprintf("traefik.http.routers.%s.priority", name)
+
+	var labels map[string]string
+	if conf.HashDomain {
+		labels = map[string]string{
+			"traefik.enable":   "true",
+			traefikRule:        hostRule,
+			traefikPort:        "1337", // TODO: make dynamic
+			traefikEntrypoints: "web",
+			traefikPriority:    "10",
+		}
+	}
+
 	instanceInfo := &infos.InstanceInfo{
-		Host:         info.Host,
+		Name:         name,
+		Domain:       info.Host,
+		UseDomain:    conf.HashDomain,
 		InternalPort: internalPort,
+		ExternalPort: externalPort,
 		Envs:         conf.Envs,
 		MaxMemory:    int32(conf.MaxMemory.(int64)),
 		MaxCpu:       conf.MaxCpu.(string),
 		NetName:      fmt.Sprintf("net_%d_%d", challID, tid),
+		Labels:       labels,
 	}
-	var port *int32
-	if info.Port.Valid {
-		port = &info.Port.Int32
-	}
-	name := fmt.Sprintf("chall_%d_%d", challID, tid)
 
-	dockerID, err = spawnInstance(ctx, instanceInfo, conf, deployType, port, name)
+	dockerID, err = spawnInstance(ctx, instanceInfo, conf, deployType)
 	if err != nil {
 		return "", nil, err
 	}
@@ -118,5 +144,5 @@ func CreateInstance(ctx context.Context, tid int32, challID int32, internalPort 
 
 	cleanup = false
 
-	return instanceInfo.Host, instanceInfo.ExternalPort, nil
+	return instanceInfo.Domain, instanceInfo.ExternalPort, nil
 }

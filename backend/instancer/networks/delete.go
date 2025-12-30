@@ -46,7 +46,7 @@ func NetworkDelete(ctx context.Context, name string) error {
 				}
 			}
 			if !strings.Contains(err.Error(), "is not connected") &&
-				!not_found { // endpoint NGINX_ID not found
+				!not_found { // endpoint PROXY_ID not found
 				return err
 			}
 		}

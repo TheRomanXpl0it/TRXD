@@ -3,33 +3,24 @@ package infos
 import (
 	"encoding/json"
 	"strconv"
-	"strings"
 )
 
 type ContainerInfo struct {
 	InstanceInfo
 	Image           string
-	Name            string
-	Domain          string
-	Env             []string
 	ExternalPortStr string
+	Env             []string
 	MaxCPUs         int64
 }
 
-func SetupContainerInfo(name string, image string, info *InstanceInfo) (*ContainerInfo, error) {
+func SetupContainerInfo(info *InstanceInfo, image string) (*ContainerInfo, error) {
 	containerInfo := ContainerInfo{
 		InstanceInfo: *info,
 		Image:        image,
 	}
 
-	if info.ExternalPort == nil {
-		splittedHost := strings.SplitN(info.Host, ".", 2)
-		containerInfo.Name = "chall_" + splittedHost[0]
-		containerInfo.Domain = splittedHost[1]
-	} else {
+	if info.ExternalPort != nil {
 		containerInfo.ExternalPortStr = strconv.Itoa(int(*info.ExternalPort))
-		containerInfo.Name = name
-		containerInfo.Domain = info.Host
 	}
 
 	containerInfo.Env = make([]string, 0)
@@ -44,7 +35,7 @@ func SetupContainerInfo(name string, image string, info *InstanceInfo) (*Contain
 		}
 	}
 
-	containerInfo.Env = append(containerInfo.Env, "INSTANCE_HOST="+info.Host)
+	containerInfo.Env = append(containerInfo.Env, "INSTANCE_DOMAIN="+info.Domain)
 	if containerInfo.ExternalPortStr != "" {
 		containerInfo.Env = append(containerInfo.Env, "INSTANCE_PORT="+containerInfo.ExternalPortStr)
 	}

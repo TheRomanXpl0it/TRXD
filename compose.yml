@@ -22,7 +22,13 @@ services:
     networks:
       - default
       - internal
-    command: ["tail", "-f", "/dev/null"] #! Debugging
+    # command: ["tail", "-f", "/dev/null"] #! Debugging
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.app.rule=HostRegexp(`{host:.+}`)"
+      - "traefik.http.services.app.loadbalancer.server.port=1337"
+      - "traefik.http.routers.app.entrypoints=web"
+      - "traefik.http.routers.app.priority=1"
 
   postgres:
     image: postgres:18-alpine
@@ -44,7 +50,7 @@ services:
     image: adminer:5.4.1
     restart: always
     ports:
-      - 8080:8080
+      - 8000:8080
     depends_on:
       - postgres
     networks:
@@ -68,10 +74,27 @@ services:
     restart: always
     ports:
       - "80:80"
-    depends_on:
-      - app
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - default
+
+  traefik:
+    image: traefik:v3.6
+    restart: always
+    command:
+      - "--log.level=DEBUG"
+      - "--api.insecure=true" #! Debugging
+      - "--providers.docker=true"
+      - "--providers.providersThrottleDuration=0s"
+      # - "--providers.docker.watch=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - default
 

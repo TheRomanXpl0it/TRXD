@@ -46,7 +46,7 @@ func loginUser(c *fiber.Ctx, userID int32) (bool, error) {
 	return true, nil
 }
 
-func Route(c *fiber.Ctx) error {
+func Route(c *fiber.Ctx) error { // TODO: tests
 	email, err := parseAndValidateToken(c)
 	if err != nil || email == "" {
 		return err

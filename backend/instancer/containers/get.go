@@ -44,6 +44,7 @@ func FetchProxyID(ctx context.Context) (string, error) {
 	}
 
 	containerID, err := FetchContainerByName(ctx, name+"-nginx-1")
+	// containerID, err := FetchContainerByName(ctx, name+"-traefik-1") // TODO: mayber put this as const
 	if err != nil {
 		return "", err
 	}
