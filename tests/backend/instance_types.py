@@ -57,8 +57,8 @@ def kill_instance(session, chall_id):
 def format_request(r: requests.Response, hash_domain):
 	req = r.request
 	parsed = urlparse(r.url)
-	raw = f"{req.method} {req.path_url} HTTP/1.{'0' if hash_domain else '1'}\r\n"
-	raw += f"Host: {parsed.hostname}{':' + str(parsed.port) if parsed.port else ''}\r\n"
+	# raw = f"{req.method} {req.path_url} HTTP/1.{'0' if hash_domain else '1'}\r\n"
+	raw = f"Host: {parsed.hostname}{':' + str(parsed.port) if parsed.port else ''}\r\n"
 	raw += "\r\n".join(f"{k}: {v}" for k, v in req.headers.items() if k != 'Connection')
 	return raw
 
@@ -66,7 +66,7 @@ def assert_request(r: requests.Response, hash_domain):
 	req = format_request(r, hash_domain)
 	resp = r.text.strip()
 	for line in req.split('\r\n'):
-		assert line in resp, f'{req}\n-----DIFF-----\n{resp}'
+		assert line in resp, f'"{line}" not in resp\n{req}\n-----DIFF-----\n{resp}'
 
 
 r = spawn_instance(s1, chall_id_3)
@@ -134,12 +134,12 @@ assert r.status_code == 200, r.text
 i3 = r.json()
 print(i3)
 
-host = i1['host'].split('.')[0] + '.domain.com'
+host = i1['host']
 LOCAL_HOSTS[host] = LOCALHOST
 r = requests.get(f'http://{host}')
 assert_request(r, True)
 
-host = i3['host'].split('.')[0] + '.domain.com'
+host = i3['host']
 LOCAL_HOSTS[host] = LOCALHOST
 r = requests.get(f'http://{host}')
 assert_request(r, True)
@@ -159,12 +159,12 @@ assert r.status_code == 200, r.text
 i3 = r.json()
 print(i3)
 
-host = i1['host'].split('.')[0] + '.domain.com'
+host = i1['host']
 LOCAL_HOSTS[host] = LOCALHOST
 r = requests.get(f'http://{host}')
 assert_request(r, True)
 
-host = i3['host'].split('.')[0] + '.domain.com'
+host = i3['host']
 LOCAL_HOSTS[host] = LOCALHOST
 r = requests.get(f'http://{host}')
 assert_request(r, True)

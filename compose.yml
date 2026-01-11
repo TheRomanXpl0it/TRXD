@@ -83,11 +83,10 @@ services:
     image: traefik:v3.6
     restart: always
     command:
-      - "--log.level=DEBUG"
+      - "--log.level=DEBUG" #! Debugging
       - "--api.insecure=true" #! Debugging
       - "--providers.docker=true"
       - "--providers.providersThrottleDuration=0s"
-      # - "--providers.docker.watch=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
     ports:

@@ -7,6 +7,7 @@ import os
 
 
 url = 'http://localhost:1337/api'
+proxy_name = 'nginx-1'
 
 project_name = os.getenv('PROJECT_NAME', 'trxd')
 client = docker.from_env()
@@ -126,7 +127,7 @@ def get_network_by_name(name):
 	return res[0]
 
 def net_disconnect(net, hash_name):
-	res = client.containers.list(filters={'name': project_name+'-nginx-1'})
+	res = client.containers.list(filters={'name': project_name+'-'+proxy_name})
 	assert len(res) == 1, res
 	net.disconnect(res[0], force=True)
 	res = client.containers.list(filters={'name': f'chall_{hash_name}'})
@@ -134,13 +135,13 @@ def net_disconnect(net, hash_name):
 	net.disconnect(res[0], force=True)
 
 def hash_request(hash_name):
-	host = hash_name + '.domain.com'
+	host = hash_name + '.test.com'
 	LOCAL_HOSTS[host] = LOCALHOST
 	r = requests.get(f'http://{host}')
 	return r
 
 def fail_hash_request(hash_name):
-	host = hash_name + '.domain.com'
+	host = hash_name + '.test.com'
 	LOCAL_HOSTS[host] = LOCALHOST
 	try:
 		r = requests.get(f'http://{host}')
@@ -349,7 +350,7 @@ kill_good_instance(s1, chall_id_4)
 
 #! KILL NGINX
 i1 = spawn_good_instance(s1, chall_id_3)
-kill_container_by_name(project_name+'-nginx-1')
+kill_container_by_name(project_name+'-'+proxy_name)
 fail_hash_request(i1['host'].split('.')[0])
 kill_good_instance(s1, chall_id_3)
 res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
@@ -357,7 +358,7 @@ assert res == 0, res
 
 #! REMOVE NGINX
 i1 = spawn_good_instance(s1, chall_id_3)
-remove_container_by_name(project_name+'-nginx-1')
+remove_container_by_name(project_name+'-'+proxy_name)
 fail_hash_request(i1['host'].split('.')[0])
 kill_good_instance(s1, chall_id_3)
 res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
@@ -365,7 +366,7 @@ assert res == 0, res
 
 #! KILL NGINX (COMPOSE)
 i1 = spawn_good_instance(s1, chall_id_4)
-kill_container_by_name(project_name+'-nginx-1')
+kill_container_by_name(project_name+'-'+proxy_name)
 fail_hash_request(i1['host'].split('.')[0])
 kill_good_instance(s1, chall_id_4)
 res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
@@ -373,7 +374,7 @@ assert res == 0, res
 
 #! REMOVE NGINX (COMPOSE)
 i1 = spawn_good_instance(s1, chall_id_4)
-remove_container_by_name(project_name+'-nginx-1')
+remove_container_by_name(project_name+'-'+proxy_name)
 fail_hash_request(i1['host'].split('.')[0])
 kill_good_instance(s1, chall_id_4)
 res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
@@ -381,7 +382,7 @@ assert res == 0, res
 
 #! KILL NGINX (ROUND 2: CACHE RESET)
 i1 = spawn_good_instance(s1, chall_id_3)
-kill_container_by_name(project_name+'-nginx-1')
+kill_container_by_name(project_name+'-'+proxy_name)
 fail_hash_request(i1['host'].split('.')[0])
 kill_good_instance(s1, chall_id_3)
 res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
@@ -389,7 +390,7 @@ assert res == 0, res
 
 #! REMOVE NGINX (ROUND 2: CACHE RESET)
 i1 = spawn_good_instance(s1, chall_id_3)
-remove_container_by_name(project_name+'-nginx-1')
+remove_container_by_name(project_name+'-'+proxy_name)
 fail_hash_request(i1['host'].split('.')[0])
 kill_good_instance(s1, chall_id_3)
 res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
@@ -397,7 +398,7 @@ assert res == 0, res
 
 #! KILL NGINX (COMPOSE) (ROUND 2: CACHE RESET)
 i1 = spawn_good_instance(s1, chall_id_4)
-kill_container_by_name(project_name+'-nginx-1')
+kill_container_by_name(project_name+'-'+proxy_name)
 fail_hash_request(i1['host'].split('.')[0])
 kill_good_instance(s1, chall_id_4)
 res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
@@ -405,14 +406,14 @@ assert res == 0, res
 
 #! REMOVE NGINX (COMPOSE) (ROUND 2: CACHE RESET)
 i1 = spawn_good_instance(s1, chall_id_4)
-remove_container_by_name(project_name+'-nginx-1')
+remove_container_by_name(project_name+'-'+proxy_name)
 fail_hash_request(i1['host'].split('.')[0])
 kill_good_instance(s1, chall_id_4)
 res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
 assert res == 0, res
 
 #! REMOVE NGINX BEFOREHAND
-remove_container_by_name(project_name+'-nginx-1')
+remove_container_by_name(project_name+'-'+proxy_name)
 r = spawn_instance(s1, chall_id_3)
 assert r.status_code == 500, r.text
 r = kill_instance(s1, chall_id_3)
@@ -421,7 +422,7 @@ res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
 assert res == 0, res
 
 #! REMOVE NGINX BEFOREHAND (COMPOSE)
-remove_container_by_name(project_name+'-nginx-1')
+remove_container_by_name(project_name+'-'+proxy_name)
 r = spawn_instance(s1, chall_id_4)
 assert r.status_code == 500, r.text
 r = kill_instance(s1, chall_id_4)
@@ -435,7 +436,7 @@ assert r.status_code == 200, r.text
 r = kill_instance(s1, chall_id_3)
 assert r.status_code == 200, r.text
 
-remove_container_by_name(project_name+'-nginx-1')
+remove_container_by_name(project_name+'-'+proxy_name)
 res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
 assert res == 0, res
 

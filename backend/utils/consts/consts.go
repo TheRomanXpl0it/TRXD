@@ -4,6 +4,8 @@ import "trxd/db/sqlc"
 
 const Name = "TRXd"
 
+const ProxyName = "nginx-1" // "traefik-1"
+
 const (
 	MaxAttachmentNameLen  = 128
 	MaxBioLen             = 10240

@@ -8,8 +8,6 @@
    - tests for distributed functioning
  - features:
    - https://docs.gofiber.io/api/middleware/helmet/
-   - https://doc.traefik.io/traefik/expose/docker/
-   - challs SNI traefik
  - utility:
    - better names for binary flags
    - DOCUMENTATION
@@ -55,3 +53,4 @@
  - ingress only challenges (verify if useful)
  - chall time schedule release
  - login via /verify with a valid token
+ - chall sequence (unlock a challenge by solving another chall)

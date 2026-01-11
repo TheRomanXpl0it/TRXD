@@ -128,7 +128,7 @@ func SetupFeatures(app *fiber.App) {
 	}))
 
 	// app.Use(helmet.New(helmet.Config{
-	// 	ContentSecurityPolicy:   "",
+	// 	ContentSecurityPolicy:   "", // TODO
 	// }))
 
 	app.Use(favicon.New(favicon.Config{

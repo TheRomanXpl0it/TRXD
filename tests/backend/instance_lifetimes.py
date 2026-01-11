@@ -217,7 +217,7 @@ def custom_getaddrinfo(host, *args, **kwargs):
 socket.getaddrinfo = custom_getaddrinfo
 
 def hash_request(resp):
-	host = resp['host'].split('.')[0] + '.domain.com'
+	host = resp['host']
 	LOCAL_HOSTS[host] = LOCALHOST
 	r = requests.get(f'http://{host}')
 	return r

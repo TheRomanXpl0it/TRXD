@@ -43,8 +43,7 @@ func FetchProxyID(ctx context.Context) (string, error) {
 		name = consts.DefaultConfigs["project-name"].(string)
 	}
 
-	containerID, err := FetchContainerByName(ctx, name+"-nginx-1")
-	// containerID, err := FetchContainerByName(ctx, name+"-traefik-1") // TODO: mayber put this as const
+	containerID, err := FetchContainerByName(ctx, name+"-"+consts.ProxyName)
 	if err != nil {
 		return "", err
 	}
