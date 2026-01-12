@@ -34,7 +34,6 @@ RETURNS VOID AS $$
 BEGIN
   INSERT INTO configs (key, type, value) VALUES ('chall-min-points', 'int', '100');
   INSERT INTO configs (key, type, value) VALUES ('chall-points-decay', 'int', '5');
-  INSERT INTO configs (key, type, value) VALUES ('domain', 'string', 'test.com');
 END;
 $$ LANGUAGE plpgsql;
 

@@ -105,13 +105,19 @@ func DeleteAll(ctx context.Context) error {
 	return nil
 }
 
-func InsertMockData() error {
-	_, err := db.Exec(`SELECT insert_mock_data();`)
+func InsertMockData(ctx context.Context) error {
+	consts.DefaultConfigs["domain"] = "test.com"
+	err := UpdateConfig(ctx, "domain", "test.com")
+	if err != nil {
+		return err
+	}
+
+	_, err = db.ExecContext(ctx, `SELECT insert_mock_data();`)
 	if err != nil {
 		return fmt.Errorf("failed to insert mock data: %v", err)
 	}
 
-	_, err = db.Exec(`SELECT insert_mock_submissions();`)
+	_, err = db.ExecContext(ctx, `SELECT insert_mock_submissions();`)
 	if err != nil {
 		return fmt.Errorf("failed to insert mock submissions: %v", err)
 	}

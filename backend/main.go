@@ -144,7 +144,7 @@ func insertTestData(ctx context.Context) {
 	if err != nil {
 		log.Fatal("Error initializing configs", "err", err)
 	}
-	err = db.InsertMockData()
+	err = db.InsertMockData(ctx)
 	if err != nil {
 		log.Fatal("Error inserting mock data", "err", err)
 	}

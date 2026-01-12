@@ -74,7 +74,7 @@ func Main(m *testing.M) {
 		fatalf("Failed to initialize configs: %v\n", err)
 	}
 
-	err = db.InsertMockData()
+	err = db.InsertMockData(ctx)
 	if err != nil {
 		fatalf("Failed to insert mock data: %v\n", err)
 	}
