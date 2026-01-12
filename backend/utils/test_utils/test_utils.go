@@ -84,11 +84,6 @@ func Main(m *testing.M) {
 	if err != nil {
 		fatalf("Failed to update config: %v\n", err)
 	}
-	consts.DefaultConfigs["domain"] = "test.com"
-	err = db.UpdateConfig(ctx, "domain", "test.com")
-	if err != nil {
-		fatalf("Failed to update config: %v\n", err)
-	}
 	consts.DefaultConfigs["jwt-secret"] = "414243"
 	err = db.UpdateConfig(ctx, "jwt-secret", "414243")
 	if err != nil {

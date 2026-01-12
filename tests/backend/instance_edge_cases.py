@@ -134,14 +134,12 @@ def net_disconnect(net, hash_name):
 	assert len(res) == 1, res
 	net.disconnect(res[0], force=True)
 
-def hash_request(hash_name):
-	host = hash_name + '.test.com'
+def hash_request(host):
 	LOCAL_HOSTS[host] = LOCALHOST
 	r = requests.get(f'http://{host}')
 	return r
 
-def fail_hash_request(hash_name):
-	host = hash_name + '.test.com'
+def fail_hash_request(host):
 	LOCAL_HOSTS[host] = LOCALHOST
 	try:
 		r = requests.get(f'http://{host}')
@@ -236,7 +234,7 @@ i1 = spawn_good_instance(s1, chall_id_3)
 hash_name = i1['host'].split('.')[0]
 net = get_network_by_name(f'net_{chall_id_3}_{team_id}')
 net_disconnect(net, hash_name)
-r = hash_request(hash_name)
+r = hash_request(i1['host'])
 assert r.status_code == 502, r.text
 kill_good_instance(s1, chall_id_3)
 
@@ -246,7 +244,7 @@ hash_name = i1['host'].split('.')[0]
 net = get_network_by_name(f'net_{chall_id_3}_{team_id}')
 net_disconnect(net, hash_name)
 kill_container_by_name(f'chall_{hash_name}')
-r = hash_request(hash_name)
+r = hash_request(i1['host'])
 assert r.status_code == 502, r.text
 kill_good_instance(s1, chall_id_3)
 
@@ -256,7 +254,7 @@ hash_name = i1['host'].split('.')[0]
 net = get_network_by_name(f'net_{chall_id_3}_{team_id}')
 net_disconnect(net, hash_name)
 remove_container_by_name(f'chall_{hash_name}')
-r = hash_request(hash_name)
+r = hash_request(i1['host'])
 assert r.status_code == 502, r.text
 kill_good_instance(s1, chall_id_3)
 
@@ -266,7 +264,7 @@ hash_name = i1['host'].split('.')[0]
 net = get_network_by_name(f'net_{chall_id_4}_{team_id}')
 net_disconnect(net, hash_name)
 kill_container_by_name(f'chall_{hash_name}')
-r = hash_request(hash_name)
+r = hash_request(i1['host'])
 assert r.status_code == 502, r.text
 kill_good_instance(s1, chall_id_4)
 
@@ -276,7 +274,7 @@ hash_name = i1['host'].split('.')[0]
 net = get_network_by_name(f'net_{chall_id_4}_{team_id}')
 net_disconnect(net, hash_name)
 remove_container_by_name(f'chall_{hash_name}')
-r = hash_request(hash_name)
+r = hash_request(i1['host'])
 assert r.status_code == 502, r.text
 kill_good_instance(s1, chall_id_4)
 
@@ -286,7 +284,7 @@ hash_name = i1['host'].split('.')[0]
 net = get_network_by_name(f'net_{chall_id_3}_{team_id}')
 net_disconnect(net, hash_name)
 net.remove()
-r = hash_request(hash_name)
+r = hash_request(i1['host'])
 assert r.status_code == 502, r.text
 kill_good_instance(s1, chall_id_3)
 
@@ -297,7 +295,7 @@ net = get_network_by_name(f'net_{chall_id_3}_{team_id}')
 net_disconnect(net, hash_name)
 net.remove()
 kill_container_by_name(f'chall_{hash_name}')
-r = hash_request(hash_name)
+r = hash_request(i1['host'])
 assert r.status_code == 502, r.text
 kill_good_instance(s1, chall_id_3)
 
@@ -308,7 +306,7 @@ net = get_network_by_name(f'net_{chall_id_3}_{team_id}')
 net_disconnect(net, hash_name)
 net.remove()
 remove_container_by_name(f'chall_{hash_name}')
-r = hash_request(hash_name)
+r = hash_request(i1['host'])
 assert r.status_code == 502, r.text
 kill_good_instance(s1, chall_id_3)
 
@@ -319,7 +317,7 @@ net = get_network_by_name(f'net_{chall_id_4}_{team_id}')
 net_disconnect(net, hash_name)
 net.remove()
 kill_container_by_name(f'chall_{hash_name}')
-r = hash_request(hash_name)
+r = hash_request(i1['host'])
 assert r.status_code == 502, r.text
 kill_good_instance(s1, chall_id_4)
 
@@ -330,28 +328,28 @@ net = get_network_by_name(f'net_{chall_id_4}_{team_id}')
 net_disconnect(net, hash_name)
 net.remove()
 remove_container_by_name(f'chall_{hash_name}')
-r = hash_request(hash_name)
+r = hash_request(i1['host'])
 assert r.status_code == 502, r.text
 kill_good_instance(s1, chall_id_4)
 
 #! SAME NAME NETWORK
 client.networks.create(name=f'net_{chall_id_3}_{team_id}')
 i1 = spawn_good_instance(s1, chall_id_3)
-r = hash_request(i1['host'].split('.')[0])
+r = hash_request(i1['host'])
 assert_request(r, True)
 kill_good_instance(s1, chall_id_3)
 
 #! SAME NAME NETWORK (COMPOSE)
 client.networks.create(name=f'net_{chall_id_4}_{team_id}')
 i1 = spawn_good_instance(s1, chall_id_4)
-r = hash_request(i1['host'].split('.')[0])
+r = hash_request(i1['host'])
 assert_request(r, True)
 kill_good_instance(s1, chall_id_4)
 
 #! KILL NGINX
 i1 = spawn_good_instance(s1, chall_id_3)
 kill_container_by_name(project_name+'-'+proxy_name)
-fail_hash_request(i1['host'].split('.')[0])
+fail_hash_request(i1['host'])
 kill_good_instance(s1, chall_id_3)
 res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
 assert res == 0, res
@@ -359,7 +357,7 @@ assert res == 0, res
 #! REMOVE NGINX
 i1 = spawn_good_instance(s1, chall_id_3)
 remove_container_by_name(project_name+'-'+proxy_name)
-fail_hash_request(i1['host'].split('.')[0])
+fail_hash_request(i1['host'])
 kill_good_instance(s1, chall_id_3)
 res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
 assert res == 0, res
@@ -367,7 +365,7 @@ assert res == 0, res
 #! KILL NGINX (COMPOSE)
 i1 = spawn_good_instance(s1, chall_id_4)
 kill_container_by_name(project_name+'-'+proxy_name)
-fail_hash_request(i1['host'].split('.')[0])
+fail_hash_request(i1['host'])
 kill_good_instance(s1, chall_id_4)
 res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
 assert res == 0, res
@@ -375,7 +373,7 @@ assert res == 0, res
 #! REMOVE NGINX (COMPOSE)
 i1 = spawn_good_instance(s1, chall_id_4)
 remove_container_by_name(project_name+'-'+proxy_name)
-fail_hash_request(i1['host'].split('.')[0])
+fail_hash_request(i1['host'])
 kill_good_instance(s1, chall_id_4)
 res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
 assert res == 0, res
@@ -383,7 +381,7 @@ assert res == 0, res
 #! KILL NGINX (ROUND 2: CACHE RESET)
 i1 = spawn_good_instance(s1, chall_id_3)
 kill_container_by_name(project_name+'-'+proxy_name)
-fail_hash_request(i1['host'].split('.')[0])
+fail_hash_request(i1['host'])
 kill_good_instance(s1, chall_id_3)
 res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
 assert res == 0, res
@@ -391,7 +389,7 @@ assert res == 0, res
 #! REMOVE NGINX (ROUND 2: CACHE RESET)
 i1 = spawn_good_instance(s1, chall_id_3)
 remove_container_by_name(project_name+'-'+proxy_name)
-fail_hash_request(i1['host'].split('.')[0])
+fail_hash_request(i1['host'])
 kill_good_instance(s1, chall_id_3)
 res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
 assert res == 0, res
@@ -399,7 +397,7 @@ assert res == 0, res
 #! KILL NGINX (COMPOSE) (ROUND 2: CACHE RESET)
 i1 = spawn_good_instance(s1, chall_id_4)
 kill_container_by_name(project_name+'-'+proxy_name)
-fail_hash_request(i1['host'].split('.')[0])
+fail_hash_request(i1['host'])
 kill_good_instance(s1, chall_id_4)
 res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
 assert res == 0, res
@@ -407,7 +405,7 @@ assert res == 0, res
 #! REMOVE NGINX (COMPOSE) (ROUND 2: CACHE RESET)
 i1 = spawn_good_instance(s1, chall_id_4)
 remove_container_by_name(project_name+'-'+proxy_name)
-fail_hash_request(i1['host'].split('.')[0])
+fail_hash_request(i1['host'])
 kill_good_instance(s1, chall_id_4)
 res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
 assert res == 0, res
