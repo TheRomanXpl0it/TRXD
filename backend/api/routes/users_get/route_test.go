@@ -35,7 +35,7 @@ func TestRoute(t *testing.T) {
 		t.Fatal("Expected body to not be nil")
 	}
 	var idPlayer, idAdmin int32
-	for _, user := range body.([]interface{}) {
+	for _, user := range body.(map[string]interface{})["users"].([]interface{}) {
 		switch user.(map[string]interface{})["name"] {
 		case "a":
 			idPlayer = int32(user.(map[string]interface{})["id"].(float64))

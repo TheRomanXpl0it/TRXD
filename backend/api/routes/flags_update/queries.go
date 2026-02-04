@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"trxd/db"
 	"trxd/db/sqlc"
+	"trxd/utils/consts"
 
 	"github.com/lib/pq"
 )
@@ -28,7 +29,7 @@ func UpdateFlag(ctx context.Context, challID int32, flag string, regex *bool, ne
 	})
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
-			if pqErr.Code == "23505" { // Unique violation error code
+			if pqErr.Code == consts.PGUniqueViolation {
 				return false, nil
 			}
 		}

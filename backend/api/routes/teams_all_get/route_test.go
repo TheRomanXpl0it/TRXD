@@ -29,38 +29,41 @@ func TestRoute(t *testing.T) {
 	B := test_utils.GetTeamByName(t, "B")
 	C := test_utils.GetTeamByName(t, "C")
 
-	expected := []JSON{
-		{
-			"badges": []JSON{
-				{
-					"description": "Completed all cat-1 challenges",
-					"name":        "cat-1",
+	expected := JSON{
+		"teams": []JSON{
+			{
+				"badges": []JSON{
+					{
+						"description": "Completed all cat-1 challenges",
+						"name":        "cat-1",
+					},
 				},
+				"country": "",
+				"id":      A.ID,
+				"name":    "A",
+				"score":   1498,
 			},
-			"country": "",
-			"id":      A.ID,
-			"name":    "A",
-			"score":   1498,
-		},
-		{
-			"badges": []JSON{
-				{
-					"description": "Completed all cat-2 challenges",
-					"name":        "cat-2",
+			{
+				"badges": []JSON{
+					{
+						"description": "Completed all cat-2 challenges",
+						"name":        "cat-2",
+					},
 				},
+				"country": "",
+				"id":      B.ID,
+				"name":    "B",
+				"score":   998,
 			},
-			"country": "",
-			"id":      B.ID,
-			"name":    "B",
-			"score":   998,
+			{
+				"badges":  []JSON{},
+				"country": "",
+				"id":      C.ID,
+				"name":    "C",
+				"score":   0,
+			},
 		},
-		{
-			"badges":  []JSON{},
-			"country": "",
-			"id":      C.ID,
-			"name":    "C",
-			"score":   0,
-		},
+		"total": 3,
 	}
 
 	session := test_utils.NewApiTestSession(t, app)
@@ -78,20 +81,28 @@ func TestRoute(t *testing.T) {
 	session.Get("/teams", nil, http.StatusOK)
 	session.CheckResponse(expected)
 
-	session.Get("/teams?start=-1", nil, http.StatusBadRequest)
+	session.Get("/teams?offset=-1", nil, http.StatusBadRequest)
 	session.CheckResponse(errorf(consts.InvalidParam))
-	session.Get("/teams?end=-1", nil, http.StatusBadRequest)
+	session.Get("/teams?limit=-1", nil, http.StatusBadRequest)
 	session.CheckResponse(errorf(consts.InvalidParam))
-	session.Get(fmt.Sprintf("/teams?start=%d", math.MaxInt32+1), nil, http.StatusBadRequest)
+	session.Get(fmt.Sprintf("/teams?offset=%d", math.MaxInt32+1), nil, http.StatusBadRequest)
 	session.CheckResponse(errorf(consts.InvalidParam))
-	session.Get(fmt.Sprintf("/teams?end=%d", math.MaxInt32+1), nil, http.StatusBadRequest)
-	session.CheckResponse(errorf(consts.InvalidParam))
-	session.Get("/teams?start=2&end=1", nil, http.StatusBadRequest)
+	session.Get(fmt.Sprintf("/teams?limit=%d", math.MaxInt32+1), nil, http.StatusBadRequest)
 	session.CheckResponse(errorf(consts.InvalidParam))
 
-	session.Get("/teams?start=1&end=2", nil, http.StatusOK)
-	session.CheckResponse(expected[1:2])
+	subSet := func(expected JSON, start int, end int) JSON {
+		return JSON{
+			"teams": expected["teams"].([]JSON)[start:end],
+			"total": expected["total"],
+		}
+	}
 
-	session.Get("/teams?start=1", nil, http.StatusOK)
-	session.CheckResponse(expected[1:])
+	session.Get("/teams?offset=1&limit=1", nil, http.StatusOK)
+	session.CheckResponse(subSet(expected, 1, 2))
+	session.Get("/teams?offset=1&limit=2", nil, http.StatusOK)
+	session.CheckResponse(subSet(expected, 1, 3))
+	session.Get("/teams?offset=1", nil, http.StatusOK)
+	session.CheckResponse(subSet(expected, 1, len(expected["teams"].([]JSON))))
+	session.Get("/teams?limit=2", nil, http.StatusOK)
+	session.CheckResponse(subSet(expected, 0, 2))
 }

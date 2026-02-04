@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"trxd/db"
 	"trxd/db/sqlc"
+	"trxd/utils/consts"
 	"trxd/utils/crypto_utils"
 
 	"github.com/lib/pq"
@@ -30,7 +31,7 @@ func DBRegisterUser(ctx context.Context, tx *sql.Tx, name, email, password strin
 	})
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
-			if pqErr.Code == "23505" { // Unique violation error code
+			if pqErr.Code == consts.PGUniqueViolation {
 				return nil, nil
 			}
 		}

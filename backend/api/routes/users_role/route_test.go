@@ -80,7 +80,7 @@ func TestRoute(t *testing.T) {
 		t.Fatal("Expected body to not be nil")
 	}
 	var uid int32
-	for _, user := range body.([]interface{}) {
+	for _, user := range body.(map[string]interface{})["users"].([]interface{}) {
 		if user.(map[string]interface{})["name"] == "a" {
 			uid = int32(user.(map[string]interface{})["id"].(float64))
 		}

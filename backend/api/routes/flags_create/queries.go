@@ -4,6 +4,7 @@ import (
 	"context"
 	"trxd/db"
 	"trxd/db/sqlc"
+	"trxd/utils/consts"
 
 	"github.com/lib/pq"
 )
@@ -16,7 +17,7 @@ func CreateFlag(ctx context.Context, challengeID int32, flag string, regex bool)
 	})
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
-			if pqErr.Code == "23505" { // Unique violation error code
+			if pqErr.Code == consts.PGUniqueViolation {
 				return nil, nil
 			}
 		}

@@ -49,7 +49,7 @@ func OpenTestDB(testDBName string) error {
 		_, err := tmp_db.Exec(fmt.Sprintf(`DROP DATABASE IF EXISTS %s;`, testDBName))
 		if err != nil {
 			if pqErr, ok := err.(*pq.Error); ok {
-				if pqErr.Code == "55006" { // database is being accessed by other users
+				if pqErr.Code == consts.PGDatabaseAccessedByOtherUsers {
 					return
 				}
 			}

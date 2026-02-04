@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"trxd/db/sqlc"
+	"trxd/utils/consts"
 
 	"github.com/lib/pq"
 )
@@ -19,7 +20,7 @@ func CreateConfig(ctx context.Context, key string, value any) (bool, error) {
 	})
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
-			if pqErr.Code == "23505" { // Unique violation error code
+			if pqErr.Code == consts.PGUniqueViolation {
 				return false, nil
 			}
 		}

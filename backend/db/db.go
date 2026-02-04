@@ -110,7 +110,7 @@ func ExecSQLFile(path string) (bool, error) {
 	_, err = db.Exec(string(data))
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
-			if pqErr.Code == "42710" { // Object already exists error code
+			if pqErr.Code == consts.PGObjectAlreadyExists {
 				return false, nil
 			}
 		}

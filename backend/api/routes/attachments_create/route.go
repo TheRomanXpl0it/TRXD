@@ -138,7 +138,7 @@ func Route(c *fiber.Ctx) error {
 	err = CreateAttachments(c.Context(), *data.ChallID, names, hashes)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
-			if pqErr.Code == "23505" { // Unique violation error code
+			if pqErr.Code == consts.PGUniqueViolation {
 				return utils.Error(c, fiber.StatusConflict, consts.AttachmentAlreadyExists)
 			}
 		}
