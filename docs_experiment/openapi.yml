@@ -5,11 +5,6 @@ info:
 servers:
   - url: http://127.0.0.1/api/
 
-
-#! https://spec.openapis.org/oas/v3.1.0
-
-# TODO compose examples
-
 paths:
   /register:
     post:
@@ -35,17 +30,10 @@ paths:
           content:
             application/json:
               schema:
-                oneOf: # TODO: figure out a way to list all errors
-                  - $ref: "./errors.yml#/components/schemas/invalid_json"
-                  - $ref: "./errors.yml#/components/schemas/missing_field"
-                  - $ref: "./errors.yml#/components/schemas/short_password"
-                  - $ref: "./errors.yml#/components/schemas/long_password"
-                  - $ref: "./errors.yml#/components/schemas/long_name"
-                  - $ref: "./errors.yml#/components/schemas/long_email"
-                  - $ref: "./errors.yml#/components/schemas/invalid_email"
+                $ref: "./errors.yml#/components/schemas/ErrorResponse"
         "409":
           description: "Conflict"
           content:
             application/json:
               schema:
-                $ref: "./errors.yml#/components/schemas/user_already_exists"
+                $ref: "./errors.yml#/components/schemas/ErrorResponse"

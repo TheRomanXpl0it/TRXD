@@ -13,12 +13,20 @@
    - DOCUMENTATION
 
 ## Frontend
- - convert .pngs to webp
  - Better tags handling in /challenges page
  - Add custom button themes for first/second/third bloods?
- - Improve challenge creation procedure
- - Fix admin flag submission 
+ - Make countdown timer more efficient
+ - Lazy load monaco editor
+ - Remove all category icon features
+ - Improve login/sign up error message handling
+ - Fix countries
+ - ~~Improve challenge creation procedure~~
+ - ~~Fix admin flag submission~~ 
+ - ~~convert .pngs to webp~~
  - ~~Improve "Team join" page on smaller screens~~
+ - ~~Add debouncing to challenges search~~
+ - Extra:
+   - Custom button color based on tags
 
 ## Ideas / Features
  - rename "hash domain" (not an hash anymore, only rand bytes)

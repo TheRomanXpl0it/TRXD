@@ -1,57 +1,38 @@
 components:
   schemas:
-    invalid_json:
+    ErrorResponse:
       type: object
       properties:
-        error:
-          type: string
-          example: "Invalid JSON format"
-
-    missing_field:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+      example:
+        errors:
+          - code: short_password
+            message: Password must be at least 8
+            field: password
+          - code: invalid_email
+            message: Invalid email format
+            field: email
+    ValidationError:
       type: object
+      required:
+        - code
+        - message
       properties:
-        error:
+        code:
           type: string
-          example: "Missing required fields"
-
-    short_password:
-      type: object
-      properties:
-        error:
+          enum:
+            - invalid_json
+            - missing_field
+            - short_password
+            - long_password
+            - long_name
+            - long_email
+            - invalid_email
+            - user_already_exists
+        message:
           type: string
-          example: "Password must be at least 8"
-    
-    long_password:
-      type: object
-      properties:
-        error:
+        field:
           type: string
-          example: "Password must not exceed 64"
-    
-    long_name:
-      type: object
-      properties:
-        error:
-          type: string
-          example: "Name must not exceed 64"
-
-    long_email:
-      type: object
-      properties:
-        error:
-          type: string
-          example: "Email must not exceed 256"
-    
-    invalid_email:
-      type: object
-      properties:
-        error:
-          type: string
-          example: "Invalid email format"
-
-    user_already_exists:
-      type: object
-      properties:
-        error:
-          type: string
-          example: "User already exists"

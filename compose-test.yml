@@ -16,16 +16,27 @@ services:
     depends_on:
       - postgres
       - redis
+    user: root
+    group_add:
+      - 972
+    security_opt:
+      - label=disable
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:Z
       - ./.data/attachments:/app/attachments
     networks:
       - default
       - internal
     # command: ["tail", "-f", "/dev/null"] #! Debugging
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.app.rule=HostRegexp(`{host:.+}`)"
+      - "traefik.http.services.app.loadbalancer.server.port=1337"
+      - "traefik.http.routers.app.entrypoints=web"
+      - "traefik.http.routers.app.priority=1"
 
   postgres:
-    image: postgres:18rc1-alpine
+    image: postgres:18-alpine
     restart: always
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
@@ -33,12 +44,22 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      PGDATA: /var/lib/postgresql/18/data/pgdata
     volumes:
-      - ./.data/pg_data:/var/lib/postgresql/18/data
+      - ./.data/pg_data:/var/lib/postgresql:Z
     networks:
       - internal
       - default #! Debugging
+
+  adminer:
+    image: adminer:5.4.1
+    restart: always
+    ports:
+      - 8000:8080
+    depends_on:
+      - postgres
+    networks:
+      - internal
+      - default
 
   redis:
     image: redis:8.2-alpine
@@ -47,7 +68,7 @@ services:
       - "${REDIS_PORT:-6379}:6379"
     command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
     volumes:
-      - ./.data/redis_data:/data
+      - ./.data/redis_data:/data:Z
     networks:
       - internal
       - default #! Debugging
@@ -57,12 +78,28 @@ services:
     restart: always
     ports:
       - "80:80"
-    depends_on:
-      - app
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/nginx.test.conf:/etc/nginx/nginx.conf:Z
     networks:
       - default
+
+  # traefik:
+  #   image: traefik:v3.6
+  #   restart: always
+  #   command:
+  #     - "--log.level=DEBUG" #! Debugging
+  #     - "--api.insecure=true" #! Debugging
+  #     - "--providers.docker=true"
+  #     - "--providers.providersThrottleDuration=0s"
+  #     - "--providers.docker.exposedbydefault=false"
+  #     - "--entrypoints.web.address=:80"
+  #   ports:
+  #     - "80:80"
+  #     - "8080:8080"
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #   networks:
+  #     - default
 
 
 networks:
