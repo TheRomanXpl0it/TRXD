@@ -1,15 +1,15 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
-import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import TeamMemberlist from '../TeamMemberlist.svelte';
 
-const mockPush = vi.fn();
 vi.mock('svelte-spa-router', () => ({
-  push: (...args: any[]) => mockPush(...args)
+  link: vi.fn()
 }));
 
 const mockGetUserData = vi.fn();
-vi.mock('$lib/user', () => ({ getUserData: (...args: any[]) => mockGetUserData(...args) }));
+vi.mock('$lib/user', () => ({
+  getUserData: (...args: any[]) => mockGetUserData(...args)
+}));
 
 const team = {
   id: 1,
@@ -24,33 +24,22 @@ const team = {
 };
 
 describe('TeamMemberlist', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('renders members and supports fuzzy search', async () => {
-    mockGetUserData.mockResolvedValue({ image: null });
-    render(TeamMemberlist, { props: { team } });
-
-    // Shows header and counts
-    expect(screen.getByText(/members/i)).toBeInTheDocument();
-    expect(screen.getByText(/showing/i)).toBeInTheDocument();
-
-    // Filter to alice only
-    const search = screen.getByPlaceholderText(/search members/i);
-    await userEvent.type(search, 'alice');
-    await waitFor(() => {
-      expect(screen.getByText('Alice')).toBeInTheDocument();
-    });
-    // Non-matching disappear
-    expect(screen.queryByText('Zed')).not.toBeInTheDocument();
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
 
-  it('navigates to account on name click', async () => {
+  it('renders members sorted by score', async () => {
     mockGetUserData.mockResolvedValue({ image: null });
     render(TeamMemberlist, { props: { team } });
 
-    const nameLink = await screen.findByText('Alice');
-    await userEvent.click(nameLink);
-    expect(mockPush).toHaveBeenCalledWith('/account/10');
+    expect(screen.getByText('Alice')).toBeInTheDocument();
+    expect(screen.getByText('Bob Sea')).toBeInTheDocument();
+    expect(screen.getByText('Seann')).toBeInTheDocument();
+    expect(screen.getByText('Zed')).toBeInTheDocument();
+
+    expect(screen.getByText(/1.*200.*pts/)).toBeInTheDocument();
+    expect(screen.getByText(/800.*pts/)).toBeInTheDocument();
+    expect(screen.getByText('Captain')).toBeInTheDocument();
   });
 
   it('fetches user images for members', async () => {
@@ -64,5 +53,11 @@ describe('TeamMemberlist', () => {
       expect(mockGetUserData).toHaveBeenCalledWith(13);
     });
   });
-});
 
+  it('renders links to account pages', () => {
+    render(TeamMemberlist, { props: { team } });
+
+    const aliceLink = screen.getByRole('link', { name: /Alice/i });
+    expect(aliceLink).toHaveAttribute('href', '/account/10');
+  });
+});

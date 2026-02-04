@@ -5,16 +5,12 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 
-	// Images (WebP)
 	import createTeamImg from '$lib/assets/createTeam.webp?url';
 	import joinTeamImg from '$lib/assets/joinTeam.webp?url';
-    import { joinTeam, createTeam } from '@/team';
-    import { toast } from 'svelte-sonner';
+	import { joinTeam, createTeam } from '@/team';
+	import { toast } from 'svelte-sonner';
 
-	let {
-		onjoined,
-		oncreated
-	} = $props<{
+	let { onjoined, oncreated } = $props<{
 		onjoined?: (detail: { joinName: string }) => void;
 		oncreated?: (detail: { registerName: string }) => void;
 	}>();
@@ -33,16 +29,16 @@
 	let registerLoading = $state(false);
 	let registerError: string | null = $state(null);
 
-    async function onJoinSubmit(e: Event) {
-        e.preventDefault();
-        joinError = null;
+	async function onJoinSubmit(e: Event) {
+		e.preventDefault();
+		joinError = null;
 
 		if (!joinName.trim() || !joinPassword.trim()) {
 			joinError = 'Please fill in both fields.';
 			return;
 		}
 
-        joinLoading = true;
+		joinLoading = true;
 		try {
 			const result = await joinTeam(joinName, joinPassword);
 			// Success case - api function only returns on success (200)
@@ -56,15 +52,15 @@
 			toast.success('Team Joined, welcome aboard!');
 		} catch (err: any) {
 			joinError = err?.message ?? 'Failed to join team.';
-			toast.error(joinError??"Error");
+			toast.error(joinError ?? 'Error');
 		} finally {
 			joinLoading = false;
 		}
 	}
 
-    async function onRegisterSubmit(e: Event) {
-        e.preventDefault();
-        registerError = null;
+	async function onRegisterSubmit(e: Event) {
+		e.preventDefault();
+		registerError = null;
 
 		if (!registerName.trim() || !registerPassword.trim() || !confirmRegisterPassword.trim()) {
 			registerError = 'Please fill all fields.';
@@ -83,7 +79,7 @@
 			return;
 		}
 
-        registerLoading = true;
+		registerLoading = true;
 		try {
 			const result = await createTeam(registerName, registerPassword);
 			// Success case - api function only returns on success (200)
@@ -104,52 +100,62 @@
 	}
 </script>
 
-<div class="mt-8 mb-12 flex flex-col items-center justify-center gap-8 xl:flex-row xl:gap-6">
+<div class="mb-12 mt-8 flex flex-col items-center justify-center gap-8 xl:flex-row xl:gap-6">
 	<!-- Join card -->
-	<Card.Root class="flex w-full flex-col p-6 sm:w-[32rem] sm:p-8 transition-shadow hover:shadow-lg">
-		<Card.Header class="flex-1 pb-4 space-y-3">
+	<Card.Root class="flex w-full flex-col p-6 transition-shadow hover:shadow-lg sm:w-[32rem] sm:p-8">
+		<Card.Header class="flex-1 space-y-3 pb-4">
 			<Card.Title class="Title">
 				<h2 class="text-2xl font-bold tracking-tight">Join a Team</h2>
-				<p class="text-base text-muted-foreground mt-2">Collaborate with an existing team</p>
+				<p class="text-muted-foreground mt-2 text-base">Collaborate with an existing team</p>
 			</Card.Title>
 			<Card.Content class="px-0 pt-4">
-				<div class="mx-auto rounded-lg bg-muted/30 p-8 border border-border/50">
+				<div class="bg-muted/30 border-border/50 mx-auto rounded-lg border p-8">
 					<img
 						src={joinTeamImg}
 						alt="Join a Team"
-						class="mx-auto h-auto w-full max-h-56 max-w-xs object-contain dark:invert"
+						class="mx-auto h-auto max-h-56 w-full max-w-xs object-contain dark:invert"
 					/>
 				</div>
 			</Card.Content>
 		</Card.Header>
-		<Button variant="outline" size="lg" class="cursor-pointer w-full text-base font-semibold" onclick={() => (joinOpen = true)}>Join Team</Button>
+		<Button
+			variant="outline"
+			size="lg"
+			class="w-full cursor-pointer text-base font-semibold"
+			onclick={() => (joinOpen = true)}>Join Team</Button
+		>
 	</Card.Root>
 
 	<!-- OR divider -->
 	<div class="flex items-center justify-center xl:flex-col">
-		<div class="h-px w-16 bg-border xl:h-16 xl:w-px"></div>
-		<span class="px-4 text-sm font-medium text-muted-foreground xl:py-4 xl:px-0">OR</span>
-		<div class="h-px w-16 bg-border xl:h-16 xl:w-px"></div>
+		<div class="bg-border h-px w-16 xl:h-16 xl:w-px"></div>
+		<span class="text-muted-foreground px-4 text-sm font-medium xl:px-0 xl:py-4">OR</span>
+		<div class="bg-border h-px w-16 xl:h-16 xl:w-px"></div>
 	</div>
 
 	<!-- Create card -->
-	<Card.Root class="flex w-full flex-col p-6 sm:w-[32rem] sm:p-8 transition-shadow hover:shadow-lg">
-		<Card.Header class="flex-1 pb-4 space-y-3">
+	<Card.Root class="flex w-full flex-col p-6 transition-shadow hover:shadow-lg sm:w-[32rem] sm:p-8">
+		<Card.Header class="flex-1 space-y-3 pb-4">
 			<Card.Title class="Title">
 				<h2 class="text-2xl font-bold tracking-tight">Create a Team</h2>
-				<p class="text-base text-muted-foreground mt-2">Start fresh with a new team</p>
+				<p class="text-muted-foreground mt-2 text-base">Start fresh with a new team</p>
 			</Card.Title>
 			<Card.Content class="px-0 pt-4">
-				<div class="mx-auto rounded-lg bg-muted/30 p-8 border border-border/50">
+				<div class="bg-muted/30 border-border/50 mx-auto rounded-lg border p-8">
 					<img
 						src={createTeamImg}
 						alt="Create a Team"
-						class="mx-auto h-auto w-full max-h-56 max-w-xs object-contain dark:invert"
+						class="mx-auto h-auto max-h-56 w-full max-w-xs object-contain dark:invert"
 					/>
 				</div>
 			</Card.Content>
 		</Card.Header>
-		<Button variant="default" size="lg" class="cursor-pointer w-full text-base font-semibold" onclick={() => (registerOpen = true)}>
+		<Button
+			variant="default"
+			size="lg"
+			class="w-full cursor-pointer text-base font-semibold"
+			onclick={() => (registerOpen = true)}
+		>
 			Create Team
 		</Button>
 	</Card.Root>
@@ -166,14 +172,14 @@
 
 		<form onsubmit={onJoinSubmit} class="mt-2 space-y-4">
 			<div class="grid gap-2">
-				<Label for="team-name">Team name</Label>
-				<Input id="team-name" placeholder="e.g. ZeroDayCats" bind:value={joinName} required />
+				<Label for="join-name">Team name</Label>
+				<Input id="join-name" placeholder="e.g. ZeroDayCats" bind:value={joinName} required />
 			</div>
 
 			<div class="grid gap-2">
-				<Label for="team-pass">Team password</Label>
+				<Label for="join-pass">Team password</Label>
 				<Input
-					id="team-pass"
+					id="join-pass"
 					type="password"
 					placeholder="••••••"
 					bind:value={joinPassword}
@@ -204,14 +210,14 @@
 
 		<form onsubmit={onRegisterSubmit} class="mt-2 space-y-4">
 			<div class="grid gap-2">
-				<Label for="team-name">Team name</Label>
-				<Input id="team-name" placeholder="TRX" bind:value={registerName} required />
+				<Label for="reg-name">Team name</Label>
+				<Input id="reg-name" placeholder="TRX" bind:value={registerName} required />
 			</div>
 
 			<div class="grid gap-2">
-				<Label for="team-pass">Team password</Label>
+				<Label for="reg-pass">Team password</Label>
 				<Input
-					id="team-pass"
+					id="reg-pass"
 					type="password"
 					placeholder="••••••"
 					bind:value={registerPassword}

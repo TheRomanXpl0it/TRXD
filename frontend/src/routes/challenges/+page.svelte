@@ -7,22 +7,39 @@
 	import { getCategories } from '$lib/categories';
 	import { user as authUser } from '$lib/stores/auth';
 	import { onMount, untrack } from 'svelte';
-	import { createQuery } from '@tanstack/svelte-query';
-	
+	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
+
 	import ChallengeFilters from '$lib/components/challenges/ChallengeFilters.svelte';
 	import ChallengeCard from '$lib/components/challenges/ChallengeCard.svelte';
 	import ChallengeModal from '$lib/components/challenges/ChallengeModal.svelte';
 	import AdminControls from '$lib/components/challenges/AdminControls.svelte';
+	import { Flag } from '@lucide/svelte';
 
 	import { config } from '$lib/env';
 
-	// Lazy-loaded component handles
+	// Lazy-loaded admin component handles
 	type Cmp = typeof import('svelte').SvelteComponent;
 	let CreateModalCmp: Cmp | null = $state(null);
 	let DeleteDialogCmp: Cmp | null = $state(null);
 	let ChallengeEditSheetCmp: Cmp | null = $state(null);
 
-	// ** lazy load elements on first use **
+	const isAdmin = $derived($authUser?.role === 'Admin');
+
+	// Preload admin components when page loads if user is admin
+	onMount(() => {
+		if (isAdmin) {
+			import('$lib/components/challenges/CreateChallengeModal.svelte').then((mod) => {
+				CreateModalCmp = mod.default;
+			});
+			import('$lib/components/challenges/DeleteChallengeDialog.svelte').then((mod) => {
+				DeleteDialogCmp = mod.default;
+			});
+			import('$lib/components/challenges/ChallengeEditSheet.svelte').then((mod) => {
+				ChallengeEditSheetCmp = mod.default;
+			});
+		}
+	});
+
 	async function openCreate() {
 		if (!CreateModalCmp) {
 			const mod = await import('$lib/components/challenges/CreateChallengeModal.svelte');
@@ -41,11 +58,11 @@
 	}
 
 	async function modifyChallenge(ch: any) {
-     	if (!ChallengeEditSheetCmp) {
-      		const mod = await import('$lib/components/challenges/ChallengeEditSheet.svelte');
-      		ChallengeEditSheetCmp = mod.default;
-     	}
-     	editOpen = true;
+		if (!ChallengeEditSheetCmp) {
+			const mod = await import('$lib/components/challenges/ChallengeEditSheet.svelte');
+			ChallengeEditSheetCmp = mod.default;
+		}
+		editOpen = true;
 	}
 
 	// Local state
@@ -54,11 +71,12 @@
 	// Track selected challenge ID instead of the full object to avoid circular dependencies
 	let selectedId = $state<number | null>(null);
 	let countdowns: Record<string, number> = $state({});
+	const queryClient = useQueryClient();
 
 	const challengesQuery = createQuery(() => ({
 		queryKey: ['challenges'],
 		queryFn: getChallenges,
-		staleTime: 0 // Always fetch fresh data
+		staleTime: 5 * 60 * 1000 // 5 minutes
 	}));
 
 	// Don't need to refetch categories
@@ -74,29 +92,27 @@
 
 	// Derive the actual selected challenge from the ID - always fresh from challenges array
 	const selected = $derived(
-		selectedId ? challenges.find((c: any) => c.id === selectedId) ?? null : null
+		selectedId ? (challenges.find((c: any) => c.id === selectedId) ?? null) : null
 	);
 
 	const categories = $derived(
 		(categoriesQuery.data ?? [])
 			.map((c: any) => ({
-				value: c.name,
-				label: c.name
+				value: typeof c === 'string' ? c : c.name,
+				label: typeof c === 'string' ? c : c.name
 			}))
-			.sort((a: any, b: any) => a.label.localeCompare(b.label))
+			.sort((a: any, b: any) => (a.label || '').localeCompare(b.label || ''))
 	);
-	
-	//comparators to sort challenges after filtering
-	const comparators: Record<string, (a: Challenge, b: Challenge) => number> = {
-        "points-min-to-max": (a, b) => (a.points ?? 0) - (b.points ?? 0),
-        "points-max-to-min": (a, b) => (b.points ?? 0) - (a.points ?? 0),
-        "alphabetical-a-to-z": (a, b) => (a.name ?? a.title ?? '').localeCompare(b.name ?? b.title ?? ''),
-        "alphabetical-z-to-a": (a, b) => (b.name ?? b.title ?? '').localeCompare(a.name ?? a.title ?? '')
-    };
-	
+
+	// Sort challenges by points (lowest first), stable sort for equal points
 	const sortedChallenges = $derived(
-        [...filteredChallenges].sort(comparators[sortMethod] ?? comparators["alphabetical-a-to-z"])
-    );
+		filteredChallenges
+			.map((c, i) => ({ ...c, _index: i }))
+			.sort((a, b) => {
+				const pointsDiff = (a.points ?? 0) - (b.points ?? 0);
+				return pointsDiff !== 0 ? pointsDiff : a._index - b._index;
+			})
+	);
 
 	let points: number = $state(500);
 	let category: any = $state(null);
@@ -115,8 +131,8 @@
 	// Filters
 	let filterCategories = $state<string[]>([]);
 	let filterTags = $state<string[]>([]);
-	let sortMethod = $state<string>('points-min-to-max');
 	let search = $state('');
+	let debouncedSearch = $state('');
 	let tagsOpen = $state(false);
 	let categoriesOpen = $state(false);
 
@@ -143,7 +159,7 @@
 			.trim()
 			.toLowerCase();
 	}
-	
+
 	function fuzzyScore(text: string, query: string) {
 		const t = norm(text),
 			q = norm(query);
@@ -170,28 +186,43 @@
 		).sort((a, b) => a.localeCompare(b))
 	);
 
+	// Debounce search input
+	let debounceTimeout: ReturnType<typeof setTimeout> | undefined;
+
+	function updateDebouncedSearch() {
+		if (debounceTimeout) clearTimeout(debounceTimeout);
+		debounceTimeout = setTimeout(() => {
+			debouncedSearch = search;
+		}, 300);
+	}
+
+	$effect(() => {
+		// React to search changes
+		search;
+		updateDebouncedSearch();
+	});
+
 	// Optimize filtering with early returns and memoization
 	const filteredChallenges = $derived.by(() => {
-		const hasSearch = search.trim().length > 0;
+		const hasSearch = debouncedSearch.trim().length > 0;
 		const hasCategoryFilter = filterCategories && filterCategories.length > 0;
 		const hasTagsFilter = filterTags && filterTags.length > 0;
-		
+
 		// No filters at all - return all challenges
 		if (!hasSearch && !hasCategoryFilter && !hasTagsFilter) {
 			return challenges ?? [];
 		}
-		
-		const searchQuery = hasSearch ? norm(search) : '';
-		
+
+		const searchQuery = hasSearch ? norm(debouncedSearch) : '';
+
 		return (challenges ?? []).filter((c: any) => {
-			// Category filter
 			if (hasCategoryFilter) {
-				const cat = norm(c?.category?.name ?? c?.category ?? '');
+				const cat = norm(c.category);
 				if (!filterCategories.some((fc: string) => norm(fc) === cat)) {
 					return false;
 				}
 			}
-			
+
 			// Tags filter
 			if (hasTagsFilter) {
 				const tags = (c?.tags ?? []).map((t: any) => String(t));
@@ -199,18 +230,17 @@
 					return false;
 				}
 			}
-			
-			// Search filter
+
 			if (hasSearch) {
-				const cat = c?.category?.name ?? c?.category ?? '';
+				const cat = c.category;
 				const tags = (c?.tags ?? []).map((t: any) => String(t));
 				const name = c?.name ?? c?.title ?? '';
-				
+
 				// Quick check: exact name match
 				if (norm(name).includes(searchQuery)) return true;
 				if (norm(cat).includes(searchQuery)) return true;
 				if (tags.some((t: string) => norm(t).includes(searchQuery))) return true;
-				
+
 				// Fallback to fuzzy if simple includes didn't work
 				return (
 					fuzzyScore(name, searchQuery) > -Infinity ||
@@ -218,14 +248,12 @@
 					tags.some((t: string) => fuzzyScore(t, searchQuery) > -Infinity)
 				);
 			}
-			
+
 			return true;
 		});
 	});
 
-	const activeFiltersCount = $derived(
-		(filterCategories?.length ?? 0) + (filterTags?.length ?? 0)
-	);
+	const activeFiltersCount = $derived((filterCategories?.length ?? 0) + (filterTags?.length ?? 0));
 
 	// delete confirmation modal state
 	let confirmDeleteOpen = $state(false);
@@ -257,30 +285,37 @@
 
 	onMount(() => {
 		const timer = setInterval(() => {
-			for (const id in countdowns) if (countdowns[id] > 0) countdowns[id] = countdowns[id] - 1;
+			let hasActive = false;
+			for (const id in countdowns) {
+				if (countdowns[id] > 0) {
+					countdowns[id] = countdowns[id] - 1;
+					hasActive = true;
+				}
+			}
+			// Optional: clear interval if no active countdowns, but re-enabling it is complex
+			// Keeping it simple but adding the check to avoid useless writes if nothing is active
 		}, 1000);
 		return () => clearInterval(timer);
 	});
 
+	function groupByCategory(list: Challenge[]) {
+		const map: Record<string, Challenge[]> = {};
+		for (const c of list) {
+			const label = c.category ?? 'Uncategorized';
+			(map[label] ??= []).push(c);
+		}
+		return Object.entries(map)
+			.sort(([a], [b]) => a.localeCompare(b))
+			.map(([cat, items]) => [cat, items]) as [string, Challenge[]][];
+	}
 
-	function groupByCategory(list: Challenge[], cmp: (a: Challenge, b: Challenge) => number) {
-        const map: Record<string, Challenge[]> = {};
-        for (const c of list) {
-            const label = (typeof c?.category === 'string' ? c.category : c?.category?.name) ?? 'Uncategorized';
-            (map[label] ??= []).push(c);
-        }
-        return Object.entries(map)
-            .sort(([a], [b]) => a.localeCompare(b))
-            .map(([cat, items]) => [cat, items.sort(cmp)]) as [string, Challenge[]][];
-    }
-    
-    const grouped = $derived.by(() => groupByCategory(sortedChallenges, comparators[sortMethod]));
+	const grouped = $derived.by(() => groupByCategory(sortedChallenges));
 
 	function openChallenge(ch: any) {
 		selectedId = ch?.id ?? null;
 		openModal = true;
 	}
-	
+
 	function closeModal() {
 		openModal = false;
 		// Clear selection when closing
@@ -324,13 +359,25 @@
 	}
 </script>
 
-<p class="mt-5 text-3xl font-bold text-gray-800 dark:text-gray-100">Challenges</p>
-<hr class="my-2 h-px border-0 bg-gray-200 dark:bg-gray-700" />
-<p class="mb-10 text-lg italic text-gray-500 dark:text-gray-400">
-	"A man who loves to walk will walk more than a man who loves his destination"
-</p>
+<div
+	class="from-muted/20 to-background mb-6 mt-6 rounded-xl border-0 bg-gradient-to-br p-6 shadow-sm"
+>
+	<div class="flex items-center gap-4">
+		<div
+			class="bg-background flex h-16 w-16 shrink-0 items-center justify-center rounded-full shadow-sm"
+		>
+			<Flag class="text-muted-foreground h-8 w-8" />
+		</div>
+		<div>
+			<h1 class="text-3xl font-bold tracking-tight">Challenges</h1>
+			<p class="text-muted-foreground mt-2 text-sm">
+				"A man who loves to walk will walk more than a man who loves his destination"
+			</p>
+		</div>
+	</div>
+</div>
 
-{#if $authUser?.role === 'Admin'}
+{#if isAdmin}
 	<AdminControls
 		onopen-create={openCreate}
 		oncategory-created={() => {
@@ -344,7 +391,6 @@
 	bind:search
 	bind:filterCategories
 	bind:filterTags
-	bind:sortMethod
 	bind:compactView
 	{categories}
 	{allTags}
@@ -357,15 +403,23 @@
 		<p class="text-gray-600 dark:text-gray-400">Loading challenges...</p>
 	</div>
 {:else if error}
-	<div class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-600 dark:border-red-800 dark:bg-red-950/20">
+	<div
+		class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-600 dark:border-red-800 dark:bg-red-950/20"
+	>
 		<p class="font-semibold">Error loading challenges</p>
 		<p class="text-sm">{error}</p>
 	</div>
 {:else}
 	{#each grouped as [category, items]}
-		<section class={compactView ? 'mb-4' : 'mb-10'} aria-labelledby="category-{category.replace(/\s+/g, '-')}">
+		<section
+			class={compactView ? 'mb-4' : 'mb-10'}
+			aria-labelledby="category-{category.replace(/\s+/g, '-')}"
+		>
 			<div class="{compactView ? 'mb-2' : 'mb-3'} flex items-center gap-3">
-				<h2 id="category-{category.replace(/\s+/g, '-')}" class="text-2xl font-bold leading-tight text-gray-900 dark:text-white">
+				<h2
+					id="category-{category.replace(/\s+/g, '-')}"
+					class="text-2xl font-bold leading-tight text-gray-900 dark:text-white"
+				>
 					{category}
 				</h2>
 				<span class="text-sm text-gray-500 dark:text-gray-400">
@@ -385,7 +439,11 @@
 					{/each}
 				</div>
 			{:else}
-				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 px-0.5" role="list" aria-label="{category} challenges">
+				<div
+					class="grid gap-4 px-0.5 sm:grid-cols-2 lg:grid-cols-3"
+					role="list"
+					aria-label="{category} challenges"
+				>
 					{#each items as ch (ch.id)}
 						<ChallengeCard
 							challenge={ch}
@@ -403,48 +461,50 @@
 <ChallengeModal
 	bind:open={openModal}
 	challenge={selected}
-	countdown={selected?.id ? countdowns[selected.id] ?? 0 : 0}
-	isAdmin={$authUser?.role === 'Admin'}
+	countdown={selected?.id ? (countdowns[selected.id] ?? 0) : 0}
+	{isAdmin}
 	onEdit={modifyChallenge}
 	onDelete={requestDelete}
 	onSolved={handleChallengeSolved}
 	onCountdownUpdate={updateCountdown}
 	onOpenSolves={() => (solvesOpen = true)}
-	onInstanceChange={() => challengesQuery.refetch()}
+	onInstanceChange={(updatedChallenge) => {
+		if (updatedChallenge) {
+			queryClient.setQueryData(['challenges'], (old: any[]) => {
+				return old?.map((c) => (c.id === updatedChallenge.id ? updatedChallenge : c)) ?? [];
+			});
+		} else {
+			challengesQuery.refetch();
+		}
+	}}
 />
 
 <SolveListSheet bind:open={solvesOpen} challenge={selected} />
 
-
 {#if DeleteDialogCmp}
-  <DeleteDialogCmp
-    bind:open={confirmDeleteOpen}
-    {toDelete}
-    {deleting}
-    on:confirm={confirmDelete}
-  />
+	<DeleteDialogCmp bind:open={confirmDeleteOpen} {toDelete} {deleting} on:confirm={confirmDelete} />
 {/if}
 
 {#if CreateModalCmp}
-  <CreateModalCmp
-    bind:open={createChallengeOpen}
-    bind:challengeName
-    bind:challengeDescription
-    bind:category
-    bind:challengeType
-    bind:points
-    bind:dynamicScore
-    categories={categories}
-    challengeTypes={challengeTypes}
-    oncreated={() => challengesQuery.refetch()}
-  />
+	<CreateModalCmp
+		bind:open={createChallengeOpen}
+		bind:challengeName
+		bind:challengeDescription
+		bind:category
+		bind:challengeType
+		bind:points
+		bind:dynamicScore
+		{categories}
+		{challengeTypes}
+		oncreated={() => challengesQuery.refetch()}
+	/>
 {/if}
 
 {#if ChallengeEditSheetCmp}
-  <ChallengeEditSheetCmp
-    bind:open={editOpen}
-    challenge_user={selected}
-    onupdated={() => challengesQuery.refetch()}
-    all_tags={allTags}
-  />
+	<ChallengeEditSheetCmp
+		bind:open={editOpen}
+		challenge_user={selected}
+		onupdated={() => challengesQuery.refetch()}
+		all_tags={allTags}
+	/>
 {/if}

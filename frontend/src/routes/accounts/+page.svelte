@@ -1,31 +1,44 @@
 <script lang="ts">
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Pagination from '$lib/components/ui/pagination/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
 	import { getUsers } from '@/user';
 	import { link, push } from 'svelte-spa-router';
 	import ErrorMessage from '$lib/components/ui/error-message.svelte';
-	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
-	import { Avatar } from 'flowbite-svelte';
-	import { BugOutline } from 'flowbite-svelte-icons';
-	import Icon from '@iconify/svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import countries from '$lib/data/countries.json';
+	import EmptyState from '$lib/components/ui/empty-state.svelte';
+	import { UserCircle, Globe } from '@lucide/svelte';
+	import GeneratedAvatar from '$lib/components/ui/avatar/generated-avatar.svelte';
+	import CountryFlag from '$lib/components/ui/country-flag.svelte';
+
+	import { user } from '$lib/stores/auth';
 
 	let perPage = $state(20);
+	let currentPage = $state(1);
+
+	const isAdmin = $derived($user?.role === 'Admin');
 
 	const usersQuery = createQuery(() => ({
-		queryKey: ['users'],
-		queryFn: getUsers,
-		staleTime: 5 * 60 * 1000
+		queryKey: ['users', currentPage, perPage],
+		queryFn: () => getUsers(currentPage, perPage),
+		staleTime: 5 * 60 * 1000,
+		placeholderData: (previousData) => previousData
 	}));
 
-	const usersData = $derived(usersQuery.data ?? []);
+	// Handle both PaginatedResponse and flat array (fallback)
+	const rawData = $derived(usersQuery.data);
+	const isPaginated = $derived(!!rawData?.pagination);
+	const usersData = $derived(Array.isArray(rawData) ? rawData : (rawData?.data ?? []));
+	const totalCount = $derived(isPaginated ? (rawData?.pagination?.total ?? 0) : usersData.length);
+
 	const loading = $derived(usersQuery.isLoading);
 	const error = $derived(usersQuery.error?.message ?? null);
 
 	// Helper to convert ISO3 to ISO2 for flag icons
 	function getCountryIso2(iso3: string): string | null {
-		const country = (countries as any[]).find(c => c.iso3?.toUpperCase() === iso3?.toUpperCase());
+		const country = (countries as any[]).find((c) => c.iso3?.toUpperCase() === iso3?.toUpperCase());
 		return country?.iso2?.toUpperCase() ?? null;
 	}
 
@@ -34,147 +47,258 @@
 		return name.slice(0, maxLength) + '...';
 	}
 
+	function getInitials(name: string): string {
+		return name
+			.split(' ')
+			.map((n) => n[0])
+			.slice(0, 2)
+			.join('')
+			.toUpperCase();
+	}
+
+	function getAvatarColor(name: string): string {
+		const colors = [
+			'bg-red-500',
+			'bg-orange-500',
+			'bg-amber-500',
+			'bg-yellow-500',
+			'bg-lime-500',
+			'bg-green-500',
+			'bg-emerald-500',
+			'bg-teal-500',
+			'bg-cyan-500',
+			'bg-sky-500',
+			'bg-blue-500',
+			'bg-indigo-500',
+			'bg-violet-500',
+			'bg-purple-500',
+			'bg-fuchsia-500',
+			'bg-pink-500',
+			'bg-rose-500'
+		];
+		let hash = 0;
+		for (let i = 0; i < name.length; i++) {
+			hash = name.charCodeAt(i) + ((hash << 5) - hash);
+		}
+		return colors[Math.abs(hash) % colors.length];
+	}
+
+	function getRoleBadgeVariant(role: string): string {
+		const r = role?.toLowerCase() || 'player';
+		if (r === 'admin')
+			return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800';
+		if (r === 'author')
+			return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-800';
+		if (r === 'spectator')
+			return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400 border-gray-200 dark:border-gray-700';
+		return 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 border-blue-200 dark:border-blue-800';
+	}
+
 	// Sort alphabetically by name
 	const sorted = $derived(
-		(Array.isArray(usersData) ? [...usersData] : []).sort(
-			(a, b) => (a?.name || '').localeCompare(b?.name || '')
+		(Array.isArray(usersData) ? [...usersData] : []).sort((a, b) =>
+			(a?.name || '').localeCompare(b?.name || '')
 		)
 	);
-	const count = $derived(sorted.length);
+	const count = $derived(totalCount);
 
 	// Track page changes
-	let currentPage = $state(1);
 	$effect(() => {
 		if (currentPage > 1) {
 			setTimeout(() => {
 				const paginationEl = document.getElementById('pagination-controls');
 				if (paginationEl) {
-					paginationEl.scrollIntoView({ behavior: 'instant', block: 'nearest' });
+					paginationEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 				}
 			}, 0);
 		}
 	});
 </script>
 
-<p class="mt-5 text-3xl font-bold text-gray-800 dark:text-gray-100">Accounts</p>
-<hr class="my-2 mb-10 h-px border-0 bg-gray-200 dark:bg-gray-700" />
-
-{#if loading}
-	<div class="flex flex-col items-center justify-center py-12">
-		<Spinner class="mb-4 h-8 w-8" />
-		<p class="text-gray-600 dark:text-gray-400">Loading accounts...</p>
-	</div>
-{:else if error}
-	<ErrorMessage title="Error loading accounts" message={error} />
-{:else}
-	{@const startIndex = (currentPage - 1) * perPage}
-	{@const pageRows = sorted.slice(startIndex, startIndex + perPage)}
-	{@const totalPages = Math.max(1, Math.ceil(count / perPage))}
-	{@const singlePage = totalPages <= 1}
-
-	<!-- Table -->
-	<div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-		<Table.Root>
-			<Table.Header>
-				<Table.Row>
-					<Table.Head class="w-[4rem]">Photo</Table.Head>
-					<Table.Head class="min-w-[10rem]">Account Name</Table.Head>
-					<Table.Head class="w-[8rem]">Country</Table.Head>
-				</Table.Row>
-			</Table.Header>
-
-			<Table.Body>
-				{#if pageRows.length === 0}
-					<Table.Row>
-						<Table.Cell colspan={3} class="py-8 text-center text-gray-500">
-							No accounts yet.
-						</Table.Cell>
-					</Table.Row>
-				{:else}
-					{#each pageRows as account (account.id)}
-						<Table.Row class="h-16">
-							<Table.Cell class="py-3">
-								{#if account.image}
-									<div class="h-12 w-12 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-										<img
-											src={account.image}
-											alt={account.name}
-											class="h-full w-full object-cover"
-										/>
-									</div>
-								{:else}
-									<div class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700">
-										<BugOutline class="h-6 w-6" />
-									</div>
-								{/if}
-							</Table.Cell>
-
-							<Table.Cell class="py-3">
-								<a
-									href={`#/account/${account.id}`}
-									use:link
-									onclick={(e) => {
-										e.preventDefault();
-										push(`/account/${account.id}`);
-									}}
-									class="text-primary cursor-pointer text-sm font-medium underline-offset-2 hover:underline sm:text-base"
-									title={`View account ${account.name}`}
-								>
-									{truncateName(account.name)}
-								</a>
-							</Table.Cell>
-
-							<Table.Cell class="py-3">
-								{#if account.country}
-									{@const iso2 = getCountryIso2(account.country)}
-									<div class="flex items-center gap-2">
-										{#if iso2}
-											<Icon icon={`circle-flags:${iso2.toLowerCase()}`} width="20" height="20" />
-										{/if}
-										<span class="text-sm">{account.country}</span>
-									</div>
-								{:else}
-									<span class="text-xs text-gray-500">-</span>
-								{/if}
-							</Table.Cell>
-						</Table.Row>
-					{/each}
-				{/if}
-			</Table.Body>
-		</Table.Root>
-	</div>
-
-	<!-- Pagination -->
-	<Pagination.Root {count} {perPage} bind:page={currentPage} siblingCount={1} class="mt-4">
-		{#snippet children({ pages, currentPage: pageNum })}
-			<div class="flex w-full justify-center overflow-x-auto" id="pagination-controls">
-				<Pagination.Content
-					class={`flex items-center justify-center gap-1 ${singlePage ? 'pointer-events-none opacity-50' : ''}`}
-					aria-disabled={singlePage}
-				>
-					<Pagination.Item>
-						<Pagination.PrevButton />
-					</Pagination.Item>
-
-					{#each pages as page (page.key)}
-						{#if page.type === 'ellipsis'}
-							<Pagination.Item>
-								<Pagination.Ellipsis />
-							</Pagination.Item>
-						{:else}
-							<Pagination.Item>
-								<Pagination.Link {page} isActive={pageNum === page.value}>
-									{page.value}
-								</Pagination.Link>
-							</Pagination.Item>
-						{/if}
-					{/each}
-
-					<Pagination.Item>
-						<Pagination.NextButton />
-					</Pagination.Item>
-				</Pagination.Content>
+<div class="mx-auto max-w-5xl space-y-8 py-10">
+	<div
+		class="from-muted/20 to-background mb-6 mt-6 rounded-xl border-0 bg-gradient-to-br p-6 shadow-sm"
+	>
+		<div class="flex items-center gap-4">
+			<div
+				class="bg-background flex h-16 w-16 shrink-0 items-center justify-center rounded-full shadow-sm"
+			>
+				<UserCircle class="text-muted-foreground h-8 w-8" />
 			</div>
-		{/snippet}
-	</Pagination.Root>
-{/if}
+			<div>
+				<h1 class="text-3xl font-bold tracking-tight">Accounts</h1>
+				<p class="text-muted-foreground mt-2 text-sm">Registered users and their statistics.</p>
+			</div>
+		</div>
+	</div>
+
+	{#if error}
+		<ErrorMessage title="Error loading accounts" message={error} />
+	{:else}
+		<Card.Root class="overflow-hidden border-0 shadow-sm">
+			<Card.Content class="p-0">
+				<div class="relative w-full overflow-auto">
+					<Table.Root>
+						<Table.Header class="bg-transparent [&_tr]:border-b-0">
+							<Table.Row class="hover:bg-transparent">
+								<Table.Head
+									class="text-muted-foreground/70 w-[300px] bg-transparent text-[10px] font-bold uppercase tracking-wider"
+									>User</Table.Head
+								>
+								<Table.Head
+									class="text-muted-foreground/70 w-[200px] bg-transparent text-[10px] font-bold uppercase tracking-wider"
+									>Country</Table.Head
+								>
+								{#if isAdmin}
+									<Table.Head
+										class="text-muted-foreground/70 bg-transparent text-[10px] font-bold uppercase tracking-wider"
+										>Role</Table.Head
+									>
+								{/if}
+								<Table.Head
+									class="text-muted-foreground/70 bg-transparent text-right text-[10px] font-bold uppercase tracking-wider"
+									>Stats</Table.Head
+								>
+							</Table.Row>
+						</Table.Header>
+						<Table.Body>
+							{#if loading && usersData.length === 0}
+								{#each Array(5) as _}
+									<Table.Row>
+										<Table.Cell>
+											<Skeleton class="h-4 w-[150px]" />
+										</Table.Cell>
+										<Table.Cell><Skeleton class="h-5 w-[100px]" /></Table.Cell>
+										{#if isAdmin}
+											<Table.Cell><Skeleton class="h-6 w-[80px] rounded-full" /></Table.Cell>
+										{/if}
+										<Table.Cell class="text-right"
+											><Skeleton class="ml-auto h-4 w-[50px]" /></Table.Cell
+										>
+									</Table.Row>
+								{/each}
+							{:else}
+								{@const pageRows = isPaginated
+									? sorted
+									: sorted.slice((currentPage - 1) * perPage, currentPage * perPage)}
+
+								{#if pageRows.length === 0}
+									<Table.Row>
+										<Table.Cell colspan={isAdmin ? 4 : 3} class="h-[300px] text-center">
+											<EmptyState
+												icon={UserCircle}
+												title="No accounts found"
+												description="There are no registered accounts to display at the moment."
+											/>
+										</Table.Cell>
+									</Table.Row>
+								{:else}
+									{#each pageRows as account, i (account.id)}
+										<Table.Row
+											class="hover:bg-muted/50 cursor-pointer border-b-0 transition-colors"
+											onclick={() => push(`/account/${account.id}`)}
+										>
+											<Table.Cell class="py-3">
+												<div class="flex items-center gap-3">
+													<div
+														class="border-border h-8 w-8 shrink-0 overflow-hidden rounded-full border"
+													>
+														<GeneratedAvatar seed={account.name} class="h-full w-full" />
+													</div>
+													<span
+														class="text-foreground decoration-primary/50 font-medium underline-offset-4 hover:underline"
+													>
+														{truncateName(account.name)}
+													</span>
+												</div>
+											</Table.Cell>
+
+											<Table.Cell>
+												{#if account.country}
+													{@const iso2 = getCountryIso2(account.country)}
+													<div class="flex items-center gap-2">
+														<div
+															class="bg-background relative flex h-6 w-8 items-center justify-center overflow-hidden rounded border shadow-sm"
+														>
+															{#if iso2}
+																<CountryFlag
+																	country={iso2}
+																	width={32}
+																	height={32}
+																	class="h-full w-full object-cover"
+																/>
+															{:else}
+																<Globe class="text-muted-foreground h-4 w-4" />
+															{/if}
+														</div>
+													</div>
+												{:else}
+													<span class="text-muted-foreground text-sm italic">Not specified</span>
+												{/if}
+											</Table.Cell>
+
+											{#if isAdmin}
+												<Table.Cell>
+													<span
+														class={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${getRoleBadgeVariant(account.role)}`}
+													>
+														{account.role ?? 'Player'}
+													</span>
+												</Table.Cell>
+											{/if}
+
+											<Table.Cell class="text-right">
+												<div
+													class="font-mono text-sm font-medium tabular-nums leading-none tracking-tight"
+												>
+													{account.score?.toLocaleString() ?? 0} pts
+												</div>
+											</Table.Cell>
+										</Table.Row>
+									{/each}
+								{/if}
+							{/if}
+						</Table.Body>
+					</Table.Root>
+				</div>
+			</Card.Content>
+		</Card.Root>
+
+		<!-- Pagination -->
+		{#if count > perPage}
+			<Pagination.Root {count} {perPage} bind:page={currentPage} siblingCount={1} class="mt-4">
+				{#snippet children({ pages, currentPage: pageNum })}
+					<div class="flex w-full justify-center overflow-x-auto py-4" id="pagination-controls">
+						<Pagination.Content class="gap-4">
+							<Pagination.Item class="mx-2">
+								<Pagination.PrevButton class="h-9 w-9" />
+							</Pagination.Item>
+
+							{#each pages as page (page.key)}
+								{#if page.type === 'ellipsis'}
+									<Pagination.Item>
+										<Pagination.Ellipsis />
+									</Pagination.Item>
+								{:else}
+									<Pagination.Item>
+										<Pagination.Link
+											{page}
+											isActive={pageNum === page.value}
+											class="data-[selected]:bg-foreground data-[selected]:text-background h-9 w-9 transition-all data-[selected]:shadow-md"
+										>
+											{page.value}
+										</Pagination.Link>
+									</Pagination.Item>
+								{/if}
+							{/each}
+
+							<Pagination.Item class="mx-2">
+								<Pagination.NextButton class="h-9 w-9" />
+							</Pagination.Item>
+						</Pagination.Content>
+					</div>
+				{/snippet}
+			</Pagination.Root>
+		{/if}
+	{/if}
+</div>

@@ -1,111 +1,56 @@
 <script lang="ts">
-	/* UI */
 	import * as Sheet from '$lib/components/ui/sheet/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import Label from '$lib/components/ui/label/label.svelte';
-	import { toast } from 'svelte-sonner';
-	import Icon from '@iconify/svelte';
-	import { Avatar } from 'flowbite-svelte';
-	import * as Select from '$lib/components/ui/select/index.js';
-	import countries from '$lib/data/countries.json';
-	/* Your provided function */
-import { updateUser } from '$lib/user';
-import { tick } from 'svelte';
+	import CountrySelect from '$lib/components/ui/country-select.svelte';
+	import { updateUser } from '$lib/user';
+	import { showSuccess, showError } from '$lib/utils/toast';
+	import { getCountryByIso3 } from '$lib/utils/countries';
+	import GeneratedAvatar from '$lib/components/ui/avatar/generated-avatar.svelte';
+	import CountryFlag from '$lib/components/ui/country-flag.svelte';
 
-	let { 
-		open = $bindable(false), 
+	let {
+		open = $bindable(false),
 		user,
 		onupdated
 	} = $props<{
 		open?: boolean;
-		user?: { id: number; name?: string; country?: string; image?: string };
+		user?: { id: number; name?: string; country?: string };
 		onupdated?: (detail: { id: number }) => void;
 	}>();
 
-	// Initialize form fields with current user data
 	let name = $state('');
-	let imageUrl = $state('');
-	let countryCode = $state<string>('');
+	let countryCode = $state('');
 	let saving = $state(false);
 
-	type Country = { name: string; iso2: string; iso3?: string; emoji?: string };
-	const countryItems = (countries as Country[])
-		.filter((c) => c.iso3) // Only include countries with iso3
-		.map((c) => ({ value: c.iso3!.toUpperCase(), label: c.name, iso2: c.iso2.toUpperCase() }))
-		.sort((a, b) => a.label.localeCompare(b.label));
-	
-	let countrySearch = $state('');
-	const filteredCountries = $derived(
-		countrySearch.trim() 
-			? countryItems.filter(c => c.label.toLowerCase().includes(countrySearch.toLowerCase()) || c.value.toLowerCase().includes(countrySearch.toLowerCase())).slice(0, 50)
-			: countryItems.slice(0, 50)
-	);
-
-	// Watch for user changes and update form fields
 	$effect(() => {
 		if (user) {
 			name = user.name ?? '';
-			imageUrl = user.image ?? '';
 			countryCode = user.country?.toUpperCase?.() ?? '';
 		}
 	});
-
-	// Reset form when sheet opens
-	$effect(() => {
-		if (open && user) {
-			name = user.name ?? '';
-			imageUrl = user.image ?? '';
-			countryCode = user.country?.toUpperCase?.() ?? '';
-		}
-	});
-
-	// TODO: Remove this
-	function isLikelyUrl(s: string): boolean {
-		if (!s) return false;
-		try {
-			const url = new URL(s);
-			return url.protocol.startsWith("http:") || url.protocol.startsWith("https:");
-		} catch {
-			return false;
-		}
-	}
 
 	async function onSave(e: Event) {
 		e.preventDefault();
 		if (saving) return;
 
-    // Ensure any pending bound input updates are flushed
-    await tick();
+		const trimmedName = name.trim();
+		const trimmedCountry = countryCode.trim();
 
-    const id = user?.id ?? 0;
-    // Prefer direct reads from inputs to avoid any binding lag in tests
-    const nEl = document.getElementById('pf-name') as HTMLInputElement | null;
-    const iEl = document.getElementById('pf-image') as HTMLInputElement | null;
-    const n = (nEl?.value ?? name).trim();
-    const c = countryCode.trim();
-    const i = (iEl?.value ?? imageUrl).trim();
-
-		// Validate URL format first (if any value is entered)
-		if (i && !isLikelyUrl(i)) {
-			toast.error('Image must be a valid URL.');
-			return;
-		}
-
-		// Then check if at least one field is filled
-		if (!n && !c && !i) {
-			toast.error('Please fill at least one field.');
+		if (!trimmedName && !trimmedCountry) {
+			showError(null, 'Please fill at least one field.');
 			return;
 		}
 
 		try {
 			saving = true;
-			await updateUser(id, n, c, i);
+			await updateUser(user?.id ?? 0, trimmedName, trimmedCountry);
 			open = false;
-			onupdated?.({ id: id });
-			toast.success('Profile updated.');
+			onupdated?.({ id: user?.id ?? 0 });
+			showSuccess('Profile updated.');
 		} catch (err: any) {
-			toast.error(err?.message ?? 'Failed to update profile.');
+			showError(err, 'Failed to update profile.');
 		} finally {
 			saving = false;
 		}
@@ -114,10 +59,26 @@ import { tick } from 'svelte';
 
 <Sheet.Root bind:open>
 	<Sheet.Content side="right" class="w-full px-5 sm:max-w-[640px]">
+		<div
+			class="from-muted/20 to-background mb-6 mt-4 rounded-xl border-0 bg-gradient-to-br p-6 shadow-sm"
+		>
+			<div class="flex items-center gap-4">
+				<div
+					class="bg-background border-background h-16 w-16 shrink-0 overflow-hidden rounded-full border-4 shadow-sm"
+				>
+					<GeneratedAvatar seed={name} class="h-full w-full" />
+				</div>
+				<div>
+					<Sheet.Title class="text-xl font-bold">Edit Profile</Sheet.Title>
+					<Sheet.Description class="text-muted-foreground/80 mt-1">
+						Update your personal details.
+					</Sheet.Description>
+				</div>
+			</div>
+		</div>
+
 		<form class="mt-3 space-y-6" onsubmit={onSave}>
 			<div class="space-y-4">
-				<h2 class="text-xl font-semibold tracking-tight">Identity</h2>
-				
 				<div>
 					<Label for="pf-name" class="mb-1 block">Display name</Label>
 					<Input id="pf-name" bind:value={name} placeholder={user?.name || 'Your name'} />
@@ -130,101 +91,16 @@ import { tick } from 'svelte';
 
 				<div>
 					<Label for="pf-country" class="mb-1 block">Nationality</Label>
-
-					<!-- Country Select -->
-					<Select.Root
-						type="single"
-						bind:value={countryCode}
-						items={filteredCountries}
-						allowDeselect={true}
-						onOpenChange={(open) => { if (!open) countrySearch = ''; }}
-					>
-						<Select.Trigger id="pf-country" class="w-full justify-between">
-							{#if countryCode}
-								{@const country = countryItems.find(c => c.value === countryCode)}
-								<span class="flex items-center gap-2">
-									{#if country?.iso2}
-										<Icon
-											icon={`circle-flags:${country.iso2.toLowerCase()}`}
-											width="16"
-											height="16"
-										/>
-									{/if}
-									<span class="uppercase">{countryCode}</span>
-								</span>
-							{:else}
-								<span class="text-muted-foreground">Select country</span>
-							{/if}
-						</Select.Trigger>
-						<Select.Content sideOffset={4}>
-							<div class="px-2 pb-2">
-								<Input 
-									placeholder="Search countries..." 
-									bind:value={countrySearch}
-									class="h-8"
-								/>
-							</div>
-							{#each filteredCountries as item (item.value)}
-								<Select.Item value={item.value} label={item.label}>
-									{#snippet children({ selected })}
-										<Icon
-											icon={`circle-flags:${item.iso2.toLowerCase()}`}
-											width="16"
-											height="16"
-										/>
-										<span>{item.label} ({item.value})</span>
-									{/snippet}
-								</Select.Item>
-							{/each}
-							{#if filteredCountries.length === 0}
-								<div class="px-2 py-6 text-center text-sm text-muted-foreground">
-									No countries found
-								</div>
-							{/if}
-						</Select.Content>
-					</Select.Root>
-
+					<CountrySelect id="pf-country" bind:value={countryCode} />
 					{#if user?.country && user.country.toUpperCase() !== countryCode}
-						{@const userCountry = countryItems.find(c => c.value === user.country.toUpperCase())}
+						{@const userCountry = getCountryByIso3(user.country)}
 						<div class="text-muted-foreground mt-1 flex items-center gap-2 text-sm">
 							{#if userCountry?.iso2}
-								<Icon
-									icon={`circle-flags:${userCountry.iso2.toLowerCase()}`}
-									width="16"
-									height="16"
-								/>
+								<CountryFlag country={userCountry.iso2} width={16} height={16} />
 							{/if}
 							<span>Current: {user.country.toUpperCase()}</span>
 						</div>
 					{/if}
-				</div>
-
-				<div class="flex items-start gap-4">
-					<!-- Preview/Current Image -->
-					<div class="shrink-0">
-						{#if imageUrl && isLikelyUrl(imageUrl)}
-							<Avatar src={imageUrl} class="h-24 w-24" />
-						{:else if user?.image && isLikelyUrl(user.image)}
-							<Avatar src={user.image} class="h-24 w-24" />
-						{:else}
-							<div class="flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
-								<span class="text-xs text-gray-400">No image</span>
-							</div>
-						{/if}
-					</div>
-					
-					<!-- Input Field -->
-					<div class="flex-1 min-w-0">
-						<Label for="pf-image" class="mb-1 block">Image URL</Label>
-						<Input
-							id="pf-image"
-							bind:value={imageUrl}
-							placeholder={user?.image || 'https://.../avatar.png'}
-						/>
-						{#if user?.image && user.image !== imageUrl}
-							<p class="text-muted-foreground mt-1 text-sm">Current image will be replaced</p>
-						{/if}
-					</div>
 				</div>
 			</div>
 

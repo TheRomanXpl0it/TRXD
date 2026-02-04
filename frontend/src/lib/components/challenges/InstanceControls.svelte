@@ -6,7 +6,7 @@
 	import { startInstance, stopInstance } from '$lib/instances';
 
 	let {
-		challenge,
+		challenge = $bindable(),
 		countdown = 0,
 		onCountdownUpdate,
 		onInstanceChange
@@ -14,7 +14,8 @@
 		challenge: any;
 		countdown?: number;
 		onCountdownUpdate?: (id: string | number, newCountdown: number) => void;
-		onInstanceChange?: () => void;
+		onCountdownUpdate?: (id: string | number, newCountdown: number) => void;
+		onInstanceChange?: (challenge?: any) => void;
 	} = $props();
 
 	let creatingInstance = $state(false);
@@ -43,14 +44,14 @@
 		creatingInstance = true;
 		try {
 			const { host, port, timeout } = await startInstance(challenge.id);
-			// Force reactivity by creating a new object reference
-			challenge = { ...challenge, host, port, timeout };
+			// Update instance-specific fields
+			challenge = { ...challenge, instance_host: host, instance_port: port, timeout };
 			if (typeof timeout === 'number' && onCountdownUpdate) {
 				onCountdownUpdate(challenge.id, Math.max(0, timeout));
 			}
 			toast.success('Instance created!');
-			// Trigger refetch to update the challenges list with new port
-			onInstanceChange?.();
+			// Trigger update in parent without refetching
+			onInstanceChange?.(challenge);
 		} catch (err: any) {
 			console.error(err);
 			toast.error(`Failed to create instance: ${err?.message ?? err}`);
@@ -64,14 +65,14 @@
 		destroyingInstance = true;
 		try {
 			await stopInstance(challenge.id);
-			// Force reactivity by creating a new object reference
-			challenge = { ...challenge, host: null, port: null, timeout: null };
+			// Clear instance-specific fields
+			challenge = { ...challenge, instance_host: null, instance_port: null, timeout: null };
 			if (onCountdownUpdate) {
 				onCountdownUpdate(challenge.id, 0);
 			}
 			toast.success('Instance stopped!');
-			// Trigger refetch to update the challenges list
-			onInstanceChange?.();
+			// Trigger update in parent
+			onInstanceChange?.(challenge);
 		} catch (err: any) {
 			console.error(err);
 			toast.error(`Failed to stop instance: ${err?.message ?? err}`);
@@ -81,26 +82,28 @@
 	}
 
 	const connectionString = $derived(
-		`${challenge?.host ?? ''}${challenge?.port ? `:${challenge.port}` : ''}`
+		challenge?.instance
+			? `${challenge?.instance_host ?? challenge?.host ?? ''}${challenge?.instance_port ? `:${challenge.instance_port}` : ''}`
+			: `${challenge?.host ?? ''}${challenge?.port ? `:${challenge.port}` : ''}`
 	);
 </script>
 
 <div class="mb-6">
-	<h3 class="text-sm font-semibold mb-3 opacity-70">Instance</h3>
+	<h3 class="mb-3 text-sm font-semibold opacity-70">Instance</h3>
 	<div class="flex w-full flex-row items-center gap-2 sm:gap-3">
 		{#if countdown > 0}
 			<button
 				type="button"
 				onclick={() => copyToClipboard(connectionString)}
-				class="cursor-pointer flex-1 h-11 bg-green-600 text-white rounded-md px-3 sm:px-4 flex items-center justify-between gap-2 sm:gap-3 font-semibold text-sm transition-colors hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+				class="flex h-11 flex-1 cursor-pointer items-center justify-between gap-2 rounded-md bg-green-600 px-3 text-sm font-semibold text-white transition-colors hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 sm:gap-3 sm:px-4"
 				aria-label="Copy instance connection: {connectionString}"
 			>
 				<div class="flex items-center gap-2">
 					<Container class="h-5 w-5 shrink-0" aria-hidden="true" />
 					<span class="hidden sm:inline">Running</span>
 				</div>
-				<span class="font-mono text-xs sm:text-sm truncate">{connectionString}</span>
-				<span class="text-xs sm:text-sm shrink-0" aria-label="Expires in {fmtTimeLeft(countdown)}">
+				<span class="truncate font-mono text-xs sm:text-sm">{connectionString}</span>
+				<span class="shrink-0 text-xs sm:text-sm" aria-label="Expires in {fmtTimeLeft(countdown)}">
 					{fmtTimeLeft(countdown)}
 				</span>
 			</button>
@@ -108,7 +111,7 @@
 				variant="destructive"
 				onclick={destroyInstance}
 				disabled={destroyingInstance}
-				class="cursor-pointer h-11 px-4 font-semibold shrink-0"
+				class="h-11 shrink-0 cursor-pointer px-4 font-semibold"
 				aria-label="Stop instance"
 			>
 				{#if destroyingInstance}
@@ -123,7 +126,7 @@
 			<Button
 				onclick={createInstance}
 				disabled={creatingInstance}
-				class="flex-1 h-11 bg-blue-600 hover:bg-blue-700 text-white font-semibold cursor-pointer"
+				class="h-11 flex-1 cursor-pointer bg-blue-600 font-semibold text-white hover:bg-blue-700"
 				aria-label="Start challenge instance"
 			>
 				{#if creatingInstance}

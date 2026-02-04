@@ -1,42 +1,15 @@
 <script lang="ts">
-	import { Input } from '@/components/ui/input';
-	import { Users } from '@lucide/svelte';
-	import { push } from 'svelte-spa-router';
-	import { Avatar } from 'flowbite-svelte';
+	import { link } from 'svelte-spa-router';
 	import { getUserData } from '$lib/user';
+	import GeneratedAvatar from '$lib/components/ui/avatar/generated-avatar.svelte';
 
 	let { team } = $props<{ team: any }>();
 
 	// local state
-	let q = $state('');
 	let members = $state<any[]>([]);
 	let filtered = $state<any[]>([]);
 
 	// helpers
-	const norm = (s: any) =>
-		String(s ?? '')
-			.trim()
-			.toLowerCase();
-
-	// tiny fuzzy: exact / prefix / substring / subsequence
-	function fuzzyScore(text: string, query: string) {
-		const t = norm(text);
-		const qn = norm(query);
-		if (!qn) return 1e9; // no query => keep everything (float to top)
-		if (t === qn) return 1e6; // exact
-		if (t.startsWith(qn)) return 5e5; // prefix
-		if (t.includes(qn)) return 3e5; // substring
-		// subsequence
-		let ti = 0,
-			qi = 0,
-			penalty = 0;
-		while (ti < t.length && qi < qn.length) {
-			if (t[ti] === qn[qi]) qi++;
-			else penalty++;
-			ti++;
-		}
-		return qi === qn.length ? 1e5 - penalty : -Infinity;
-	}
 
 	const initials = (name: string) =>
 		String(name ?? '')
@@ -60,16 +33,14 @@
 	});
 
 	// 2) recompute filtered whenever members or q change
+	// 2) recompute filtered whenever members change
 	$effect(() => {
 		const list = [...members];
 		list.sort((a: any, b: any) => {
-			const fa = fuzzyScore(a.name, q);
-			const fb = fuzzyScore(b.name, q);
-			if (fa !== fb) return fb - fa; // better fuzzy first
 			if (a.score !== b.score) return b.score - a.score; // then score
 			return a.name.localeCompare(b.name); // then name
 		});
-		filtered = list.filter((m) => fuzzyScore(m.name, q) > -Infinity);
+		filtered = list;
 	});
 	// 3) fetch member images (enrichment)
 	let memberImages = $state<Record<string, string>>({});
@@ -111,64 +82,39 @@
 </script>
 
 <div class="w-full">
-	<!-- Header / search -->
-	<div class="mb-3 flex items-center gap-3">
-		<div class="flex items-center gap-2">
-			<Users class="h-5 w-5 opacity-70" />
-			<h3 class="text-xl font-semibold">Members</h3>
-		</div>
-
-		<div class="ml-auto w-full max-w-xs">
-			<!-- bind:value ensures q updates properly -->
-			<Input placeholder="Search members..." bind:value={q} />
-		</div>
-	</div>
-
-	<p class="text-muted-foreground mb-3 text-sm">
-		Showing {filtered.length} of {members.length}
-	</p>
-
 	<!-- Grid of members -->
 	<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
 		{#if filtered.length === 0}
 			<div
-				class="text-muted-foreground col-span-full rounded-lg border p-6 text-center dark:border-gray-700"
+				class="text-muted-foreground bg-muted/20 col-span-full rounded-lg border-0 p-6 text-center"
 			>
-				No members match “{q}”.
+				No members found.
 			</div>
 		{:else}
 			{#each filtered as m (m.id ?? m.name)}
-				<button
-					type="button"
-					class="hover:bg-muted group flex w-full cursor-pointer items-center gap-3 rounded-lg border p-3 text-left transition-colors dark:border-gray-700"
+				<a
+					href={`/account/${m.id}`}
+					use:link
+					class="bg-muted/40 hover:bg-background group flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 text-left transition-all hover:shadow-sm"
 				>
 					{#if memberImages[String(m.id)]}
-						<div class="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-							<img src={memberImages[String(m.id)]} alt={m.name} class="h-full w-full rounded-full object-cover object-center" />
+						<div
+							class="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700"
+						>
+							<img
+								src={memberImages[String(m.id)]}
+								alt={m.name}
+								class="h-full w-full rounded-full object-cover object-center"
+							/>
 						</div>
 					{:else}
-						<div
-							class="bg-muted flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-semibold"
-						>
-							{initials(m.name)}
+						<div class="border-border h-10 w-10 shrink-0 overflow-hidden rounded-full border">
+							<GeneratedAvatar seed={m.name} class="h-full w-full" />
 						</div>
 					{/if}
 
 					<div class="min-w-0 flex-1">
-						<span
-							class="block cursor-pointer truncate text-sm font-medium hover:underline"
-							onclick={() => {
-								push(`/account/${m.id}`);
-							}}
-							onkeydown={(e) => {
-								if (e.key === 'Enter' || e.key === ' ') {
-									e.preventDefault();
-									push(`/account/${m.id}`);
-								}
-							}}
-							role="link"
-							tabindex="0"
-						>
+						<span class="block truncate text-sm font-medium">
 							{m.name}
 						</span>
 						<p class="text-muted-foreground truncate text-xs">{m.role}</p>
@@ -177,7 +123,7 @@
 					<div class="ml-auto shrink-0 text-right">
 						<p class="text-sm font-semibold">{prettyNum(m.score)} pts</p>
 					</div>
-				</button>
+				</a>
 			{/each}
 		{/if}
 	</div>

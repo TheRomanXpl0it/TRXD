@@ -2,20 +2,15 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 
 marked.setOptions({
-	breaks: true,
-	gfm: true,
+    breaks: true,
+    gfm: true,
 });
 
-/**
- * Renders Markdown to sanitized HTML
- * @param markdown - Raw markdown string
- * @returns Sanitized HTML string safe for innerHTML
- */
 export function renderMarkdown(markdown: string): string {
     if (!markdown) return '';
-    
+
     const rawHtml = marked.parse(markdown, { async: false }) as string;
-    
+
     return DOMPurify.sanitize(rawHtml, {
         ALLOWED_TAGS: [
             'p', 'br', 'strong', 'em', 'u', 's', 'del', 'ins',
@@ -31,17 +26,11 @@ export function renderMarkdown(markdown: string): string {
     });
 }
 
-/**
- * Renders inline Markdown (no block elements like paragraphs)
- * @param markdown - Raw markdown string
- * @returns Sanitized HTML string without wrapping <p> tags
- */
 export function renderMarkdownInline(markdown: string): string {
-	if (!markdown) return '';
-	
-	const html = renderMarkdown(markdown);
-	
-	// Remove wrapping <p> tags for inline rendering
-    // TODO: this might not be safe
-	return html.replace(/^<p>([\s\S]*)<\/p>$/, '$1');
+    if (!markdown) return '';
+
+    const html = renderMarkdown(markdown);
+
+    // this might not be safe
+    return html.replace(/^<p>([\s\S]*)<\/p>$/, '$1');
 }
