@@ -4,6 +4,7 @@ import (
 	"context"
 	"trxd/db"
 	"trxd/db/sqlc"
+	"trxd/utils/consts"
 
 	"github.com/lib/pq"
 )
@@ -20,7 +21,7 @@ func CreateChallenge(ctx context.Context, name, category, description string,
 	})
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
-			if pqErr.Code == "23505" { // Unique violation error code
+			if pqErr.Code == consts.PGUniqueViolation {
 				return nil, nil
 			}
 		}

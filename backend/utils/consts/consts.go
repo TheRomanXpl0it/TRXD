@@ -4,7 +4,24 @@ import "trxd/db/sqlc"
 
 const Name = "TRXd"
 
+// TODO
 const ProxyName = "nginx-1" // "traefik-1"
+
+var Roles = []sqlc.UserRole{sqlc.UserRoleSpectator, sqlc.UserRolePlayer, sqlc.UserRoleAuthor, sqlc.UserRoleAdmin}
+var RolesStr = []string{string(sqlc.UserRoleSpectator), string(sqlc.UserRolePlayer), string(sqlc.UserRoleAuthor), string(sqlc.UserRoleAdmin)}
+var DeployTypes = []sqlc.DeployType{sqlc.DeployTypeNormal, sqlc.DeployTypeContainer, sqlc.DeployTypeCompose}
+var DeployTypesStr = []string{string(sqlc.DeployTypeNormal), string(sqlc.DeployTypeContainer), string(sqlc.DeployTypeCompose)}
+var ScoreTypes = []sqlc.ScoreType{sqlc.ScoreTypeStatic, sqlc.ScoreTypeDynamic}
+var ScoreTypesStr = []string{string(sqlc.ScoreTypeStatic), string(sqlc.ScoreTypeDynamic)}
+var ConnTypes = []sqlc.ConnType{sqlc.ConnTypeNONE, sqlc.ConnTypeTCP, sqlc.ConnTypeTCPTLS, sqlc.ConnTypeHTTP, sqlc.ConnTypeHTTPS}
+var ConnTypesStr = []string{string(sqlc.ConnTypeNONE), string(sqlc.ConnTypeTCP), string(sqlc.ConnTypeTCPTLS), string(sqlc.ConnTypeHTTP), string(sqlc.ConnTypeHTTPS)}
+
+const (
+	PGForeignKeyViolation          = "23503"
+	PGUniqueViolation              = "23505"
+	PGObjectAlreadyExists          = "42710"
+	PGDatabaseAccessedByOtherUsers = "55006"
+)
 
 const (
 	MaxAttachmentNameLen  = 128
@@ -25,15 +42,6 @@ const (
 	MinPasswordLen        = 8
 	MinPort               = 0
 )
-
-var Roles = []sqlc.UserRole{sqlc.UserRoleSpectator, sqlc.UserRolePlayer, sqlc.UserRoleAuthor, sqlc.UserRoleAdmin}
-var RolesStr = []string{string(sqlc.UserRoleSpectator), string(sqlc.UserRolePlayer), string(sqlc.UserRoleAuthor), string(sqlc.UserRoleAdmin)}
-var DeployTypes = []sqlc.DeployType{sqlc.DeployTypeNormal, sqlc.DeployTypeContainer, sqlc.DeployTypeCompose}
-var DeployTypesStr = []string{string(sqlc.DeployTypeNormal), string(sqlc.DeployTypeContainer), string(sqlc.DeployTypeCompose)}
-var ScoreTypes = []sqlc.ScoreType{sqlc.ScoreTypeStatic, sqlc.ScoreTypeDynamic}
-var ScoreTypesStr = []string{string(sqlc.ScoreTypeStatic), string(sqlc.ScoreTypeDynamic)}
-var ConnTypes = []sqlc.ConnType{sqlc.ConnTypeNONE, sqlc.ConnTypeTCP, sqlc.ConnTypeTCPTLS, sqlc.ConnTypeHTTP, sqlc.ConnTypeHTTPS}
-var ConnTypesStr = []string{string(sqlc.ConnTypeNONE), string(sqlc.ConnTypeTCP), string(sqlc.ConnTypeTCPTLS), string(sqlc.ConnTypeHTTP), string(sqlc.ConnTypeHTTPS)}
 
 const (
 	Unauthorized        = "Unauthorized"

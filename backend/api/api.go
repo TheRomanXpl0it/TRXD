@@ -51,6 +51,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/csrf"
 	"github.com/gofiber/fiber/v2/middleware/favicon"
+	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"github.com/gofiber/fiber/v2/middleware/monitor"
 	"github.com/tde-nico/log"
 )
@@ -127,9 +128,17 @@ func SetupFeatures(app *fiber.App) {
 		Session:           db.Store,
 	}))
 
-	// app.Use(helmet.New(helmet.Config{
-	// 	ContentSecurityPolicy:   "", // TODO
-	// }))
+	app.Use(helmet.New(helmet.Config{
+		ContentSecurityPolicy: "script-src 'self'; " +
+			"style-src 'self' 'unsafe-inline'; " +
+			"img-src 'self' data:; " +
+			"connect-src 'self'; " +
+			"form-action 'self'; " +
+			"font-src 'self'; " +
+			"default-src 'none'; " +
+			"frame-ancestors 'none'; " +
+			"base-uri 'none';",
+	}))
 
 	app.Use(favicon.New(favicon.Config{
 		File: "./static/favicon.ico",

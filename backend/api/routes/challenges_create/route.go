@@ -31,7 +31,7 @@ func Route(c *fiber.Ctx) error {
 	challenge, err := CreateChallenge(c.Context(), data.Name, data.Category, data.Description, data.Type, data.MaxPoints, data.ScoreType)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
-			if pqErr.Code == "23503" { // Foreign key violation error code
+			if pqErr.Code == consts.PGForeignKeyViolation {
 				return utils.Error(c, fiber.StatusNotFound, consts.CategoryNotFound)
 			}
 		}
