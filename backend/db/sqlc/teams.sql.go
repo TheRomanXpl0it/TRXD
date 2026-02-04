@@ -67,3 +67,15 @@ func (q *Queries) GetTeamFromUser(ctx context.Context, id int32) (Team, error) {
 	)
 	return i, err
 }
+
+const getTotalTeams = `-- name: GetTotalTeams :one
+SELECT COUNT(*) AS total FROM teams
+`
+
+// Retrieve total number of teams
+func (q *Queries) GetTotalTeams(ctx context.Context) (int64, error) {
+	row := q.queryRow(ctx, q.getTotalTeamsStmt, getTotalTeams)
+	var total int64
+	err := row.Scan(&total)
+	return total, err
+}

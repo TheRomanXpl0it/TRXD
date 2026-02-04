@@ -17,15 +17,23 @@ type UserData struct {
 	Country string `json:"country"`
 }
 
-func GetUsers(ctx context.Context, isAdmin bool, start int32, end int32) ([]UserData, error) {
+func GetUsers(ctx context.Context, isAdmin bool, offset int32, limit int32) (int64, []UserData, error) {
+	total, err := db.Sql.GetTotalUsers(ctx, isAdmin)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return 0, nil, err
+		}
+		total = 0
+	}
+
 	userPreviews, err := db.Sql.GetUsers(ctx, sqlc.GetUsersParams{
 		IsAdmin: isAdmin,
-		Offset:  start,
-		Limit:   sql.NullInt32{Int32: end - start, Valid: end != 0},
+		Offset:  offset,
+		Limit:   sql.NullInt32{Int32: limit, Valid: limit != 0},
 	})
 	if err != nil {
 		if err != sql.ErrNoRows {
-			return nil, err
+			return total, nil, err
 		}
 	}
 
@@ -51,5 +59,5 @@ func GetUsers(ctx context.Context, isAdmin bool, start int32, end int32) ([]User
 		usersData = append(usersData, userData)
 	}
 
-	return usersData, nil
+	return total, usersData, nil
 }

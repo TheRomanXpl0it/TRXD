@@ -135,6 +135,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getTeamsScoreboardGraphStmt, err = db.PrepareContext(ctx, getTeamsScoreboardGraph); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTeamsScoreboardGraph: %w", err)
 	}
+	if q.getTotalTeamsStmt, err = db.PrepareContext(ctx, getTotalTeams); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTotalTeams: %w", err)
+	}
+	if q.getTotalUsersStmt, err = db.PrepareContext(ctx, getTotalUsers); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTotalUsers: %w", err)
+	}
 	if q.getUserByEmailStmt, err = db.PrepareContext(ctx, getUserByEmail); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserByEmail: %w", err)
 	}
@@ -385,6 +391,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getTeamsScoreboardGraphStmt: %w", cerr)
 		}
 	}
+	if q.getTotalTeamsStmt != nil {
+		if cerr := q.getTotalTeamsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTotalTeamsStmt: %w", cerr)
+		}
+	}
+	if q.getTotalUsersStmt != nil {
+		if cerr := q.getTotalUsersStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTotalUsersStmt: %w", cerr)
+		}
+	}
 	if q.getUserByEmailStmt != nil {
 		if cerr := q.getUserByEmailStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getUserByEmailStmt: %w", cerr)
@@ -561,6 +577,8 @@ type Queries struct {
 	getTeamsPreviewStmt          *sql.Stmt
 	getTeamsScoreboardStmt       *sql.Stmt
 	getTeamsScoreboardGraphStmt  *sql.Stmt
+	getTotalTeamsStmt            *sql.Stmt
+	getTotalUsersStmt            *sql.Stmt
 	getUserByEmailStmt           *sql.Stmt
 	getUserByIDStmt              *sql.Stmt
 	getUserByNameStmt            *sql.Stmt
@@ -624,6 +642,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getTeamsPreviewStmt:          q.getTeamsPreviewStmt,
 		getTeamsScoreboardStmt:       q.getTeamsScoreboardStmt,
 		getTeamsScoreboardGraphStmt:  q.getTeamsScoreboardGraphStmt,
+		getTotalTeamsStmt:            q.getTotalTeamsStmt,
+		getTotalUsersStmt:            q.getTotalUsersStmt,
 		getUserByEmailStmt:           q.getUserByEmailStmt,
 		getUserByIDStmt:              q.getUserByIDStmt,
 		getUserByNameStmt:            q.getUserByNameStmt,

@@ -41,3 +41,15 @@ func GetTeamByName(ctx context.Context, name string) (*sqlc.Team, error) {
 
 	return &team, nil
 }
+
+func GetTotalTeams(ctx context.Context) (int64, error) {
+	total, err := Sql.GetTotalTeams(ctx)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, nil
+		}
+		return 0, err
+	}
+
+	return total, nil
+}

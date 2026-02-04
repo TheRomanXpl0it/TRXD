@@ -828,7 +828,7 @@ type GetTeamsScoreboardRow struct {
 	LastCorrectAt interface{}     `json:"last_correct_at"`
 }
 
-// Retrieve all teams
+// Retrieve all teams or a subset if specified, ordered by score and last correct submission time
 func (q *Queries) GetTeamsScoreboard(ctx context.Context, arg GetTeamsScoreboardParams) ([]GetTeamsScoreboardRow, error) {
 	rows, err := q.query(ctx, q.getTeamsScoreboardStmt, getTeamsScoreboard, arg.Offset, arg.Limit)
 	if err != nil {
@@ -910,6 +910,20 @@ func (q *Queries) GetTeamsScoreboardGraph(ctx context.Context) ([]GetTeamsScoreb
 		return nil, err
 	}
 	return items, nil
+}
+
+const getTotalUsers = `-- name: GetTotalUsers :one
+SELECT COUNT(*) FROM users
+  WHERE $1::BOOLEAN
+    OR role = 'Player'
+`
+
+// Retrieve total number of users
+func (q *Queries) GetTotalUsers(ctx context.Context, isAdmin bool) (int64, error) {
+	row := q.queryRow(ctx, q.getTotalUsersStmt, getTotalUsers, isAdmin)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one

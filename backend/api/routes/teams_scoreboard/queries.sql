@@ -1,5 +1,5 @@
 -- name: GetTeamsScoreboard :many
--- Retrieve all teams
+-- Retrieve all teams or a subset if specified, ordered by score and last correct submission time
 SELECT
     t.id,
     t.name,

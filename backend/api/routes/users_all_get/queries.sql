@@ -7,3 +7,9 @@ SELECT id, name, email, role, score, country
   ORDER BY id ASC
   OFFSET sqlc.arg('offset')
   LIMIT sqlc.narg('limit');
+
+-- name: GetTotalUsers :one
+-- Retrieve total number of users
+SELECT COUNT(*) FROM users
+  WHERE sqlc.arg('is_admin')::BOOLEAN
+    OR role = 'Player';

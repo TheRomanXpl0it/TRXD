@@ -12,17 +12,13 @@ import (
 func Route(c *fiber.Ctx) error {
 	role := c.Locals("role")
 
-	start := c.QueryInt("start", 0)
-	if start < 0 || start > math.MaxInt32 {
+	offset := c.QueryInt("offset", 0)
+	if offset < 0 || offset > math.MaxInt32 {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidParam)
 	}
 
-	end := c.QueryInt("end", 0)
-	if end < 0 || end > math.MaxInt32 {
-		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidParam)
-	}
-
-	if end != 0 && end <= start {
+	limit := c.QueryInt("limit", 0)
+	if limit < 0 || limit > math.MaxInt32 {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidParam)
 	}
 
@@ -30,10 +26,13 @@ func Route(c *fiber.Ctx) error {
 	if role != nil {
 		allData = utils.In(role.(sqlc.UserRole), []sqlc.UserRole{sqlc.UserRoleAuthor, sqlc.UserRoleAdmin})
 	}
-	usersData, err := GetUsers(c.Context(), allData, int32(start), int32(end))
+	totalUsers, usersData, err := GetUsers(c.Context(), allData, int32(offset), int32(limit))
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(usersData)
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"total": totalUsers,
+		"users": usersData,
+	})
 }

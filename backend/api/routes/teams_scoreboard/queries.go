@@ -16,18 +16,26 @@ type TeamData struct {
 	Badges  json.RawMessage `json:"badges"`
 }
 
-func GetTeamScoreboard(ctx context.Context, start int32, end int32) ([]*TeamData, error) {
-	teams, err := db.Sql.GetTeamsScoreboard(ctx, sqlc.GetTeamsScoreboardParams{
-		Offset: start,
-		Limit:  sql.NullInt32{Int32: end - start, Valid: end != 0},
-	})
+func GetTeamScoreboard(ctx context.Context, offset int32, limit int32) (int64, []TeamData, error) {
+	total, err := db.GetTotalTeams(ctx)
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 
-	var teamsData []*TeamData
+	teams, err := db.Sql.GetTeamsScoreboard(ctx, sqlc.GetTeamsScoreboardParams{
+		Offset: offset,
+		Limit:  sql.NullInt32{Int32: limit, Valid: limit != 0},
+	})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return total, []TeamData{}, nil
+		}
+		return 0, nil, err
+	}
+
+	var teamsData []TeamData
 	for _, team := range teams {
-		teamData := &TeamData{
+		teamData := TeamData{
 			ID:     team.ID,
 			Name:   team.Name,
 			Score:  team.Score,
@@ -40,5 +48,5 @@ func GetTeamScoreboard(ctx context.Context, start int32, end int32) ([]*TeamData
 		teamsData = append(teamsData, teamData)
 	}
 
-	return teamsData, nil
+	return total, teamsData, nil
 }

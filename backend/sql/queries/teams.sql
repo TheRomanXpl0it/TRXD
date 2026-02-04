@@ -11,3 +11,7 @@ SELECT t.* FROM teams t
 -- name: GetTeamByName :one
 -- Retrieve a team by its name
 SELECT * FROM teams WHERE name = $1;
+
+-- name: GetTotalTeams :one
+-- Retrieve total number of teams
+SELECT COUNT(*) AS total FROM teams;

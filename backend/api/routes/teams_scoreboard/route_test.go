@@ -29,38 +29,41 @@ func TestRoute(t *testing.T) {
 	B := test_utils.GetTeamByName(t, "B")
 	C := test_utils.GetTeamByName(t, "C")
 
-	expected := []JSON{
-		{
-			"badges": []JSON{
-				{
-					"description": "Completed all cat-1 challenges",
-					"name":        "cat-1",
+	expected := JSON{
+		"teams": []JSON{
+			{
+				"badges": []JSON{
+					{
+						"description": "Completed all cat-1 challenges",
+						"name":        "cat-1",
+					},
 				},
+				"country": "",
+				"id":      A.ID,
+				"name":    "A",
+				"score":   1498,
 			},
-			"country": "",
-			"id":      A.ID,
-			"name":    "A",
-			"score":   1498,
-		},
-		{
-			"badges": []JSON{
-				{
-					"description": "Completed all cat-2 challenges",
-					"name":        "cat-2",
+			{
+				"badges": []JSON{
+					{
+						"description": "Completed all cat-2 challenges",
+						"name":        "cat-2",
+					},
 				},
+				"country": "",
+				"id":      B.ID,
+				"name":    "B",
+				"score":   998,
 			},
-			"country": "",
-			"id":      B.ID,
-			"name":    "B",
-			"score":   998,
+			{
+				"badges":  []JSON{},
+				"country": "",
+				"id":      C.ID,
+				"name":    "C",
+				"score":   0,
+			},
 		},
-		{
-			"badges":  []JSON{},
-			"country": "",
-			"id":      C.ID,
-			"name":    "C",
-			"score":   0,
-		},
+		"total": 3,
 	}
 
 	session := test_utils.NewApiTestSession(t, app)
@@ -98,89 +101,95 @@ func TestRoute(t *testing.T) {
 	session.Post("/submissions", JSON{"chall_id": challID3, "flag": "flag{test-3}"}, http.StatusOK)
 	session.Post("/submissions", JSON{"chall_id": challID4, "flag": "flag{test-4}"}, http.StatusOK)
 
-	expected = []JSON{
-		{
-			"badges": []JSON{
-				{
-					"description": "Completed all cat-1 challenges",
-					"name":        "cat-1",
+	expected = JSON{
+		"teams": []JSON{
+			{
+				"badges": []JSON{
+					{
+						"description": "Completed all cat-1 challenges",
+						"name":        "cat-1",
+					},
 				},
+				"country": "",
+				"id":      A.ID,
+				"name":    "A",
+				"score":   1488,
 			},
-			"country": "",
-			"id":      A.ID,
-			"name":    "A",
-			"score":   1488,
-		},
-		{
-			"badges": []JSON{
-				{
-					"description": "Completed all cat-1 challenges",
-					"name":        "cat-1",
+			{
+				"badges": []JSON{
+					{
+						"description": "Completed all cat-1 challenges",
+						"name":        "cat-1",
+					},
 				},
+				"country": "",
+				"id":      C.ID,
+				"name":    "C",
+				"score":   1488,
 			},
-			"country": "",
-			"id":      C.ID,
-			"name":    "C",
-			"score":   1488,
-		},
-		{
-			"badges": []JSON{
-				{
-					"description": "Completed all cat-2 challenges",
-					"name":        "cat-2",
+			{
+				"badges": []JSON{
+					{
+						"description": "Completed all cat-2 challenges",
+						"name":        "cat-2",
+					},
 				},
+				"country": "",
+				"id":      B.ID,
+				"name":    "B",
+				"score":   992,
 			},
-			"country": "",
-			"id":      B.ID,
-			"name":    "B",
-			"score":   992,
 		},
+		"total": 3,
 	}
 	session.Get("/scoreboard", nil, http.StatusOK)
 	session.CheckResponse(expected)
 
 	session.Post("/submissions", JSON{"chall_id": challID2, "flag": "flag{test-2}"}, http.StatusOK)
-	expected = []JSON{
-		{
-			"badges": []JSON{
-				{
-					"description": "Completed all cat-1 challenges",
-					"name":        "cat-1",
+	expected = JSON{
+		"teams": []JSON{
+			{
+				"badges": []JSON{
+					{
+						"description": "Completed all cat-1 challenges",
+						"name":        "cat-1",
+					},
+					{
+						"description": "Completed all cat-2 challenges",
+						"name":        "cat-2",
+					},
 				},
-				{
-					"description": "Completed all cat-2 challenges",
-					"name":        "cat-2",
-				},
+				"country": "",
+				"id":      C.ID,
+				"name":    "C",
+				"score":   1986,
 			},
-			"country": "",
-			"id":      C.ID,
-			"name":    "C",
-			"score":   1986,
-		},
-		{
-			"badges": []JSON{
-				{
-					"description": "Completed all cat-1 challenges",
-					"name":        "cat-1",
+			{
+				"badges": []JSON{
+					{
+						"description": "Completed all cat-1 challenges",
+						"name":        "cat-1",
+					},
 				},
+				"country": "",
+				"id":      A.ID,
+				"name":    "A",
+				"score":   1488,
 			},
-			"country": "",
-			"id":      A.ID,
-			"name":    "A",
-			"score":   1488,
-		},
-		{
-			"badges": []JSON{
-				{
-					"description": "Completed all cat-2 challenges",
-					"name":        "cat-2",
+			{
+				"badges": []JSON{
+					{
+						"description": "Completed all cat-2 challenges",
+						"name":        "cat-2",
+					},
 				},
+				"country": "",
+				"id":      B.ID,
+				"name":    "B",
+				"score":   990,
 			},
-			"country": "",
-			"id":      B.ID,
-			"name":    "B",
-			"score":   990,
 		},
+		"total": 3,
 	}
 	session.Get("/scoreboard", nil, http.StatusOK)
 	session.CheckResponse(expected)
@@ -188,51 +197,54 @@ func TestRoute(t *testing.T) {
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/login", JSON{"email": "a@a.a", "password": "testpass"}, http.StatusOK)
 	session.Post("/submissions", JSON{"chall_id": challID2, "flag": "flag{test-2}"}, http.StatusOK)
-	expected = []JSON{
-		{
-			"badges": []JSON{
-				{
-					"description": "Completed all cat-1 challenges",
-					"name":        "cat-1",
+	expected = JSON{
+		"teams": []JSON{
+			{
+				"badges": []JSON{
+					{
+						"description": "Completed all cat-1 challenges",
+						"name":        "cat-1",
+					},
+					{
+						"description": "Completed all cat-2 challenges",
+						"name":        "cat-2",
+					},
 				},
-				{
-					"description": "Completed all cat-2 challenges",
-					"name":        "cat-2",
-				},
+				"country": "",
+				"id":      C.ID,
+				"name":    "C",
+				"score":   1980,
 			},
-			"country": "",
-			"id":      C.ID,
-			"name":    "C",
-			"score":   1980,
-		},
-		{
-			"badges": []JSON{
-				{
-					"description": "Completed all cat-1 challenges",
-					"name":        "cat-1",
+			{
+				"badges": []JSON{
+					{
+						"description": "Completed all cat-1 challenges",
+						"name":        "cat-1",
+					},
+					{
+						"description": "Completed all cat-2 challenges",
+						"name":        "cat-2",
+					},
 				},
-				{
-					"description": "Completed all cat-2 challenges",
-					"name":        "cat-2",
-				},
+				"country": "",
+				"id":      A.ID,
+				"name":    "A",
+				"score":   1980,
 			},
-			"country": "",
-			"id":      A.ID,
-			"name":    "A",
-			"score":   1980,
-		},
-		{
-			"badges": []JSON{
-				{
-					"description": "Completed all cat-2 challenges",
-					"name":        "cat-2",
+			{
+				"badges": []JSON{
+					{
+						"description": "Completed all cat-2 challenges",
+						"name":        "cat-2",
+					},
 				},
+				"country": "",
+				"id":      B.ID,
+				"name":    "B",
+				"score":   984,
 			},
-			"country": "",
-			"id":      B.ID,
-			"name":    "B",
-			"score":   984,
 		},
+		"total": 3,
 	}
 	session.Get("/scoreboard", nil, http.StatusOK)
 	session.CheckResponse(expected)
@@ -243,20 +255,28 @@ func TestRoute(t *testing.T) {
 	session.Get("/scoreboard", nil, http.StatusOK)
 	session.CheckResponse(expected)
 
-	session.Get("/scoreboard?start=-1", nil, http.StatusBadRequest)
+	session.Get("/scoreboard?offset=-1", nil, http.StatusBadRequest)
 	session.CheckResponse(errorf(consts.InvalidParam))
-	session.Get("/scoreboard?end=-1", nil, http.StatusBadRequest)
+	session.Get("/scoreboard?limit=-1", nil, http.StatusBadRequest)
 	session.CheckResponse(errorf(consts.InvalidParam))
-	session.Get(fmt.Sprintf("/scoreboard?start=%d", math.MaxInt32+1), nil, http.StatusBadRequest)
+	session.Get(fmt.Sprintf("/scoreboard?offset=%d", math.MaxInt32+1), nil, http.StatusBadRequest)
 	session.CheckResponse(errorf(consts.InvalidParam))
-	session.Get(fmt.Sprintf("/scoreboard?end=%d", math.MaxInt32+1), nil, http.StatusBadRequest)
-	session.CheckResponse(errorf(consts.InvalidParam))
-	session.Get("/scoreboard?start=2&end=1", nil, http.StatusBadRequest)
+	session.Get(fmt.Sprintf("/scoreboard?limit=%d", math.MaxInt32+1), nil, http.StatusBadRequest)
 	session.CheckResponse(errorf(consts.InvalidParam))
 
-	session.Get("/scoreboard?start=1&end=2", nil, http.StatusOK)
-	session.CheckResponse(expected[1:2])
+	subSet := func(expected JSON, start int, end int) JSON {
+		return JSON{
+			"teams": expected["teams"].([]JSON)[start:end],
+			"total": expected["total"],
+		}
+	}
 
-	session.Get("/scoreboard?start=1", nil, http.StatusOK)
-	session.CheckResponse(expected[1:])
+	session.Get("/scoreboard?offset=1&limit=1", nil, http.StatusOK)
+	session.CheckResponse(subSet(expected, 1, 2))
+	session.Get("/scoreboard?offset=1&limit=2", nil, http.StatusOK)
+	session.CheckResponse(subSet(expected, 1, 3))
+	session.Get("/scoreboard?offset=1", nil, http.StatusOK)
+	session.CheckResponse(subSet(expected, 1, len(expected["teams"].([]JSON))))
+	session.Get("/scoreboard?limit=2", nil, http.StatusOK)
+	session.CheckResponse(subSet(expected, 0, 2))
 }
