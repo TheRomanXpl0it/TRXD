@@ -11,7 +11,7 @@
 
 	let {
 		open = $bindable(false),
-		challenge,
+		challenge = $bindable(),
 		countdown = 0,
 		isAdmin = false,
 		onEdit,
@@ -30,7 +30,8 @@
 		onSolved?: () => void;
 		onCountdownUpdate?: (id: string | number, newCountdown: number) => void;
 		onOpenSolves?: () => void;
-		onInstanceChange?: () => void;
+		onOpenSolves?: () => void;
+		onInstanceChange?: (challenge?: any) => void;
 	} = $props();
 
 	function copyToClipboard(text: string) {
@@ -42,18 +43,20 @@
 	}
 
 	const connectionString = $derived(
-		`${challenge?.host ?? ''}${challenge?.port ? `:${challenge.port}` : ''}`
+		challenge?.instance
+			? `${challenge?.instance_host ?? challenge?.host ?? ''}${challenge?.instance_port ? `:${challenge.instance_port}` : ''}`
+			: `${challenge?.host ?? ''}${challenge?.port ? `:${challenge.port}` : ''}`
 	);
 </script>
 
 <Dialog.Root bind:open>
 	<Dialog.Content
-		class="max-w-[95vw] sm:max-w-[800px] max-h-[95vh] overflow-y-auto p-4 sm:p-6"
+		class="max-h-[95vh] max-w-[95vw] overflow-y-auto p-4 sm:max-w-[800px] sm:p-6"
 		aria-describedby="challenge-description"
 	>
 		<Dialog.Header class="pb-4 sm:pb-6">
 			<div class="min-w-0 flex-1">
-				<Dialog.Title class="text-2xl sm:text-3xl font-bold break-words mb-3 pr-8">
+				<Dialog.Title class="mb-3 break-words pr-8 text-2xl font-bold sm:text-3xl">
 					{challenge?.name ?? 'Challenge'}
 				</Dialog.Title>
 
@@ -63,7 +66,7 @@
 						<div role="list" aria-label="Challenge tags" class="contents">
 							{#each challenge.tags as tag}
 								<span
-									class="inline-flex items-center rounded-full bg-black/5 dark:bg-white/10 px-2.5 py-0.5 text-xs font-medium"
+									class="inline-flex items-center rounded-full bg-black/5 px-2.5 py-0.5 text-xs font-medium dark:bg-white/10"
 									role="listitem"
 								>
 									{tag}
@@ -74,7 +77,7 @@
 
 					{#if challenge?.difficulty}
 						<span
-							class="inline-flex items-center rounded-full bg-black/5 dark:bg-white/10 px-2.5 py-0.5 text-xs font-medium"
+							class="inline-flex items-center rounded-full bg-black/5 px-2.5 py-0.5 text-xs font-medium dark:bg-white/10"
 							aria-label="Difficulty: {challenge.difficulty}"
 						>
 							{challenge.difficulty}
@@ -90,10 +93,11 @@
 						<button
 							type="button"
 							onclick={onOpenSolves}
-							class="text-xs font-medium opacity-70 hover:opacity-100 hover:underline focus:outline-none focus:underline cursor-pointer transition-opacity"
+							class="cursor-pointer text-xs font-medium opacity-70 transition-opacity hover:underline hover:opacity-100 focus:underline focus:outline-none"
 							aria-label="View {challenge.solves} solve{challenge.solves === 1 ? '' : 's'}"
 						>
-							{challenge.solves} {challenge.solves === 1 ? 'solve' : 'solves'}
+							{challenge.solves}
+							{challenge.solves === 1 ? 'solve' : 'solves'}
 						</button>
 					{/if}
 				</div>
@@ -104,7 +108,9 @@
 						<UserEditSolid class="h-4 w-4" aria-hidden="true" />
 						<span>
 							By {#each challenge.authors as author, i (author)}{author}{i <
-								challenge.authors.length - 1 ? ', ' : ''}{/each}
+								challenge.authors.length - 1
+									? ', '
+									: ''}{/each}
 						</span>
 					</div>
 				{/if}
@@ -125,7 +131,7 @@
 						<Button
 							variant="outline"
 							size="sm"
-							class="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950 cursor-pointer"
+							class="cursor-pointer text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950"
 							onclick={() => onDelete?.(challenge)}
 							aria-label="Delete challenge"
 						>
@@ -142,7 +148,7 @@
 
 		<!-- Description -->
 		<section class="mb-6" aria-labelledby="description-heading">
-			<h3 id="description-heading" class="text-sm font-semibold mb-2 opacity-70">Description</h3>
+			<h3 id="description-heading" class="mb-2 text-sm font-semibold opacity-70">Description</h3>
 			{#if challenge?.description}
 				<Markdown content={challenge.description} class="text-base leading-relaxed" />
 			{:else}
@@ -153,14 +159,14 @@
 		<!-- Attachments -->
 		{#if challenge?.attachments && challenge.attachments.length > 0}
 			<section class="mb-6" aria-labelledby="attachments-heading">
-				<h3 id="attachments-heading" class="text-sm font-semibold mb-3 opacity-70">Attachments</h3>
+				<h3 id="attachments-heading" class="mb-3 text-sm font-semibold opacity-70">Attachments</h3>
 				<div class="flex flex-wrap gap-2">
 					{#each challenge.attachments as attachment}
 						<a
-							href={attachment}
+							href={`/attachments/${challenge.id || challenge.chall_id}/${attachment.replace(/^\/+/, '')}`}
 							target="_blank"
 							rel="noopener noreferrer"
-							class="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+							class="border-input bg-background hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring inline-flex h-9 items-center justify-center gap-2 rounded-md border px-3 text-sm font-medium shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2"
 							aria-label="Download {attachment.split('/').pop()}"
 						>
 							<Download class="h-4 w-4" aria-hidden="true" />
@@ -174,11 +180,11 @@
 		<!-- Connection Info (only for non-instance challenges) -->
 		{#if challenge?.host && !challenge.instance}
 			<section class="mb-6" aria-labelledby="connection-heading">
-				<h3 id="connection-heading" class="text-sm font-semibold mb-3 opacity-70">Connection</h3>
+				<h3 id="connection-heading" class="mb-3 text-sm font-semibold opacity-70">Connection</h3>
 				<button
 					type="button"
 					onclick={() => copyToClipboard(connectionString)}
-					class="inline-flex h-10 items-center gap-2 rounded-md bg-gray-100 dark:bg-gray-800 px-4 font-mono text-sm font-medium transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
+					class="focus:ring-primary inline-flex h-10 items-center gap-2 rounded-md bg-gray-100 px-4 font-mono text-sm font-medium transition-colors hover:bg-gray-200 focus:outline-none focus:ring-2 dark:bg-gray-800 dark:hover:bg-gray-700"
 					aria-label="Copy connection string: {connectionString}"
 				>
 					<span>{connectionString}</span>
@@ -188,7 +194,7 @@
 
 		<!-- Instance Controls -->
 		{#if challenge?.instance}
-			<InstanceControls {challenge} {countdown} {onCountdownUpdate} {onInstanceChange} />
+			<InstanceControls bind:challenge {countdown} {onCountdownUpdate} {onInstanceChange} />
 		{/if}
 
 		<!-- Submit Flag -->

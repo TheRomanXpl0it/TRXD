@@ -1,17 +1,17 @@
 import { api } from '$lib/api';
+import type { Challenge, Category, Solve } from '$lib/types';
 
-export async function getSolves(chall_id: string): Promise<any[]> {
+export async function getSolves(chall_id: string | number): Promise<Solve[]> {
 	const challenge = await getChallenge(chall_id);
-	const solves = Array.isArray(challenge?.solves_list) ? challenge.solves_list : [];
-	return solves;
+	return Array.isArray(challenge?.solves_list) ? challenge.solves_list : [];
 }
 
-export async function getChallenges(): Promise<any[]> {
-	return api<any[]>('/challenges');
+export async function getChallenges(): Promise<Challenge[]> {
+	return api<Challenge[]>('/challenges');
 }
 
-export async function getChallenge(chall_id: string): Promise<any> {
-	return api<any>(`/challenges/${chall_id}`);
+export async function getChallenge(chall_id: string | number): Promise<Challenge> {
+	return api<Challenge>(`/challenges/${chall_id}`);
 }
 
 export async function submitFlag(chall_id: string, flag: string): Promise<{ status: string }> {
@@ -22,8 +22,8 @@ export async function submitFlag(chall_id: string, flag: string): Promise<{ stat
 	});
 }
 
-export async function getCategories(): Promise<any[]> {
-	return api<any[]>('/categories');
+export async function getCategories(): Promise<Category[]> {
+	return api<Category[]>('/categories');
 }
 
 export async function createCategory(name: string, icon: string): Promise<any> {
@@ -57,10 +57,25 @@ export async function deleteChallenge(chall_id: string): Promise<any> {
 	});
 }
 
-/** Sends multipart/form-data to PATCH /challenges (server reads chall_id) */
-export async function updateChallengeMultipart(fd: FormData): Promise<any> {
+export async function updateChallenge(data: any): Promise<any> {
 	return api<any>(`/challenges`, {
+		headers: { 'content-type': 'application/json' },
 		method: 'PATCH',
+		body: JSON.stringify(data)
+	});
+}
+
+export async function uploadAttachments(fd: FormData): Promise<any> {
+	return api<any>(`/attachments`, {
+		method: 'POST',
 		body: fd
+	});
+}
+
+export async function deleteAttachments(chall_id: number, names: string[]): Promise<any> {
+	return api<any>(`/attachments`, {
+		headers: { 'content-type': 'application/json' },
+		method: 'DELETE',
+		body: JSON.stringify({ chall_id, names })
 	});
 }

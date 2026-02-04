@@ -1,10 +1,9 @@
 <script lang="ts">
-	import { params } from 'svelte-spa-router';
+	import { params, link } from 'svelte-spa-router';
 	import { user as authUser, authReady, userMode, loadUser } from '$lib/stores/auth';
 	import { push } from 'svelte-spa-router';
 	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
-	import { Avatar } from 'flowbite-svelte';
-	import { ShieldHalf, Globe, Users, Edit, Award } from '@lucide/svelte';
+	import { Globe, Users, Edit, Award, LayoutGrid, List } from '@lucide/svelte';
 	import Icon from '@iconify/svelte';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 
@@ -14,12 +13,16 @@
 	import TeamEdit from '$lib/components/team/TeamEdit.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { getTeam } from '$lib/team';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import { Separator } from '$lib/components/ui/separator/index.js';
+	import GeneratedAvatar from '$lib/components/ui/avatar/generated-avatar.svelte';
+	import RadarChart from '$lib/components/RadarChart.svelte';
 
 	let loading = $state(false);
 	let teamError: string | null = $state(null);
 	let team: any = $state(null);
 	let teamEditOpen = $state(false);
-	let activeTab = $state<'overview' | 'members' | 'solves'>('overview');
+	let activeTab = $state<'overview' | 'solves'>('overview');
 	const isOwnTeam = $derived($authUser && team && String($authUser.team_id) === String(team.id));
 
 	// race guard
@@ -37,7 +40,6 @@
 			const num = Number(key);
 			return num > 0 ? num : null;
 		}
-
 		return null;
 	}
 
@@ -48,9 +50,7 @@
 
 		try {
 			const apiKey = validateId(key);
-			if (apiKey === null) {
-				throw new Error('Invalid team ID format');
-			}
+			if (apiKey === null) throw new Error('Invalid team ID format');
 			const t = await getTeam(apiKey);
 			if (mySeq !== reqSeq) return;
 			team = t ?? null;
@@ -63,19 +63,14 @@
 		}
 	}
 
-	// React to: auth ready, URL param changes
 	$effect(() => {
 		if (!$authReady) return;
-
-		// Redirect to 404 if userMode is enabled
 		if ($userMode) {
 			push('/not-found');
 			return;
 		}
-
 		const softRouteKey = normalizeKey($params?.id);
 		const fallbackKey = normalizeKey($authUser?.team_id);
-
 		const effectiveKey = softRouteKey ?? fallbackKey;
 
 		if (!effectiveKey) {
@@ -92,208 +87,259 @@
 	});
 </script>
 
-<div>
-	<p class="mt-5 text-3xl font-bold text-gray-800 dark:text-gray-100">Team</p>
-	<hr class="my-2 mb-10 h-px border-0 bg-gray-200 dark:bg-gray-700" />
-
-	{#if !$authReady || loading}
-		<div class="flex flex-col items-center justify-center py-12">
-			<Spinner class="mb-4 h-8 w-8" />
-			<p class="text-gray-600 dark:text-gray-400">Loading...</p>
-		</div>
-	{:else if teamError}
-		<div class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-600 dark:border-red-800 dark:bg-red-950/20">
-			<p class="font-semibold">Error loading team</p>
-			<p class="text-sm">{teamError}</p>
-		</div>
-	{:else if !team}
-		<TeamJoinCreate oncreated={() => loadUser()} onjoined={() => loadUser()} />
-	{:else}
-		<!-- Header -->
-		<div class="mb-8 flex items-start justify-between pb-6">
-			<div class="flex min-w-0 flex-1 items-center gap-4">
-				{#if team?.image || team?.profileImage}
-					<div class="h-16 w-16 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-						<img src={team.image ?? team.profileImage} alt={team.name} class="h-full w-full rounded-full object-cover object-center" />
-					</div>
-				{:else}
-					<Avatar class="h-16 w-16">
-						<ShieldHalf class="h-8 w-8" />
-					</Avatar>
-				{/if}
-				<div class="min-w-0 flex-1">
-					<h2 class="truncate text-2xl font-bold">{team.name}</h2>
-					<div class="mt-1 flex items-center gap-3 text-sm">
-						{#if team.country}
-							<Icon icon={`circle-flags:${String(team.country).toLowerCase()}`} width="20" height="20" />
-						{/if}
-						<div class="flex items-center gap-1">
-							<Users class="h-3.5 w-3.5" />
-							<span>{team.members?.length} {team.members?.length === 1 ? 'member' : 'members'}</span>
-						</div>
-					</div>
-				</div>
+{#if !$authReady || loading}
+	<div class="mx-auto max-w-6xl space-y-8 py-10">
+		<div class="space-y-4">
+			<div class="bg-muted h-8 w-48 animate-pulse rounded"></div>
+			<Separator />
+			<div class="flex flex-col items-center justify-center py-12">
+				<Spinner class="mb-4 h-8 w-8" />
+				<p class="text-muted-foreground">Loading team...</p>
 			</div>
+		</div>
+	</div>
+{:else if teamError}
+	<div class="mx-auto max-w-6xl py-10">
+		<div
+			class="border-destructive/50 bg-destructive/10 text-destructive dark:border-destructive dark:bg-destructive/20 rounded-lg border p-6"
+		>
+			<p class="text-lg font-semibold">Error loading team</p>
+			<p>{teamError}</p>
+		</div>
+	</div>
+{:else if !team}
+	<div class="mx-auto max-w-4xl py-10">
+		<TeamJoinCreate oncreated={() => loadUser()} onjoined={() => loadUser()} />
+	</div>
+{:else}
+	<div class="mx-auto max-w-6xl space-y-8 py-10">
+		<!-- Header -->
+		<div class="flex items-center justify-between">
+			<h2 class="text-3xl font-bold tracking-tight">Team Profile</h2>
 			{#if isOwnTeam}
-				<Button variant="outline" size="sm" onclick={() => (teamEditOpen = true)}>
+				<Button variant="outline" size="sm" onclick={() => (teamEditOpen = true)} class="gap-2">
 					<Edit class="h-4 w-4" />
+					Edit Team
 				</Button>
 			{/if}
 		</div>
 
-		<!-- Tabs -->
-		<div class="mb-8 border-b border-black dark:border-white">
-			<div class="flex">
+		<!-- Hero Card -->
+		<Card.Root
+			class="from-muted/20 to-background overflow-hidden border-0 bg-gradient-to-br shadow-sm"
+		>
+			<Card.Content class="p-6 sm:p-8">
+				<div class="flex flex-col items-start gap-6 sm:flex-row sm:items-center">
+					<!-- Avatar / Flag -->
+					<div
+						class="border-background bg-background relative h-20 w-20 shrink-0 overflow-hidden rounded-full border-4 shadow-md"
+					>
+						{#if team.country}
+							<div
+								class="flex h-full w-full items-center justify-center bg-gray-100 dark:bg-gray-800"
+							>
+								<Icon
+									icon={`circle-flags:${String(team.country).toLowerCase()}`}
+									width="80"
+									height="80"
+									class="h-full w-full object-cover"
+								/>
+							</div>
+						{:else}
+							<div
+								class="bg-muted text-muted-foreground flex h-full w-full items-center justify-center"
+							>
+								<GeneratedAvatar seed={team.name} class="h-full w-full" />
+							</div>
+						{/if}
+					</div>
+
+					<div class="min-w-0 flex-1 space-y-1">
+						<h1 class="truncate text-3xl font-bold tracking-tight">{team.name}</h1>
+						<div class="text-muted-foreground flex flex-wrap items-center gap-4 text-sm">
+							<span class="flex items-center gap-1.5">
+								<Users class="h-4 w-4" />
+								{team.members?.length ?? 0} members
+							</span>
+							{#if team.rank}
+								<span class="text-foreground flex items-center gap-1.5 font-medium">
+									<Award class="h-4 w-4 text-yellow-500" />
+									Rank #{team.rank}
+								</span>
+							{/if}
+						</div>
+					</div>
+
+					<!-- Key Stats -->
+					<div
+						class="border-border mt-2 flex w-full justify-between gap-8 border-t pt-4 sm:mt-0 sm:w-auto sm:justify-end sm:border-l sm:border-t-0 sm:pl-8 sm:pt-0"
+					>
+						<div class="text-center sm:text-right">
+							<p class="text-muted-foreground text-[10px] font-bold uppercase tracking-wider">
+								Total Score
+							</p>
+							<p class="font-mono text-3xl font-bold tabular-nums tracking-tight">
+								{team.score?.toLocaleString() ?? 0}
+							</p>
+						</div>
+						<div class="text-center sm:text-right">
+							<p class="text-muted-foreground text-[10px] font-bold uppercase tracking-wider">
+								Solves
+							</p>
+							<p class="font-mono text-3xl font-bold tabular-nums tracking-tight">
+								{team.solves?.length ?? 0}
+							</p>
+						</div>
+					</div>
+				</div>
+			</Card.Content>
+		</Card.Root>
+
+		<!-- Tabs Control -->
+		<div class="flex justify-center">
+			<div
+				class="bg-muted text-muted-foreground inline-flex h-10 items-center justify-center gap-1 rounded-lg p-1"
+			>
 				<button
-					class="cursor-pointer border-b-2 px-4 py-3 text-sm font-medium text-black transition-colors dark:text-white {activeTab === 'overview' ? 'border-black dark:border-white' : 'border-transparent hover:bg-black/5 dark:hover:bg-white/5'}"
-					onclick={() => activeTab = 'overview'}
+					class="ring-offset-background focus-visible:ring-ring inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md px-6 py-1.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 {activeTab ===
+					'overview'
+						? 'bg-background text-foreground shadow-sm'
+						: 'hover:bg-background/50 hover:text-foreground'}"
+					onclick={() => (activeTab = 'overview')}
 				>
+					<LayoutGrid class="h-4 w-4" />
 					Overview
 				</button>
 				<button
-					class="cursor-pointer border-b-2 px-4 py-3 text-sm font-medium text-black transition-colors dark:text-white {activeTab === 'members' ? 'border-black dark:border-white' : 'border-transparent hover:bg-black/5 dark:hover:bg-white/5'}"
-					onclick={() => activeTab = 'members'}
+					class="ring-offset-background focus-visible:ring-ring inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md px-6 py-1.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 {activeTab ===
+					'solves'
+						? 'bg-background text-foreground shadow-sm'
+						: 'hover:bg-background/50 hover:text-foreground'}"
+					onclick={() => (activeTab = 'solves')}
 				>
-					Members
-				</button>
-				<button
-					class="cursor-pointer border-b-2 px-4 py-3 text-sm font-medium text-black transition-colors dark:text-white {activeTab === 'solves' ? 'border-black dark:border-white' : 'border-transparent hover:bg-black/5 dark:hover:bg-white/5'}"
-					onclick={() => activeTab = 'solves'}
-				>
+					<List class="h-4 w-4" />
 					Solves
 				</button>
 			</div>
 		</div>
 
-		<!-- Tab Content -->
 		{#if activeTab === 'overview'}
-			<div class="space-y-8">
-				{#if team.bio}
-					<div>
-						<h3 class="mb-2 text-lg font-semibold">About</h3>
-						<p>{team.bio}</p>
-					</div>
-				{/if}
+			<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+				<!-- Row 1: Left: Category List (4 cols), Right: Stats (3 cols) -->
 
-				<!-- Stats Grid -->
-				<div>
-					<h3 class="mb-4 text-lg font-semibold">Statistics</h3>
-					<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-						<div class="rounded bg-gray-50 dark:bg-gray-800/50 p-4 shadow-sm">
-							<div class="text-sm">Total Points</div>
-							<p class="mt-1 text-2xl font-semibold">{team?.score ?? 0}</p>
-						</div>
-						<div class="rounded bg-gray-50 dark:bg-gray-800/50 p-4 shadow-sm">
-							<div class="text-sm">Members</div>
-							<p class="mt-1 text-2xl font-semibold">{team?.members?.length ?? 0}</p>
-							<p class="text-xs opacity-70">{team?.members?.filter((m: any) => (m?.score ?? 0) > 0).length ?? 0} active</p>
-						</div>
-						<div class="rounded bg-gray-50 dark:bg-gray-800/50 p-4 shadow-sm">
-							<div class="text-sm">Solves</div>
-							<p class="mt-1 text-2xl font-semibold">{team?.solves?.length ?? 0}</p>
-						</div>
-						<div class="rounded bg-gray-50 dark:bg-gray-800/50 p-4 shadow-sm">
-							<div class="text-sm">Badges</div>
-							<p class="mt-1 text-2xl font-semibold">{team?.badges?.length ?? 0}</p>
-						</div>
-					</div>
-				</div>
-
-				<!-- Latest Activity. This should probably be removed -->
-				{#if team?.solves && team.solves.length > 0}
-					{@const lastSolve = [...team.solves].sort((a, b) => +new Date(b.timestamp) - +new Date(a.timestamp))[0]}
-					{@const timeSince = (iso) => {
-						if (!iso) return '-';
-						const sec = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
-						const h = Math.floor(sec / 3600);
-						const m = Math.floor((sec % 3600) / 60);
-						const s = sec % 60;
-						if (h > 0) return `${h}h ${m}m`;
-						if (m > 0) return `${m}m ${s}s`;
-						return `${s}s`;
-					}}
-					<div>
-						<h3 class="mb-4 text-lg font-semibold">Latest Activity</h3>
-						<div class="rounded bg-gray-50 dark:bg-gray-800/50 p-4 shadow-sm">
-							<div class="text-sm">Most recent solve</div>
-							<div class="mt-2 flex items-center justify-between">
-								<div>
-									<p class="text-lg font-medium">{lastSolve.name}</p>
-									<span class="mt-1 inline-flex items-center rounded-full bg-black/5 dark:bg-white/10 px-2.5 py-0.5 text-xs font-medium">
-										{lastSolve.category}
-									</span>
-								</div>
-								<div class="text-right">
-									<p class="text-2xl font-semibold">{timeSince(lastSolve.timestamp)}</p>
-									<p class="text-xs opacity-70">ago</p>
-								</div>
-							</div>
-							<p class="mt-2 text-xs opacity-70">
-								{new Date(lastSolve.timestamp).toLocaleString()}
-							</p>
-						</div>
-					</div>
-				{/if}
-
-				<!-- Category Breakdown. Improve this in future updates -->
-				{#if team?.solves && team.solves.length > 0}
-					{@const categories = (() => {
-						const map = new Map();
-						for (const s of team.solves) map.set(s.category, (map.get(s.category) ?? 0) + 1);
-						const total = [...map.values()].reduce((a, b) => a + b, 0) || 1;
-						return [...map.entries()]
-							.sort((a, b) => b[1] - a[1])
-							.map(([cat, count]) => ({ cat, count, pct: Math.round((count / total) * 100) }));
-					})()}
-					<div>
-						<h3 class="mb-4 text-lg font-semibold">Category Breakdown</h3>
-						<div class="space-y-3">
-							{#each categories as c}
-								<div>
-									<div class="flex items-center justify-between text-sm">
-										<span class="font-medium">{c.cat}</span>
-										<span class="opacity-70">{c.count} ({c.pct}%)</span>
-									</div>
-									<div class="mt-1 h-2 w-full rounded bg-gray-100 dark:bg-gray-700">
-										<div class="h-full rounded bg-gray-900 dark:bg-gray-200" style="width:{Math.max(3, Math.min(100, c.pct))}%"></div>
-									</div>
-								</div>
-							{/each}
-						</div>
-					</div>
-				{/if}
-
-				<!-- Badges Section -->
-				{#if team?.badges && team.badges.length > 0}
-					<div>
-						<h3 class="mb-4 text-lg font-semibold">Badges</h3>
-						<div class="flex flex-wrap gap-3">
-							{#each team.badges as badge}
-								<Tooltip.Root>
-									<Tooltip.Trigger>
-										<div class="flex items-center gap-2 rounded bg-gray-50 dark:bg-gray-800/50 px-3 py-2 shadow-sm">
-											{#if badge.icon}
-												<span class="text-xl">{badge.icon}</span>
-											{/if}
-											<span class="text-sm font-medium">{badge.name}</span>
+				<!-- Category Breakdown (List) -->
+				<Card.Root class="bg-card border-0 shadow-sm lg:col-span-4">
+					<Card.Header class="pb-2">
+						<Card.Title class="text-muted-foreground text-sm font-medium uppercase tracking-wider"
+							>Category Breakdown</Card.Title
+						>
+					</Card.Header>
+					<Card.Content>
+						{#if team?.solves && team.solves.length > 0}
+							{@const categories = (() => {
+								const map = new Map();
+								for (const s of team.solves) map.set(s.category, (map.get(s.category) ?? 0) + 1);
+								const total = [...map.values()].reduce((a, b) => a + b, 0) || 1;
+								return [...map.entries()]
+									.sort((a, b) => b[1] - a[1])
+									.map(([cat, count]) => ({ cat, count, pct: Math.round((count / total) * 100) }));
+							})()}
+							<div class="grid gap-4 sm:grid-cols-2">
+								{#each categories as c}
+									<div class="space-y-1">
+										<div class="flex justify-between text-xs font-medium">
+											<span>{c.cat}</span>
+											<span class="text-muted-foreground">{c.count} ({c.pct}%)</span>
 										</div>
-									</Tooltip.Trigger>
-									{#if badge.description}
-										<Tooltip.Content>
-											<p>{badge.description}</p>
-										</Tooltip.Content>
-									{/if}
-								</Tooltip.Root>
-							{/each}
+										<div class="bg-muted h-1.5 w-full overflow-hidden rounded-full">
+											<div class="bg-primary h-full" style="width: {c.pct}%"></div>
+										</div>
+									</div>
+								{/each}
+							</div>
+						{:else}
+							<p class="text-muted-foreground text-sm">No solves yet.</p>
+						{/if}
+					</Card.Content>
+				</Card.Root>
+
+				<!-- Stats Card -->
+				<Card.Root class="bg-card border-0 shadow-sm lg:col-span-3">
+					<Card.Header class="pb-2">
+						<Card.Title class="text-muted-foreground text-sm font-medium uppercase tracking-wider"
+							>Team Status</Card.Title
+						>
+					</Card.Header>
+					<Card.Content>
+						<div class="grid grid-cols-2 gap-4">
+							<div>
+								<p class="text-muted-foreground text-xs uppercase">Score</p>
+								<p class="font-mono text-xl font-bold">{team.score}</p>
+							</div>
+							<div>
+								<p class="text-muted-foreground text-xs uppercase">Solves</p>
+								<p class="font-mono text-xl font-bold">{team.solves?.length ?? 0}</p>
+							</div>
+							<div>
+								<p class="text-muted-foreground text-xs uppercase">Country</p>
+								<p class="text-xl">{team.country ?? '🌍'}</p>
+							</div>
 						</div>
-					</div>
-				{/if}
+					</Card.Content>
+				</Card.Root>
+
+				<!-- Row 2: Radar Chart (Full Width) -->
+				<!-- Temporarily commented out
+				<Card.Root class="bg-card border-0 shadow-sm md:col-span-2 lg:col-span-7">
+					<Card.Header class="pb-2">
+						<Card.Title class="text-muted-foreground text-sm font-medium uppercase tracking-wider"
+							>Skill Radar</Card.Title
+						>
+					</Card.Header>
+					<Card.Content>
+						<RadarChart solves={team.solves} />
+					</Card.Content>
+				</Card.Root>
+				-->
+
+				<!-- Row 3: Members (Full Width) -->
+				<Card.Root class="bg-card border-0 shadow-sm md:col-span-2 lg:col-span-7">
+					<Card.Header class="pb-2">
+						<Card.Title class="text-muted-foreground text-sm font-medium uppercase tracking-wider"
+							>Team Members</Card.Title
+						>
+					</Card.Header>
+					<Card.Content>
+						{#if team.members && team.members.length > 0}
+							<div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+								{#each team.members as member}
+									<a
+										href={`#/account/${member.id}`}
+										use:link
+										class="hover:bg-muted/50 flex items-center gap-3 rounded-lg p-2 transition-colors"
+									>
+										<GeneratedAvatar seed={member.name} size={40} />
+										<div class="min-w-0">
+											<div class="truncate text-sm font-medium">{member.name}</div>
+											<div class="text-muted-foreground text-xs">{member.role}</div>
+										</div>
+									</a>
+								{/each}
+							</div>
+						{:else}
+							<p class="text-muted-foreground text-sm">No members found.</p>
+						{/if}
+					</Card.Content>
+				</Card.Root>
 			</div>
-		{:else if activeTab === 'members'}
-			<TeamMembers {team} />
 		{:else if activeTab === 'solves'}
-			<SolveListTable {team} />
+			<Card.Root class="overflow-hidden border-0 shadow-sm">
+				<Card.Content class="p-0">
+					<SolveListTable {team} />
+				</Card.Content>
+			</Card.Root>
 		{/if}
-	{/if}
-</div>
+	</div>
+{/if}
+
 <TeamEdit bind:open={teamEditOpen} {team} onupdated={() => loadTeamByKey(team.id)} />

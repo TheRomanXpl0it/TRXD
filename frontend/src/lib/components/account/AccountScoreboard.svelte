@@ -23,7 +23,7 @@
 		}
 	}
 
-	const getSortArrow = (key: SortKey) => sortKey === key ? (sortDir === 'asc' ? ' ▲' : ' ▼') : '';
+	const getSortArrow = (key: SortKey) => (sortKey === key ? (sortDir === 'asc' ? ' ▲' : ' ▼') : '');
 
 	const sortedSolves = $derived.by(() => {
 		const source = Array.isArray(solves) ? [...solves] : [];
@@ -59,25 +59,37 @@
 	const totalPoints = $derived(sortedSolves.reduce((acc, s) => acc + getPoints(s), 0));
 </script>
 
-<div class="flex flex-col w-full">
-	<div class="flex items-center gap-2">
+<div class="flex w-full flex-col">
+	<div class="flex items-center gap-2 px-6 py-4">
 		<ChartLine class="h-5 w-5 opacity-70" />
 		<h3 class="text-xl font-semibold">Solves</h3>
 	</div>
 
 	<Table.Root class="w-full">
-		<Table.Header>
-			<Table.Row>
-				<Table.Head class="w-[40%] cursor-pointer" onclick={() => toggleSort('name')}>
+		<Table.Header class="bg-transparent [&_tr]:border-b-0">
+			<Table.Row class="hover:bg-transparent">
+				<Table.Head
+					class="text-muted-foreground/70 w-[40%] cursor-pointer text-[10px] font-bold uppercase tracking-wider"
+					onclick={() => toggleSort('name')}
+				>
 					Challenge{getSortArrow('name')}
 				</Table.Head>
-				<Table.Head class="w-[20%] cursor-pointer" onclick={() => toggleSort('category')}>
+				<Table.Head
+					class="text-muted-foreground/70 w-[20%] cursor-pointer text-[10px] font-bold uppercase tracking-wider"
+					onclick={() => toggleSort('category')}
+				>
 					Category{getSortArrow('category')}
 				</Table.Head>
-				<Table.Head class="w-[15%] text-right cursor-pointer" onclick={() => toggleSort('points')}>
+				<Table.Head
+					class="text-muted-foreground/70 w-[15%] cursor-pointer text-right text-[10px] font-bold uppercase tracking-wider"
+					onclick={() => toggleSort('points')}
+				>
 					Points{getSortArrow('points')}
 				</Table.Head>
-				<Table.Head class="w-[25%] cursor-pointer text-right sm:text-left" onclick={() => toggleSort('timestamp')}>
+				<Table.Head
+					class="text-muted-foreground/70 w-[25%] cursor-pointer text-right text-[10px] font-bold uppercase tracking-wider sm:text-left"
+					onclick={() => toggleSort('timestamp')}
+				>
 					Solved at{getSortArrow('timestamp')}
 				</Table.Head>
 			</Table.Row>
@@ -85,23 +97,33 @@
 
 		<Table.Body>
 			{#if sortedSolves.length === 0}
-				<Table.Row>
+				<Table.Row class="border-b-0">
 					<Table.Cell colspan={4} class="p-0">
-						<EmptyState icon={Trophy} title="No solves yet" description="Solve challenges to see them here" />
+						<EmptyState
+							icon={Trophy}
+							title="No solves yet"
+							description="Solve challenges to see them here"
+						/>
 					</Table.Cell>
 				</Table.Row>
 			{:else}
 				{#each sortedSolves as solve (solve.id ?? solve.timestamp ?? solve.name)}
-					<Table.Row>
+					<Table.Row class="border-b-0 transition-colors">
 						<Table.Cell class="font-medium">{solve.name ?? '-'}</Table.Cell>
 						<Table.Cell>
 							<StatusBadge variant="category">{solve.category ?? '-'}</StatusBadge>
 						</Table.Cell>
-						<Table.Cell class="text-right">{getPoints(solve)}</Table.Cell>
+						<Table.Cell class="text-right">
+							<div class="font-mono text-sm font-medium tabular-nums leading-none tracking-tight">
+								{getPoints(solve)}
+							</div>
+						</Table.Cell>
 						<Table.Cell class="text-right sm:text-left">
-							<div class="flex items-center justify-end sm:justify-start gap-2">
+							<div class="flex items-center justify-end gap-2 sm:justify-start">
 								<span>{formatDate(solve.timestamp)}</span>
-								<span class="text-xs text-muted-foreground">({formatTimeSince(solve.timestamp)} ago)</span>
+								<span class="text-muted-foreground text-xs"
+									>({formatTimeSince(solve.timestamp)} ago)</span
+								>
 							</div>
 						</Table.Cell>
 					</Table.Row>

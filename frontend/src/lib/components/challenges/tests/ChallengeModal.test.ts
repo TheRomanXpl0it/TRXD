@@ -282,7 +282,7 @@ describe('ChallengeModal Component', () => {
 		});
 
 		const link = screen.getByRole('link', { name: /download test.zip/i });
-		expect(link).toHaveAttribute('href', '/files/test.zip');
+		expect(link).toHaveAttribute('href', `/attachments/${challenge.id}/files/test.zip`);
 		expect(link).toHaveAttribute('target', '_blank');
 		expect(link).toHaveAttribute('rel', 'noopener noreferrer');
 	});
@@ -314,7 +314,7 @@ describe('ChallengeModal Component', () => {
 		const user = userEvent.setup();
 		const mockToast = vi.mocked(toast);
 		const mockClipboard = vi.fn().mockResolvedValueOnce(undefined);
-		
+
 		Object.defineProperty(navigator, 'clipboard', {
 			value: { writeText: mockClipboard },
 			writable: true,
@@ -383,7 +383,7 @@ describe('ChallengeModal Component', () => {
 		const user = userEvent.setup();
 		const mockToast = vi.mocked(toast);
 		const mockClipboard = vi.fn().mockRejectedValueOnce(new Error('Clipboard denied'));
-		
+
 		Object.defineProperty(navigator, 'clipboard', {
 			value: { writeText: mockClipboard },
 			writable: true,

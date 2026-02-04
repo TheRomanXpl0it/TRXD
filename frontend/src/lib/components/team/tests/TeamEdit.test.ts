@@ -1,10 +1,10 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { toast } from 'svelte-sonner';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import TeamEdit from '../TeamEdit.svelte';
 import { updateTeam } from '$lib/team';
 import { useQueryClient } from '@tanstack/svelte-query';
+import { showError, showSuccess } from '$lib/utils/toast';
 import { tick } from 'svelte';
 
 async function flush() {
@@ -12,15 +12,13 @@ async function flush() {
   await Promise.resolve();
 }
 
-vi.mock('svelte-sonner', () => ({
-  toast: {
-    success: vi.fn(),
-    error: vi.fn(),
-  },
+vi.mock('$lib/utils/toast', () => ({
+  showError: vi.fn(),
+  showSuccess: vi.fn()
 }));
 
 vi.mock('$lib/team', () => ({
-  updateTeam: vi.fn(),
+  updateTeam: vi.fn()
 }));
 
 vi.mock('@tanstack/svelte-query', () => ({
@@ -32,53 +30,31 @@ vi.mock('@tanstack/svelte-query', () => ({
 describe('TeamEdit Component', () => {
   const baseTeam = {
     id: 7,
-    name: '',
-    bio: '',
-    image: '',
-    country: '',
-  } as any;
+    name: 'Team A',
+    country: 'ITA',
+    tags: ['tag1']
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  afterEach(async () => {
-    await new Promise(resolve => setTimeout(resolve, 150));
-  });
-
   it('renders team edit dialog', () => {
-		render(TeamEdit, { props: { open: true, team: baseTeam } });
-
+    render(TeamEdit, { props: { open: true, team: baseTeam } });
 
     expect(screen.getByLabelText(/team name/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^bio$/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/image url/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^save$/i })).toBeInTheDocument();
   });
 
   it('validates empty form submission', async () => {
     const user = userEvent.setup();
 
-		render(TeamEdit, { props: { open: true, team: baseTeam } });
-		await flush();
+    render(TeamEdit, { props: { open: true, team: { id: 7, name: '', country: '' } } });
+    await flush();
 
     await user.click(screen.getByRole('button', { name: /^save$/i }));
 
-    expect(toast.error).toHaveBeenCalledWith('Please fill at least one field.');
-    expect(updateTeam).not.toHaveBeenCalled();
-  });
-
-  it('validates image URL format', async () => {
-    const user = userEvent.setup();
-
-		render(TeamEdit, { props: { open: true, team: baseTeam } });
-		await flush();
-
-    const imageBad = screen.getByLabelText(/image url/i) as HTMLInputElement;
-    await fireEvent.input(imageBad, { target: { value: 'not-a-url' } });
-    await user.click(screen.getByRole('button', { name: /^save$/i }));
-
-    expect(toast.error).toHaveBeenCalledWith('Image must be a valid URL.');
+    expect(showError).toHaveBeenCalledWith(null, 'Please fill at least one field.');
     expect(updateTeam).not.toHaveBeenCalled();
   });
 
@@ -86,20 +62,17 @@ describe('TeamEdit Component', () => {
     const user = userEvent.setup();
     vi.mocked(updateTeam).mockResolvedValueOnce({ ok: true } as any);
 
-		render(TeamEdit, { props: { open: true, team: baseTeam } });
-		await flush();
+    render(TeamEdit, { props: { open: true, team: baseTeam } });
+    await flush();
 
     const tName = screen.getByLabelText(/team name/i) as HTMLInputElement;
-    const tBio = screen.getByLabelText(/^bio$/i) as HTMLTextAreaElement;
-    const tImg = screen.getByLabelText(/image url/i) as HTMLInputElement;
     await fireEvent.input(tName, { target: { value: ' New Team ' } });
-    await fireEvent.input(tBio, { target: { value: ' Cool bio ' } });
-    await fireEvent.input(tImg, { target: { value: ' http://image.png ' } });
     await flush();
+
     await user.click(screen.getByRole('button', { name: /^save$/i }));
 
     await waitFor(() => {
-      expect(updateTeam).toHaveBeenCalledWith(7, 'New Team', 'Cool bio', 'http://image.png', '');
+      expect(updateTeam).toHaveBeenCalledWith(7, 'New Team', 'ITA', ['tag1']);
     });
   });
 
@@ -109,76 +82,58 @@ describe('TeamEdit Component', () => {
     vi.mocked(updateTeam).mockResolvedValueOnce({ ok: true } as any);
     vi.mocked(useQueryClient).mockReturnValue({ invalidateQueries: mockInvalidateQueries } as any);
 
-		render(TeamEdit, { props: { open: true, team: baseTeam } });
-		await flush();
+    render(TeamEdit, { props: { open: true, team: baseTeam } });
+    await flush();
 
     const tName2 = screen.getByLabelText(/team name/i) as HTMLInputElement;
-    const tBio2 = screen.getByLabelText(/^bio$/i) as HTMLTextAreaElement;
-    const tImg2 = screen.getByLabelText(/image url/i) as HTMLInputElement;
     await fireEvent.input(tName2, { target: { value: 'New Team' } });
-    await fireEvent.input(tBio2, { target: { value: 'Cool bio' } });
-    await fireEvent.input(tImg2, { target: { value: 'http://image.png' } });
     await flush();
+
     await user.click(screen.getByRole('button', { name: /^save$/i }));
 
     await waitFor(() => {
-      expect(updateTeam).toHaveBeenCalledWith(7, 'New Team', 'Cool bio', 'http://image.png', '');
-      expect(mockInvalidateQueries).toHaveBeenCalled();
+      expect(updateTeam).toHaveBeenCalledWith(7, 'New Team', 'ITA', ['tag1']);
+      expect(mockInvalidateQueries).toHaveBeenCalledWith({ queryKey: ['teams'] });
+      expect(showSuccess).toHaveBeenCalledWith('Team updated.');
     });
   });
 
   it('handles update error', async () => {
     const user = userEvent.setup();
-    vi.mocked(updateTeam).mockRejectedValueOnce(new Error('Update failed'));
+    const error = new Error('Update failed');
+    vi.mocked(updateTeam).mockRejectedValueOnce(error);
 
     render(TeamEdit, { props: { open: true, team: baseTeam } });
+    await flush();
 
     const nm = screen.getByLabelText(/team name/i) as HTMLInputElement;
     await fireEvent.input(nm, { target: { value: 'New Team' } });
+    await flush();
+
     await user.click(screen.getByRole('button', { name: /^save$/i }));
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Update failed');
+      expect(showError).toHaveBeenCalledWith(error, 'Failed to update team.');
     });
   });
 
   it('shows loading state during update', async () => {
     const user = userEvent.setup();
-    let resolveUpdate: (value: any) => void = () => {};
-    const updatePromise = new Promise((resolve) => {
-      resolveUpdate = resolve;
-    });
-    vi.mocked(updateTeam).mockReturnValueOnce(updatePromise as any);
+    vi.mocked(updateTeam).mockImplementation(
+      () => new Promise((resolve) => setTimeout(() => resolve({ ok: true } as any), 200))
+    );
 
     render(TeamEdit, { props: { open: true, team: baseTeam } });
-
-    await user.type(screen.getByLabelText(/team name/i), 'New Team');
     await flush();
-    const submitButton = screen.getByRole('button', { name: /^save$/i });
-    await user.click(submitButton);
 
-    // While pending, the original submit button becomes disabled
-    await waitFor(() => {
-      expect(submitButton).toBeDisabled();
-    });
-
-    // Resolve and ensure it completes without throwing
-    resolveUpdate({ ok: true });
-  });
-
-  it('allows updating individual fields', async () => {
-    const user = userEvent.setup();
-    vi.mocked(updateTeam).mockResolvedValueOnce({ ok: true } as any);
-
-    render(TeamEdit, { props: { open: true, team: baseTeam } });
-
-    const tBio3 = screen.getByLabelText(/^bio$/i) as HTMLTextAreaElement;
-    await fireEvent.input(tBio3, { target: { value: 'Only bio updated' } });
+    const nameInput = screen.getByLabelText(/team name/i) as HTMLInputElement;
+    await fireEvent.input(nameInput, { target: { value: 'New Team' } });
     await flush();
+
     await user.click(screen.getByRole('button', { name: /^save$/i }));
 
-    await waitFor(() => {
-      expect(updateTeam).toHaveBeenCalledWith(7, '', 'Only bio updated', '', '');
-    });
+    const savingButton = await screen.findByText(/saving\.\.\./i);
+    expect(savingButton).toBeInTheDocument();
+    expect(savingButton).toBeDisabled();
   });
 });

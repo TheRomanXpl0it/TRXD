@@ -1,6 +1,5 @@
 import { api } from '$lib/api'
 
-// CREATE tags for a challenge (POST)
 export async function createTagsForChallenge(tags: any[], chall_id: any) {
   const list = Array.from(tags ?? [])
     .map((name) =>
@@ -14,7 +13,6 @@ export async function createTagsForChallenge(tags: any[], chall_id: any) {
   return Promise.all(list);
 }
 
-// DELETE tags from a challenge (DELETE)
 export async function deleteTagsFromChallenge(tags: any[], chall_id: any) {
   const list = Array.from(tags ?? []).map((name) =>
     api<any>('/tags', {

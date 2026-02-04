@@ -17,6 +17,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { getUserData } from '$lib/user';
 	import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js';
+	import GeneratedAvatar from '$lib/components/ui/avatar/generated-avatar.svelte';
 
 	const sidebar = useSidebar();
 
@@ -30,12 +31,11 @@
 		userMode: boolean;
 	}>();
 
-
 	type NavItem = { title: string; url: string; icon: typeof HouseIcon };
 	const baseItems: NavItem[] = [
 		{ title: 'Home', url: '/', icon: HouseIcon },
 		{ title: 'Challenges', url: '/challenges', icon: Joystick },
-		{ title: 'Scoreboard', url: '/scoreboard', icon: Trophy },
+		{ title: 'Scoreboard', url: '/scoreboard', icon: Trophy }
 		//{ title: "Writeups",   url: "/writeups",   icon: BookText },
 	];
 
@@ -65,7 +65,7 @@
 	const displayImage = $derived(enrichedUser?.image ?? user?.image ?? user?.profileImage ?? null);
 
 	$effect(() => {
-		const id = user?.id
+		const id = user?.id;
 		if (!id) {
 			enrichedUser = null;
 			return;
@@ -90,12 +90,17 @@
 						<Sidebar.MenuItem>
 							<Sidebar.MenuButton class="cursor-pointer">
 								{#snippet child({ props })}
-									<a {...props} href={item.url} use:link onclick={() => {
-										// Close mobile menu on navigation
-										if (sidebar.isMobile) {
-											sidebar.setOpenMobile(false);
-										}
-									}}>
+									<a
+										{...props}
+										href={item.url}
+										use:link
+										onclick={() => {
+											// Close mobile menu on navigation
+											if (sidebar.isMobile) {
+												sidebar.setOpenMobile(false);
+											}
+										}}
+									>
 										<item.icon />
 										<span>{item.title}</span>
 									</a>
@@ -113,7 +118,7 @@
 			<a
 				href="/account"
 				use:link
-				class="group flex cursor-pointer items-center gap-3 rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+				class="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group flex cursor-pointer items-center gap-3 rounded-lg p-2 transition-colors"
 				onclick={() => {
 					// Close mobile menu on navigation
 					if (sidebar.isMobile) {
@@ -124,9 +129,7 @@
 				{#if displayImage}
 					<Avatar src={displayImage} class="h-8 w-8 shrink-0" />
 				{:else}
-					<Avatar class="h-8 w-8 shrink-0">
-						<BugOutline />
-					</Avatar>
+					<GeneratedAvatar seed={user.name ?? 'user'} class="h-8 w-8 shrink-0 rounded-full" />
 				{/if}
 
 				<div class="min-w-0 flex-1">
@@ -153,7 +156,7 @@
 			<a
 				href="/signIn"
 				use:link
-				class="flex flex-row rounded-lg p-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+				class="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-row rounded-lg p-2 text-sm text-gray-700 transition-colors dark:text-gray-200"
 			>
 				<LogIn class="mr-3" />
 				Sign in

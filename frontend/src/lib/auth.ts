@@ -1,17 +1,5 @@
-// TODO: Refactor this file
-
 import { api } from '$lib/api';
-
-export type User = {
-  id: number;
-  name: string;
-  profileImage?: string;
-  team_id?: number;
-  role: string;
-  nationality?: string;
-  joined_at?: string;
-  // add fields you actually return
-};
+import type { User } from '$lib/types';
 
 export async function getInfo(): Promise<any | null> {
   try {

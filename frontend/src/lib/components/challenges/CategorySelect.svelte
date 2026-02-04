@@ -39,8 +39,8 @@
   const filteredItems = $derived(
     searchValue.trim()
       ? items.filter(item => 
-          item.label.toLowerCase().includes(searchValue.toLowerCase()) ||
-          item.value.toLowerCase().includes(searchValue.toLowerCase())
+          (item.label || '').toLowerCase().includes(searchValue.toLowerCase()) ||
+          (item.value || '').toLowerCase().includes(searchValue.toLowerCase())
         )
       : items
   );

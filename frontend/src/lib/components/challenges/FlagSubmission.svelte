@@ -18,7 +18,7 @@
 	let flag = $state('');
 	let submittingFlag = $state(false);
 	let flagError = $state(false);
-	let flagInputElement: HTMLInputElement | null = null; // Don't use $state with bind:this
+	let flagInputElement = $state<HTMLInputElement>();
 
 	async function onSubmitFlag(ev: SubmitEvent) {
 		ev.preventDefault();
@@ -54,7 +54,7 @@
 	}
 </script>
 
-<div class="border-t border-black/10 dark:border-white/10 pt-6">
+<div class="border-t border-black/10 pt-6 dark:border-white/10">
 	<form
 		class="flex w-full items-center gap-2 sm:gap-3"
 		class:justify-center={challenge?.solved}
@@ -75,7 +75,7 @@
 				{/if}
 				<Input
 					bind:this={flagInputElement}
-					class={`pl-10 h-11 text-sm sm:text-base ${flagError ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+					class={`h-11 pl-10 text-sm sm:text-base ${flagError ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
 					placeholder="TRX{'{'}...{'}'}"
 					bind:value={flag}
 					oninput={() => (flagError = false)}
@@ -91,7 +91,7 @@
 			<Button
 				type="submit"
 				color="primary"
-				class="px-6 sm:px-8 h-11 shrink-0"
+				class="h-11 shrink-0 px-6 sm:px-8"
 				disabled={submittingFlag || !flag.trim() || flagError}
 				aria-label="Submit flag"
 			>

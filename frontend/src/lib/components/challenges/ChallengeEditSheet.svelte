@@ -9,10 +9,14 @@
 	import CategorySelect from '$lib/components/challenges/CategorySelect.svelte';
 	import TagMultiSelect from '$lib/components/challenges/TagMultiselect.svelte';
 	import { toast } from 'svelte-sonner';
-	import { updateChallengeMultipart, getChallenge } from '$lib/challenges';
-	import { Cpu, MemoryStick, Clock, X, Tags } from '@lucide/svelte';
-    import { createTagsForChallenge, deleteTagsFromChallenge} from '$lib/tags'
-    import { createFlags, deleteFlags } from '$lib/flags'
+	import {
+		updateChallenge,
+		getChallenge,
+		uploadAttachments,
+		deleteAttachments
+	} from '$lib/challenges';
+	import { Cpu, MemoryStick, Clock, X, Tags as TagsIcon } from '@lucide/svelte';
+	import { createFlags, deleteFlags } from '$lib/flags';
 	import MonacoEditor from '$lib/components/MonacoEditor.svelte';
 
 	type Item = { value: string; label: string };
@@ -23,9 +27,9 @@
 		challenge_user,
 		all_tags,
 		onupdated
-	} = $props<{ 
-		open?: boolean; 
-		challenge_user: any; 
+	} = $props<{
+		open?: boolean;
+		challenge_user: any;
 		all_tags?: string[];
 		onupdated?: (detail: { id: number }) => void;
 	}>();
@@ -44,6 +48,7 @@
 	let dynamicScoring = $state(true);
 	let host = $state('');
 	let portStr = $state('');
+	let connType = $state('NONE');
 	let authorsCsv = $state('');
 	let hashDomain = $state(false);
 	let imageName = $state('');
@@ -73,7 +78,7 @@
 	let existingAttachments = $state<string[]>([]); // from backend
 	let removedAttachmentNames = $state<Set<string>>(new Set()); // user-marked for deletion
 	let newFiles = $state<File[]>([]); // newly selected files
-	let fileInputEl: HTMLInputElement | null = null; // hidden <input type="file">
+	let fileInputEl = $state<HTMLInputElement | null>(null); // hidden <input type="file">
 
 	function addFiles(files: FileList | null) {
 		if (!files || files.length === 0) return;
@@ -187,6 +192,7 @@
 
 				host = String(challenge?.host ?? '');
 				portStr = challenge?.port != null ? String(challenge.port) : '';
+				connType = String(challenge?.conn_type ?? 'NONE');
 
 				existingAttachments = Array.isArray(challenge?.attachments)
 					? challenge.attachments.map((a: any) => String(a)).filter(Boolean)
@@ -208,7 +214,18 @@
 				maxCPU = String(challenge?.docker_config?.max_cpu ?? '');
 				maxRam = String(challenge?.docker_config?.max_memory ?? '');
 				lifetime = String(challenge?.docker_config?.lifetime ?? '');
-				envs = String(challenge?.docker_config?.envs ?? '');
+				envs = (() => {
+					const e = challenge?.docker_config?.envs;
+					if (!e) return '';
+					try {
+						const obj = JSON.parse(String(e));
+						return Object.entries(obj)
+							.map(([k, v]) => `${k}=${v}`)
+							.join('\n');
+					} catch {
+						return String(e);
+					}
+				})();
 
 				// ✅ Properly map flags array (no for..in on arrays)
 				flags = Array.isArray(challenge?.flags)
@@ -243,6 +260,10 @@
 		}
 
 		// helpers
+		const toInt = (x: any) => {
+			const n = parseInt(String(x), 10);
+			return !isNaN(n) ? n : undefined;
+		};
 		const toNum = (x: any) => {
 			const n = Number(x);
 			return Number.isFinite(n) ? n : undefined;
@@ -268,20 +289,39 @@
 			score_type: dynamicScoring ? 'Dynamic' : 'Static',
 			host: str(host),
 			port: portNum,
+			conn_type: connType,
 
 			// container/compose specifics
 			image: type === 'Container' ? str(imageName) : undefined,
 			compose: type === 'Compose' ? str(composeFile) : undefined,
 			hash_domain: hashDomain,
 
-			// performance / limits - only include if > 0
-			max_points: toNum(maxPoints) && maxPoints > 0 ? maxPoints : undefined,
-			lifetime: toNum(lifetime) && Number(lifetime) > 0 ? Number(lifetime) : undefined,
-			max_memory: toNum(maxRam) && Number(maxRam) > 0 ? Number(maxRam) : undefined,
+			// performance / limits
+			max_points: toInt(maxPoints) ?? 500,
+			lifetime: toInt(lifetime) ?? 0,
+			max_memory: toInt(maxRam) ?? 0,
 
 			// misc docker
-			envs: str(envs),
-			max_cpu: str(maxCPU)
+			envs: (() => {
+				if (!envs.trim()) return undefined;
+				try {
+					JSON.parse(envs);
+					return envs.trim();
+				} catch {
+					const obj: Record<string, string> = {};
+					envs.split(/[\n,;]/).forEach((line) => {
+						const parts = line.split('=');
+						if (parts.length >= 2) {
+							const key = parts[0].trim();
+							const val = parts.slice(1).join('=').trim();
+							if (key) obj[key] = val;
+						}
+					});
+					return Object.keys(obj).length > 0 ? JSON.stringify(obj) : undefined;
+				}
+			})(),
+			tags,
+			max_cpu: toNum(maxCPU) && toNum(maxCPU) > 0 ? String(toNum(maxCPU)) : ''
 		};
 
 		// strip empty arrays
@@ -290,10 +330,7 @@
 		saving = true;
 
 		// tags diffs
-		const prev = Array.from(challenge_user.tags ?? []);
-		const curr = Array.from(tags ?? []);
-		const deletedTags = prev.filter((t: string) => !curr.includes(t));
-		const newTags = curr.filter((t: string) => !prev.includes(t));
+		// tags diffs (removed separate logic, now handled in updateChallenge)
 
 		// flags diffs
 		const prevFlags = Array.from(flags_og ?? []);
@@ -340,487 +377,664 @@
 				});
 			}
 
+			if (Array.isArray(fields.tags)) {
+				fields.tags.forEach((tag: string, index: number) => {
+					fd.append(`tags[${index}]`, tag);
+				});
+			}
+
 			for (const [k, v] of Object.entries(entries)) {
 				if (v !== undefined && v !== null && v !== '') {
 					fd.append(k, String(v));
 				}
 			}
 
-			// 2) Existing attachments to KEEP (optional)
-			for (const name of keptExisting) {
-				fd.append('keep_attachments[]', name);
+			// 4) Update Metadata (JSON)
+			await updateChallenge(fields);
+
+			// 5) Upload New Attachments (if any)
+			if (newFiles.length > 0) {
+				const fd = new FormData();
+				fd.append('chall_id', String(challenge_user?.id));
+				for (const f of newFiles) {
+					// Backend iterates multipartForm.File, so Key 'attachments' is standard
+					fd.append('attachments', f, f.name);
+				}
+				await uploadAttachments(fd);
 			}
 
-			// 3) Existing attachments to DELETE
+			// 6) Delete Attachments (if any)
 			if (removedAttachmentNames.size > 0) {
-				fd.append('deleted_attachments', JSON.stringify(Array.from(removedAttachmentNames)));
+				const namesToDelete = Array.from(removedAttachmentNames).map(
+					(n) => n.split('/').pop() || n
+				);
+				await deleteAttachments(challenge_user.id, namesToDelete);
 			}
 
-			// 4) New files to UPLOAD
-			for (const f of newFiles) {
-				fd.append('attachments[]', f, f.name);
-			}
+			await createFlags(newFlags, challenge_user?.id);
+			await deleteFlags(deletedFlags, challenge_user?.id);
 
-		await updateChallengeMultipart(fd)
-		await createTagsForChallenge(newTags,challenge_user?.id )
-		await deleteTagsFromChallenge(deletedTags,challenge_user?.id )
-		await createFlags(newFlags,challenge_user?.id)
-		await deleteFlags(deletedFlags,challenge_user?.id)
-
-		onupdated?.({ id: challenge_user.id });
-		open = false;
-		toast.success('Challenge updated.');		} catch (err: any) {
+			onupdated?.({ id: challenge_user.id });
+			open = false;
+			toast.success('Challenge updated.');
+		} catch (err: any) {
 			toast.error(err?.message ?? 'Failed to update challenge.');
 		} finally {
 			saving = false;
 		}
 	}
-
 </script>
 
 <Sheet.Root bind:open>
 	<Sheet.Content side="right" class="w-full px-5 sm:max-w-[720px]">
-		<Sheet.Header>
-			<Sheet.Title>Edit Challenge</Sheet.Title>
-			<Sheet.Description>
-				Modify settings for <b>{challenge?.name ?? '-'}</b>.
-			</Sheet.Description>
-		</Sheet.Header>
-
-	 <div class="flex flex-col overflow-hidden">
-		<form class="mt-3 flex flex-col overflow-hidden" onsubmit={onSave}>
-			<!-- Tabs -->
-			<div class="sticky top-0 z-10 bg-background border-b border-gray-200 dark:border-gray-700">
-				<div class="flex">
-					<button
-						type="button"
-						class="cursor-pointer border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none {activeTab === 'meta' ? 'border-black dark:border-white text-black dark:text-white' : 'border-transparent text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5'}"
-						onclick={() => activeTab = 'meta'}
-					>
-						Meta
-					</button>
-					<button
-						type="button"
-						class="cursor-pointer border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none {activeTab === 'settings' ? 'border-black dark:border-white text-black dark:text-white' : 'border-transparent text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5'}"
-						onclick={() => activeTab = 'settings'}
-					>
-						Settings
-					</button>
-					<button
-						type="button"
-						class="cursor-pointer border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none {activeTab === 'flags' ? 'border-black dark:border-white text-black dark:text-white' : 'border-transparent text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5'}"
-						onclick={() => activeTab = 'flags'}
-					>
-						Flags
-					</button>
-					<button
-						type="button"
-						class="cursor-pointer border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none {activeTab === 'deployment' ? 'border-black dark:border-white text-black dark:text-white' : 'border-transparent text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5'}"
-						onclick={() => activeTab = 'deployment'}
-					>
-						Deployment
-					</button>
+		<div
+			class="from-muted/20 to-background mb-6 mt-4 rounded-xl border-0 bg-gradient-to-br p-6 shadow-sm"
+		>
+			<div class="flex items-center gap-4">
+				<div
+					class="bg-background flex h-16 w-16 shrink-0 items-center justify-center rounded-full shadow-sm"
+				>
+					<Cpu class="text-muted-foreground h-8 w-8" />
+				</div>
+				<div>
+					<Sheet.Title class="text-xl font-bold">Edit Challenge</Sheet.Title>
+					<Sheet.Description class="text-muted-foreground/80 mt-1">
+						Modify settings for <b class="text-foreground">{challenge?.name ?? '-'}</b>
+					</Sheet.Description>
 				</div>
 			</div>
+		</div>
 
-			<!-- Tab Content Container -->
-			<div class="flex-1 overflow-y-auto">
-			<!-- Meta Tab -->
-			{#if activeTab === 'meta'}
-				<div class="space-y-6 mt-6 pb-4">
-					<!-- Basic Information -->
-					<div class="space-y-4">
-						<div>
-							<Label for="ch-name" class="mb-2 block text-sm font-semibold">Challenge Name</Label>
-							<Input id="ch-name" bind:value={name} placeholder="Enter challenge name" />
-						</div>
-						<div>
-							<Label for="ch-desc" class="mb-2 block text-sm font-semibold">Description</Label>
-							<Textarea id="ch-desc" bind:value={description} class="min-h-32" placeholder="Describe the challenge..." />
-						</div>
-						<div>
-							<Label for="ch-auth" class="mb-2 block text-sm font-semibold">Authors</Label>
-							<Input id="ch-auth" bind:value={authorsCsv} placeholder="alice, bob" />
-						</div>
+		<div class="flex flex-col overflow-hidden">
+			<form class="mt-3 flex flex-col overflow-hidden" onsubmit={onSave}>
+				<!-- Tabs -->
+				<div class="bg-background sticky top-0 z-10 border-b border-gray-200 dark:border-gray-700">
+					<div class="flex">
+						<button
+							type="button"
+							class="cursor-pointer border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none {activeTab ===
+							'meta'
+								? 'border-black text-black dark:border-white dark:text-white'
+								: 'border-transparent text-gray-500 hover:bg-black/5 dark:text-gray-400 dark:hover:bg-white/5'}"
+							onclick={() => (activeTab = 'meta')}
+						>
+							Meta
+						</button>
+						<button
+							type="button"
+							class="cursor-pointer border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none {activeTab ===
+							'settings'
+								? 'border-black text-black dark:border-white dark:text-white'
+								: 'border-transparent text-gray-500 hover:bg-black/5 dark:text-gray-400 dark:hover:bg-white/5'}"
+							onclick={() => (activeTab = 'settings')}
+						>
+							Settings
+						</button>
+						<button
+							type="button"
+							class="cursor-pointer border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none {activeTab ===
+							'flags'
+								? 'border-black text-black dark:border-white dark:text-white'
+								: 'border-transparent text-gray-500 hover:bg-black/5 dark:text-gray-400 dark:hover:bg-white/5'}"
+							onclick={() => (activeTab = 'flags')}
+						>
+							Flags
+						</button>
+						<button
+							type="button"
+							class="cursor-pointer border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none {activeTab ===
+							'deployment'
+								? 'border-black text-black dark:border-white dark:text-white'
+								: 'border-transparent text-gray-500 hover:bg-black/5 dark:text-gray-400 dark:hover:bg-white/5'}"
+							onclick={() => (activeTab = 'deployment')}
+						>
+							Deployment
+						</button>
 					</div>
+				</div>
 
-					<!-- Attachments Section -->
-					<div class="border-t pt-6">
-						<h4 class="mb-4 text-sm font-semibold">Attachments</h4>
-
-						<input
-							bind:this={fileInputEl}
-							type="file"
-							multiple
-							class="hidden"
-							onchange={(e) => addFiles((e.currentTarget as HTMLInputElement).files)}
-						/>
-
-						<div class="space-y-4">
-							<!-- Upload Area -->
-							<div>
-								<div
-									role="button"
-									tabindex="0"
-									class="text-muted-foreground rounded-lg border-2 border-dashed p-6 text-center text-sm transition-colors hover:border-gray-400 hover:bg-muted/50"
-									ondragover={(e) => e.preventDefault()}
-									ondrop={(e) => {
-										e.preventDefault();
-										const dt = e.dataTransfer;
-										if (dt?.files?.length) addFiles(dt.files);
-									}}
-								>
-									<p class="mb-2">Drag & drop files here</p>
-									<p class="text-xs">or</p>
-									<Button
-										type="button"
-										variant="outline"
-										size="sm"
-										class="mt-3 focus:outline-none"
-										onclick={() => fileInputEl?.click()}
+				<!-- Tab Content Container -->
+				<div class="flex-1 overflow-y-auto">
+					<!-- Meta Tab -->
+					{#if activeTab === 'meta'}
+						<div class="mt-6 space-y-6 pb-4">
+							<!-- Basic Information -->
+							<div class="grid gap-6">
+								<div class="bg-muted/20 rounded-xl border-0 p-5">
+									<h4
+										class="text-muted-foreground mb-4 text-sm font-semibold uppercase tracking-wider"
 									>
-										Browse files
-									</Button>
-									{#if newFiles.length > 0}
-										<p class="text-muted-foreground mt-3 text-xs">
-											{newFiles.length} new file{newFiles.length === 1 ? '' : 's'} selected
-										</p>
-									{/if}
-								</div>
-							</div>						</div>
-
-					<!-- Existing attachments -->
-					{#if keptExisting.length > 0}
-						<div>
-							<h5 class="mb-3 text-sm font-medium">Existing Files</h5>
-							<div class="flex flex-col gap-2">
-								{#each keptExisting as a (a)}
-									<div class="bg-muted/30 flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50">
-										<div class="flex min-w-0 items-center gap-3">
-											<Tags class="text-muted-foreground h-4 w-4 shrink-0" />
-											<span class="truncate text-sm">{a}</span>
+										General
+									</h4>
+									<div class="space-y-4">
+										<div>
+											<Label for="ch-name" class="mb-2 block text-sm font-semibold"
+												>Challenge Name</Label
+											>
+											<Input
+												id="ch-name"
+												bind:value={name}
+												placeholder="Enter challenge name"
+												class="bg-background"
+											/>
 										</div>
-										<Button
-											type="button"
-											variant="ghost"
-											size="icon"
-											class="shrink-0 h-8 w-8 focus:outline-none"
-											aria-label={`Remove ${a}`}
-											title={`Remove ${a}`}
-											onclick={() => toggleRemoveExisting(a)}
-										>
-											<X class="h-4 w-4" />
-										</Button>
+										<div>
+											<Label for="ch-desc" class="mb-2 block text-sm font-semibold"
+												>Description</Label
+											>
+											<Textarea
+												id="ch-desc"
+												bind:value={description}
+												class="bg-background min-h-32"
+												placeholder="Describe the challenge..."
+											/>
+										</div>
 									</div>
-								{/each}
+								</div>
+
+								<div class="bg-muted/20 rounded-xl border-0 p-5">
+									<h4
+										class="text-muted-foreground mb-4 text-sm font-semibold uppercase tracking-wider"
+									>
+										Credits
+									</h4>
+									<div>
+										<Label for="ch-auth" class="mb-2 block text-sm font-semibold">Authors</Label>
+										<Input
+											id="ch-auth"
+											bind:value={authorsCsv}
+											placeholder="alice, bob"
+											class="bg-background"
+										/>
+										<p class="text-muted-foreground mt-1 text-xs">
+											Comma separated list of authors.
+										</p>
+									</div>
+								</div>
+							</div>
+
+							<!-- Attachments Section -->
+							<div class="border-t pt-6">
+								<h4 class="mb-4 text-sm font-semibold">Attachments</h4>
+
+								<input
+									bind:this={fileInputEl}
+									type="file"
+									multiple
+									class="hidden"
+									onchange={(e) => addFiles((e.currentTarget as HTMLInputElement).files)}
+								/>
+
+								<div class="space-y-4">
+									<!-- Upload Area -->
+									<div>
+										<div
+											role="button"
+											tabindex="0"
+											class="text-muted-foreground hover:bg-muted/50 rounded-lg border-2 border-dashed p-6 text-center text-sm transition-colors hover:border-gray-400"
+											ondragover={(e) => e.preventDefault()}
+											ondrop={(e) => {
+												e.preventDefault();
+												const dt = e.dataTransfer;
+												if (dt?.files?.length) addFiles(dt.files);
+											}}
+										>
+											<p class="mb-2">Drag & drop files here</p>
+											<p class="text-xs">or</p>
+											<Button
+												type="button"
+												variant="outline"
+												size="sm"
+												class="mt-3 focus:outline-none"
+												onclick={() => fileInputEl?.click()}
+											>
+												Browse files
+											</Button>
+											{#if newFiles.length > 0}
+												<p class="text-muted-foreground mt-3 text-xs">
+													{newFiles.length} new file{newFiles.length === 1 ? '' : 's'} selected
+												</p>
+											{/if}
+										</div>
+									</div>
+								</div>
+
+								<!-- Existing attachments -->
+								{#if keptExisting.length > 0}
+									<div>
+										<h5 class="mb-3 text-sm font-medium">Existing Files</h5>
+										<div class="flex flex-col gap-2">
+											{#each keptExisting as a (a)}
+												<div
+													class="bg-muted/30 hover:bg-muted/50 flex items-center justify-between rounded-lg border p-3 transition-colors"
+												>
+													<div class="flex min-w-0 items-center gap-3">
+														<TagsIcon class="text-muted-foreground h-4 w-4 shrink-0" />
+														<span class="truncate text-sm">{a.split('/').pop() || a}</span>
+													</div>
+													<Button
+														type="button"
+														variant="ghost"
+														size="icon"
+														class="h-8 w-8 shrink-0 focus:outline-none"
+														aria-label={`Remove ${a}`}
+														title={`Remove ${a}`}
+														onclick={() => toggleRemoveExisting(a)}
+													>
+														<X class="h-4 w-4" />
+													</Button>
+												</div>
+											{/each}
+										</div>
+									</div>
+								{/if}
+
+								<!-- Newly selected files -->
+								{#if newFiles.length > 0}
+									<div>
+										<h5 class="mb-3 text-sm font-medium">New Uploads</h5>
+										<div class="flex flex-col gap-2">
+											{#each newFiles as f, i (f.name + '::' + f.size)}
+												<div
+													class="bg-muted/30 hover:bg-muted/50 flex items-center justify-between rounded-lg border p-3 transition-colors"
+												>
+													<div class="flex min-w-0 items-center gap-3">
+														<TagsIcon class="text-muted-foreground h-4 w-4 shrink-0" />
+														<span class="truncate text-sm">{f.name}</span>
+														<span class="text-muted-foreground shrink-0 text-xs"
+															>({formatBytes(f.size)})</span
+														>
+													</div>
+													<Button
+														type="button"
+														variant="ghost"
+														size="icon"
+														class="h-8 w-8 shrink-0 focus:outline-none"
+														aria-label={`Remove ${f.name}`}
+														title={`Remove ${f.name}`}
+														onclick={() => removeNewFile(i)}
+													>
+														<X class="h-4 w-4" />
+													</Button>
+												</div>
+											{/each}
+										</div>
+									</div>
+								{/if}
 							</div>
 						</div>
 					{/if}
 
-					<!-- Newly selected files -->
-						{#if newFiles.length > 0}
+					<!-- Settings Tab -->
+					{#if activeTab === 'settings'}
+						<div class="mt-6 space-y-6 pb-4">
+							<div class="bg-muted/20 rounded-xl border-0 p-5">
+								<h4
+									class="text-muted-foreground mb-4 text-sm font-semibold uppercase tracking-wider"
+								>
+									Organization
+								</h4>
+								<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+									<div class="col-span-1 sm:col-span-2">
+										<Label for="ch-cat" class="mb-2 block text-sm font-semibold">Category</Label>
+										<Input
+											id="ch-cat"
+											bind:value={category}
+											placeholder="Enter category"
+											class="bg-background"
+										/>
+									</div>
+
+									<div class="col-span-1 sm:col-span-2">
+										<Label class="mb-2 block text-sm font-semibold">Tags</Label>
+										<TagMultiSelect
+											all_tags={uniqAllTags}
+											bind:value={tags}
+											oncreate={(newTag) => {
+												const tag = String(newTag ?? '').trim();
+												if (tag && !tags.includes(tag)) tags = [...tags, tag];
+											}}
+										/>
+									</div>
+								</div>
+							</div>
+
+							<!-- Difficulty & Type -->
+							<div class="bg-muted/20 rounded-xl border-0 p-5">
+								<h4
+									class="text-muted-foreground mb-4 text-sm font-semibold uppercase tracking-wider"
+								>
+									Classification
+								</h4>
+								<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+									<div>
+										<Label for="ch-diff" class="mb-2 block text-sm font-medium">Difficulty</Label>
+										<CategorySelect
+											id="ch-diff"
+											items={difficultyOptions}
+											bind:value={difficulty}
+											placeholder="Select difficulty..."
+											searchPlaceholder="Search difficulty"
+										/>
+									</div>
+									<div>
+										<Label for="ch-type" class="mb-2 block text-sm font-medium">Type</Label>
+										<CategorySelect
+											id="ch-type"
+											items={typeOptions}
+											bind:value={type}
+											placeholder="Select type..."
+											searchPlaceholder="Search type"
+										/>
+									</div>
+								</div>
+							</div>
+
+							<!-- Visibility & Scoring -->
+							<div class="border-t pt-6">
+								<h4 class="mb-4 text-sm font-semibold">Options</h4>
+								<div class="flex flex-col gap-6 sm:flex-row">
+									<div class="flex items-center gap-3">
+										<Checkbox id="ch-hidden" bind:checked={hidden} />
+										<Label for="ch-hidden" class="cursor-pointer">Hidden</Label>
+									</div>
+									<div class="flex items-center gap-3">
+										<Checkbox id="ch-score" bind:checked={dynamicScoring} />
+										<Label for="ch-score" class="cursor-pointer">Dynamic scoring</Label>
+									</div>
+								</div>
+							</div>
+
+							<!-- Points -->
+							<div class="border-t pt-6">
+								<div>
+									<Label for="ch-points" class="mb-2 block text-sm font-semibold">Max Points</Label>
+									<div class="flex items-center gap-3">
+										<Input
+											id="ch-points"
+											type="number"
+											inputmode="numeric"
+											min="0"
+											max="1500"
+											step="1"
+											bind:value={maxPoints}
+											class="max-w-[200px]"
+											oninput={(e) => {
+												const v = (e.currentTarget as HTMLInputElement).valueAsNumber;
+												const n = Number.isFinite(v) ? Math.max(0, Math.floor(v)) : 0;
+												maxPoints = n;
+												e.currentTarget.value = String(n);
+											}}
+										/>
+										<span class="text-muted-foreground text-sm font-medium">points</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					{/if}
+
+					<!-- Flags Tab -->
+					{#if activeTab === 'flags'}
+						<div class="mt-6 space-y-6 pb-4">
 							<div>
-								<h5 class="mb-3 text-sm font-medium">New Uploads</h5>
-								<div class="flex flex-col gap-2">
-									{#each newFiles as f, i (f.name + '::' + f.size)}
-										<div class="bg-muted/30 flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50">
-											<div class="flex min-w-0 items-center gap-3">
-												<Tags class="text-muted-foreground h-4 w-4 shrink-0" />
-												<span class="truncate text-sm">{f.name}</span>
-												<span class="text-muted-foreground shrink-0 text-xs">({formatBytes(f.size)})</span>
+								<div class="mb-4 flex items-center justify-between">
+									<h4 class="text-sm font-semibold">Challenge Flags</h4>
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										class="focus:outline-none"
+										onclick={() => (flags = [...flags, { flag: '', regex: false }])}
+									>
+										Add Flag
+									</Button>
+								</div>
+
+								<div class="flex flex-col gap-3">
+									{#each flags as flag, index (index)}
+										<div class="bg-muted/30 flex items-center gap-3 rounded-lg border p-3">
+											<Input
+												bind:value={flags[index].flag}
+												placeholder="Enter flag value"
+												class="flex-1"
+											/>
+											<div class="flex shrink-0 items-center gap-2">
+												<Checkbox id={'flag-' + index} bind:checked={flags[index].regex} />
+												<Label for={'flag-' + index} class="cursor-pointer whitespace-nowrap"
+													>Regex</Label
+												>
 											</div>
 											<Button
 												type="button"
 												variant="ghost"
 												size="icon"
-												class="shrink-0 h-8 w-8 focus:outline-none"
-												aria-label={`Remove ${f.name}`}
-												title={`Remove ${f.name}`}
-												onclick={() => removeNewFile(i)}
+												class="h-9 w-9 shrink-0 focus:outline-none"
+												onclick={() => (flags = flags.filter((_: any, i: any) => i !== index))}
+												aria-label="Remove flag"
 											>
 												<X class="h-4 w-4" />
 											</Button>
 										</div>
 									{/each}
+
+									{#if flags.length === 0}
+										<div
+											class="text-muted-foreground rounded-lg border-2 border-dashed p-8 text-center text-sm"
+										>
+											<p>No flags added yet</p>
+											<p class="mt-1 text-xs">Click "Add Flag" to create one</p>
+										</div>
+									{/if}
 								</div>
 							</div>
-						{/if}
-					</div>
-				</div>
-			{/if}
-
-			<!-- Settings Tab -->
-			{#if activeTab === 'settings'}
-				<div class="space-y-6 mt-6 pb-4">
-					<!-- Category & Tags -->
-				<div class="space-y-4">
-					<div>
-						<Label for="ch-cat" class="mb-2 block text-sm font-semibold">Category</Label>
-						<Input id="ch-cat" bind:value={category} placeholder="Enter category" />
-					</div>
-
-					<div>
-						<Label class="mb-2 block text-sm font-semibold">Tags</Label>
-						<TagMultiSelect
-							all_tags={uniqAllTags}
-							bind:value={tags}
-						oncreate={(newTag) => {
-							const tag = String(newTag ?? '').trim();
-							if (tag && !tags.includes(tag)) tags = [...tags, tag];
-							}}
-						/>
-					</div>
-				</div>
-
-				<!-- Difficulty & Type -->
-				<div class="border-t pt-6">
-					<h4 class="mb-4 text-sm font-semibold">Challenge Classification</h4>
-					<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-						<div>
-							<Label for="ch-diff" class="mb-2 block text-sm font-medium">Difficulty</Label>
-							<CategorySelect
-								id="ch-diff"
-								items={difficultyOptions}
-								bind:value={difficulty}
-								placeholder="Select difficulty..."
-								searchPlaceholder="Search difficulty"
-							/>
 						</div>
-						<div>
-							<Label for="ch-type" class="mb-2 block text-sm font-medium">Type</Label>
-							<CategorySelect
-								id="ch-type"
-								items={typeOptions}
-								bind:value={type}
-								placeholder="Select type..."
-								searchPlaceholder="Search type"
-							/>
-						</div>
-					</div>
-				</div>
+					{/if}
 
-				<!-- Visibility & Scoring -->
-				<div class="border-t pt-6">
-					<h4 class="mb-4 text-sm font-semibold">Options</h4>
-					<div class="flex flex-col sm:flex-row gap-6">
-						<div class="flex items-center gap-3">
-							<Checkbox id="ch-hidden" bind:checked={hidden} />
-							<Label for="ch-hidden" class="cursor-pointer">Hidden</Label>
-						</div>
-						<div class="flex items-center gap-3">
-							<Checkbox id="ch-score" bind:checked={dynamicScoring} />
-							<Label for="ch-score" class="cursor-pointer">Dynamic scoring</Label>
-						</div>
-					</div>
-				</div>
-
-				<!-- Points -->
-				<div class="border-t pt-6">
-					<div>
-						<Label for="ch-points" class="mb-2 block text-sm font-semibold">Max Points</Label>
-						<div class="flex items-center gap-3">
-							<Input
-								id="ch-points"
-								type="number"
-								inputmode="numeric"
-								min="0"
-								max="1500"
-								step="1"
-								bind:value={maxPoints}
-								class="max-w-[200px]"
-								oninput={(e) => {
-									const v = (e.currentTarget as HTMLInputElement).valueAsNumber;
-									const n = Number.isFinite(v) ? Math.max(0, Math.floor(v)) : 0;
-									maxPoints = n;
-									e.currentTarget.value = String(n);
-								}}
-							/>
-							<span class="text-muted-foreground text-sm font-medium">{maxPoints} points</span>
-						</div>
-					</div>
-				</div>
-			</div>
-		{/if}
-
-		<!-- Flags Tab -->
-			{#if activeTab === 'flags'}
-				<div class="space-y-6 mt-6 pb-4">
-					<div>
-						<div class="mb-4 flex items-center justify-between">
-							<h4 class="text-sm font-semibold">Challenge Flags</h4>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								class="focus:outline-none"
-								onclick={() => (flags = [...flags, { flag: '', regex: false }])}
-							>
-								Add Flag
-							</Button>
-						</div>
-
-						<div class="flex flex-col gap-3">
-							{#each flags as flag, index (index)}
-								<div class="bg-muted/30 flex items-center gap-3 rounded-lg border p-3">
-									<Input 
-										bind:value={flags[index].flag} 
-										placeholder="Enter flag value" 
-										class="flex-1" 
-									/>
-									<div class="flex items-center gap-2 shrink-0">
-										<Checkbox id={'flag-' + index} bind:checked={flags[index].regex} />
-										<Label for={'flag-' + index} class="cursor-pointer whitespace-nowrap">Regex</Label>
-									</div>
-									<Button
-										type="button"
-										variant="ghost"
-										size="icon"
-										class="h-9 w-9 shrink-0 focus:outline-none"
-										onclick={() => (flags = flags.filter((_: any, i: any) => i !== index))}
-										aria-label="Remove flag"
+					<!-- Deployment Tab -->
+					{#if activeTab === 'deployment'}
+						<div class="mt-6 space-y-6 pb-4">
+							{#if type === 'Normal'}
+								<!-- Normal Challenge Deployment -->
+								<div class="bg-muted/20 rounded-xl border-0 p-5">
+									<h4
+										class="text-muted-foreground mb-4 text-sm font-semibold uppercase tracking-wider"
 									>
-										<X class="h-4 w-4" />
-									</Button>
+										Connection Details
+									</h4>
+									<div class="grid gap-4 sm:grid-cols-2">
+										<div class="col-span-2">
+											<Label for="ch-host" class="mb-2 block text-sm font-medium">Host</Label>
+											<Input
+												id="ch-host"
+												bind:value={host}
+												placeholder="e.g. challenge.trxd.cc"
+												class="bg-background"
+											/>
+										</div>
+										<div>
+											<Label for="ch-port" class="mb-2 block text-sm font-medium">Port</Label>
+											<Input
+												id="ch-port"
+												bind:value={portStr}
+												placeholder="e.g. 31337"
+												class="bg-background"
+											/>
+										</div>
+										<div>
+											<Label for="ch-conn-type" class="mb-2 block text-sm font-medium"
+												>Connection Type</Label
+											>
+											<select
+												id="ch-conn-type"
+												bind:value={connType}
+												class="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+											>
+												<option value="NONE">None</option>
+												<option value="TCP">TCP</option>
+												<option value="TCP_TLS">TCP + TLS</option>
+												<option value="HTTP">HTTP</option>
+												<option value="HTTPS">HTTPS</option>
+											</select>
+										</div>
+									</div>
 								</div>
-							{/each}
+							{:else if type === 'Compose'}
+								<!-- Compose Challenge Deployment -->
+								<div class="space-y-4">
+									<div>
+										<Label class="mb-2 block text-sm font-semibold">Compose Configuration</Label>
+										{#if open && activeTab === 'deployment'}
+											<MonacoEditor bind:value={composeFile} language="yaml" class="mt-3" />
+										{/if}
+									</div>
+									<div class="flex items-center gap-3">
+										<Checkbox id="com-hashdomain" bind:checked={hashDomain} />
+										<Label for="com-hashdomain" class="cursor-pointer">Hash Domain</Label>
+									</div>
+								</div>
 
-							{#if flags.length === 0}
-								<div class="text-muted-foreground rounded-lg border-2 border-dashed p-8 text-center text-sm">
-									<p>No flags added yet</p>
-									<p class="mt-1 text-xs">Click "Add Flag" to create one</p>
+								<div class="space-y-4 border-t pt-6">
+									<h4 class="mb-4 text-sm font-semibold">Connection Details</h4>
+									<div>
+										<Label for="ch-host" class="mb-2 block text-sm font-medium">Host</Label>
+										<Input id="ch-host" bind:value={host} placeholder="e.g. challenge.trxd.cc" />
+									</div>
+									<div>
+										<Label for="com-envs" class="mb-2 block text-sm font-medium"
+											>Environment Variables</Label
+										>
+										<Textarea
+											id="com-envs"
+											bind:value={envs}
+											placeholder="FLAG1=flag&#10;FLAG2=flag"
+										/>
+									</div>
+									<div>
+										<Label for="com-conn-type" class="mb-2 block text-sm font-medium"
+											>Connection Type</Label
+										>
+										<select
+											id="com-conn-type"
+											bind:value={connType}
+											class="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+										>
+											<option value="NONE">None</option>
+											<option value="TCP">TCP</option>
+											<option value="TCP_TLS">TCP + TLS</option>
+											<option value="HTTP">HTTP</option>
+											<option value="HTTPS">HTTPS</option>
+										</select>
+									</div>
+								</div>
+							{:else}
+								<!-- Container Challenge Deployment -->
+								<div class="space-y-4">
+									<h4 class="mb-4 text-sm font-semibold">Container Configuration</h4>
+									<div>
+										<Label for="ho-host" class="mb-2 block text-sm font-medium"
+											>Container Image Name</Label
+										>
+										<Input id="ho-host" bind:value={imageName} placeholder="TRX-Chall-1" />
+									</div>
+									<div class="flex items-center gap-3">
+										<Checkbox id="ho-hashdomain" bind:checked={hashDomain} />
+										<Label for="ho-hashdomain" class="cursor-pointer">Hash domain</Label>
+									</div>
+								</div>
+
+								<div class="space-y-4 border-t pt-6">
+									<h4 class="mb-4 text-sm font-semibold">Connection Details</h4>
+									<div>
+										<Label for="ch-host" class="mb-2 block text-sm font-medium">Host</Label>
+										<Input id="ch-host" bind:value={host} placeholder="e.g. challenge.trxd.cc" />
+									</div>
+									<div>
+										<Label for="ho-port" class="mb-2 block text-sm font-medium">Port</Label>
+										<Input id="ho-port" bind:value={portStr} placeholder="e.g. 31337" />
+									</div>
+									<div>
+										<Label for="ho-conn-type" class="mb-2 block text-sm font-medium"
+											>Connection Type</Label
+										>
+										<select
+											id="ho-conn-type"
+											bind:value={connType}
+											class="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+										>
+											<option value="NONE">None</option>
+											<option value="TCP">TCP</option>
+											<option value="TCP_TLS">TCP + TLS</option>
+											<option value="HTTP">HTTP</option>
+											<option value="HTTPS">HTTPS</option>
+										</select>
+									</div>
+									<div>
+										<Label for="con-envs" class="mb-2 block text-sm font-medium"
+											>Environment Variables</Label
+										>
+										<Textarea
+											id="con-envs"
+											bind:value={envs}
+											placeholder="FLAG1=flag&#10;FLAG2=flag"
+										/>
+									</div>
+								</div>
+							{/if}
+
+							<!-- Performance settings for Container and Compose -->
+							{#if type === 'Container' || type === 'Compose'}
+								<div class="border-t pt-6">
+									<h4 class="mb-4 text-sm font-semibold">Performance Limits</h4>
+									<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+										<div class="flex items-start gap-3">
+											<Cpu class="text-muted-foreground mt-2 h-5 w-5 shrink-0" />
+											<div class="flex-1">
+												<Label for="perf-cpu" class="mb-2 block text-sm font-medium"
+													>Max CPU (Cores)</Label
+												>
+												<Input id="perf-cpu" bind:value={maxCPU} placeholder="e.g. 1" />
+											</div>
+										</div>
+										<div class="flex items-start gap-3">
+											<MemoryStick class="text-muted-foreground mt-2 h-5 w-5 shrink-0" />
+											<div class="flex-1">
+												<Label for="perf-ram" class="mb-2 block text-sm font-medium"
+													>Max RAM (MB)</Label
+												>
+												<Input id="perf-ram" bind:value={maxRam} placeholder="e.g. 512" />
+											</div>
+										</div>
+									</div>
+									<div class="mt-4 flex items-start gap-3">
+										<Clock class="text-muted-foreground mt-2 h-5 w-5 shrink-0" />
+										<div class="flex-1">
+											<Label for="perf-lifetime" class="mb-2 block text-sm font-medium"
+												>Lifetime (seconds)</Label
+											>
+											<Input
+												id="perf-lifetime"
+												bind:value={lifetime}
+												placeholder="300"
+												class="max-w-[200px]"
+											/>
+										</div>
+									</div>
 								</div>
 							{/if}
 						</div>
-					</div>
+					{/if}
 				</div>
-			{/if}
+				<!-- End Tab Content Container -->
 
-			<!-- Deployment Tab -->
-		{#if activeTab === 'deployment'}
-			<div class="space-y-6 mt-6 pb-4">
-				{#if type === 'Normal'}
-					<!-- Normal Challenge Deployment -->
-					<div class="space-y-4">
-						<h4 class="mb-4 text-sm font-semibold">Connection Details</h4>
-						<div>
-							<Label for="ch-host" class="mb-2 block text-sm font-medium">Host</Label>
-							<Input id="ch-host" bind:value={host} placeholder="e.g. challenge.trxd.cc" />
-						</div>
-						<div>
-							<Label for="ch-port" class="mb-2 block text-sm font-medium">Port</Label>
-							<Input
-								id="ch-port"
-								bind:value={portStr}
-								placeholder="e.g. 31337"
-								disabled={hashDomain}
-							/>
-						</div>
-					</div>
-				{:else if type === 'Compose'}
-					<!-- Compose Challenge Deployment -->
-					<div class="space-y-4">
-						<div>
-							<Label class="mb-2 block text-sm font-semibold">Compose Configuration</Label>
-							{#if open && activeTab === 'deployment'}
-								<MonacoEditor bind:value={composeFile} language="yaml" class="mt-3" />
-							{/if}
-						</div>
-						<div class="flex items-center gap-3">
-							<Checkbox id="com-hashdomain" bind:checked={hashDomain} />
-							<Label for="com-hashdomain" class="cursor-pointer">Hash Domain</Label>
-						</div>
-					</div>
-
-					<div class="border-t pt-6 space-y-4">
-						<h4 class="mb-4 text-sm font-semibold">Connection Details</h4>
-						<div>
-							<Label for="ch-host" class="mb-2 block text-sm font-medium">Host</Label>
-							<Input id="ch-host" bind:value={host} placeholder="e.g. challenge.trxd.cc" />
-						</div>
-						<div>
-							<Label for="com-envs" class="mb-2 block text-sm font-medium">Environment Variables</Label>
-							<Input id="com-envs" bind:value={envs} placeholder="LD_PRELOAD=..." />
-						</div>
-					</div>
-				{:else}
-					<!-- Container Challenge Deployment -->
-					<div class="space-y-4">
-						<h4 class="mb-4 text-sm font-semibold">Container Configuration</h4>
-						<div>
-							<Label for="ho-host" class="mb-2 block text-sm font-medium">Container Image Name</Label>
-							<Input id="ho-host" bind:value={imageName} placeholder="TRX-Chall-1" />
-						</div>
-						<div class="flex items-center gap-3">
-							<Checkbox id="ho-hashdomain" bind:checked={hashDomain} />
-							<Label for="ho-hashdomain" class="cursor-pointer">Hash domain</Label>
-						</div>
-					</div>
-
-					<div class="border-t pt-6 space-y-4">
-						<h4 class="mb-4 text-sm font-semibold">Connection Details</h4>
-						<div>
-							<Label for="ch-host" class="mb-2 block text-sm font-medium">Host</Label>
-							<Input id="ch-host" bind:value={host} placeholder="e.g. challenge.trxd.cc" />
-						</div>
-						<div>
-							<Label for="ho-port" class="mb-2 block text-sm font-medium">Port</Label>
-							<Input
-								id="ho-port"
-								bind:value={portStr}
-								placeholder="e.g. 31337"
-								disabled={hashDomain}
-							/>
-						</div>
-						<div>
-							<Label for="con-envs" class="mb-2 block text-sm font-medium">Environment Variables</Label>
-							<Input id="con-envs" bind:value={envs} placeholder="LD_PRELOAD=..." />
-						</div>
-					</div>
-				{/if}
-
-				<!-- Performance settings for Container and Compose -->
-				{#if type === 'Container' || type === 'Compose'}
-					<div class="border-t pt-6">
-						<h4 class="mb-4 text-sm font-semibold">Performance Limits</h4>
-						<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-							<div class="flex items-start gap-3">
-								<Cpu class="text-muted-foreground mt-2 h-5 w-5 shrink-0" />
-								<div class="flex-1">
-									<Label for="perf-cpu" class="mb-2 block text-sm font-medium">Max CPU</Label>
-									<Input id="perf-cpu" bind:value={maxCPU} placeholder="50%" />
-								</div>
-							</div>
-							<div class="flex items-start gap-3">
-								<MemoryStick class="text-muted-foreground mt-2 h-5 w-5 shrink-0" />
-								<div class="flex-1">
-									<Label for="perf-ram" class="mb-2 block text-sm font-medium">Max RAM</Label>
-									<Input id="perf-ram" bind:value={maxRam} placeholder="1GB" />
-								</div>
-							</div>
-						</div>
-						<div class="mt-4 flex items-start gap-3">
-							<Clock class="text-muted-foreground mt-2 h-5 w-5 shrink-0" />
-							<div class="flex-1">
-								<Label for="perf-lifetime" class="mb-2 block text-sm font-medium">Lifetime (seconds)</Label>
-								<Input id="perf-lifetime" bind:value={lifetime} placeholder="300" class="max-w-[200px]" />
-							</div>
-						</div>
-					</div>
-				{/if}
-			</div>
-		{/if}
-			</div>
-			<!-- End Tab Content Container -->
-
-		<div class="mt-6 mb-4 flex justify-end gap-2">
-			<Sheet.Close>
-				<Button type="button" variant="outline" class="focus:outline-none">Cancel</Button>
-			</Sheet.Close>
-			<Button type="submit" disabled={saving} class="focus:outline-none">
-				{#if saving}Saving...{:else}Save{/if}
-			</Button>
+				<div class="mb-4 mt-6 flex justify-end gap-2">
+					<Sheet.Close>
+						<Button type="button" variant="outline" class="focus:outline-none">Cancel</Button>
+					</Sheet.Close>
+					<Button type="submit" disabled={saving} class="focus:outline-none">
+						{#if saving}Saving...{:else}Save{/if}
+					</Button>
+				</div>
+			</form>
 		</div>
-	</form>
-	</div>
 	</Sheet.Content>
 </Sheet.Root>
