@@ -6,12 +6,12 @@
 	import { getUsers } from '@/user';
 	import { link, push } from 'svelte-spa-router';
 	import ErrorMessage from '$lib/components/ui/error-message.svelte';
-	import Icon from '@iconify/svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import countries from '$lib/data/countries.json';
 	import EmptyState from '$lib/components/ui/empty-state.svelte';
 	import { UserCircle, Globe } from '@lucide/svelte';
 	import GeneratedAvatar from '$lib/components/ui/avatar/generated-avatar.svelte';
+	import CountryFlag from '$lib/components/ui/country-flag.svelte';
 
 	import { user } from '$lib/stores/auth';
 
@@ -221,16 +221,16 @@
 															class="bg-background relative flex h-6 w-8 items-center justify-center overflow-hidden rounded border shadow-sm"
 														>
 															{#if iso2}
-																<Icon
-																	icon={`circle-flags:${iso2.toLowerCase()}`}
-																	width="32"
-																	height="32"
+																<CountryFlag
+																	country={iso2}
+																	width={32}
+																	height={32}
+																	class="h-full w-full object-cover"
 																/>
 															{:else}
 																<Globe class="text-muted-foreground h-4 w-4" />
 															{/if}
 														</div>
-														<span class="text-foreground/80 text-sm">{account.country}</span>
 													</div>
 												{:else}
 													<span class="text-muted-foreground text-sm italic">Not specified</span>

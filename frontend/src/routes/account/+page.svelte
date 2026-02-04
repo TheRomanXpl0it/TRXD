@@ -2,19 +2,20 @@
 	import { params } from 'svelte-spa-router';
 	import { user, authReady, userMode } from '$lib/stores/auth';
 	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
-	import Icon from '@iconify/svelte';
 	import { getTeam } from '$lib/team';
 	import { getUserData } from '$lib/user';
 	import Solvelist from '$lib/components/account/AccountScoreboard.svelte';
 	import UserUpdate from '$lib/components/account/AccountEdit.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { Edit, Shield, Trophy, Target, Users } from '@lucide/svelte';
+	import { Edit, Shield, Trophy, Target, Users, Globe } from '@lucide/svelte';
 	import ErrorMessage from '$lib/components/ui/error-message.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import GeneratedAvatar from '$lib/components/ui/avatar/generated-avatar.svelte';
 	import RadarChart from '$lib/components/RadarChart.svelte';
+	import CountryFlag from '$lib/components/ui/country-flag.svelte';
+	import countries from '$lib/data/countries.json';
 
 	let editSheetOpen = $state(false);
 	let activeTab = $state<'overview' | 'solves'>('overview');
@@ -117,27 +118,31 @@
 		>
 			<Card.Content class="p-6 sm:p-8">
 				<div class="flex flex-col items-start gap-6 sm:flex-row sm:items-center">
-					<!-- Avatar / Flag -->
+					<!-- Avatar with Country Badge -->
 					<div
 						class="border-background bg-background relative h-20 w-20 shrink-0 overflow-hidden rounded-full border-4 shadow-md"
 					>
+						<GeneratedAvatar seed={userVerboseData?.name ?? 'user'} class="h-full w-full" />
 						{#if userVerboseData?.country}
 							<div
-								class="flex h-full w-full items-center justify-center bg-gray-100 dark:bg-gray-800"
+								class="absolute bottom-0 right-0 h-7 w-7 overflow-hidden rounded-full border-2 border-white shadow-md dark:border-gray-800"
 							>
-								<Icon
-									icon={`circle-flags:${String(userVerboseData.country).toLowerCase()}`}
-									width="80"
-									height="80"
+								<CountryFlag
+									country={String(userVerboseData.country)}
+									width={28}
+									height={28}
 									class="h-full w-full object-cover"
 								/>
 							</div>
-						{:else}
-							<div
-								class="bg-muted text-muted-foreground flex h-full w-full items-center justify-center"
-							>
-								<GeneratedAvatar seed={userVerboseData?.name ?? 'user'} class="h-full w-full" />
-							</div>
+						{/if}
+						{#if userVerboseData?.country}
+							{@const countryData = countries.find(
+								(c) => c.iso3 === userVerboseData.country.toUpperCase()
+							)}
+							<span class="flex items-center gap-1.5">
+								<Globe class="h-3.5 w-3.5" />
+								{countryData?.name ?? userVerboseData.country}
+							</span>
 						{/if}
 					</div>
 
@@ -170,6 +175,15 @@
 								>
 									<Users class="h-3.5 w-3.5" />
 									{team.name}
+								</span>
+							{/if}
+							{#if userVerboseData?.country}
+								{@const countryData = countries.find(
+									(c) => c.iso3 === userVerboseData.country.toUpperCase()
+								)}
+								<span class="flex items-center gap-1.5">
+									<Globe class="h-3.5 w-3.5" />
+									{countryData?.name ?? userVerboseData.country}
 								</span>
 							{/if}
 						</div>
@@ -272,6 +286,7 @@
 				{/if}
 
 				<!-- Radar Chart -->
+				<!-- Temporarily commented out
 				<Card.Root class="bg-card border-0 shadow-sm md:col-span-2 lg:col-span-3">
 					<Card.Header class="pb-2">
 						<Card.Title class="text-muted-foreground text-sm font-medium uppercase tracking-wider"
@@ -282,6 +297,7 @@
 						<RadarChart solves={userVerboseData?.solves} />
 					</Card.Content>
 				</Card.Root>
+				-->
 			</div>
 		{:else if activeTab === 'solves'}
 			<Card.Root class="overflow-hidden border-0 shadow-sm">

@@ -4,7 +4,6 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import Label from '$lib/components/ui/label/label.svelte';
 	import CountrySelect from '$lib/components/ui/country-select.svelte';
-	import Icon from '@iconify/svelte';
 	import GeneratedAvatar from '$lib/components/ui/avatar/generated-avatar.svelte';
 	import { updateTeam } from '$lib/team';
 	import { useQueryClient } from '@tanstack/svelte-query';
@@ -110,6 +109,17 @@
 					{#if team?.name && team.name !== name}
 						<p class="text-muted-foreground mt-1 text-sm">
 							Current: {team.name}
+						</p>
+					{/if}
+				</div>
+
+				<div>
+					<Label for="pf-country" class="mb-1 block">Country</Label>
+					<CountrySelect id="pf-country" bind:value={countryCode} />
+					{#if team?.country && team.country !== countryCode}
+						{@const current = getCountryByIso3(team.country)}
+						<p class="text-muted-foreground mt-1 text-sm">
+							Current: {current?.name ?? team.country}
 						</p>
 					{/if}
 				</div>

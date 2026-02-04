@@ -7,8 +7,8 @@
 	import { updateUser } from '$lib/user';
 	import { showSuccess, showError } from '$lib/utils/toast';
 	import { getCountryByIso3 } from '$lib/utils/countries';
-	import Icon from '@iconify/svelte';
 	import GeneratedAvatar from '$lib/components/ui/avatar/generated-avatar.svelte';
+	import CountryFlag from '$lib/components/ui/country-flag.svelte';
 
 	let {
 		open = $bindable(false),
@@ -96,11 +96,7 @@
 						{@const userCountry = getCountryByIso3(user.country)}
 						<div class="text-muted-foreground mt-1 flex items-center gap-2 text-sm">
 							{#if userCountry?.iso2}
-								<Icon
-									icon={`circle-flags:${userCountry.iso2.toLowerCase()}`}
-									width="16"
-									height="16"
-								/>
+								<CountryFlag country={userCountry.iso2} width={16} height={16} />
 							{/if}
 							<span>Current: {user.country.toUpperCase()}</span>
 						</div>

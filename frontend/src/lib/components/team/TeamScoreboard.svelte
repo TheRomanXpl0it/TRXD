@@ -9,6 +9,7 @@
 		TableRow
 	} from '@/components/ui/table';
 	import { ChartLine } from '@lucide/svelte';
+	import { formatTimeSince } from '$lib/utils/formatting';
 
 	// Prop (team contains solves[] and members[])
 	let { team } = $props<{ team: any }>();
@@ -31,17 +32,6 @@
 		if (!iso) return '-';
 		const d = new Date(iso);
 		return Number.isNaN(+d) ? '-' : d.toLocaleString();
-	};
-
-	const timeSince = (iso?: string) => {
-		if (!iso) return '-';
-		const sec = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
-		const h = Math.floor(sec / 3600);
-		const m = Math.floor((sec % 3600) / 60);
-		const s = sec % 60;
-		if (h > 0) return `${h}h ${m}m`;
-		if (m > 0) return `${m}m ${s}s`;
-		return `${s}s`;
 	};
 
 	const truncateName = (name: string, maxLength = 32): string => {
@@ -116,7 +106,7 @@
 </script>
 
 <div class="flex w-full flex-col">
-	<div class="mb-4 flex items-center gap-2 pl-1">
+	<div class="flex items-center gap-2 px-6 py-4">
 		<ChartLine class="h-5 w-5 opacity-70" />
 		<h3 class="text-xl font-semibold">Solves</h3>
 	</div>
@@ -188,7 +178,7 @@
 						</TableCell>
 						<TableCell>{truncateName(solverName(s.user_id))}</TableCell>
 						<TableCell>{fmtDate(s.timestamp)}</TableCell>
-						<TableCell class="text-right">{timeSince(s.timestamp)}</TableCell>
+						<TableCell class="text-right">{formatTimeSince(s.timestamp)}</TableCell>
 					</TableRow>
 				{/each}
 			{/if}

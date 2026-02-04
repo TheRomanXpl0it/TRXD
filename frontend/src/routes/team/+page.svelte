@@ -4,7 +4,6 @@
 	import { push } from 'svelte-spa-router';
 	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
 	import { Globe, Users, Edit, Award, LayoutGrid, List } from '@lucide/svelte';
-	import Icon from '@iconify/svelte';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 
 	import SolveListTable from '$lib/components/team/TeamScoreboard.svelte';
@@ -17,6 +16,8 @@
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import GeneratedAvatar from '$lib/components/ui/avatar/generated-avatar.svelte';
 	import RadarChart from '$lib/components/RadarChart.svelte';
+	import CountryFlag from '$lib/components/ui/country-flag.svelte';
+	import countries from '$lib/data/countries.json';
 
 	let loading = $state(false);
 	let teamError: string | null = $state(null);
@@ -130,26 +131,21 @@
 		>
 			<Card.Content class="p-6 sm:p-8">
 				<div class="flex flex-col items-start gap-6 sm:flex-row sm:items-center">
-					<!-- Avatar / Flag -->
+					<!-- Avatar with Country Badge -->
 					<div
 						class="border-background bg-background relative h-20 w-20 shrink-0 overflow-hidden rounded-full border-4 shadow-md"
 					>
+						<GeneratedAvatar seed={team.name} class="h-full w-full" />
 						{#if team.country}
 							<div
-								class="flex h-full w-full items-center justify-center bg-gray-100 dark:bg-gray-800"
+								class="absolute bottom-0 right-0 h-7 w-7 overflow-hidden rounded-full border-2 border-white shadow-md dark:border-gray-800"
 							>
-								<Icon
-									icon={`circle-flags:${String(team.country).toLowerCase()}`}
-									width="80"
-									height="80"
+								<CountryFlag
+									country={String(team.country)}
+									width={28}
+									height={28}
 									class="h-full w-full object-cover"
 								/>
-							</div>
-						{:else}
-							<div
-								class="bg-muted text-muted-foreground flex h-full w-full items-center justify-center"
-							>
-								<GeneratedAvatar seed={team.name} class="h-full w-full" />
 							</div>
 						{/if}
 					</div>
@@ -161,10 +157,11 @@
 								<Users class="h-4 w-4" />
 								{team.members?.length ?? 0} members
 							</span>
-							{#if team.rank}
-								<span class="text-foreground flex items-center gap-1.5 font-medium">
-									<Award class="h-4 w-4 text-yellow-500" />
-									Rank #{team.rank}
+							{#if team.country}
+								{@const countryData = countries.find((c) => c.iso3 === team.country.toUpperCase())}
+								<span class="flex items-center gap-1.5">
+									<Globe class="h-4 w-4" />
+									{countryData?.name ?? team.country}
 								</span>
 							{/if}
 						</div>
@@ -279,10 +276,6 @@
 							<div>
 								<p class="text-muted-foreground text-xs uppercase">Solves</p>
 								<p class="font-mono text-xl font-bold">{team.solves?.length ?? 0}</p>
-							</div>
-							<div>
-								<p class="text-muted-foreground text-xs uppercase">Country</p>
-								<p class="text-xl">{team.country ?? '🌍'}</p>
 							</div>
 						</div>
 					</Card.Content>
