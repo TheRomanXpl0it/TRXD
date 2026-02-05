@@ -110,78 +110,75 @@
 		<ChartLine class="h-5 w-5 opacity-70" />
 		<h3 class="text-xl font-semibold">Solves</h3>
 	</div>
-	<Table class="w-full">
-		<TableCaption class="text-sm">
-			{#if totalPoints > 0}{totalPoints} pts total{/if}
-		</TableCaption>
+	<div class="mx-4 px-4 sm:mx-8 sm:px-6">
+		<Table class="w-full">
+			<TableCaption class="text-sm">
+				{#if totalPoints > 0}{totalPoints} pts total{/if}
+			</TableCaption>
 
-		<TableHeader class="bg-transparent [&_tr]:border-b-0">
-			<TableRow class="hover:bg-transparent">
-				<TableHead
-					class="text-muted-foreground/70 w-[28%] cursor-pointer text-[10px] font-bold uppercase tracking-wider"
-					onclick={() => toggleSort('name')}
-				>
-					Challenge {arrow('name')}
-				</TableHead>
-				<TableHead
-					class="text-muted-foreground/70 w-[16%] cursor-pointer text-[10px] font-bold uppercase tracking-wider"
-					onclick={() => toggleSort('category')}
-				>
-					Category {arrow('category')}
-				</TableHead>
-				<TableHead
-					class="text-muted-foreground/70 w-[12%] cursor-pointer text-right text-[10px] font-bold uppercase tracking-wider"
-					onclick={() => toggleSort('points')}
-				>
-					Points {arrow('points')}
-				</TableHead>
-				<TableHead
-					class="text-muted-foreground/70 w-[18%] cursor-pointer text-[10px] font-bold uppercase tracking-wider"
-					onclick={() => toggleSort('solver')}
-				>
-					Solved by {arrow('solver')}
-				</TableHead>
-				<TableHead
-					class="text-muted-foreground/70 w-[16%] cursor-pointer text-[10px] font-bold uppercase tracking-wider"
-					onclick={() => toggleSort('timestamp')}
-				>
-					Solved at {arrow('timestamp')}
-				</TableHead>
-				<TableHead
-					class="text-muted-foreground/70 w-[10%] text-right text-[10px] font-bold uppercase tracking-wider"
-				>
-					Ago
-				</TableHead>
-			</TableRow>
-		</TableHeader>
+			<TableHeader class="bg-transparent [&_tr]:border-b-0">
+				<TableRow class="hover:bg-transparent">
+					<TableHead
+						class="text-muted-foreground/70 w-[28%] cursor-pointer text-[10px] font-bold uppercase tracking-wider"
+						onclick={() => toggleSort('name')}
+					>
+						Challenge {arrow('name')}
+					</TableHead>
+					<TableHead
+						class="text-muted-foreground/70 w-[16%] cursor-pointer text-[10px] font-bold uppercase tracking-wider"
+						onclick={() => toggleSort('category')}
+					>
+						Category {arrow('category')}
+					</TableHead>
+					<TableHead
+						class="text-muted-foreground/70 w-[12%] cursor-pointer text-right text-[10px] font-bold uppercase tracking-wider"
+						onclick={() => toggleSort('points')}
+					>
+						Points {arrow('points')}
+					</TableHead>
+					<TableHead
+						class="text-muted-foreground/70 w-[18%] cursor-pointer text-[10px] font-bold uppercase tracking-wider"
+						onclick={() => toggleSort('solver')}
+					>
+						Solved by {arrow('solver')}
+					</TableHead>
 
-		<TableBody>
-			{#if rows.length === 0}
-				<TableRow class="border-b-0">
-					<TableCell colspan={6} class="text-muted-foreground py-10 text-center">
-						No solves yet.
-					</TableCell>
+					<TableHead
+						class="text-muted-foreground/70 w-[10%] text-right text-[10px] font-bold uppercase tracking-wider"
+					>
+						Ago
+					</TableHead>
 				</TableRow>
-			{:else}
-				{#each rows as s (s.id ?? s.timestamp ?? s.name ?? Math.random())}
-					<TableRow class="border-b-0 transition-colors">
-						<TableCell class="font-medium">{truncateName(s.name ?? '-')}</TableCell>
-						<TableCell>
-							<span class="text-muted-foreground text-xs font-medium">
-								{s.category ?? '-'}
-							</span>
+			</TableHeader>
+
+			<TableBody>
+				{#if rows.length === 0}
+					<TableRow class="border-b-0">
+						<TableCell colspan={5} class="text-muted-foreground py-10 text-center">
+							No solves yet.
 						</TableCell>
-						<TableCell class="text-right">
-							<div class="font-mono text-sm font-medium tabular-nums leading-none tracking-tight">
-								{getPoints(s)}
-							</div>
-						</TableCell>
-						<TableCell>{truncateName(solverName(s.user_id))}</TableCell>
-						<TableCell>{fmtDate(s.timestamp)}</TableCell>
-						<TableCell class="text-right">{formatTimeSince(s.timestamp)}</TableCell>
 					</TableRow>
-				{/each}
-			{/if}
-		</TableBody>
-	</Table>
+				{:else}
+					{#each rows as s (s.id ?? s.timestamp ?? s.name ?? Math.random())}
+						<TableRow class="border-b-0 transition-colors">
+							<TableCell class="font-medium">{truncateName(s.name ?? '-')}</TableCell>
+							<TableCell>
+								<span class="text-muted-foreground text-xs font-medium">
+									{s.category ?? '-'}
+								</span>
+							</TableCell>
+							<TableCell class="text-right">
+								<div class="font-mono text-sm font-medium tabular-nums leading-none tracking-tight">
+									{getPoints(s)}
+								</div>
+							</TableCell>
+							<TableCell>{truncateName(solverName(s.user_id))}</TableCell>
+
+							<TableCell class="text-right">{formatTimeSince(s.timestamp)}</TableCell>
+						</TableRow>
+					{/each}
+				{/if}
+			</TableBody>
+		</Table>
+	</div>
 </div>

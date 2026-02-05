@@ -79,10 +79,14 @@ export interface Challenge {
 }
 
 export interface Solve {
-    user_id: number;
-    user_name: string;
-    team_id?: number;
-    date: string;
+    id: number;
+    name: string;
+    timestamp: string;
+    // Optional context-specific fields
+    user_id?: number;
+    category?: string;
+    points?: number;
+    first_blood?: boolean;
 }
 
 export interface ApiError {

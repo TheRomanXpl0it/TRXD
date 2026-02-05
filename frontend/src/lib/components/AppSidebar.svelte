@@ -40,13 +40,13 @@
 	];
 
 	// Accounts item shown only when logged in
-	const accountsItem: NavItem = { title: 'Accounts', url: '/accounts', icon: Users };
+	const accountsItem: NavItem = { title: 'Users', url: '/accounts', icon: Users };
 
 	// Teams item shown only when userMode is false and logged in
 	const teamsItem: NavItem = { title: 'Teams', url: '/teams', icon: ShieldHalf };
 
 	// Team item shown only when userMode is false and logged in
-	const teamItem: NavItem = { title: 'Team', url: '/team', icon: ShieldHalf };
+	const teamItem: NavItem = { title: 'My Team', url: '/team', icon: ShieldHalf };
 
 	// Admin-only visibility
 	const isAdmin = $derived((user as any)?.role === 'Admin');

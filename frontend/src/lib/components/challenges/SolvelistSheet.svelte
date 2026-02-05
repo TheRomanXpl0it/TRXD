@@ -17,8 +17,7 @@
 	let loading = $state(false);
 	let solves = $state<Solve[]>([]);
 
-	// unified time getter
-	const t = (s: Solve) => new Date(s.date ?? Date.now()).getTime();
+	const t = (s: Solve) => new Date(s.timestamp).getTime();
 
 	async function loadSolves(id: number) {
 		if (!id) return;
@@ -83,39 +82,31 @@
 			<Table.Root class="w-full">
 				<Table.Header>
 					<Table.Row>
-						<Table.Head class="w-10"></Table.Head>
-						<Table.Head>{$userMode ? 'Player' : 'Team'}</Table.Head>
-						<Table.Head class="whitespace-nowrap text-right">Time</Table.Head>
+						<Table.Head class="w-[10%]">#</Table.Head>
+						<Table.Head class="w-[50%]">{$userMode ? 'Player' : 'Team'}</Table.Head>
+						<Table.Head class="w-[40%] text-right">Date</Table.Head>
 					</Table.Row>
 				</Table.Header>
 
 				<Table.Body>
 					{#each solves as s, i}
 						<Table.Row>
-							<Table.Cell class="py-2">
+							<Table.Cell class="font-medium">
 								{#if i === 0}
 									<Droplet class="h-4 w-4 text-red-500" />
-								{/if}
-							</Table.Cell>
-
-							<Table.Cell class="py-2">
-								{#if s.user_id}
-									{#key s.user_id}
-										<a
-											href={$userMode
-												? '/account/' + s.user_id
-												: '/team/' + (s.team_id ?? s.user_id)}
-											onclick={(e) => goItem(s.user_id, e)}
-											class="cursor-pointer font-medium hover:underline"
-										>
-											{truncateName(s.user_name ?? 'Anonymous')}
-										</a>
-									{/key}
 								{:else}
-									<span class="font-medium">{truncateName(s.user_name ?? 'Anonymous')}</span>
+									{i + 1}
 								{/if}
 							</Table.Cell>
-
+							<Table.Cell class="py-2">
+								<a
+									href={$userMode ? '/account/' + s.id : '/team/' + s.id}
+									onclick={(e) => goItem(s.id, e)}
+									class="cursor-pointer font-medium hover:underline"
+								>
+									{truncateName(s.name)}
+								</a>
+							</Table.Cell>
 							<Table.Cell
 								class="whitespace-nowrap py-2 text-right text-xs text-gray-600 sm:text-sm dark:text-gray-400"
 							>

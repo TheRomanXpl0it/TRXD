@@ -15,7 +15,7 @@
 		uploadAttachments,
 		deleteAttachments
 	} from '$lib/challenges';
-	import { Cpu, MemoryStick, Clock, X, Tags as TagsIcon } from '@lucide/svelte';
+	import { Cpu, MemoryStick, Clock, X, Tags as TagsIcon, Eye, EyeOff } from '@lucide/svelte';
 	import { createFlags, deleteFlags } from '$lib/flags';
 	import MonacoEditor from '$lib/components/MonacoEditor.svelte';
 
@@ -41,7 +41,7 @@
 	let name = $state('');
 	let category = $state('');
 	let description = $state('');
-	let difficulty = $state<'easy' | 'medium' | 'hard' | 'insane'>('easy');
+	// difficulty removed
 	let type = $state('Container');
 	let hidden = $state<boolean>(false);
 	let maxPoints = $state<number>(500);
@@ -56,10 +56,11 @@
 	let maxCPU = $state('');
 	let maxRam = $state('');
 	let lifetime = $state('');
-	let envs = $state('');
+	let envVars = $state<{ name: string; value: string }[]>([]);
 
 	let flags_og = $state<any[]>([]);
 	let flags: any = $state<any[]>([]);
+	let flagsVisibility = $state(new Set<number>());
 	let flagsRegex: any = $state<any[]>([]);
 
 	const uniqAllTags = $derived(
@@ -121,28 +122,16 @@
 	let saving = $state(false);
 
 	// Options
+	// Options
 	const typeOptions: Item[] = [
+		{ value: 'Normal', label: 'Normal' },
 		{ value: 'Container', label: 'Container' },
-		{ value: 'Compose', label: 'Compose' },
-		{ value: 'Normal', label: 'Normal' }
-	];
-
-	const difficultyOptions: Item[] = [
-		{ value: 'easy', label: 'Easy' },
-		{ value: 'medium', label: 'Medium' },
-		{ value: 'hard', label: 'Hard' },
-		{ value: 'insane', label: 'Insane' }
+		{ value: 'Compose', label: 'Compose' }
 	];
 
 	function toTitleCase(v: string) {
 		const s = String(v || '').toLowerCase();
 		return s.charAt(0).toUpperCase() + s.slice(1);
-	}
-
-	function normalizeDifficulty(input: any): 'easy' | 'medium' | 'hard' | 'insane' {
-		const s = String(input ?? '').toLowerCase();
-		if (s === 'easy' || s === 'medium' || s === 'hard' || s === 'insane') return s;
-		return 'easy';
 	}
 
 	function parseCsv(s: string): string[] {
@@ -171,7 +160,6 @@
 					: '';
 
 				description = String(challenge?.description ?? '');
-				difficulty = normalizeDifficulty(challenge?.difficulty);
 
 				if (Array.isArray(challenge?.authors)) {
 					authorsCsv = challenge.authors.join(', ');
@@ -214,16 +202,14 @@
 				maxCPU = String(challenge?.docker_config?.max_cpu ?? '');
 				maxRam = String(challenge?.docker_config?.max_memory ?? '');
 				lifetime = String(challenge?.docker_config?.lifetime ?? '');
-				envs = (() => {
+				envVars = (() => {
 					const e = challenge?.docker_config?.envs;
-					if (!e) return '';
+					if (!e) return [];
 					try {
 						const obj = JSON.parse(String(e));
-						return Object.entries(obj)
-							.map(([k, v]) => `${k}=${v}`)
-							.join('\n');
+						return Object.entries(obj).map(([k, v]) => ({ name: k, value: String(v) }));
 					} catch {
-						return String(e);
+						return [];
 					}
 				})();
 
@@ -279,7 +265,7 @@
 			name: name.trim(),
 			category: category.trim(),
 			description: str(description),
-			difficulty: toTitleCase(difficulty), // "Easy" | "Medium" | ...
+			difficulty: 'Easy',
 			authors: (authorsCsv || '')
 				.split(',')
 				.map((a) => a.trim())
@@ -303,22 +289,11 @@
 
 			// misc docker
 			envs: (() => {
-				if (!envs.trim()) return undefined;
-				try {
-					JSON.parse(envs);
-					return envs.trim();
-				} catch {
-					const obj: Record<string, string> = {};
-					envs.split(/[\n,;]/).forEach((line) => {
-						const parts = line.split('=');
-						if (parts.length >= 2) {
-							const key = parts[0].trim();
-							const val = parts.slice(1).join('=').trim();
-							if (key) obj[key] = val;
-						}
-					});
-					return Object.keys(obj).length > 0 ? JSON.stringify(obj) : undefined;
+				const obj: Record<string, string> = {};
+				for (const ev of envVars) {
+					if (ev.name.trim()) obj[ev.name.trim()] = ev.value;
 				}
+				return Object.keys(obj).length > 0 ? JSON.stringify(obj) : undefined;
 			})(),
 			tags,
 			max_cpu: toNum(maxCPU) && toNum(maxCPU) > 0 ? String(toNum(maxCPU)) : ''
@@ -602,7 +577,7 @@
 								<!-- Existing attachments -->
 								{#if keptExisting.length > 0}
 									<div>
-										<h5 class="mb-3 text-sm font-medium">Existing Files</h5>
+										<h5 class="mb-3 mt-4 text-sm font-medium">Existing Files</h5>
 										<div class="flex flex-col gap-2">
 											{#each keptExisting as a (a)}
 												<div
@@ -699,34 +674,22 @@
 								</div>
 							</div>
 
-							<!-- Difficulty & Type -->
+							<!-- Type -->
 							<div class="bg-muted/20 rounded-xl border-0 p-5">
 								<h4
 									class="text-muted-foreground mb-4 text-sm font-semibold uppercase tracking-wider"
 								>
 									Classification
 								</h4>
-								<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-									<div>
-										<Label for="ch-diff" class="mb-2 block text-sm font-medium">Difficulty</Label>
-										<CategorySelect
-											id="ch-diff"
-											items={difficultyOptions}
-											bind:value={difficulty}
-											placeholder="Select difficulty..."
-											searchPlaceholder="Search difficulty"
-										/>
-									</div>
-									<div>
-										<Label for="ch-type" class="mb-2 block text-sm font-medium">Type</Label>
-										<CategorySelect
-											id="ch-type"
-											items={typeOptions}
-											bind:value={type}
-											placeholder="Select type..."
-											searchPlaceholder="Search type"
-										/>
-									</div>
+								<div>
+									<Label for="ch-type" class="mb-2 block text-sm font-medium">Type</Label>
+									<CategorySelect
+										id="ch-type"
+										items={typeOptions}
+										bind:value={type}
+										placeholder="Select type..."
+										searchPlaceholder="Search type"
+									/>
 								</div>
 							</div>
 
@@ -793,11 +756,32 @@
 								<div class="flex flex-col gap-3">
 									{#each flags as flag, index (index)}
 										<div class="bg-muted/30 flex items-center gap-3 rounded-lg border p-3">
-											<Input
-												bind:value={flags[index].flag}
-												placeholder="Enter flag value"
-												class="flex-1"
-											/>
+											<div class="relative flex-1">
+												<Input
+													bind:value={flags[index].flag}
+													type={flagsVisibility.has(index) ? 'text' : 'password'}
+													placeholder="Enter flag value"
+													class="pr-10"
+												/>
+												<Button
+													type="button"
+													variant="ghost"
+													size="icon"
+													class="text-muted-foreground hover:text-foreground absolute right-0 top-0 h-9 w-9"
+													onclick={() => {
+														const newSet = new Set(flagsVisibility);
+														if (newSet.has(index)) newSet.delete(index);
+														else newSet.add(index);
+														flagsVisibility = newSet;
+													}}
+												>
+													{#if flagsVisibility.has(index)}
+														<EyeOff class="h-4 w-4" />
+													{:else}
+														<Eye class="h-4 w-4" />
+													{/if}
+												</Button>
+											</div>
 											<div class="flex shrink-0 items-center gap-2">
 												<Checkbox id={'flag-' + index} bind:checked={flags[index].regex} />
 												<Label for={'flag-' + index} class="cursor-pointer whitespace-nowrap"
@@ -900,14 +884,51 @@
 										<Input id="ch-host" bind:value={host} placeholder="e.g. challenge.trxd.cc" />
 									</div>
 									<div>
-										<Label for="com-envs" class="mb-2 block text-sm font-medium"
-											>Environment Variables</Label
-										>
-										<Textarea
-											id="com-envs"
-											bind:value={envs}
-											placeholder="FLAG1=flag&#10;FLAG2=flag"
-										/>
+										<div class="mb-2 flex items-center justify-between">
+											<Label class="text-sm font-medium">Environment Variables</Label>
+											<Button
+												type="button"
+												variant="outline"
+												size="sm"
+												class="h-7 text-xs"
+												onclick={() => (envVars = [...envVars, { name: '', value: '' }])}
+											>
+												Add Variable
+											</Button>
+										</div>
+										<div class="space-y-2">
+											{#each envVars as env, i}
+												<div class="flex items-center gap-2">
+													<Input
+														bind:value={env.name}
+														placeholder="KEY"
+														class="w-1/3 font-mono text-xs"
+													/>
+													<span class="text-muted-foreground">=</span>
+													<Input
+														bind:value={env.value}
+														placeholder="VALUE"
+														class="flex-1 font-mono text-xs"
+													/>
+													<Button
+														type="button"
+														variant="ghost"
+														size="icon"
+														class="text-muted-foreground hover:text-destructive h-8 w-8"
+														onclick={() => {
+															envVars = envVars.filter((_, idx) => idx !== i);
+														}}
+													>
+														<X class="h-4 w-4" />
+													</Button>
+												</div>
+											{/each}
+											{#if envVars.length === 0}
+												<p class="text-muted-foreground text-xs italic">
+													No environment variables set.
+												</p>
+											{/if}
+										</div>
 									</div>
 									<div>
 										<Label for="com-conn-type" class="mb-2 block text-sm font-medium"
@@ -969,14 +990,51 @@
 										</select>
 									</div>
 									<div>
-										<Label for="con-envs" class="mb-2 block text-sm font-medium"
-											>Environment Variables</Label
-										>
-										<Textarea
-											id="con-envs"
-											bind:value={envs}
-											placeholder="FLAG1=flag&#10;FLAG2=flag"
-										/>
+										<div class="mb-2 flex items-center justify-between">
+											<Label class="text-sm font-medium">Environment Variables</Label>
+											<Button
+												type="button"
+												variant="outline"
+												size="sm"
+												class="h-7 text-xs"
+												onclick={() => (envVars = [...envVars, { name: '', value: '' }])}
+											>
+												Add Variable
+											</Button>
+										</div>
+										<div class="space-y-2">
+											{#each envVars as env, i}
+												<div class="flex items-center gap-2">
+													<Input
+														bind:value={env.name}
+														placeholder="KEY"
+														class="w-1/3 font-mono text-xs"
+													/>
+													<span class="text-muted-foreground">=</span>
+													<Input
+														bind:value={env.value}
+														placeholder="VALUE"
+														class="flex-1 font-mono text-xs"
+													/>
+													<Button
+														type="button"
+														variant="ghost"
+														size="icon"
+														class="text-muted-foreground hover:text-destructive h-8 w-8"
+														onclick={() => {
+															envVars = envVars.filter((_, idx) => idx !== i);
+														}}
+													>
+														<X class="h-4 w-4" />
+													</Button>
+												</div>
+											{/each}
+											{#if envVars.length === 0}
+												<p class="text-muted-foreground text-xs italic">
+													No environment variables set.
+												</p>
+											{/if}
+										</div>
 									</div>
 								</div>
 							{/if}

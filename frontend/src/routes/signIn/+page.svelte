@@ -5,12 +5,12 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import { toast } from 'svelte-sonner';
-	import ErrorMessage from '$lib/components/ui/error-message.svelte';
 
 	import { login } from '$lib/auth';
 	import { link, push } from 'svelte-spa-router';
 	import { user } from '@/stores/auth';
 	import { loadUser } from '@/stores/auth';
+	import { Lock } from '@lucide/svelte';
 
 	// --- State (Svelte 5 runes) ----------------------------------------------
 
@@ -90,80 +90,96 @@
 	}
 </script>
 
-<div class="flex min-h-full items-center justify-center py-12">
-	<Card.Root class="mx-auto w-full max-w-sm flex flex-col">
-		<Card.Header>
-			<Card.Title>Welcome back hacker.</Card.Title>
-			<Card.Description>Enter your email below to login to your account</Card.Description>
-			<Card.Action>
-				<Button
-					variant="link"
-					class="cursor-pointer"
-					type="button"
-					onclick={goToSignUp}
+<div class="flex min-h-[80vh] items-center justify-center px-4 py-12">
+	<Card.Root
+		class="bg-card/50 mx-auto w-full max-w-md border-0 shadow-xl backdrop-blur-sm sm:max-w-[420px]"
+	>
+		<div class="p-8 pb-0">
+			<Card.Header class="space-y-2 p-0 text-center">
+				<div
+					class="bg-primary/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full"
 				>
-					Sign Up
-				</Button>
-			</Card.Action>
-		</Card.Header>
+					<Lock class="text-primary h-6 w-6" />
+				</div>
+				<Card.Title class="text-2xl font-bold tracking-tight">Welcome back</Card.Title>
+				<Card.Description class="text-base">Sign in to your account to continue</Card.Description>
+			</Card.Header>
+		</div>
 
-		<form onsubmit={onSubmit}>
-			<Card.Content>
-				<div class="flex flex-col gap-6">
-					<div class="grid gap-2">
-						<Label for="email">Email</Label>
+		<form onsubmit={onSubmit} class="p-8 pt-6">
+			<Card.Content class="space-y-6 p-0">
+				<div class="space-y-4">
+					<div class="space-y-2">
+						<Label for="email" class="font-medium">Email</Label>
 						<Input
 							id="email"
 							name="email"
 							type="email"
-							placeholder="m@example.com"
+							placeholder="name@example.com"
 							bind:value={email}
 							required
+							class="bg-background/50"
 						/>
 					</div>
 
-					<div class="grid gap-2">
-						<div class="flex items-center">
-							<Label for="password">Password</Label>
+					<div class="space-y-2">
+						<div class="flex items-center justify-between">
+							<Label for="password" class="font-medium">Password</Label>
 							<a
 								use:link
 								href="/forgot"
-								class="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+								class="text-muted-foreground hover:text-primary text-xs font-medium hover:underline"
 							>
-								Forgot your password?
+								Forgot password?
 							</a>
 						</div>
 						<Input
 							id="password"
 							name="password"
 							type="password"
-							placeholder="********"
+							placeholder="••••••••"
 							bind:value={password}
 							required
+							class="bg-background/50"
 						/>
 					</div>
-
-					<div class="flex select-none items-center gap-2 text-sm">
-						<Checkbox id="remember" bind:checked={remember} />
-						<Label for="remember">Remember me</Label>
-					</div>
-
-					<div class="min-h-5">
-						{#if errorMsg}
-							<ErrorMessage message={errorMsg} />
-						{/if}
-					</div>
 				</div>
-			</Card.Content>
 
-			<Card.Footer class="flex-col gap-2">
-				<Button type="submit" class="w-full cursor-pointer" disabled={loading}>
+				<div class="flex items-center gap-2">
+					<Checkbox id="remember" bind:checked={remember} />
+					<Label for="remember" class="cursor-pointer text-sm font-normal">Remember me</Label>
+				</div>
+
+				{#if errorMsg}
+					<div class="text-sm text-red-600 dark:text-red-400">{errorMsg}</div>
+				{/if}
+
+				<Button type="submit" class="w-full font-semibold shadow-sm" size="lg" disabled={loading}>
 					{#if loading}
 						Signing in...
 					{:else}
 						Sign in
 					{/if}
 				</Button>
+			</Card.Content>
+
+			<Card.Footer class="text-muted-foreground mt-6 flex flex-col gap-4 p-0 text-center text-sm">
+				<div class="flex w-full items-center gap-4">
+					<span class="bg-border h-px flex-1"></span>
+					<span class="text-muted-foreground text-xs uppercase">Or</span>
+					<span class="bg-border h-px flex-1"></span>
+				</div>
+				<p>
+					Don't have an account?{' '}
+					<Button
+						variant="link"
+						class="text-primary h-auto p-0 font-semibold"
+						type="button"
+						onclick={goToSignUp}
+					>
+						Sign up
+					</Button>
+				</p>
 			</Card.Footer>
 		</form>
 	</Card.Root>
