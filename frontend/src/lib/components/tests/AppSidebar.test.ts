@@ -15,7 +15,7 @@ vi.mock('$lib/user', () => ({
 }));
 
 vi.mock('svelte-spa-router', () => ({
-	link: () => {},
+	link: () => { },
 	push: vi.fn()
 }));
 
@@ -47,9 +47,9 @@ describe('AppSidebar Component', () => {
 		expect(screen.getByText('Scoreboard')).toBeInTheDocument();
 		expect(screen.getByText('Challenges')).toBeInTheDocument();
 		// Accounts, Teams, and Team should not show when user is null
-		expect(screen.queryByText('Accounts')).not.toBeInTheDocument();
+		expect(screen.queryByText('Users')).not.toBeInTheDocument();
 		expect(screen.queryByText('Teams')).not.toBeInTheDocument();
-		expect(screen.queryByText('Team')).not.toBeInTheDocument();
+		expect(screen.queryByText('My Team')).not.toBeInTheDocument();
 	});
 
 	it('shows sign in link when user is not logged in', () => {
@@ -61,7 +61,7 @@ describe('AppSidebar Component', () => {
 		});
 
 		expect(screen.getByText('Sign in')).toBeInTheDocument();
-		expect(screen.queryByText('Team')).not.toBeInTheDocument();
+		expect(screen.queryByText('My Team')).not.toBeInTheDocument();
 		expect(screen.queryByText('Configs')).not.toBeInTheDocument();
 	});
 
@@ -76,9 +76,9 @@ describe('AppSidebar Component', () => {
 			} as any
 		});
 
-		expect(screen.getByText('Team')).toBeInTheDocument();
+		expect(screen.getByText('My Team')).toBeInTheDocument();
 		expect(screen.getByText('Teams')).toBeInTheDocument();
-		expect(screen.getByText('Accounts')).toBeInTheDocument();
+		expect(screen.getByText('Users')).toBeInTheDocument();
 	});
 
 	it('shows configs item for admin users', () => {

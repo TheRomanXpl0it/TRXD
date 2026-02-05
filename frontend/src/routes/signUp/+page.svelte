@@ -8,6 +8,7 @@
 	import { toast } from 'svelte-sonner';
 	import { link, push } from 'svelte-spa-router';
 	import { user, loadUser } from '@/stores/auth';
+	import { UserPlus } from '@lucide/svelte';
 
 	let name = '';
 	let email = '';
@@ -60,92 +61,112 @@
 	}
 </script>
 
-<div class="flex min-h-full items-center justify-center py-12">  
-    <Card.Root class="mx-auto w-full max-w-sm">
-    	<Card.Header>
-    		<Card.Title>Create your account</Card.Title>
-    		<Card.Description>Join TRXD and start hacking.</Card.Description>
-    		<Card.Action>
-    			<div>
-    				<Button variant="link" class="cursor-pointer" type="button" onclick={() => push('/signIn')}>
-    					Sign in
-    				</Button>
-    			</div>
-    		</Card.Action>
-    	</Card.Header>
-    
-    	<!-- Wrap form so submit button works -->
-    	<form onsubmit={onSubmit}>
-    		<Card.Content>
-    			<div class="flex flex-col gap-6">
-    				<div class="grid gap-2">
-    					<Label for="name">Username</Label>
-    					<Input
-    						id="name"
-    						name="name"
-    						type="text"
-    						placeholder="Your username"
-    						bind:value={name}
-    						required
-    					/>
-    				</div>
-    
-    				<div class="grid gap-2">
-    					<Label for="email">Email</Label>
-    					<Input
-    						id="email"
-    						name="email"
-    						type="email"
-    						placeholder="name@email.com"
-    						bind:value={email}
-    						required
-    					/>
-    				</div>
-    
-    				<div class="grid gap-2">
-    					<Label for="password">Password</Label>
-    					<Input
-    						id="password"
-    						name="password"
-    						type="password"
-    						placeholder="********"
-    						minlength={8}
-    						bind:value={password}
-    						required
-    					/>
-    					<p class="text-xs text-gray-500 dark:text-gray-400">At least 8 characters.</p>
-    				</div>
-    
-    				<div class="grid gap-2">
-    					<Label for="confirm">Confirm password</Label>
-    					<Input
-    						id="confirm"
-    						name="confirm"
-    						type="password"
-    						placeholder="********"
-    						minlength={8}
-    						bind:value={confirm}
-    						required
-    					/>
-    				</div>
+<div class="flex min-h-[80vh] items-center justify-center px-4 py-12">
+	<Card.Root
+		class="bg-card/50 mx-auto w-full max-w-md border-0 shadow-xl backdrop-blur-sm sm:max-w-[450px]"
+	>
+		<div class="p-8 pb-0">
+			<Card.Header class="space-y-2 p-0 text-center">
+				<div
+					class="bg-primary/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full"
+				>
+					<UserPlus class="text-primary h-6 w-6" />
+				</div>
+				<Card.Title class="text-2xl font-bold tracking-tight">Create an account</Card.Title>
+				<Card.Description class="text-base">Join TRXD and start hacking</Card.Description>
+			</Card.Header>
+		</div>
 
-    				<div class="min-h-5">
-    					{#if errorMsg}
-    						<p class="text-sm text-red-600 dark:text-red-400">{errorMsg}</p>
-    					{/if}
-    				</div>
-    			</div>
-    		</Card.Content>
-    
-    		<Card.Footer class="flex-col gap-2">
-    			<Button type="submit" class="w-full cursor-pointer" disabled={loading}>
-    				{#if loading}
-    					<span class="inline-flex items-center gap-2"><Spinner /> Signing up...</span>
-    				{:else}
-    					Sign up
-    				{/if}
-    			</Button>
-    		</Card.Footer>
-    	</form>
-    </Card.Root>
+		<form onsubmit={onSubmit} class="p-8 pt-6">
+			<Card.Content class="space-y-6 p-0">
+				<div class="space-y-4">
+					<div class="space-y-2">
+						<Label for="name" class="font-medium">Username</Label>
+						<Input
+							id="name"
+							name="name"
+							type="text"
+							placeholder="Your username"
+							bind:value={name}
+							required
+							class="bg-background/50"
+						/>
+					</div>
+
+					<div class="space-y-2">
+						<Label for="email" class="font-medium">Email</Label>
+						<Input
+							id="email"
+							name="email"
+							type="email"
+							placeholder="name@email.com"
+							bind:value={email}
+							required
+							class="bg-background/50"
+						/>
+					</div>
+
+					<div class="space-y-2">
+						<Label for="password" class="font-medium">Password</Label>
+						<Input
+							id="password"
+							name="password"
+							type="password"
+							placeholder="********"
+							minlength={8}
+							bind:value={password}
+							required
+							class="bg-background/50"
+						/>
+						<p class="text-xs text-gray-500 dark:text-gray-400">At least 8 characters.</p>
+					</div>
+
+					<div class="space-y-2">
+						<Label for="confirm" class="font-medium">Confirm password</Label>
+						<Input
+							id="confirm"
+							name="confirm"
+							type="password"
+							placeholder="********"
+							minlength={8}
+							bind:value={confirm}
+							required
+							class="bg-background/50"
+						/>
+					</div>
+				</div>
+
+				{#if errorMsg}
+					<div class="text-sm text-red-600 dark:text-red-400">{errorMsg}</div>
+				{/if}
+
+				<Button type="submit" class="w-full font-semibold shadow-sm" size="lg" disabled={loading}>
+					{#if loading}
+						<span class="inline-flex items-center gap-2"><Spinner /> Signing up...</span>
+					{:else}
+						Sign up
+					{/if}
+				</Button>
+			</Card.Content>
+
+			<Card.Footer class="text-muted-foreground mt-6 flex flex-col gap-4 p-0 text-center text-sm">
+				<div class="flex w-full items-center gap-4">
+					<span class="bg-border h-px flex-1"></span>
+					<span class="text-muted-foreground text-xs uppercase">Or</span>
+					<span class="bg-border h-px flex-1"></span>
+				</div>
+				<p>
+					Already have an account?{' '}
+					<Button
+						variant="link"
+						class="text-primary h-auto p-0 font-semibold"
+						type="button"
+						onclick={() => push('/signIn')}
+					>
+						Sign in
+					</Button>
+				</p>
+			</Card.Footer>
+		</form>
+	</Card.Root>
 </div>

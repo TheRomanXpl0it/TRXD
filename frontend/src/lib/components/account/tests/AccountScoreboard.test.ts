@@ -15,7 +15,7 @@ describe('AccountScoreboard', () => {
     // Clicking headers does not remove rows
     fireEvent.click(screen.getByText(/points/i));
     fireEvent.click(screen.getByText(/challenge/i));
-    fireEvent.click(screen.getByText(/solved at/i));
+
     fireEvent.click(screen.getByText(/category/i));
     expect(screen.getByText('X')).toBeInTheDocument();
     expect(screen.getByText('Y')).toBeInTheDocument();

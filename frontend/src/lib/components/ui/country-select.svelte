@@ -56,20 +56,36 @@
 			<span class="text-muted-foreground">{placeholder}</span>
 		{/if}
 	</Select.Trigger>
-	<Select.Content sideOffset={4} class="max-h-[300px]">
-		<div class="px-2 pb-2">
-			<Input placeholder="Search countries..." bind:value={countrySearch} class="h-8" />
+	<Select.Content sideOffset={4} class="flex max-h-[300px] flex-col overflow-hidden">
+		<div class="border-b px-2 py-2">
+			<Input
+				placeholder="Search countries..."
+				bind:value={countrySearch}
+				class="h-8 focus-visible:ring-0"
+			/>
 		</div>
-		{#each filteredCountries as item (item.value)}
-			<Select.Item value={item.value} label={item.label}>
-				{#snippet children({ selected })}
-					<img src={getFlagUrl(item.iso2)} alt={item.label} class="h-4 w-6 object-cover" />
-					<span>{item.label} ({item.value})</span>
-				{/snippet}
-			</Select.Item>
-		{/each}
-		{#if filteredCountries.length === 0}
-			<EmptyState icon={Search} title="No countries found" />
-		{/if}
+		<div class="flex-1 overflow-y-auto p-1">
+			{#each filteredCountries as item (item.value)}
+				<Select.Item value={item.value} label={item.label} class="cursor-pointer">
+					{#snippet children({ selected })}
+						<div class="flex w-full items-center gap-2">
+							<img
+								src={getFlagUrl(item.iso2)}
+								alt={item.label}
+								class="h-3.5 w-5 rounded-[2px] object-cover shadow-sm"
+							/>
+							<span class="truncate">{item.label}</span>
+							<span class="text-muted-foreground ml-auto text-xs opacity-50">{item.value}</span>
+						</div>
+					{/snippet}
+				</Select.Item>
+			{/each}
+			{#if filteredCountries.length === 0}
+				<div class="text-muted-foreground flex flex-col items-center justify-center py-6">
+					<Search class="mb-2 h-8 w-8 opacity-20" />
+					<p class="text-xs">No countries found</p>
+				</div>
+			{/if}
+		</div>
 	</Select.Content>
 </Select.Root>

@@ -75,15 +75,6 @@
 						</div>
 					{/if}
 
-					{#if challenge?.difficulty}
-						<span
-							class="inline-flex items-center rounded-full bg-black/5 px-2.5 py-0.5 text-xs font-medium dark:bg-white/10"
-							aria-label="Difficulty: {challenge.difficulty}"
-						>
-							{challenge.difficulty}
-						</span>
-					{/if}
-
 					{#if challenge?.solves === 0}
 						<span class="inline-flex items-center gap-1 text-xs font-medium">
 							<Droplet class="h-4 w-4 text-red-500" aria-hidden="true" />

@@ -85,20 +85,7 @@ describe('ChallengeModal Component', () => {
 		expect(screen.getByText('forensics')).toBeInTheDocument();
 	});
 
-	it('displays difficulty badge', () => {
-		const challenge = generateRandomChallenge({
-			difficulty: 'hard'
-		});
 
-		render(ChallengeModal, {
-			props: {
-				open: true,
-				challenge
-			}
-		});
-
-		expect(screen.getByLabelText(/difficulty: hard/i)).toBeInTheDocument();
-	});
 
 	it('shows blood icon for unsolved challenges', () => {
 		const challenge = generateRandomChallenge({
