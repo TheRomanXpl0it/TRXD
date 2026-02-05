@@ -13,19 +13,19 @@
    - DOCUMENTATION
 
 ## Frontend
- - Better tags handling in /challenges page
- - Add custom button themes for first/second/third bloods?
  - Make countdown timer more efficient
  - Lazy load monaco editor
- - Remove all category icon features
- - Improve login/sign up error message handling
- - Fix countries
+ - ~~Better tags handling in /challenges page~~
+ - ~~Remove all category icon features~~
+ - ~~Improve login/sign up error message handling~~
+ - ~~Fix countries~~
  - ~~Improve challenge creation procedure~~
  - ~~Fix admin flag submission~~ 
  - ~~convert .pngs to webp~~
  - ~~Improve "Team join" page on smaller screens~~
  - ~~Add debouncing to challenges search~~
  - Extra:
+   - Add custom button themes for first/second/third bloods?
    - Custom button color based on tags
 
 ## Ideas / Features
@@ -34,7 +34,7 @@
  - divide configs by section (secrets, instances, something like this...)
  - dropdown menu for containers (for container instances)
  - editable homepage & theme
- - instanes page (admin only)
+ - instances page (admin only)
  - deletable instances (from admin)
  - submission page (admin only)
  - deletable submissions (from admin)
