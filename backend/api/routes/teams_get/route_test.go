@@ -166,7 +166,7 @@ func TestRoute(t *testing.T) {
 	test_utils.DeleteKeys(body, "id", "timestamp", "user_id")
 	test_utils.Compare(t, expectedAdmin, body)
 
-	// User Mode tests
+	//! User Mode tests
 	test_utils.UpdateConfig(t, "user-mode", "true")
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/register", JSON{"name": "single", "email": "single@gmail.com", "password": "testpass"}, http.StatusOK)
@@ -177,14 +177,16 @@ func TestRoute(t *testing.T) {
 	}
 	bodyMap := body.(map[string]interface{})
 	teamID := int32(bodyMap["team_id"].(float64))
+	userID := int32(bodyMap["id"].(float64))
 
 	expected := JSON{
 		"badges":  []interface{}{},
 		"country": "",
-		"id":      4,
+		"id":      teamID,
 		"name":    "single",
 		"score":   0,
 		"solves":  []interface{}{},
+		"user_id": userID,
 	}
 	session.Get(fmt.Sprintf("/teams/%d", teamID), nil, http.StatusOK)
 	body = session.Body()
@@ -229,6 +231,6 @@ func TestRoute(t *testing.T) {
 	if body == nil {
 		t.Fatal("Expected body to not be nil")
 	}
-	test_utils.DeleteKeys(body, "id", "timestamp")
+	test_utils.DeleteKeys(body, "id", "user_id", "timestamp")
 	test_utils.Compare(t, expected, body)
 }

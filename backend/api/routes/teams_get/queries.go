@@ -21,6 +21,7 @@ type Solve struct {
 
 type TeamData struct {
 	ID      int32                       `json:"id"`
+	UserID  *int32                      `json:"user_id,omitempty"`
 	Name    string                      `json:"name"`
 	Score   int32                       `json:"score"`
 	Country string                      `json:"country"`
@@ -79,6 +80,12 @@ func getSolves(ctx context.Context, teamID int32, userMode bool) ([]Solve, error
 func GetTeam(ctx context.Context, teamID int32, admin bool) (*TeamData, error) {
 	teamData := TeamData{}
 
+	modeStr, err := db.GetConfig(ctx, "user-mode")
+	if err != nil {
+		return nil, err
+	}
+	userMode := modeStr == "true"
+
 	team, err := db.GetTeamByID(ctx, teamID)
 	if err != nil {
 		return nil, err
@@ -86,12 +93,6 @@ func GetTeam(ctx context.Context, teamID int32, admin bool) (*TeamData, error) {
 	if team == nil {
 		return nil, nil
 	}
-
-	modeStr, err := db.GetConfig(ctx, "user-mode")
-	if err != nil {
-		return nil, err
-	}
-	userMode := modeStr == "true"
 
 	teamData.ID = team.ID
 	teamData.Name = team.Name
@@ -106,6 +107,12 @@ func GetTeam(ctx context.Context, teamID int32, admin bool) (*TeamData, error) {
 			return nil, err
 		}
 		teamData.Members = members
+	} else {
+		uid, err := db.Sql.GetUserByTeamID(ctx, sql.NullInt32{Int32: teamID, Valid: true})
+		if err != nil {
+			return nil, err
+		}
+		teamData.UserID = &uid
 	}
 
 	solves, err := getSolves(ctx, teamID, userMode)

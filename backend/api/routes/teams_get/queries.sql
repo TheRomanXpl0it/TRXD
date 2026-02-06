@@ -19,3 +19,7 @@ SELECT c.id, c.name, c.category, c.points, s.first_blood, s.timestamp, s.user_id
 SELECT badges.name, badges.description FROM badges
   JOIN teams ON teams.id = badges.team_id
   WHERE teams.id = $1;
+
+-- name: GetUserByTeamID :one
+-- Retrieve a user associated with a team by team ID (Used in user mode)
+SELECT id FROM users WHERE team_id = $1 LIMIT 1;

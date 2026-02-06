@@ -947,6 +947,18 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 	return i, err
 }
 
+const getUserByTeamID = `-- name: GetUserByTeamID :one
+SELECT id FROM users WHERE team_id = $1 LIMIT 1
+`
+
+// Retrieve a user associated with a team by team ID (Used in user mode)
+func (q *Queries) GetUserByTeamID(ctx context.Context, teamID sql.NullInt32) (int32, error) {
+	row := q.queryRow(ctx, q.getUserByTeamIDStmt, getUserByTeamID, teamID)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
+}
+
 const getUserSolves = `-- name: GetUserSolves :many
 SELECT c.id, c.name, c.category, c.points, s.first_blood, s.timestamp
   FROM submissions s
