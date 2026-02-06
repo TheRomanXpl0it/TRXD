@@ -6,8 +6,6 @@
    - add tests with a lot of hash named challs (hard cap for networks on nginx?) (try change IPAM to /30 to preserve addrs)
    - integration tests (for generic behaviour)
    - tests for distributed functioning
- - features:
-   - https://docs.gofiber.io/api/middleware/helmet/
  - utility:
    - better names for binary flags
    - DOCUMENTATION

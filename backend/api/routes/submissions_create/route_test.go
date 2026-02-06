@@ -167,4 +167,12 @@ func TestRoute(t *testing.T) {
 		session.Post("/submissions", test.testBody, test.expectedStatus)
 		session.CheckResponse(test.expectedResponse)
 	}
+
+	chall_no_flag := test_utils.CreateChallenge(t, "chall-no-flag", "cat", "test-desc", sqlc.DeployTypeNormal, 1, sqlc.ScoreTypeDynamic)
+	test_utils.UnveilChallenge(t, chall_no_flag.ID)
+
+	session = test_utils.NewApiTestSession(t, app)
+	session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
+	session.Post("/submissions", JSON{"chall_id": chall_no_flag.ID, "flag": "flag{test}"}, http.StatusOK)
+	session.CheckResponse(JSON{"status": sqlc.SubmissionStatusWrong, "first_blood": false})
 }

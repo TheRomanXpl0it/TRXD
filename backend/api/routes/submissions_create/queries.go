@@ -11,7 +11,7 @@ func SubmitFlag(ctx context.Context, userID int32, role sqlc.UserRole,
 	valid, err := db.Sql.CheckFlags(ctx, sqlc.CheckFlagsParams{
 		Flag:    flag,
 		ChallID: challengeID,
-	})
+	}) // TODO: add tests if no flag
 	if err != nil {
 		return sqlc.SubmissionStatusInvalid, false, err
 	}

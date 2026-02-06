@@ -216,14 +216,15 @@ func main() {
 	ctx := context.Background()
 	parseFlags(ctx)
 
-	log.Info("Starting TRXd server")
-	defer log.Info("Stopping TRXd server")
-
 	go instancer.ReclaimLoop()
 
-	app := api.SetupApp(ctx)
-	err = app.Listen(":1337")
-	if err != nil {
-		log.Fatal("Error starting server", "err", err)
+	for {
+		log.Info("Starting TRXd server")
+
+		app := api.SetupApp(ctx)
+		err = app.Listen(":1337")
+		if err != nil {
+			log.Fatal("Error starting server", "err", err)
+		}
 	}
 }

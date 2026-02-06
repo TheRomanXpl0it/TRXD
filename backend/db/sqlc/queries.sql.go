@@ -45,7 +45,7 @@ func (q *Queries) ChangeUserRole(ctx context.Context, arg ChangeUserRoleParams) 
 }
 
 const checkFlags = `-- name: CheckFlags :one
-SELECT BOOL_OR(($1 = flag) OR (regex AND $1 ~ flag)) FROM flags WHERE chall_id = $2
+SELECT COALESCE(BOOL_OR(($1 = flag) OR (regex AND $1 ~ flag)), false)::BOOLEAN FROM flags WHERE chall_id = $2
 `
 
 type CheckFlagsParams struct {
@@ -56,9 +56,9 @@ type CheckFlagsParams struct {
 // Check if a flag matches any flags for a challenge
 func (q *Queries) CheckFlags(ctx context.Context, arg CheckFlagsParams) (bool, error) {
 	row := q.queryRow(ctx, q.checkFlagsStmt, checkFlags, arg.Flag, arg.ChallID)
-	var bool_or bool
-	err := row.Scan(&bool_or)
-	return bool_or, err
+	var column_1 bool
+	err := row.Scan(&column_1)
+	return column_1, err
 }
 
 const createAttachment = `-- name: CreateAttachment :exec

@@ -7,6 +7,7 @@ import (
 	"trxd/validator"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/tde-nico/log"
 )
 
 func Route(c *fiber.Ctx) error {
@@ -38,6 +39,16 @@ func Route(c *fiber.Ctx) error {
 	err = db.UpdateConfig(c.Context(), data.Key, *data.Value)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorUpdatingConfig, err)
+	}
+
+	if data.Key == "user-mode" {
+		log.Warn("Shutting down server to apply user-mode change")
+		go func(app *fiber.App) {
+			err := app.Shutdown()
+			if err != nil {
+				log.Error("Error shutting down server", "err", err)
+			}
+		}(c.App())
 	}
 
 	return c.SendStatus(fiber.StatusOK)

@@ -3,6 +3,7 @@
 set -e
 
 files=(
+	usermode_hot_switch.py
 	register_team_race.py
 	submit_race.py
 	instance_types.py

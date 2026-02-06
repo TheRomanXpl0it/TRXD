@@ -110,10 +110,15 @@ func CreateInstance(ctx context.Context, tid int32, challID int32, internalPort 
 
 	var labels map[string]string
 	if conf.HashDomain {
+		traefikPortValue := "1337"
+		if internalPort != nil {
+			traefikPortValue = fmt.Sprint(*internalPort)
+		}
+
 		labels = map[string]string{
 			"traefik.enable":   "true",
 			traefikRule:        hostRule,
-			traefikPort:        "1337", // TODO: make dynamic
+			traefikPort:        traefikPortValue,
 			traefikEntrypoints: "web",
 			traefikPriority:    "10",
 		}
