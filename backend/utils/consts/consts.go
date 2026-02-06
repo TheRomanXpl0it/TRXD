@@ -24,23 +24,22 @@ const (
 )
 
 const (
-	MaxAttachmentNameLen  = 128
-	MaxBioLen             = 10240
-	MaxCategoryLen        = 32
-	MaxChallDescLen       = 10240
-	MaxChallDifficultyLen = 16
-	MaxChallNameLen       = 128
-	MaxEmailLen           = 256
-	MaxFlagLen            = 256
-	MaxImageLen           = 1024
-	MaxUserNameLen        = 64
-	MaxTeamNameLen        = 64
-	MaxPasswordLen        = 64
-	MaxPort               = 65535
-	MaxAuthorNameLen      = 64
-	MaxTagNameLen         = 32
-	MinPasswordLen        = 8
-	MinPort               = 0
+	MaxAttachmentNameLen = 128
+	MaxBioLen            = 10240
+	MaxCategoryLen       = 32
+	MaxChallDescLen      = 10240
+	MaxChallNameLen      = 128
+	MaxEmailLen          = 256
+	MaxFlagLen           = 256
+	MaxImageLen          = 1024
+	MaxUserNameLen       = 64
+	MaxTeamNameLen       = 64
+	MaxPasswordLen       = 64
+	MaxPort              = 65535
+	MaxAuthorNameLen     = 64
+	MaxTagNameLen        = 32
+	MinPasswordLen       = 8
+	MinPort              = 0
 )
 
 const (

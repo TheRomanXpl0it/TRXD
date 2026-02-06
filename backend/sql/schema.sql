@@ -95,7 +95,6 @@ CREATE TABLE IF NOT EXISTS challenges (
   name VARCHAR(128) UNIQUE NOT NULL,
   category VARCHAR(32) NOT NULL,
   description VARCHAR(10240) NOT NULL,
-  difficulty VARCHAR(16) NOT NULL DEFAULT '',
   authors VARCHAR(64)[] NOT NULL DEFAULT '{}',
   tags VARCHAR(32)[] NOT NULL DEFAULT '{}',
   type deploy_type NOT NULL,

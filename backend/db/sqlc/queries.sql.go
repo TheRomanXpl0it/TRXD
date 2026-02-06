@@ -239,7 +239,7 @@ func (q *Queries) DeleteInstance(ctx context.Context, arg DeleteInstanceParams) 
 const getAllChallengesInfo = `-- name: GetAllChallengesInfo :many
 WITH tid AS (SELECT team_id FROM users WHERE users.id = $1)
 SELECT
-    c.id, c.name, c.category, c.description, c.difficulty, c.authors, c.tags, c.type, c.hidden, c.max_points, c.score_type, c.points, c.solves, c.host, c.port, c.conn_type,
+    c.id, c.name, c.category, c.description, c.authors, c.tags, c.type, c.hidden, c.max_points, c.score_type, c.points, c.solves, c.host, c.port, c.conn_type,
     (s.first_blood IS NOT NULL)::BOOLEAN AS solved,
     COALESCE(s.first_blood, FALSE) AS first_blood,
     (ARRAY_AGG('/' || a.hash || '/' || a.name ORDER BY a.name)
@@ -271,7 +271,6 @@ type GetAllChallengesInfoRow struct {
 	Name         string         `json:"name"`
 	Category     string         `json:"category"`
 	Description  string         `json:"description"`
-	Difficulty   string         `json:"difficulty"`
 	Authors      []string       `json:"authors"`
 	Tags         []string       `json:"tags"`
 	Type         DeployType     `json:"type"`
@@ -307,7 +306,6 @@ func (q *Queries) GetAllChallengesInfo(ctx context.Context, id int32) ([]GetAllC
 			&i.Name,
 			&i.Category,
 			&i.Description,
-			&i.Difficulty,
 			pq.Array(&i.Authors),
 			pq.Array(&i.Tags),
 			&i.Type,
@@ -1199,24 +1197,22 @@ SET
   name = COALESCE($1, name),
   category = COALESCE($2, category),
   description = COALESCE($3, description),
-  difficulty = COALESCE($4, difficulty),
-  authors = COALESCE($5, authors),
-  tags = COALESCE($6, tags),
-  type = COALESCE($7, type),
-  hidden = COALESCE($8, hidden),
-  max_points = COALESCE($9, max_points),
-  score_type = COALESCE($10, score_type),
-  host = COALESCE($11, host),
-  port = COALESCE($12, port),
-  conn_type = COALESCE($13, conn_type)
-WHERE id = $14
+  authors = COALESCE($4, authors),
+  tags = COALESCE($5, tags),
+  type = COALESCE($6, type),
+  hidden = COALESCE($7, hidden),
+  max_points = COALESCE($8, max_points),
+  score_type = COALESCE($9, score_type),
+  host = COALESCE($10, host),
+  port = COALESCE($11, port),
+  conn_type = COALESCE($12, conn_type)
+WHERE id = $13
 `
 
 type UpdateChallengeParams struct {
 	Name        sql.NullString `json:"name"`
 	Category    sql.NullString `json:"category"`
 	Description sql.NullString `json:"description"`
-	Difficulty  sql.NullString `json:"difficulty"`
 	Authors     []string       `json:"authors"`
 	Tags        []string       `json:"tags"`
 	Type        NullDeployType `json:"type"`
@@ -1235,7 +1231,6 @@ func (q *Queries) UpdateChallenge(ctx context.Context, arg UpdateChallengeParams
 		arg.Name,
 		arg.Category,
 		arg.Description,
-		arg.Difficulty,
 		pq.Array(arg.Authors),
 		pq.Array(arg.Tags),
 		arg.Type,

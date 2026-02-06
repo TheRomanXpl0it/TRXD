@@ -16,7 +16,6 @@ type UpdateChallParams struct {
 	Name        string           `json:"name" validate:"challenge_name"`
 	Category    string           `json:"category" validate:"category_name"`
 	Description *string          `json:"description" validate:"omitempty,challenge_description"`
-	Difficulty  *string          `json:"difficulty" validate:"omitempty,challenge_difficulty"`
 	Authors     *[]string        `json:"authors" validate:"omitempty,challenge_authors"`
 	Tags        *[]string        `json:"tags" validate:"omitempty,challenge_tags"`
 	Type        *sqlc.DeployType `json:"type" validate:"omitempty,challenge_type"`

@@ -251,7 +251,6 @@ type Challenge struct {
 	Name        string     `json:"name"`
 	Category    string     `json:"category"`
 	Description string     `json:"description"`
-	Difficulty  string     `json:"difficulty"`
 	Authors     []string   `json:"authors"`
 	Tags        []string   `json:"tags"`
 	Type        DeployType `json:"type"`

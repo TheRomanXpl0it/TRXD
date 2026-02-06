@@ -155,7 +155,6 @@ func TestRoute(t *testing.T) {
 			"category":    "cat",
 			"conn_type":   "NONE",
 			"description": "test-desc",
-			"difficulty":  "",
 			"first_blood": false,
 			"hidden":      true,
 			"host":        "",

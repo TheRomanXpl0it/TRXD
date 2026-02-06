@@ -12,7 +12,6 @@ type Chall struct {
 	Name         string         `json:"name"`
 	Category     string         `json:"category"`
 	Description  string         `json:"description"`
-	Difficulty   string         `json:"difficulty"`
 	Authors      []string       `json:"authors"`
 	Instance     bool           `json:"instance"`
 	Hidden       bool           `json:"hidden"`
@@ -49,7 +48,6 @@ func GetChallenges(ctx context.Context, uid int32, tid int32, author bool) ([]Ch
 			Name:        challenge.Name,
 			Category:    challenge.Category,
 			Description: challenge.Description,
-			Difficulty:  challenge.Difficulty,
 			Authors:     challenge.Authors,
 			Instance:    challenge.Type != sqlc.DeployTypeNormal,
 			Hidden:      challenge.Hidden,

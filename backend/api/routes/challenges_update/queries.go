@@ -51,8 +51,8 @@ func nullConnType(src *sqlc.ConnType) sqlc.NullConnType {
 }
 
 func IsChallEmpty(data *UpdateChallParams) bool {
-	if data.Name == "" && data.Category == "" && data.Description == nil && data.Difficulty == nil &&
-		data.Authors == nil && data.Tags == nil && data.Type == nil && data.Hidden == nil && data.MaxPoints == nil &&
+	if data.Name == "" && data.Category == "" && data.Description == nil && data.Authors == nil &&
+		data.Tags == nil && data.Type == nil && data.Hidden == nil && data.MaxPoints == nil &&
 		data.ScoreType == nil && data.Host == nil && data.Port == nil && data.ConnType == nil {
 		return true
 	}
@@ -77,7 +77,6 @@ func UpdateChallenge(ctx context.Context, data *UpdateChallParams) error {
 		Name:        sql.NullString{String: data.Name, Valid: data.Name != ""},
 		Category:    sql.NullString{String: data.Category, Valid: data.Category != ""},
 		Description: nullString(data.Description),
-		Difficulty:  nullString(data.Difficulty),
 		Type:        nullDeployType(data.Type),
 		Hidden:      nullBool(data.Hidden),
 		MaxPoints:   nullInt32(data.MaxPoints),

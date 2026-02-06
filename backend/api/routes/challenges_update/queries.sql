@@ -5,7 +5,6 @@ SET
   name = COALESCE(sqlc.narg('name'), name),
   category = COALESCE(sqlc.narg('category'), category),
   description = COALESCE(sqlc.narg('description'), description),
-  difficulty = COALESCE(sqlc.narg('difficulty'), difficulty),
   authors = COALESCE(sqlc.narg('authors'), authors),
   tags = COALESCE(sqlc.narg('tags'), tags),
   type = COALESCE(sqlc.narg('type'), type),

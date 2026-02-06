@@ -64,11 +64,6 @@ func TestValidators(t *testing.T) {
 	varTest(t, "challenge_description", strings.Repeat("a", consts.MaxChallDescLen))
 	varTest(t, "challenge_description", strings.Repeat("a", consts.MaxChallDescLen+1), test_utils.Format(consts.MaxError, "challenge_description", consts.MaxChallDescLen))
 
-	varTest(t, "challenge_difficulty", "")
-	varTest(t, "challenge_difficulty", "a")
-	varTest(t, "challenge_difficulty", strings.Repeat("a", consts.MaxChallDifficultyLen))
-	varTest(t, "challenge_difficulty", strings.Repeat("a", consts.MaxChallDifficultyLen+1), test_utils.Format(consts.MaxError, "challenge_difficulty", consts.MaxChallDifficultyLen))
-
 	varTest(t, "challenge_authors", []string{})
 	varTest(t, "challenge_authors", []string{""})
 	varTest(t, "challenge_authors", []string{"a"})
