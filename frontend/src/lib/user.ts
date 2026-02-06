@@ -1,23 +1,51 @@
 import { api } from '$lib/api';
 import type { User, PaginatedResponse } from '$lib/types';
 
+import { get } from 'svelte/store';
+import { userMode } from '$lib/stores/auth';
+
 export async function getUsers(page = 1, limit = 20): Promise<PaginatedResponse<User>> {
 	const offset = (page - 1) * limit;
-	const response = await api<{ total: number; users: User[] }>(`/users?offset=${offset}&limit=${limit}`);
-	return {
-		success: true,
-		data: response.users,
-		pagination: {
-			total: response.total,
-			page,
-			per_page: limit,
-			pages: Math.ceil(response.total / limit)
-		}
-	};
+	const isUserMode = get(userMode);
+
+	if (isUserMode) {
+		const response = await api<{ total: number; teams: any[] }>(`/teams?offset=${offset}&limit=${limit}`);
+		// Map teams to users structure
+		const teams = response?.teams || [];
+		const users = teams.map((t: any) => ({ ...t, role: t.role || 'User' }));
+		return {
+			success: true,
+			data: users,
+			pagination: {
+				total: response.total,
+				page,
+				per_page: limit,
+				pages: Math.ceil(response.total / limit)
+			}
+		};
+	} else {
+		const response = await api<{ total: number; users: User[] }>(`/users?offset=${offset}&limit=${limit}`);
+		return {
+			success: true,
+			data: response?.users || [],
+			pagination: {
+				total: response.total,
+				page,
+				per_page: limit,
+				pages: Math.ceil(response.total / limit)
+			}
+		};
+	}
 }
 
 export async function getUserData(id: number): Promise<User> {
-	return api<User>(`/users/${id}`);
+	const isUserMode = get(userMode);
+	if (isUserMode) {
+		const team = await api<any>(`/teams/${id}`);
+		return { ...team, role: team.role || 'User' };
+	} else {
+		return api<User>(`/users/${id}`);
+	}
 }
 
 export async function updateUser(id: number, name: string, country: string): Promise<any> {

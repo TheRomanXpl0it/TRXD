@@ -216,7 +216,8 @@ describe('AppSidebar Component', () => {
 			props: {
 				user: {
 					id: 42,
-					name: 'Alice'
+					name: 'Alice',
+					team_id: 123
 				},
 				userMode: true
 			} as any

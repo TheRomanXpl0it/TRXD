@@ -65,7 +65,7 @@
 	const displayImage = $derived(enrichedUser?.image ?? user?.image ?? user?.profileImage ?? null);
 
 	$effect(() => {
-		const id = user?.id;
+		const id = userMode ? user?.team_id : user?.id;
 		if (!id) {
 			enrichedUser = null;
 			return;

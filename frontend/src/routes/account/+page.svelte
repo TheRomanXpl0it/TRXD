@@ -24,7 +24,9 @@
 	const currentUserId = $derived.by(() => {
 		if (!$authReady) return null;
 		const routeKey = normalizeKey($params?.id);
-		const fallbackKey = normalizeKey($user?.id);
+		// In User Mode, getUserData needs a TeamID (since it calls /teams).
+		// So fallback to team_id if available.
+		const fallbackKey = $userMode ? normalizeKey($user?.team_id) : normalizeKey($user?.id);
 		const effectiveKey = routeKey ?? fallbackKey;
 		return effectiveKey ? validateId(effectiveKey) : null;
 	});
