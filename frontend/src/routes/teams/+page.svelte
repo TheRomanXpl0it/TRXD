@@ -108,7 +108,7 @@
 	});
 </script>
 
-<div class="mx-auto max-w-5xl space-y-8 py-10">
+<div class="mx-auto max-w-5xl space-y-8 px-6 py-10">
 	<div
 		class="from-muted/20 to-background mb-6 mt-6 rounded-xl border-0 bg-gradient-to-br p-6 shadow-sm"
 	>
@@ -130,7 +130,7 @@
 	{:else}
 		<Card.Root class="overflow-hidden border-0 shadow-sm">
 			<Card.Content class="p-0">
-				<div class="relative w-full overflow-auto">
+				<div class="relative mx-4 overflow-auto sm:mx-6">
 					<Table.Root>
 						<Table.Header class="bg-transparent [&_tr]:border-b-0">
 							<Table.Row class="hover:bg-transparent">

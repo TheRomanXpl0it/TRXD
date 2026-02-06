@@ -106,7 +106,7 @@
 
 		<Card.Root class="overflow-hidden border-0 shadow-sm">
 			<Card.Content class="p-0">
-				<div class="relative mx-4 w-full overflow-auto sm:mx-6">
+				<div class="relative mx-4 overflow-auto sm:mx-6">
 					<Table.Root>
 						<Table.Header class="bg-transparent [&_tr]:border-b-0">
 							<Table.Row class="hover:bg-transparent">

@@ -66,7 +66,7 @@
 
 	$effect(() => {
 		if (!$authReady) return;
-		if ($userMode) {
+		if ($userMode && $authUser?.team_id) {
 			push('/not-found');
 			return;
 		}

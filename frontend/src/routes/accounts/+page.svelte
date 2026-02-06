@@ -115,7 +115,7 @@
 	});
 </script>
 
-<div class="mx-auto max-w-5xl space-y-8 py-10">
+<div class="mx-auto max-w-5xl space-y-8 px-6 py-10">
 	<div
 		class="from-muted/20 to-background mb-6 mt-6 rounded-xl border-0 bg-gradient-to-br p-6 shadow-sm"
 	>
@@ -126,18 +126,18 @@
 				<UserCircle class="text-muted-foreground h-8 w-8" />
 			</div>
 			<div>
-				<h1 class="text-3xl font-bold tracking-tight">Accounts</h1>
+				<h1 class="text-3xl font-bold tracking-tight">Users</h1>
 				<p class="text-muted-foreground mt-2 text-sm">Registered users and their statistics.</p>
 			</div>
 		</div>
 	</div>
 
 	{#if error}
-		<ErrorMessage title="Error loading accounts" message={error} />
+		<ErrorMessage title="Error loading users" message={error} />
 	{:else}
 		<Card.Root class="overflow-hidden border-0 shadow-sm">
 			<Card.Content class="p-0">
-				<div class="relative w-full overflow-auto">
+				<div class="relative mx-4 overflow-auto sm:mx-6">
 					<Table.Root>
 						<Table.Header class="bg-transparent [&_tr]:border-b-0">
 							<Table.Row class="hover:bg-transparent">
@@ -187,8 +187,8 @@
 										<Table.Cell colspan={isAdmin ? 4 : 3} class="h-[300px] text-center">
 											<EmptyState
 												icon={UserCircle}
-												title="No accounts found"
-												description="There are no registered accounts to display at the moment."
+												title="No users found"
+												description="There are no registered users to display at the moment."
 											/>
 										</Table.Cell>
 									</Table.Row>

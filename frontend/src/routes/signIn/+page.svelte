@@ -8,7 +8,7 @@
 
 	import { login } from '$lib/auth';
 	import { link, push } from 'svelte-spa-router';
-	import { user } from '@/stores/auth';
+	import { user, userMode } from '@/stores/auth';
 	import { loadUser } from '@/stores/auth';
 	import { Lock } from '@lucide/svelte';
 
@@ -75,7 +75,8 @@
 			toast.success('Welcome back!');
 
 			// Redirect based on team presence
-			if ($user?.team_id) {
+			// Redirect based on team presence or user mode
+			if ($userMode || $user?.team_id) {
 				push('/challenges');
 			} else {
 				push('/team');

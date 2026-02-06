@@ -111,22 +111,6 @@ describe('ChallengeCard Component', () => {
 		expect(checkIcon).not.toBeInTheDocument();
 	});
 
-	it('shows instance icon when challenge is instance-based', () => {
-		const challenge = generateRandomChallenge({
-			instance: true
-		});
-
-		render(ChallengeCard, {
-			props: {
-				challenge,
-				compactView: false,
-				onclick: vi.fn()
-			}
-		});
-
-		expect(screen.getByLabelText('Instance-based challenge')).toBeInTheDocument();
-	});
-
 	it('does not show instance icon for non-instance challenges', () => {
 		const challenge = generateRandomChallenge({
 			instance: false
@@ -248,34 +232,13 @@ describe('ChallengeCard Component', () => {
 		).toBeInTheDocument();
 	});
 
-	it('has instance icon', () => {
-		const challenge = generateRandomChallenge({
-			name: 'Test Challenge',
-			points: 100,
-			solved: false,
-            instance: true
-		});
-
-		render(ChallengeCard, {
-			props: {
-				challenge,
-				compactView: false,
-				onclick: vi.fn()
-			}
-		});
-
-		expect(
-            screen.getByLabelText('Instance-based challenge')
-        ).toBeInTheDocument();
-	});
-
 
 	it('does not has instance icon', () => {
 		const challenge = generateRandomChallenge({
 			name: 'Test Challenge',
 			points: 100,
 			solved: false,
-            instance: false
+			instance: false
 		});
 
 		render(ChallengeCard, {
@@ -285,9 +248,9 @@ describe('ChallengeCard Component', () => {
 				onclick: vi.fn()
 			}
 		});
-        expect(
-            screen.queryByLabelText('Instance-based challenge')
-        ).not.toBeInTheDocument();
+		expect(
+			screen.queryByLabelText('Instance-based challenge')
+		).not.toBeInTheDocument();
 	});
 
 	it('includes solved status in accessibility label', () => {
