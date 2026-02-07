@@ -16,7 +16,7 @@ import (
 var tmp_db *sql.DB
 
 func OpenTestDB(testDBName string) error {
-	consts.Testing = true
+	consts.AntiPanic = false
 
 	err := godotenv.Load()
 	if err != nil {

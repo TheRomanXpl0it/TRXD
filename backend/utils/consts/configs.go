@@ -8,7 +8,7 @@ import (
 	"github.com/tde-nico/log"
 )
 
-var Testing = false // TODO: rename mode
+var AntiPanic = true
 
 var DefaultConfigs = map[string]any{
 	"allow-register":            false,
@@ -24,6 +24,7 @@ var DefaultConfigs = map[string]any{
 	"domain":                    "",
 	"discord-webhook":           "",
 	"project-name":              "trxd",
+	"proxy":                     "nginx", // "traefik"
 	"proxy-id":                  "",
 	"user-mode":                 false,
 	"scoreboard-top":            10,
@@ -37,9 +38,9 @@ var DefaultConfigs = map[string]any{
 }
 
 func LoadEnvConfigs() {
-	if os.Getenv("TESTING") != "" {
-		Testing = true
-		log.Warn("TESTING mode enabled")
+	if os.Getenv("DISABLE_ANTI_PANIC") != "" {
+		AntiPanic = false
+		log.Warn("Anti Panic disabled")
 	}
 
 	for name, value := range DefaultConfigs {

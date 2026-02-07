@@ -58,7 +58,6 @@ func BroadcastFirstBlood(ctx context.Context, challenge *sqlc.Challenge, uid int
 		return
 	}
 
-	// TODO: not hardcoded format (maybe into a config)
 	challengeName := strings.ReplaceAll(challenge.Name, "`", "'")
 	teamName := strings.ReplaceAll(team.Name, "`", "'")
 	msg := fmt.Sprintf("First blood for `%s` goes to `%s`! 🩸", challengeName, teamName)

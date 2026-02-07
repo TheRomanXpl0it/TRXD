@@ -102,7 +102,7 @@ func Shutdown(app *fiber.App) {
 }
 
 func SetupFeatures(app *fiber.App) {
-	if !consts.Testing {
+	if consts.AntiPanic {
 		app.Use(func(c *fiber.Ctx) error {
 			defer func() {
 				r := recover()

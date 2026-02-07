@@ -118,10 +118,15 @@ func TestValidators(t *testing.T) {
 
 	varTest(t, "challenge_envs", "")
 	varTest(t, "challenge_envs", "a", consts.InvalidEnvs)
-	varTest(t, "challenge_envs", "[]")
+	varTest(t, "challenge_envs", "[]", consts.InvalidEnvs)
 	varTest(t, "challenge_envs", "{}")
 	varTest(t, "challenge_envs", `{"key":"value","key2":"value2"}`)
 	varTest(t, "challenge_envs", `{"key": "value", "key2": "value2"}`)
+	varTest(t, "challenge_envs", `{"key": []}`, consts.InvalidEnvs)
+	varTest(t, "challenge_envs", `{"key": null}`)
+	varTest(t, "challenge_envs", `{"key": false}`, consts.InvalidEnvs)
+	varTest(t, "challenge_envs", `{"key": 1}`, consts.InvalidEnvs)
+	varTest(t, "challenge_envs", `{"key": {}}`, consts.InvalidEnvs)
 
 	varTest(t, "challenge_max_memory", -1, test_utils.Format(consts.MinError, "challenge_max_memory", 0))
 	varTest(t, "challenge_max_memory", 0)

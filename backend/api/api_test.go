@@ -30,8 +30,8 @@ func Test404(t *testing.T) {
 }
 
 func TestPanic(t *testing.T) {
-	consts.Testing = false
-	defer func() { consts.Testing = true }()
+	consts.AntiPanic = true
+	defer func() { consts.AntiPanic = false }()
 
 	app := fiber.New(fiber.Config{
 		AppName: consts.Name,
@@ -50,9 +50,6 @@ func TestPanic(t *testing.T) {
 }
 
 // func TestLimit(t *testing.T) {
-// 	consts.Testing = false
-// 	defer func() { consts.Testing = true }()
-
 // 	app := api.SetupApp(t.Context())
 // 	defer api.Shutdown(app)
 

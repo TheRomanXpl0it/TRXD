@@ -6,7 +6,6 @@ DECLARE
   team INTEGER;
   existing_correct_count INTEGER;
 BEGIN
-  -- TODO: for consistency, make all non player submissions invalid
   IF (SELECT role FROM users WHERE id = NEW.user_id) != 'Player' THEN
     RETURN NEW;
   END IF;

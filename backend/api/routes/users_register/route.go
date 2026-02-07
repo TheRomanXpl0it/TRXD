@@ -24,11 +24,12 @@ type Data struct {
 	Password string `json:"password" validate:"required,password"`
 }
 
+// TODO: move these into consts
 const VerifyPrefix = "verify-"
 const SUBJECT = "Email Verification Required"
 const BODY_TEMPLATE = "Hello %s,\n\nTo Confirm your email address, please click the link below:\nhttp://%s/api/verify?token=%s\n\nThank you!"
 
-func setNXUserData(ctx context.Context, data Data) (bool, error) {
+func SetNXUserData(ctx context.Context, data Data) (bool, error) {
 	content, err := json.Marshal(data)
 	if err != nil {
 		return false, err
@@ -77,12 +78,12 @@ func registerViaMail(c *fiber.Ctx, data Data) (bool, error) {
 		return true, utils.Error(c, fiber.StatusInternalServerError, consts.ErrorInitializingEmailClient, err)
 	}
 
-	success, err := setNXUserData(c.Context(), data)
+	success, err := SetNXUserData(c.Context(), data)
 	if err != nil {
 		return true, utils.Error(c, fiber.StatusInternalServerError, consts.ErrorRegisteringUser, err)
 	}
 	if !success {
-		// TODO: make retries
+		// feature: make retries
 		return true, utils.Error(c, fiber.StatusTooManyRequests, consts.VerificationAlreadySent)
 	}
 
@@ -161,6 +162,8 @@ func Route(c *fiber.Ctx) error {
 	if err != nil || !valid {
 		return err
 	}
+
+	// TODO: hash password here
 
 	enabled, err := registerViaMail(c, data)
 	if err != nil || enabled {

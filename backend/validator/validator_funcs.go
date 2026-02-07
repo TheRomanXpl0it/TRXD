@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"encoding/json"
 	"math"
 	"strconv"
 
@@ -21,8 +22,9 @@ func validJson(fl validator.FieldLevel) bool {
 	if value == "" {
 		return true
 	}
-	err := validate.Var(value, "json")
-	// TODO: make this a map[string]string
+
+	var tmp map[string]string
+	err := json.Unmarshal([]byte(value), &tmp)
 	return err == nil
 }
 

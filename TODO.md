@@ -18,6 +18,7 @@
 
 ## Ideas / Features
  - rename "hash domain" (not an hash anymore, only rand bytes)
+ - make retries on registration with email
  - put descriptions on configs
  - divide configs by section (secrets, instances, something like this...)
  - dropdown menu for containers (for container instances)

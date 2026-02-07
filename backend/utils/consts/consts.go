@@ -4,9 +4,6 @@ import "trxd/db/sqlc"
 
 const Name = "TRXd"
 
-// TODO
-const ProxyName = "nginx-1" // "traefik-1"
-
 var Roles = []sqlc.UserRole{sqlc.UserRoleSpectator, sqlc.UserRolePlayer, sqlc.UserRoleAuthor, sqlc.UserRoleAdmin}
 var RolesStr = []string{string(sqlc.UserRoleSpectator), string(sqlc.UserRolePlayer), string(sqlc.UserRoleAuthor), string(sqlc.UserRoleAdmin)}
 var DeployTypes = []sqlc.DeployType{sqlc.DeployTypeNormal, sqlc.DeployTypeContainer, sqlc.DeployTypeCompose}

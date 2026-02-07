@@ -43,7 +43,15 @@ func FetchProxyID(ctx context.Context) (string, error) {
 		name = consts.DefaultConfigs["project-name"].(string)
 	}
 
-	containerID, err := FetchContainerByName(ctx, name+"-"+consts.ProxyName)
+	proxy, err := db.GetConfig(ctx, "proxy")
+	if err != nil {
+		return "", err
+	}
+	if proxy == "" {
+		proxy = consts.DefaultConfigs["proxy"].(string)
+	}
+
+	containerID, err := FetchContainerByName(ctx, name+"-"+proxy+"-1")
 	if err != nil {
 		return "", err
 	}

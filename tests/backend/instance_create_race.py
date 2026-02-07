@@ -25,7 +25,7 @@ def gen_name():
 
 
 s = requests.Session()
-s.get(f'{url}/info') # TODO: use url and fmt string
+s.get(f'{url}/info')
 
 r = s.post(f'{url}/login', json={
 	"email": 'admin@email.com',

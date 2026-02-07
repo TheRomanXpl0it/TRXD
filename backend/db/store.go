@@ -6,7 +6,6 @@ import (
 	"os"
 	"sync"
 	"time"
-	"trxd/utils/consts"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
@@ -36,8 +35,6 @@ func initStorage(host string, port int, password string) {
 			TLSConfig: nil,
 		})
 		storeConf.Storage = fiberRedis.NewFromConnection(rdb)
-	} else if !consts.Testing {
-		log.Warn("Redis storage disabled, not recommended for distributed workloads")
 	}
 
 	Store = session.New(storeConf)
