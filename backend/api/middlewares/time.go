@@ -11,19 +11,19 @@ import (
 )
 
 func timeGate(c *fiber.Ctx, key string, check func(now, t time.Time) bool, errMsg string) error {
-	start, err := db.GetConfig(c.Context(), key)
+	gate, err := db.GetConfig(c.Context(), key)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingConfig, err)
 	}
-	if start == "" {
+	if gate == "" {
 		return c.Next()
 	}
 
-	startTime, err := time.Parse(time.RFC3339, start)
+	gateTime, err := time.Parse(time.RFC3339, gate)
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorParsingTime, err)
 	}
-	if check(time.Now(), startTime) {
+	if check(time.Now(), gateTime) {
 		return c.Next()
 	}
 

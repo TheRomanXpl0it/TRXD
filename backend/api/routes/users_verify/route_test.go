@@ -26,8 +26,6 @@ func TestRoute(t *testing.T) {
 	app := api.SetupApp(t.Context())
 	defer api.Shutdown(app)
 
-	// TODO: tests
-
 	session := test_utils.NewApiTestSession(t, app)
 	session.Get("/verify", nil, http.StatusBadRequest)
 	session.CheckResponse(errorf(consts.InvalidToken))
