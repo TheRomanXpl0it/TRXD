@@ -3,7 +3,7 @@ package composes
 import (
 	"context"
 
-	"github.com/docker/compose/v2/pkg/api"
+	"github.com/docker/compose/v5/pkg/api"
 )
 
 func KillCompose(ctx context.Context, name string) error {

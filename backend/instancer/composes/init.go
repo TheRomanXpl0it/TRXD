@@ -5,11 +5,11 @@ import (
 
 	"github.com/docker/cli/cli/command"
 	"github.com/docker/cli/cli/flags"
-	"github.com/docker/compose/v2/pkg/api"
-	"github.com/docker/compose/v2/pkg/compose"
+	"github.com/docker/compose/v5/pkg/api"
+	"github.com/docker/compose/v5/pkg/compose"
 )
 
-var ComposeCli api.Service
+var ComposeCli api.Compose
 
 func InitComposeCli() error {
 	if containers.Cli == nil {
@@ -29,7 +29,10 @@ func InitComposeCli() error {
 		return err
 	}
 
-	ComposeCli = compose.NewComposeService(dockerCli)
+	ComposeCli, err = compose.NewComposeService(dockerCli)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

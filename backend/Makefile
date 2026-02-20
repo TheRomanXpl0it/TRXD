@@ -1,14 +1,5 @@
-END				= \033[0m
-
-GREY			= \033[30m
-RED				= \033[31m
-GREEN			= \033[32m
-YELLOW			= \033[33m
-BLUE			= \033[34m
-PURPLE			= \033[35m
-CYAN			= \033[36m
-
-HIGH_RED		= \033[91m
+END		= \033[0m
+YELLOW	= \033[33m
 
 
 default:
@@ -26,6 +17,10 @@ run:
 test:
 	@REDIS_DISABLE=true go test -v ./...
 
+py-test:
+	@go build .
+	@cd ../tests/backend/ && (./run.sh || (kill $$(pidof trxd) && exit 1))
+
 lint:
 	@go vet ./...
 	@ineffassign ./...
@@ -35,3 +30,5 @@ lint:
 
 cyclo:
 	@gocyclo -ignore "sqlc|_test|test_" -top 15 .
+
+pipe: lint test py-test
