@@ -73,12 +73,15 @@ func StorageSetNX(ctx context.Context, key string, val string, expiration ...tim
 		exp = expiration[0]
 	}
 
-	res, err := rdb.SetNX(ctx, key, []byte(val), exp).Result()
+	res, err := rdb.SetArgs(ctx, key, []byte(val), redis.SetArgs{
+		Mode: "NX",
+		TTL:  exp,
+	}).Result()
 	if err != nil {
 		return false, err
 	}
 
-	return res, nil
+	return res == "OK", nil
 }
 
 func StorageGet(ctx context.Context, key string) (*string, error) {
