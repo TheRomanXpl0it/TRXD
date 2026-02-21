@@ -5,8 +5,8 @@
 
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { Droplet, Trophy } from '@lucide/svelte';
-	import { push } from 'svelte-spa-router';
-	import { userMode } from '$lib/stores/auth';
+	import { goto } from '$app/navigation';
+	import { authState } from '$lib/stores/auth';
 	import type { Solve } from '$lib/types';
 
 	let { open = $bindable(false), challenge } = $props<{
@@ -45,7 +45,7 @@
 		if (!id) return;
 		// SPA navigation; also works if user middle-clicks (regular href below)
 		if (ev) ev.preventDefault();
-		$userMode ? push(`/account/${id}`) : push(`/team/${id}`);
+		authState.userMode ? goto(`/account/${id}`) : goto(`/team/${id}`);
 	}
 
 	function truncateName(name: string, maxLength = 32): string {
@@ -55,7 +55,7 @@
 </script>
 
 <Sheet.Root bind:open>
-	<Sheet.Content side="left" class="w-full px-5 sm:max-w-[640px] overflow-y-auto">
+	<Sheet.Content side="left" class="w-full overflow-y-auto px-5 sm:max-w-[640px]">
 		<div
 			class="from-muted/20 to-background mb-6 mt-4 rounded-xl border-0 bg-gradient-to-br p-6 shadow-sm"
 		>
@@ -83,7 +83,7 @@
 				<Table.Header>
 					<Table.Row>
 						<Table.Head class="w-[10%]">#</Table.Head>
-						<Table.Head class="w-[50%]">{$userMode ? 'Player' : 'Team'}</Table.Head>
+						<Table.Head class="w-[50%]">{authState.userMode ? 'Player' : 'Team'}</Table.Head>
 						<Table.Head class="w-[40%] text-right">Date</Table.Head>
 					</Table.Row>
 				</Table.Header>
@@ -100,7 +100,7 @@
 							</Table.Cell>
 							<Table.Cell class="py-2">
 								<a
-									href={$userMode ? '/account/' + s.id : '/team/' + s.id}
+									href={authState.userMode ? '/account/' + s.id : '/team/' + s.id}
 									onclick={(e) => goItem(s.id, e)}
 									class="cursor-pointer font-medium hover:underline"
 								>

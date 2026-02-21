@@ -1,7 +1,5 @@
 <script lang="ts">
-	import { CheckCircleSolid } from 'flowbite-svelte-icons';
-	import { Badge } from 'flowbite-svelte';
-	import { Container } from '@lucide/svelte';
+	import { CheckCircle, Container } from '@lucide/svelte';
 
 	let {
 		challenge,
@@ -40,7 +38,7 @@
 				{challenge.points}
 			</span>
 			{#if challenge.solved}
-				<CheckCircleSolid class="h-4 w-4 text-green-500" aria-label="Solved" />
+				<CheckCircle class="h-4 w-4 text-green-500" aria-label="Solved" />
 			{/if}
 		</div>
 
@@ -66,15 +64,13 @@
 			{/each}
 		</div>
 
-		<!-- Instance Timer -->
 		{#if challenge.instance && countdown > 0}
-			<Badge
-				color="blue"
-				class="shrink-0 text-xs"
+			<span
+				class="inline-flex shrink-0 items-center rounded-md bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800 transition-colors dark:border dark:border-blue-400 dark:bg-transparent dark:text-blue-400"
 				aria-label="Instance expires in {fmtTimeLeft(countdown)}"
 			>
 				{fmtTimeLeft(countdown)}
-			</Badge>
+			</span>
 		{/if}
 	</button>
 {:else}
@@ -111,18 +107,17 @@
 					{challenge.points} pts
 				</span>
 				{#if challenge.solved}
-					<CheckCircleSolid class="h-5 w-5 text-green-500" aria-label="Solved" />
+					<CheckCircle class="h-5 w-5 text-green-500" aria-label="Solved" />
 				{/if}
 			</div>
 
 			{#if challenge.instance && countdown > 0}
-				<Badge
-					color="blue"
-					class="text-xs"
+				<span
+					class="inline-flex shrink-0 items-center rounded-md bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800 transition-colors dark:border dark:border-blue-400 dark:bg-transparent dark:text-blue-400"
 					aria-label="Instance expires in {fmtTimeLeft(countdown)}"
 				>
 					{fmtTimeLeft(countdown)}
-				</Badge>
+				</span>
 			{/if}
 		</div>
 	</button>

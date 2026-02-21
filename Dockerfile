@@ -27,7 +27,7 @@ FROM alpine:latest
 
 WORKDIR /app
 
-COPY --from=frontend /app/dist ./frontend
+COPY --from=frontend /app/build ./frontend
 
 COPY --from=backend /app/trxd ./trxd
 COPY --from=backend /app/static ./static

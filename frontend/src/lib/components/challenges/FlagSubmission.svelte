@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { CheckCircleSolid, FlagSolid, ExclamationCircleSolid } from 'flowbite-svelte-icons';
+	import { CheckCircle, Flag, AlertCircle } from '@lucide/svelte';
 	import { Button } from '@/components/ui/button';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Spinner } from '$lib/components/ui/spinner/index.js';
@@ -63,12 +63,12 @@
 		{#if !challenge?.solved}
 			<div class="relative flex-1">
 				{#if flagError}
-					<ExclamationCircleSolid
+					<AlertCircle
 						class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-red-500"
 						aria-hidden="true"
 					/>
 				{:else}
-					<FlagSolid
+					<Flag
 						class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 opacity-50"
 						aria-hidden="true"
 					/>
@@ -110,7 +110,7 @@
 				role="status"
 				aria-live="polite"
 			>
-				<CheckCircleSolid class="h-5 w-5 text-green-500" aria-hidden="true" />
+				<CheckCircle class="h-5 w-5 text-green-500" aria-hidden="true" />
 				<span class="font-semibold text-green-700 dark:text-green-400">Challenge solved!</span>
 			</div>
 		{/if}

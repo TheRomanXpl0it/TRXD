@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { user } from '$lib/stores/auth';
+	import { authState } from '$lib/stores/auth';
 
 	const gitHash = __GIT_HASH__;
-	const isAdmin = $derived(($user as any)?.role === 'Admin');
+	const isAdmin = $derived(authState.user?.role === 'Admin');
 </script>
 
 <svelte:head>
@@ -38,13 +38,13 @@
 
 		<div class="flex flex-wrap justify-center gap-4">
 			<a
-				href="#/challenges"
+				href="/challenges"
 				class="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg px-6 py-3 font-semibold transition-colors"
 			>
 				View Challenges
 			</a>
 			<a
-				href="#/scoreboard"
+				href="/scoreboard"
 				class="bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-lg px-6 py-3 font-semibold transition-colors"
 			>
 				Scoreboard

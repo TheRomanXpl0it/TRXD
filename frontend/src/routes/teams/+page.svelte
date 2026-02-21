@@ -4,11 +4,11 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
 	import { getTeams } from '@/team';
-	import { link, push } from 'svelte-spa-router';
+	import { goto } from '$app/navigation';
 	import ErrorMessage from '$lib/components/ui/error-message.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import countries from '$lib/data/countries.json';
-	import { userMode } from '$lib/stores/auth';
+	import { authState } from '$lib/stores/auth';
 	import { onMount } from 'svelte';
 	import EmptyState from '$lib/components/ui/empty-state.svelte';
 	import { Users, Globe } from '@lucide/svelte';
@@ -16,8 +16,8 @@
 	import CountryFlag from '$lib/components/ui/country-flag.svelte';
 
 	onMount(() => {
-		if ($userMode) {
-			push('/accounts');
+		if (authState.userMode) {
+			goto('/accounts');
 		}
 	});
 
@@ -180,7 +180,7 @@
 									{#each pageRows as team, i (team.id)}
 										<Table.Row
 											class="hover:bg-muted/50 cursor-pointer border-b-0 transition-colors"
-											onclick={() => push(`/team/${team.id}`)}
+											onclick={() => goto(`/team/${team.id}`)}
 										>
 											<Table.Cell class="py-3">
 												<div class="flex items-center gap-3">

@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite';
-import { svelte } from '@sveltejs/vite-plugin-svelte';
+import { sveltekit } from '@sveltejs/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
 import { resolve } from 'path';
 import { fileURLToPath } from 'url';
@@ -14,7 +14,7 @@ export default defineConfig({
 		__GIT_HASH__: JSON.stringify(getGitHash())
 	},
 	publicDir: 'static',
-	plugins: [tailwindcss(), svelte()],
+	plugins: [tailwindcss(), sveltekit()],
 	optimizeDeps: {
 		include: ['@iconify/svelte', '@iconify-json/circle-flags']
 	},

@@ -2,10 +2,10 @@
 	import { toast } from 'svelte-sonner';
 	import SolveListSheet from '$lib/components/challenges/SolvelistSheet.svelte';
 	import { Spinner } from '$lib/components/ui/spinner/index.js';
-	import { push } from 'svelte-spa-router';
+	import { goto } from '$app/navigation';
 	import { getChallenges, deleteChallenge } from '$lib/challenges';
 	import { getCategories } from '$lib/categories';
-	import { user as authUser } from '$lib/stores/auth';
+	import { authState } from '$lib/stores/auth';
 	import { onMount, untrack } from 'svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 
@@ -23,7 +23,7 @@
 	let DeleteDialogCmp: Cmp | null = $state(null);
 	let ChallengeEditSheetCmp: Cmp | null = $state(null);
 
-	const isAdmin = $derived($authUser?.role === 'Admin');
+	const isAdmin = $derived(authState.user?.role === 'Admin');
 
 	// Preload admin components when page loads if user is admin
 	onMount(() => {
@@ -279,7 +279,7 @@
 	$effect(() => {
 		if (challengesQuery.error) {
 			toast.error('You need to join a team first!');
-			push('/team');
+			goto('/team');
 		}
 	});
 

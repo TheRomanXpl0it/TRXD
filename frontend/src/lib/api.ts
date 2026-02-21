@@ -12,9 +12,9 @@ async function parse<T>(res: Response): Promise<T> {
 	if (contentType.includes('application/json')) {
 		try {
 			return (await res.json()) as T;
-		} catch {
-			// If JSON parsing fails, treat it as text or empty
-			throw new Error('Invalid JSON response');
+		} catch (e) {
+			// If we expected JSON but it failed to parse, that's a hard error
+			throw new Error('Expected JSON response, but parsing failed.');
 		}
 	}
 	return (await res.text()) as unknown as T;

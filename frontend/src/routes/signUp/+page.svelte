@@ -4,10 +4,11 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
-	import { register, type User } from '$lib/auth';
+	import { register } from '$lib/auth';
+	import type { User } from '$lib/types';
 	import { toast } from 'svelte-sonner';
-	import { link, push } from 'svelte-spa-router';
-	import { user, loadUser } from '@/stores/auth';
+	import { goto } from '$app/navigation';
+	import { authState, loadUser } from '@/stores/auth';
 	import { UserPlus } from '@lucide/svelte';
 
 	let name = '';
@@ -38,10 +39,10 @@
 			loading = false;
 			toast.success('Welcome aboard!');
 			// Check if user has a team, redirect accordingly
-			if ($user?.team_id) {
-				push('/challenges');
+			if (authState.user?.team_id) {
+				goto('/challenges');
 			} else {
-				push('/team');
+				goto('/team');
 			}
 		} catch (err: any) {
 			// Extract error message from JSON response if present
@@ -161,7 +162,7 @@
 						variant="link"
 						class="text-primary h-auto p-0 font-semibold"
 						type="button"
-						onclick={() => push('/signIn')}
+						onclick={() => goto('/signIn')}
 					>
 						Sign in
 					</Button>

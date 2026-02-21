@@ -111,7 +111,7 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-@plugin 'flowbite/plugin';
+
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -150,8 +150,7 @@
   --color-gray-900: #18181b;
 }
 
-@source "../node_modules/flowbite-svelte/dist";
-@source "../node_modules/flowbite-svelte-icons/dist";
+
 
 @layer base {
   /* disable chrome cancel button */

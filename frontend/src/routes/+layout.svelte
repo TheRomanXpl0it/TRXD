@@ -1,16 +1,17 @@
 <script lang="ts">
-	import './App.css';
-
-	import favicon from '$lib/assets/favicon.ico';
-
-	import Layout from '$lib/components/Layout.svelte';
+	import '../App.css';
 	import { Toaster } from '$lib/components/ui/sonner/index.js';
 	import { ModeWatcher } from 'mode-watcher';
-	import Router from 'svelte-spa-router';
-	import routes from './routes';
-	import { user, userMode, loadUser, authReady } from '$lib/stores/auth';
+	import Layout from '$lib/components/Layout.svelte';
+	import { authState, loadUser } from '$lib/stores/auth';
 	import { onMount } from 'svelte';
 	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
+	import { addCollection } from '@iconify/svelte';
+	import circleFlagsData from '@iconify-json/circle-flags/icons.json';
+
+	addCollection(circleFlagsData);
+
+	let { children } = $props();
 
 	const queryClient = new QueryClient({
 		defaultOptions: {
@@ -27,21 +28,17 @@
 
 	onMount(() => {
 		// Ensure user is loaded
-		if (!$authReady) {
+		if (!authState.ready) {
 			loadUser(false);
 		}
 	});
 </script>
 
-<svelte:head>
-	<link rel="icon" href={favicon} />
-</svelte:head>
-
 <QueryClientProvider client={queryClient}>
 	<Toaster position="bottom-right" class="!justify-center md:!justify-end" />
 	<ModeWatcher />
 
-	{#if !$authReady}
+	{#if !authState.ready}
 		<!-- Loading state -->
 		<div class="flex h-screen w-full items-center justify-center">
 			<div
@@ -49,8 +46,8 @@
 			></div>
 		</div>
 	{:else}
-		<Layout user={$user} userMode={$userMode ?? false}>
-			<Router {routes} useHash={true} restoreScrollState={true} />
+		<Layout user={authState.user} userMode={authState.userMode ?? false}>
+			{@render children()}
 		</Layout>
 	{/if}
 </QueryClientProvider>

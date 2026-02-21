@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { link } from 'svelte-spa-router';
 	import { getUserData } from '$lib/user';
 	import GeneratedAvatar from '$lib/components/ui/avatar/generated-avatar.svelte';
 
@@ -94,7 +93,6 @@
 			{#each filtered as m (m.id ?? m.name)}
 				<a
 					href={`/account/${m.id}`}
-					use:link
 					class="bg-muted/40 hover:bg-background group flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 text-left transition-all hover:shadow-sm"
 				>
 					{#if memberImages[String(m.id)]}

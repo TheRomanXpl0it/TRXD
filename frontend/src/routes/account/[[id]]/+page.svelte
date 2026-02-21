@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { params } from 'svelte-spa-router';
-	import { user, authReady, userMode } from '$lib/stores/auth';
+	import { page } from '$app/stores';
+	import { authState } from '$lib/stores/auth';
 	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
 	import { getTeam } from '$lib/team';
 	import { getUserData } from '$lib/user';
@@ -23,11 +23,13 @@
 
 	// Derive currentUserId from params/user
 	const currentUserId = $derived.by(() => {
-		if (!$authReady) return null;
-		const routeKey = normalizeKey($params?.id);
+		if (!authState.ready) return null;
+		const routeKey = normalizeKey($page.params.id);
 		// In User Mode, getUserData needs a TeamID (since it calls /teams).
 		// So fallback to team_id if available.
-		const fallbackKey = $userMode ? normalizeKey($user?.team_id) : normalizeKey($user?.id);
+		const fallbackKey = authState.userMode
+			? normalizeKey(authState.user?.team_id)
+			: normalizeKey(authState.user?.id);
 		const effectiveKey = routeKey ?? fallbackKey;
 		return effectiveKey ? validateId(effectiveKey) : null;
 	});
@@ -56,14 +58,14 @@
 
 	// Derive currentTeamId from user data
 	const currentTeamId = $derived.by(() => {
-		if ($userMode || !userVerboseData) return null;
+		if (authState.userMode || !userVerboseData) return null;
 		return userVerboseData?.team_id ?? null;
 	});
 
 	const teamQuery = createQuery(() => ({
 		queryKey: ['team', currentTeamId],
 		queryFn: () => getTeam(currentTeamId!),
-		enabled: currentTeamId !== null && !$userMode,
+		enabled: currentTeamId !== null && !authState.userMode,
 		staleTime: 10_000
 	}));
 
@@ -72,24 +74,24 @@
 	const teamError = $derived(userQuery.error?.message ?? teamQuery.error?.message ?? null);
 
 	const isOwnProfile = $derived(
-		$user && userVerboseData && String($user.id) === String(userVerboseData.id)
+		authState.user && userVerboseData && String(authState.user.id) === String(userVerboseData.id)
 	);
 
 	const solveCount = $derived.by(() => {
-		if ($userMode) return userVerboseData?.solves?.length ?? 0;
+		if (authState.userMode) return userVerboseData?.solves?.length ?? 0;
 		return (
 			team?.solves?.filter((s) => String(s.user_id) === String(userVerboseData?.id)).length ?? 0
 		);
 	});
 
 	const displayBadges = $derived.by(() => {
-		if ($userMode && userVerboseData?.badges?.length > 0) return userVerboseData.badges;
-		if (!$userMode && team?.badges?.length > 0) return team.badges;
+		if (authState.userMode && userVerboseData?.badges?.length > 0) return userVerboseData.badges;
+		if (!authState.userMode && team?.badges?.length > 0) return team.badges;
 		return [];
 	});
 </script>
 
-{#if !$authReady | loading}
+{#if !authState.ready | loading}
 	<div class="mx-auto max-w-5xl space-y-8 py-10">
 		<!-- Skeleton Header -->
 		<div class="space-y-4">
@@ -101,7 +103,7 @@
 			</div>
 		</div>
 	</div>
-{:else if !$user && !$params?.id}
+{:else if !authState.user && !$page.params.id}
 	<div class="mx-auto max-w-5xl py-10">
 		<Card.Root>
 			<Card.Content class="py-10 text-center">
@@ -184,7 +186,7 @@
 									})}
 								</span>
 							{/if}
-							{#if !$userMode && team}
+							{#if !authState.userMode && team}
 								<span
 									class="bg-muted/50 text-foreground/80 flex items-center gap-1.5 rounded-md px-2 py-0.5 font-medium"
 								>
@@ -309,7 +311,7 @@
 					</Card.Content>
 				</Card.Root>
 
-				{#if !$userMode && team}
+				{#if !authState.userMode && team}
 					<Card.Root class="bg-card border-0 shadow-sm">
 						<Card.Header class="pb-2">
 							<Card.Title class="text-muted-foreground text-sm font-medium uppercase tracking-wider"
@@ -342,7 +344,7 @@
 		{:else if activeTab === 'solves'}
 			<Card.Root class="overflow-hidden border-0 shadow-sm">
 				<Card.Content class="p-0">
-					{#if $userMode}
+					{#if authState.userMode}
 						<Solvelist
 							solves={Array.isArray(userVerboseData?.solves) ? userVerboseData.solves : []}
 						/>
@@ -370,6 +372,6 @@
 	user={userVerboseData}
 	onupdated={() => {
 		userQuery.refetch();
-		if (!$userMode) teamQuery.refetch();
+		if (!authState.userMode) teamQuery.refetch();
 	}}
 />

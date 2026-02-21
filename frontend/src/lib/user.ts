@@ -1,12 +1,11 @@
 import { api } from '$lib/api';
 import type { User, PaginatedResponse } from '$lib/types';
 
-import { get } from 'svelte/store';
-import { userMode } from '$lib/stores/auth';
+import { authState } from '$lib/stores/auth';
 
 export async function getUsers(page = 1, limit = 20): Promise<PaginatedResponse<User>> {
 	const offset = (page - 1) * limit;
-	const isUserMode = get(userMode);
+	const isUserMode = authState.userMode;
 
 	if (isUserMode) {
 		const response = await api<{ total: number; teams: any[] }>(`/teams?offset=${offset}&limit=${limit}`);
@@ -39,7 +38,7 @@ export async function getUsers(page = 1, limit = 20): Promise<PaginatedResponse<
 }
 
 export async function getUserData(id: number): Promise<User> {
-	const isUserMode = get(userMode);
+	const isUserMode = authState.userMode;
 	if (isUserMode) {
 		const team = await api<any>(`/teams/${id}`);
 		return { ...team, role: team.role || 'User' };

@@ -2,9 +2,6 @@ import { render, screen, waitFor } from '@testing-library/svelte';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import TeamMemberlist from '../TeamMemberlist.svelte';
 
-vi.mock('svelte-spa-router', () => ({
-  link: vi.fn()
-}));
 
 const mockGetUserData = vi.fn();
 vi.mock('$lib/user', () => ({

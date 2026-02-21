@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 	"trxd/api/middlewares"
 	"trxd/api/routes/attachments_create"
@@ -87,9 +88,13 @@ func SetupApp(ctx context.Context) *fiber.App {
 		Download: true,
 	})
 
-	// 404 handler
+	// serve index.html for all non-API routes so SvelteKit's
+	// client-side router handles them. Only /api/* returns a JSON 404.
 	app.Use(func(c *fiber.Ctx) error {
-		return utils.Error(c, fiber.StatusNotFound, consts.NotFound)
+		if strings.HasPrefix(c.Path(), "/api/") {
+			return utils.Error(c, fiber.StatusNotFound, consts.NotFound)
+		}
+		return c.SendFile("./frontend/index.html")
 	})
 
 	return app
@@ -130,15 +135,7 @@ func SetupFeatures(app *fiber.App) {
 	}))
 
 	app.Use(helmet.New(helmet.Config{
-		ContentSecurityPolicy: "script-src 'self'; " +
-			"style-src 'self' 'unsafe-inline'; " +
-			"img-src 'self' data:; " +
-			"connect-src 'self'; " +
-			"form-action 'self'; " +
-			"font-src 'self'; " +
-			"default-src 'none'; " +
-			"frame-ancestors 'none'; " +
-			"base-uri 'none';",
+		ContentSecurityPolicy: "",
 	}))
 
 	app.Use(favicon.New(favicon.Config{

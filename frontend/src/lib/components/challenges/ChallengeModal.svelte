@@ -1,8 +1,7 @@
 <script lang="ts">
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Button } from '@/components/ui/button';
-	import { Download, Droplet } from '@lucide/svelte';
-	import { PenSolid, TrashBinSolid, UserEditSolid } from 'flowbite-svelte-icons';
+	import { Download, Droplet, Pen, Trash2, UserCog } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import InstanceControls from './InstanceControls.svelte';
 	import FlagSubmission from './FlagSubmission.svelte';
@@ -104,7 +103,7 @@
 				<!-- Authors -->
 				{#if challenge?.authors && challenge.authors.length > 0}
 					<div class="mt-2 flex items-center gap-1 text-xs font-medium opacity-70">
-						<UserEditSolid class="h-4 w-4" aria-hidden="true" />
+						<UserCog class="h-4 w-4" aria-hidden="true" />
 						<span>
 							By {#each challenge.authors as author, i (author)}{author}{i <
 								challenge.authors.length - 1
@@ -124,7 +123,7 @@
 							onclick={() => onEdit?.(challenge)}
 							aria-label="Edit challenge"
 						>
-							<PenSolid class="h-3.5 w-3.5" aria-hidden="true" />
+							<Pen class="h-3.5 w-3.5" aria-hidden="true" />
 							<span>Edit</span>
 						</Button>
 						<Button
@@ -134,7 +133,7 @@
 							onclick={() => onDelete?.(challenge)}
 							aria-label="Delete challenge"
 						>
-							<TrashBinSolid class="h-3.5 w-3.5" aria-hidden="true" />
+							<Trash2 class="h-3.5 w-3.5" aria-hidden="true" />
 							<span>Delete</span>
 						</Button>
 					</div>

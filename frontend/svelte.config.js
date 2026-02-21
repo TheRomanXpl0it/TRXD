@@ -1,4 +1,4 @@
-import adapter from '@sveltejs/adapter-auto';
+import adapter from '@sveltejs/adapter-static';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 /** @type {import('@sveltejs/kit').Config} */
@@ -12,9 +12,23 @@ const config = {
 		// If your environment is not supported, or you settled on a specific environment, switch out the adapter.
 		// See https://svelte.dev/docs/kit/adapters for more information about adapters.
 		alias: {
-      "@/*": "./src/lib/",
-    },
-		adapter: adapter()
+			"@/*": "./src/lib/",
+		},
+		adapter: adapter({ fallback: 'index.html' }),
+		csp: {
+			mode: 'hash',
+			directives: {
+				'script-src': ['self'],
+				'style-src': ['self', 'unsafe-inline'],
+				'img-src': ['self', 'data:'],
+				'connect-src': ['self'],
+				'form-action': ['self'],
+				'font-src': ['self'],
+				'default-src': ['none'],
+				'frame-ancestors': ['none'],
+				'base-uri': ['none'],
+			}
+		}
 	}
 };
 

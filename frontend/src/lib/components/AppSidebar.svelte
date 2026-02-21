@@ -1,8 +1,7 @@
 <script lang="ts">
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-	import { Avatar } from 'flowbite-svelte';
-	import { BugOutline } from 'flowbite-svelte-icons';
-	import { link, push } from 'svelte-spa-router';
+	// No shadcn Avatar component — using plain img
+	import { goto } from '$app/navigation';
 	import {
 		HouseIcon,
 		Joystick,
@@ -27,6 +26,8 @@
 			name?: string;
 			image?: string;
 			profileImage?: string;
+			team_id?: string | number;
+			role?: string;
 		} | null;
 		userMode: boolean;
 	}>();
@@ -93,7 +94,6 @@
 									<a
 										{...props}
 										href={item.url}
-										use:link
 										onclick={() => {
 											// Close mobile menu on navigation
 											if (sidebar.isMobile) {
@@ -115,47 +115,50 @@
 
 	<Sidebar.Footer>
 		{#if user}
-			<a
-				href="/account"
-				use:link
-				class="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group flex cursor-pointer items-center gap-3 rounded-lg p-2 transition-colors"
-				onclick={() => {
-					// Close mobile menu on navigation
-					if (sidebar.isMobile) {
-						sidebar.setOpenMobile(false);
-					}
-				}}
-			>
-				{#if displayImage}
-					<Avatar src={displayImage} class="h-8 w-8 shrink-0" />
-				{:else}
-					<GeneratedAvatar seed={user.name ?? 'user'} class="h-8 w-8 shrink-0 rounded-full" />
-				{/if}
+			<div class="flex min-w-0 items-center gap-1 overflow-hidden rounded-lg p-1">
+				<a
+					href="/account"
+					class="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-lg p-1 transition-colors"
+					onclick={() => {
+						if (sidebar.isMobile) {
+							sidebar.setOpenMobile(false);
+						}
+					}}
+				>
+					{#if displayImage}
+						<img
+							src={displayImage}
+							alt={user.name}
+							class="h-8 w-8 shrink-0 rounded-full object-cover"
+						/>
+					{:else}
+						<GeneratedAvatar seed={user.name ?? 'user'} class="h-8 w-8 shrink-0 rounded-full" />
+					{/if}
 
-				<div class="min-w-0 flex-1">
-					<p class="truncate text-sm font-medium text-gray-700 dark:text-gray-100">{user.name}</p>
-					<p class="truncate text-xs text-gray-500 dark:text-gray-400">@{user.name}</p>
-				</div>
+					<div class="min-w-0 flex-1">
+						<p class="truncate text-sm font-medium text-gray-700 dark:text-gray-100">{user.name}</p>
+						<p class="truncate text-xs text-gray-500 dark:text-gray-400">@{user.name}</p>
+					</div>
+				</a>
 
-				<!-- Hidden until parent <a> is hovered (or button focused) -->
 				<Button
-					class="pointer-events-none ml-auto cursor-pointer opacity-0 transition-opacity
-                 duration-150 focus:pointer-events-auto
-                 focus:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
-					variant="outline"
+					class="shrink-0 cursor-pointer"
+					variant="ghost"
+					size="icon"
 					title="Log out"
 					aria-label="Log out"
-					onclick={() => {
-						push('/signOut');
+					onclick={(e: MouseEvent) => {
+						e.preventDefault();
+						e.stopPropagation();
+						goto('/signOut');
 					}}
 				>
 					<LogOut />
 				</Button>
-			</a>
+			</div>
 		{:else}
 			<a
 				href="/signIn"
-				use:link
 				class="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-row rounded-lg p-2 text-sm text-gray-700 transition-colors dark:text-gray-200"
 			>
 				<LogIn class="mr-3" />

@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { params, link } from 'svelte-spa-router';
-	import { user as authUser, authReady, userMode, loadUser } from '$lib/stores/auth';
-	import { push } from 'svelte-spa-router';
+	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
 	import { Globe, Users, Edit, Award, LayoutGrid, List, Mail, Medal } from '@lucide/svelte';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
@@ -18,17 +17,33 @@
 	import RadarChart from '$lib/components/RadarChart.svelte';
 	import CountryFlag from '$lib/components/ui/country-flag.svelte';
 	import countries from '$lib/data/countries.json';
+	import { createQuery } from '@tanstack/svelte-query';
 
-	let loading = $state(false);
-	let teamError: string | null = $state(null);
-	let team: any = $state(null);
 	let teamEditOpen = $state(false);
 	let activeTab = $state<'overview' | 'solves'>('overview');
-	const isOwnTeam = $derived($authUser && team && String($authUser.team_id) === String(team.id));
 
-	// race guard
-	let lastKey: string | null = $state(null);
-	let reqSeq = $state(0);
+	const currentTeamId = $derived.by(() => {
+		if (!authState.ready) return null;
+		const routeKey = normalizeKey($page.params.id);
+		const fallbackKey = normalizeKey(authState.user?.team_id);
+		const effectiveKey = routeKey ?? fallbackKey;
+		return effectiveKey ? validateId(effectiveKey) : null;
+	});
+
+	const teamQuery = createQuery(() => ({
+		queryKey: ['team', currentTeamId],
+		queryFn: () => getTeam(currentTeamId!),
+		enabled: currentTeamId !== null,
+		staleTime: 10_000
+	}));
+
+	const team = $derived(teamQuery.data ?? null);
+	const loading = $derived(teamQuery.isLoading && currentTeamId !== null);
+	const teamError = $derived(teamQuery.error?.message ?? null);
+
+	const isOwnTeam = $derived(
+		authState.user && team && String(authState.user.team_id) === String(team.id)
+	);
 
 	function normalizeKey(x: unknown): string | null {
 		const s = String(x ?? '').trim();
@@ -44,51 +59,14 @@
 		return null;
 	}
 
-	async function loadTeamByKey(key: string) {
-		const mySeq = ++reqSeq;
-		loading = true;
-		teamError = null;
-
-		try {
-			const apiKey = validateId(key);
-			if (apiKey === null) throw new Error('Invalid team ID format');
-			const t = await getTeam(apiKey);
-			if (mySeq !== reqSeq) return;
-			team = t ?? null;
-		} catch (e: any) {
-			if (mySeq !== reqSeq) return;
-			teamError = e?.message ?? 'Failed to load team';
-			team = null;
-		} finally {
-			if (mySeq === reqSeq) loading = false;
-		}
-	}
-
 	$effect(() => {
-		if (!$authReady) return;
-		if ($userMode && $authUser?.team_id) {
-			push('/not-found');
-			return;
+		if (authState.ready && authState.userMode && authState.user?.team_id) {
+			goto('/not-found');
 		}
-		const softRouteKey = normalizeKey($params?.id);
-		const fallbackKey = normalizeKey($authUser?.team_id);
-		const effectiveKey = softRouteKey ?? fallbackKey;
-
-		if (!effectiveKey) {
-			lastKey = null;
-			team = null;
-			teamError = null;
-			loading = false;
-			return;
-		}
-
-		if (effectiveKey === lastKey) return;
-		lastKey = effectiveKey;
-		void loadTeamByKey(effectiveKey);
 	});
 </script>
 
-{#if !$authReady || loading}
+{#if !authState.ready || loading}
 	<div class="mx-auto max-w-6xl space-y-8 py-10">
 		<div class="space-y-4">
 			<div class="bg-muted h-8 w-48 animate-pulse rounded"></div>
@@ -340,8 +318,7 @@
 							<div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
 								{#each team.members as member}
 									<a
-										href={`#/account/${member.id}`}
-										use:link
+										href={`/account/${member.id}`}
 										class="hover:bg-muted/50 flex items-center gap-3 rounded-lg p-2 transition-colors"
 									>
 										<GeneratedAvatar seed={member.name} size={40} />
@@ -368,4 +345,4 @@
 	</div>
 {/if}
 
-<TeamEdit bind:open={teamEditOpen} {team} onupdated={() => loadTeamByKey(team.id)} />
+<TeamEdit bind:open={teamEditOpen} {team} onupdated={() => teamQuery.refetch()} />

@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import AppSidebar from '../AppSidebar.svelte';
 import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js';
 import { getUserData } from '$lib/user';
-import { push } from 'svelte-spa-router';
+import { goto } from '$app/navigation';
 
 vi.mock('$lib/components/ui/sidebar/context.svelte.js', () => ({
 	useSidebar: vi.fn()
@@ -14,9 +14,8 @@ vi.mock('$lib/user', () => ({
 	getUserData: vi.fn()
 }));
 
-vi.mock('svelte-spa-router', () => ({
-	link: () => { },
-	push: vi.fn()
+vi.mock('$app/navigation', () => ({
+	goto: vi.fn()
 }));
 
 describe('AppSidebar Component', () => {
@@ -204,7 +203,7 @@ describe('AppSidebar Component', () => {
 		const logoutBtn = await screen.findByRole('button', { name: /log out/i });
 		await user.click(logoutBtn);
 
-		expect(push).toHaveBeenCalledWith('/signOut');
+		expect(goto).toHaveBeenCalledWith('/signOut');
 	});
 
 	it('displays user avatar when image is available', async () => {

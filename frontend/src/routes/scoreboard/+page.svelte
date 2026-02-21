@@ -6,8 +6,8 @@
 	import ScoreHistory from '$lib/components/scoreboard/Graph.svelte';
 	import { Medal, Trophy } from '@lucide/svelte';
 	import { getGraphData, getScoreboard } from '@/scoreboard';
-	import { push } from 'svelte-spa-router';
-	import { userMode } from '$lib/stores/auth';
+	import { goto } from '$app/navigation';
+	import { authState } from '$lib/stores/auth';
 	import ErrorMessage from '$lib/components/ui/error-message.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import EmptyState from '$lib/components/ui/empty-state.svelte';
@@ -89,7 +89,7 @@
 			<div>
 				<h1 class="text-3xl font-bold tracking-tight">Scoreboard</h1>
 				<p class="text-muted-foreground mt-2 text-sm">
-					Ranking of all competing {$userMode ? 'players' : 'teams'}.
+					Ranking of all competing {authState.userMode ? 'players' : 'teams'}.
 				</p>
 			</div>
 		</div>
@@ -101,7 +101,7 @@
 		<!-- Graph -->
 		<!-- Added shadow/border fix to graph container if needed, but keeping simple div for now -->
 		<div class="mb-8">
-			<ScoreHistory data={graphData} topN={10} {teamNames} userMode={$userMode} />
+			<ScoreHistory data={graphData} topN={10} {teamNames} userMode={authState.userMode} />
 		</div>
 
 		<Card.Root class="overflow-hidden border-0 shadow-sm">
@@ -116,7 +116,7 @@
 								>
 								<Table.Head
 									class="text-muted-foreground/70 min-w-[200px] bg-transparent text-[10px] font-bold uppercase tracking-wider"
-									>{$userMode ? 'Player' : 'Team'}</Table.Head
+									>{authState.userMode ? 'Player' : 'Team'}</Table.Head
 								>
 								<Table.Head
 									class="text-muted-foreground/70 bg-transparent text-[10px] font-bold uppercase tracking-wider"
@@ -160,7 +160,8 @@
 										{@const rank = (currentPage - 1) * perPage + i + 1}
 										<Table.Row
 											class="hover:bg-muted/50 cursor-pointer border-b-0 transition-colors"
-											onclick={() => push($userMode ? `/account/${row.id}` : `/team/${row.id}`)}
+											onclick={() =>
+												goto(authState.userMode ? `/account/${row.id}` : `/team/${row.id}`)}
 										>
 											<Table.Cell class="font-medium">
 												<div class="flex items-center gap-2">

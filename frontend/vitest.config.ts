@@ -13,7 +13,9 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			'$lib': resolve('./src/lib'),
-			'@': resolve('./src/lib')
+			'@': resolve('./src/lib'),
+			'$app/navigation': resolve('./src/test/mocks/app-navigation.ts'),
+			'$app/stores': resolve('./src/test/mocks/app-stores.ts')
 		},
 		conditions: ['browser']
 	}

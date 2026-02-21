@@ -7,9 +7,8 @@
 	import { toast } from 'svelte-sonner';
 
 	import { login } from '$lib/auth';
-	import { link, push } from 'svelte-spa-router';
-	import { user, userMode } from '@/stores/auth';
-	import { loadUser } from '@/stores/auth';
+	import { goto } from '$app/navigation';
+	import { authState, loadUser } from '@/stores/auth';
 	import { Lock } from '@lucide/svelte';
 
 	// --- State (Svelte 5 runes) ----------------------------------------------
@@ -49,10 +48,6 @@
 		return maybeMessage || defaultMessage;
 	}
 
-	function goToSignUp() {
-		push('/signUp');
-	}
-
 	// --- Actions --------------------------------------------------------------
 
 	async function onSubmit(e: SubmitEvent) {
@@ -76,10 +71,10 @@
 
 			// Redirect based on team presence
 			// Redirect based on team presence or user mode
-			if ($userMode || $user?.team_id) {
-				push('/challenges');
+			if (authState.userMode || authState.user?.team_id) {
+				goto('/challenges');
 			} else {
-				push('/team');
+				goto('/team');
 			}
 		} catch (err) {
 			const message = getErrorMessage(err);
@@ -127,7 +122,6 @@
 						<div class="flex items-center justify-between">
 							<Label for="password" class="font-medium">Password</Label>
 							<a
-								use:link
 								href="/forgot"
 								class="text-muted-foreground hover:text-primary text-xs font-medium hover:underline"
 							>
@@ -176,7 +170,7 @@
 						variant="link"
 						class="text-primary h-auto p-0 font-semibold"
 						type="button"
-						onclick={goToSignUp}
+						onclick={() => goto('/signUp')}
 					>
 						Sign up
 					</Button>

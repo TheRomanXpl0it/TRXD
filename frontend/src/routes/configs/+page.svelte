@@ -5,8 +5,8 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Input } from '$lib/components/ui/input';
-	import { user as authUser } from '$lib/stores/auth';
-	import { push } from 'svelte-spa-router';
+	import { authState } from '$lib/stores/auth';
+	import { goto } from '$app/navigation';
 	import LoadingState from '$lib/components/ui/loading-state.svelte';
 	import ConfigCard from '$lib/components/configs/config-card.svelte';
 	import { showError } from '$lib/utils/toast';
@@ -35,7 +35,7 @@
 	let saveError = $state<string | null>(null);
 	let saveOk = $state(false);
 
-	const isAdmin = $derived(($authUser as any)?.role === 'Admin');
+	const isAdmin = $derived(authState.user?.role === 'Admin');
 
 	const hasChanges = $derived(
 		configs.some((config) => {
@@ -102,8 +102,8 @@
 	}
 
 	$effect(() => {
-		if (($authUser as any) && !isAdmin) {
-			push('/404');
+		if (authState.user && !isAdmin) {
+			goto('/404');
 		}
 	});
 
