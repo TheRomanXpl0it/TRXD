@@ -8,10 +8,11 @@ import (
 	"strings"
 	"trxd/instancer/infos"
 
+	"trxd/utils/log"
+
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/go-connections/nat"
-	"github.com/tde-nico/log"
 )
 
 func CreateContainer(ctx context.Context, info *infos.InstanceInfo, image string) (string, error) {

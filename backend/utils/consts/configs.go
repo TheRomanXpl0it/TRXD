@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/tde-nico/log"
+	"trxd/utils/log"
 )
 
 var AntiPanic = true

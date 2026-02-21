@@ -3,6 +3,8 @@ module trxd
 go 1.26
 
 require (
+	github.com/charmbracelet/lipgloss v1.1.0
+	github.com/charmbracelet/log v0.4.1
 	github.com/compose-spec/compose-go/v2 v2.10.1
 	github.com/docker/cli v28.5.2+incompatible
 	github.com/docker/compose/v5 v5.0.2
@@ -19,7 +21,6 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/moby/go-archive v0.1.0
 	github.com/redis/go-redis/v9 v9.18.0
-	github.com/tde-nico/log v0.0.0-20250802204555-80c17d98d558
 	github.com/wneessen/go-mail v0.7.2
 	golang.org/x/crypto v0.47.0
 )
@@ -36,8 +37,6 @@ require (
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/charmbracelet/colorprofile v0.2.3-0.20250311203215-f60798e515dc // indirect
-	github.com/charmbracelet/lipgloss v1.1.0 // indirect
-	github.com/charmbracelet/log v0.4.1 // indirect
 	github.com/charmbracelet/x/ansi v0.8.0 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.13-0.20250311204145-2c3ea96c31dd // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect

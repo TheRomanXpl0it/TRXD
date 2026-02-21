@@ -8,11 +8,11 @@ import (
 	"trxd/instancer/containers"
 	"trxd/instancer/networks"
 
-	"github.com/tde-nico/log"
+	"trxd/utils/log"
 )
 
 func DeleteInstance(ctx context.Context, tid int32, challID int32, dockerID sql.NullString) error {
-	log.Info("Deleting instance:", "challenge", challID, "team", tid)
+	log.Info("Deleting instance:", "chall", challID, "team", tid)
 
 	if dockerID.Valid {
 		var err error

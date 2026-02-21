@@ -12,10 +12,11 @@ import (
 	"trxd/utils/crypto_utils"
 	"trxd/validator"
 
+	"trxd/utils/log"
+
 	"github.com/go-playground/form/v4"
 	"github.com/gofiber/fiber/v2"
 	"github.com/lib/pq"
-	"github.com/tde-nico/log"
 )
 
 type Data struct {

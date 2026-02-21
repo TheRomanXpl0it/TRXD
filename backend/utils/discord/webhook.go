@@ -12,7 +12,7 @@ import (
 	"trxd/db"
 	"trxd/db/sqlc"
 
-	"github.com/tde-nico/log"
+	"trxd/utils/log"
 )
 
 const WebhookTimeout = 5 * time.Second

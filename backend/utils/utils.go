@@ -6,8 +6,9 @@ import (
 	"errors"
 	"fmt"
 
+	"trxd/utils/log"
+
 	"github.com/gofiber/fiber/v2"
-	"github.com/tde-nico/log"
 )
 
 func In[T comparable](slice T, items []T) bool {

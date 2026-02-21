@@ -15,10 +15,10 @@ import (
 	"trxd/utils"
 	"trxd/utils/consts"
 	"trxd/utils/crypto_utils"
+	"trxd/utils/log"
 	"trxd/validator"
 
 	"github.com/joho/godotenv"
-	"github.com/tde-nico/log"
 )
 
 func toggleRegister(ctx context.Context) {
@@ -187,8 +187,7 @@ func parseFlags(ctx context.Context) {
 
 func main() {
 	if _, err := os.Stat("DEV"); !os.IsNotExist(err) {
-		log.SetLogLevel("debug")
-		log.SetReportCaller(false)
+		log.SetLevel(log.DebugLevel)
 	}
 
 	err := godotenv.Load()

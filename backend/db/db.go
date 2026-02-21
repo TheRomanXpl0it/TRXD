@@ -13,8 +13,9 @@ import (
 	"trxd/utils/consts"
 	"trxd/utils/crypto_utils"
 
+	"trxd/utils/log"
+
 	"github.com/lib/pq"
-	"github.com/tde-nico/log"
 )
 
 var db *sql.DB

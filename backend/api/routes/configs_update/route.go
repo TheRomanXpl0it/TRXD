@@ -6,8 +6,9 @@ import (
 	"trxd/utils/consts"
 	"trxd/validator"
 
+	"trxd/utils/log"
+
 	"github.com/gofiber/fiber/v2"
-	"github.com/tde-nico/log"
 )
 
 func Route(c *fiber.Ctx) error {

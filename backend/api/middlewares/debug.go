@@ -3,8 +3,9 @@ package middlewares
 import (
 	"encoding/json"
 
+	"trxd/utils/log"
+
 	"github.com/gofiber/fiber/v2"
-	"github.com/tde-nico/log"
 )
 
 func decodeJSONBody(body []byte) string {

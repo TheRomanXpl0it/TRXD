@@ -7,11 +7,12 @@ import (
 	"sync"
 	"time"
 
+	"trxd/utils/log"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
 	fiberRedis "github.com/gofiber/storage/redis/v3"
 	"github.com/redis/go-redis/v9"
-	"github.com/tde-nico/log"
 )
 
 var rdb *redis.Client

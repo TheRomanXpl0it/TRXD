@@ -7,10 +7,11 @@ import (
 	"trxd/utils"
 	"trxd/utils/consts"
 
+	"trxd/utils/log"
+
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
-	"github.com/tde-nico/log"
 )
 
 var validate *validator.Validate

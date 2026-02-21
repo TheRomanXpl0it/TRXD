@@ -8,9 +8,10 @@ import (
 	"trxd/utils"
 	"trxd/utils/consts"
 
+	"trxd/utils/log"
+
 	"github.com/joho/godotenv"
 	"github.com/lib/pq"
-	"github.com/tde-nico/log"
 )
 
 var tmp_db *sql.DB

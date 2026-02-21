@@ -11,7 +11,7 @@ import (
 	"trxd/instancer/networks"
 	"trxd/utils/consts"
 
-	"github.com/tde-nico/log"
+	"trxd/utils/log"
 )
 
 func InitInstancer() error {

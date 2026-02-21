@@ -14,8 +14,9 @@ import (
 	"trxd/utils/jwt"
 	"trxd/validator"
 
+	"trxd/utils/log"
+
 	"github.com/gofiber/fiber/v2"
-	"github.com/tde-nico/log"
 )
 
 type Data struct {

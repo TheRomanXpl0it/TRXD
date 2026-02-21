@@ -47,13 +47,14 @@ import (
 	"trxd/utils"
 	"trxd/utils/consts"
 
+	"trxd/utils/log"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/csrf"
 	"github.com/gofiber/fiber/v2/middleware/favicon"
 	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"github.com/gofiber/fiber/v2/middleware/monitor"
-	"github.com/tde-nico/log"
 )
 
 var (

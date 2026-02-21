@@ -13,7 +13,7 @@ import (
 	"trxd/instancer/infos"
 	"trxd/instancer/networks"
 
-	"github.com/tde-nico/log"
+	"trxd/utils/log"
 )
 
 func recoverBrokenInstance(ctx context.Context, tid int32, challID int32, dockerID string) {
@@ -79,7 +79,7 @@ func CreateInstance(ctx context.Context, tid int32, challID int32, internalPort 
 		recoverBrokenInstance(ctx, tid, challID, dockerID)
 	}()
 
-	log.Info("Creating instance:", "team", tid, "challenge", challID)
+	log.Info("Creating instance:", "chall", challID, "team", tid)
 
 	info, err := dbCreateInstance(ctx, tid, challID, expires_at, conf.HashDomain)
 	if err != nil {
