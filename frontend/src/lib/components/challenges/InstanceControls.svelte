@@ -81,11 +81,19 @@
 		}
 	}
 
-	const connectionString = $derived(
-		challenge?.instance
-			? `${challenge?.instance_host ?? challenge?.host ?? ''}${challenge?.instance_port ? `:${challenge.instance_port}` : ''}`
-			: `${challenge?.host ?? ''}${challenge?.port ? `:${challenge.port}` : ''}`
-	);
+	const connectionString = $derived.by(() => {
+		const h = challenge?.instance
+			? (challenge?.instance_host ?? challenge?.host ?? '')
+			: (challenge?.host ?? '');
+		const p = challenge?.instance ? challenge?.instance_port : challenge?.port;
+		let str = p ? `${h}:${p}` : h;
+		if (str && challenge?.conn_type === 'HTTP' && !str.startsWith('http')) {
+			str = `http://${str}`;
+		} else if (str && challenge?.conn_type === 'HTTPS' && !str.startsWith('http')) {
+			str = `https://${str}`;
+		}
+		return str;
+	});
 </script>
 
 <div class="mb-6">
@@ -107,6 +115,16 @@
 					{fmtTimeLeft(countdown)}
 				</span>
 			</button>
+			{#if connectionString.startsWith('http')}
+				<a
+					href={connectionString}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="bg-secondary/80 hover:bg-secondary flex h-11 shrink-0 items-center justify-center rounded-md px-4 text-sm font-semibold transition-colors focus:outline-none"
+				>
+					Open
+				</a>
+			{/if}
 			<Button
 				variant="destructive"
 				onclick={destroyInstance}

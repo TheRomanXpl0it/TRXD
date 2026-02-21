@@ -42,11 +42,19 @@
 			.catch(() => toast.error('Failed to copy to clipboard.'));
 	}
 
-	const connectionString = $derived(
-		challenge?.instance
-			? `${challenge?.instance_host ?? challenge?.host ?? ''}${challenge?.instance_port ? `:${challenge.instance_port}` : ''}`
-			: `${challenge?.host ?? ''}${challenge?.port ? `:${challenge.port}` : ''}`
-	);
+	const connectionString = $derived.by(() => {
+		const h = challenge?.instance
+			? (challenge?.instance_host ?? challenge?.host ?? '')
+			: (challenge?.host ?? '');
+		const p = challenge?.instance ? challenge?.instance_port : challenge?.port;
+		let str = p ? `${h}:${p}` : h;
+		if (str && challenge?.conn_type === 'HTTP' && !str.startsWith('http')) {
+			str = `http://${str}`;
+		} else if (str && challenge?.conn_type === 'HTTPS' && !str.startsWith('http')) {
+			str = `https://${str}`;
+		}
+		return str;
+	});
 </script>
 
 <Dialog.Root bind:open>
@@ -172,14 +180,26 @@
 		{#if challenge?.host && !challenge.instance}
 			<section class="mb-6" aria-labelledby="connection-heading">
 				<h3 id="connection-heading" class="mb-3 text-sm font-semibold opacity-70">Connection</h3>
-				<button
-					type="button"
-					onclick={() => copyToClipboard(connectionString)}
-					class="focus:ring-primary inline-flex h-10 items-center gap-2 rounded-md bg-gray-100 px-4 font-mono text-sm font-medium transition-colors hover:bg-gray-200 focus:outline-none focus:ring-2 dark:bg-gray-800 dark:hover:bg-gray-700"
-					aria-label="Copy connection string: {connectionString}"
-				>
-					<span>{connectionString}</span>
-				</button>
+				<div class="flex items-center gap-3">
+					<button
+						type="button"
+						onclick={() => copyToClipboard(connectionString)}
+						class="focus:ring-primary inline-flex h-10 items-center gap-2 rounded-md bg-gray-100 px-4 font-mono text-sm font-medium transition-colors hover:bg-gray-200 focus:outline-none focus:ring-2 dark:bg-gray-800 dark:hover:bg-gray-700"
+						aria-label="Copy connection string: {connectionString}"
+					>
+						<span>{connectionString}</span>
+					</button>
+					{#if connectionString.startsWith('http')}
+						<a
+							href={connectionString}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="text-primary text-sm font-semibold hover:underline"
+						>
+							Open
+						</a>
+					{/if}
+				</div>
 			</section>
 		{/if}
 

@@ -55,7 +55,7 @@
 </script>
 
 <Sheet.Root bind:open>
-	<Sheet.Content side="left" class="w-full px-5 sm:max-w-[640px]">
+	<Sheet.Content side="left" class="w-full px-5 sm:max-w-[640px] overflow-y-auto">
 		<div
 			class="from-muted/20 to-background mb-6 mt-4 rounded-xl border-0 bg-gradient-to-br p-6 shadow-sm"
 		>

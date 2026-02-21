@@ -3,7 +3,7 @@
 	import { user as authUser, authReady, userMode, loadUser } from '$lib/stores/auth';
 	import { push } from 'svelte-spa-router';
 	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
-	import { Globe, Users, Edit, Award, LayoutGrid, List } from '@lucide/svelte';
+	import { Globe, Users, Edit, Award, LayoutGrid, List, Mail, Medal } from '@lucide/svelte';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 
 	import SolveListTable from '$lib/components/team/TeamScoreboard.svelte';
@@ -152,13 +152,21 @@
 
 					<div class="min-w-0 flex-1 space-y-1">
 						<h1 class="truncate text-3xl font-bold tracking-tight">{team.name}</h1>
-						<div class="text-muted-foreground flex flex-wrap items-center gap-4 text-sm">
+						<div class="text-muted-foreground mt-1 flex flex-wrap items-center gap-4 text-sm">
+							{#if team.email}
+								<span class="flex items-center gap-1.5">
+									<Mail class="h-4 w-4" />
+									{team.email}
+								</span>
+							{/if}
 							<span class="flex items-center gap-1.5">
 								<Users class="h-4 w-4" />
 								{team.members?.length ?? 0} members
 							</span>
 							{#if team.country}
-								{@const countryData = countries.find((c) => c.iso3 === team.country.toUpperCase())}
+								{@const countryData = countries.find(
+									(c) => c.iso3 === String(team.country).toUpperCase()
+								)}
 								<span class="flex items-center gap-1.5">
 									<Globe class="h-4 w-4" />
 									{countryData?.name ?? team.country}
@@ -189,6 +197,31 @@
 						</div>
 					</div>
 				</div>
+
+				{#if Array.isArray(team.badges) && team.badges.length > 0}
+					<div class="border-border mt-6 flex flex-wrap items-center gap-3 border-t pt-4">
+						<span class="text-muted-foreground text-xs font-semibold uppercase tracking-wider"
+							>Badges</span
+						>
+						<div class="flex flex-wrap gap-2">
+							{#each team.badges as badge}
+								<Tooltip.Root>
+									<Tooltip.Trigger>
+										<span
+											class="bg-primary/10 text-primary inline-flex cursor-help items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+										>
+											<Medal class="mr-1 h-3 w-3" />
+											{badge.name}
+										</span>
+									</Tooltip.Trigger>
+									<Tooltip.Content>
+										<p>{badge.description}</p>
+									</Tooltip.Content>
+								</Tooltip.Root>
+							{/each}
+						</div>
+					</div>
+				{/if}
 			</Card.Content>
 		</Card.Root>
 

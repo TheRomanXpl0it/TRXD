@@ -7,10 +7,11 @@
 	import Solvelist from '$lib/components/account/AccountScoreboard.svelte';
 	import UserUpdate from '$lib/components/account/AccountEdit.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { Edit, Shield, Trophy, Target, Users, Globe } from '@lucide/svelte';
+	import { Edit, Shield, Trophy, Target, Users, Globe, Mail, Medal } from '@lucide/svelte';
 	import ErrorMessage from '$lib/components/ui/error-message.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import * as Card from '$lib/components/ui/card/index.js';
+	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import GeneratedAvatar from '$lib/components/ui/avatar/generated-avatar.svelte';
 	import RadarChart from '$lib/components/RadarChart.svelte';
@@ -80,6 +81,12 @@
 			team?.solves?.filter((s) => String(s.user_id) === String(userVerboseData?.id)).length ?? 0
 		);
 	});
+
+	const displayBadges = $derived.by(() => {
+		if ($userMode && userVerboseData?.badges?.length > 0) return userVerboseData.badges;
+		if (!$userMode && team?.badges?.length > 0) return team.badges;
+		return [];
+	});
 </script>
 
 {#if !$authReady | loading}
@@ -139,7 +146,7 @@
 						{/if}
 						{#if userVerboseData?.country}
 							{@const countryData = countries.find(
-								(c) => c.iso3 === userVerboseData.country.toUpperCase()
+								(c) => c.iso3 === String(userVerboseData.country).toUpperCase()
 							)}
 							<span class="flex items-center gap-1.5">
 								<Globe class="h-3.5 w-3.5" />
@@ -163,6 +170,12 @@
 						</div>
 
 						<div class="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+							{#if userVerboseData?.email}
+								<span class="flex items-center gap-1.5">
+									<Mail class="h-3.5 w-3.5" />
+									{userVerboseData.email}
+								</span>
+							{/if}
 							{#if userVerboseData?.joined_at}
 								<span class="flex items-center gap-1.5">
 									Joined {new Date(userVerboseData.joined_at).toLocaleDateString(undefined, {
@@ -181,7 +194,7 @@
 							{/if}
 							{#if userVerboseData?.country}
 								{@const countryData = countries.find(
-									(c) => c.iso3 === userVerboseData.country.toUpperCase()
+									(c) => c.iso3 === String(userVerboseData.country).toUpperCase()
 								)}
 								<span class="flex items-center gap-1.5">
 									<Globe class="h-3.5 w-3.5" />
@@ -213,6 +226,31 @@
 						</div>
 					</div>
 				</div>
+
+				{#if displayBadges.length > 0}
+					<div class="border-border mt-6 flex flex-wrap items-center gap-3 border-t pt-4">
+						<span class="text-muted-foreground text-xs font-semibold uppercase tracking-wider"
+							>Badges</span
+						>
+						<div class="flex flex-wrap gap-2">
+							{#each displayBadges as badge}
+								<Tooltip.Root>
+									<Tooltip.Trigger>
+										<span
+											class="bg-primary/10 text-primary inline-flex cursor-help items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+										>
+											<Medal class="mr-1 h-3 w-3" />
+											{badge.name}
+										</span>
+									</Tooltip.Trigger>
+									<Tooltip.Content>
+										<p>{badge.description}</p>
+									</Tooltip.Content>
+								</Tooltip.Root>
+							{/each}
+						</div>
+					</div>
+				{/if}
 			</Card.Content>
 		</Card.Root>
 

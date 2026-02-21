@@ -482,7 +482,7 @@
 <SolveListSheet bind:open={solvesOpen} challenge={selected} />
 
 {#if DeleteDialogCmp}
-	<DeleteDialogCmp bind:open={confirmDeleteOpen} {toDelete} {deleting} on:confirm={confirmDelete} />
+	<DeleteDialogCmp bind:open={confirmDeleteOpen} {toDelete} {deleting} onconfirm={confirmDelete} />
 {/if}
 
 {#if CreateModalCmp}
