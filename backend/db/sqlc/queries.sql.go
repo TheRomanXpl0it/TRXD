@@ -711,6 +711,7 @@ const getTeamsPreview = `-- name: GetTeamsPreview :many
 SELECT
     t.id,
     t.name,
+    COALESCE(u.top_role, 'Player')::TEXT AS user_role,
     t.score,
     t.country,
     COALESCE(
@@ -723,8 +724,15 @@ SELECT
       '[]'
     ) AS badges
   FROM teams t
+  LEFT JOIN (
+    SELECT team_id,
+        MAX(role) AS top_role
+      FROM users
+      WHERE role != 'Player'
+      GROUP BY team_id
+    ) u ON u.team_id = t.id
   LEFT JOIN badges b ON b.team_id = t.id
-  GROUP BY t.id, t.name, t.score, t.country
+  GROUP BY t.id, t.name, t.score, t.country, u.top_role
   ORDER BY t.id
   OFFSET $1
   LIMIT $2
@@ -736,11 +744,12 @@ type GetTeamsPreviewParams struct {
 }
 
 type GetTeamsPreviewRow struct {
-	ID      int32          `json:"id"`
-	Name    string         `json:"name"`
-	Score   int32          `json:"score"`
-	Country sql.NullString `json:"country"`
-	Badges  interface{}    `json:"badges"`
+	ID       int32          `json:"id"`
+	Name     string         `json:"name"`
+	UserRole string         `json:"user_role"`
+	Score    int32          `json:"score"`
+	Country  sql.NullString `json:"country"`
+	Badges   interface{}    `json:"badges"`
 }
 
 // Retrieve all teams
@@ -756,6 +765,7 @@ func (q *Queries) GetTeamsPreview(ctx context.Context, arg GetTeamsPreviewParams
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
+			&i.UserRole,
 			&i.Score,
 			&i.Country,
 			&i.Badges,
@@ -948,15 +958,21 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 }
 
 const getUserByTeamID = `-- name: GetUserByTeamID :one
-SELECT id FROM users WHERE team_id = $1 LIMIT 1
+SELECT id, email, role FROM users WHERE team_id = $1 LIMIT 1
 `
 
+type GetUserByTeamIDRow struct {
+	ID    int32    `json:"id"`
+	Email string   `json:"email"`
+	Role  UserRole `json:"role"`
+}
+
 // Retrieve a user associated with a team by team ID (Used in user mode)
-func (q *Queries) GetUserByTeamID(ctx context.Context, teamID sql.NullInt32) (int32, error) {
+func (q *Queries) GetUserByTeamID(ctx context.Context, teamID sql.NullInt32) (GetUserByTeamIDRow, error) {
 	row := q.queryRow(ctx, q.getUserByTeamIDStmt, getUserByTeamID, teamID)
-	var id int32
-	err := row.Scan(&id)
-	return id, err
+	var i GetUserByTeamIDRow
+	err := row.Scan(&i.ID, &i.Email, &i.Role)
+	return i, err
 }
 
 const getUserSolves = `-- name: GetUserSolves :many
@@ -1008,7 +1024,7 @@ func (q *Queries) GetUserSolves(ctx context.Context, userID int32) ([]GetUserSol
 }
 
 const getUsers = `-- name: GetUsers :many
-SELECT id, name, email, role, score, country
+SELECT id, name, role, score, country
   FROM users
   WHERE $1::BOOLEAN
     OR role = 'Player'
@@ -1026,7 +1042,6 @@ type GetUsersParams struct {
 type GetUsersRow struct {
 	ID      int32          `json:"id"`
 	Name    string         `json:"name"`
-	Email   string         `json:"email"`
 	Role    UserRole       `json:"role"`
 	Score   int32          `json:"score"`
 	Country sql.NullString `json:"country"`
@@ -1045,7 +1060,6 @@ func (q *Queries) GetUsers(ctx context.Context, arg GetUsersParams) ([]GetUsersR
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
-			&i.Email,
 			&i.Role,
 			&i.Score,
 			&i.Country,

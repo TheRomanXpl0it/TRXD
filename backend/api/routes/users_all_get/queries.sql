@@ -1,6 +1,6 @@
 -- name: GetUsers :many
 -- Retrieve all users
-SELECT id, name, email, role, score, country
+SELECT id, name, role, score, country
   FROM users
   WHERE sqlc.arg('is_admin')::BOOLEAN
     OR role = 'Player'

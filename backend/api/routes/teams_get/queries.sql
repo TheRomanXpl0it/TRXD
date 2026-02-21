@@ -22,4 +22,4 @@ SELECT badges.name, badges.description FROM badges
 
 -- name: GetUserByTeamID :one
 -- Retrieve a user associated with a team by team ID (Used in user mode)
-SELECT id FROM users WHERE team_id = $1 LIMIT 1;
+SELECT id, email, role FROM users WHERE team_id = $1 LIMIT 1;

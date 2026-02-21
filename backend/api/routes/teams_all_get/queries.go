@@ -11,12 +11,19 @@ import (
 type TeamData struct {
 	ID      int32           `json:"id"`
 	Name    string          `json:"name"`
+	Role    string          `json:"role,omitempty"`
 	Score   int32           `json:"score"`
 	Country string          `json:"country"`
 	Badges  json.RawMessage `json:"badges"`
 }
 
 func GetTeams(ctx context.Context, offset int32, limit int32) (int64, []TeamData, error) {
+	modeStr, err := db.GetConfig(ctx, "user-mode")
+	if err != nil {
+		return 0, nil, err
+	}
+	userMode := modeStr == "true"
+
 	total, err := db.GetTotalTeams(ctx)
 	if err != nil {
 		return 0, nil, err
@@ -39,6 +46,9 @@ func GetTeams(ctx context.Context, offset int32, limit int32) (int64, []TeamData
 			ID:    team.ID,
 			Name:  team.Name,
 			Score: team.Score,
+		}
+		if userMode {
+			teamData.Role = string(team.UserRole)
 		}
 		if team.Country.Valid {
 			teamData.Country = team.Country.String

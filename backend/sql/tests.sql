@@ -46,7 +46,7 @@ BEGIN
     cat-1: chall-1, chall-3, chall-4
     cat-2: chall-2, chall-5
   teams:
-    A: a (player), b (player), e (master)
+    A: a (player), b (player), e (admin)
     B: c (player)
     C: f (author)
     no-team: d (player)

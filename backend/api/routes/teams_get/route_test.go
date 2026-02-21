@@ -182,8 +182,10 @@ func TestRoute(t *testing.T) {
 	expected := JSON{
 		"badges":  []interface{}{},
 		"country": "",
+		"email":   "single@gmail.com",
 		"id":      teamID,
 		"name":    "single",
+		"role":    "Player",
 		"score":   0,
 		"solves":  []interface{}{},
 		"user_id": userID,
@@ -203,7 +205,9 @@ func TestRoute(t *testing.T) {
 			},
 		},
 		"country": "",
+		"email":   "a@a.a",
 		"name":    "A",
+		"role":    "Player",
 		"score":   1498,
 		"solves": []JSON{
 			{

@@ -11,8 +11,7 @@ import (
 type UserData struct {
 	ID      int32  `json:"id"`
 	Name    string `json:"name"`
-	Email   string `json:"email"`
-	Role    string `json:"role"`
+	Role    string `json:"role,omitempty"`
 	Score   int32  `json:"score"`
 	Country string `json:"country"`
 }
@@ -49,7 +48,6 @@ func GetUsers(ctx context.Context, isAdmin bool, offset int32, limit int32) (int
 			Score: user.Score,
 		}
 		if isAdmin {
-			userData.Email = user.Email
 			userData.Role = string(user.Role)
 		}
 		if user.Country.Valid {

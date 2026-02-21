@@ -23,6 +23,8 @@ type TeamData struct {
 	ID      int32                       `json:"id"`
 	UserID  *int32                      `json:"user_id,omitempty"`
 	Name    string                      `json:"name"`
+	Email   string                      `json:"email,omitempty"`
+	Role    string                      `json:"role,omitempty"`
 	Score   int32                       `json:"score"`
 	Country string                      `json:"country"`
 	Members []sqlc.GetTeamMembersRow    `json:"members,omitempty"`
@@ -108,11 +110,13 @@ func GetTeam(ctx context.Context, teamID int32, admin bool) (*TeamData, error) {
 		}
 		teamData.Members = members
 	} else {
-		uid, err := db.Sql.GetUserByTeamID(ctx, sql.NullInt32{Int32: teamID, Valid: true})
+		user, err := db.Sql.GetUserByTeamID(ctx, sql.NullInt32{Int32: teamID, Valid: true})
 		if err != nil {
 			return nil, err
 		}
-		teamData.UserID = &uid
+		teamData.UserID = &user.ID
+		teamData.Email = user.Email
+		teamData.Role = string(user.Role)
 	}
 
 	solves, err := getSolves(ctx, teamID, userMode)

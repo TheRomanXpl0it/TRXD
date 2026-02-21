@@ -105,4 +105,50 @@ func TestRoute(t *testing.T) {
 	session.CheckResponse(subSet(expected, 1, len(expected["teams"].([]JSON))))
 	session.Get("/teams?limit=2", nil, http.StatusOK)
 	session.CheckResponse(subSet(expected, 0, 2))
+
+	//! User Mode tests
+	test_utils.UpdateConfig(t, "user-mode", "true")
+	expected = JSON{
+		"teams": []JSON{
+			{
+				"badges": []JSON{
+					{
+						"description": "Completed all cat-1 challenges",
+						"name":        "cat-1",
+					},
+				},
+				"country": "",
+				"id":      A.ID,
+				"name":    "A",
+				"role":    "Admin",
+				"score":   1498,
+			},
+			{
+				"badges": []JSON{
+					{
+						"description": "Completed all cat-2 challenges",
+						"name":        "cat-2",
+					},
+				},
+				"country": "",
+				"id":      B.ID,
+				"name":    "B",
+				"role":    "Player",
+				"score":   998,
+			},
+			{
+				"badges":  []JSON{},
+				"country": "",
+				"id":      C.ID,
+				"name":    "C",
+				"role":    "Author",
+				"score":   0,
+			},
+		},
+		"total": 3,
+	}
+
+	session = test_utils.NewApiTestSession(t, app)
+	session.Get("/teams", nil, http.StatusOK)
+	session.CheckResponse(expected)
 }

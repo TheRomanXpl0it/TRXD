@@ -171,6 +171,7 @@ func TestRoute(t *testing.T) {
 		for _, name := range attachments {
 			path := fmt.Sprintf("attachments/%d/%s", challID, name)
 			if _, err := os.Stat(path); os.IsNotExist(err) {
+				// NOTE: on a system like WSL could race with the slow creatio and fail
 				t.Fatalf("Expected attachment file %s to exist", path)
 			}
 		}
