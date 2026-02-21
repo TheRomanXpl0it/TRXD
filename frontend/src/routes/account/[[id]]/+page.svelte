@@ -27,9 +27,7 @@
 		const routeKey = normalizeKey($page.params.id);
 		// In User Mode, getUserData needs a TeamID (since it calls /teams).
 		// So fallback to team_id if available.
-		const fallbackKey = authState.userMode
-			? normalizeKey(authState.user?.team_id)
-			: normalizeKey(authState.user?.id);
+		const fallbackKey = normalizeKey(authState.user?.id);
 		const effectiveKey = routeKey ?? fallbackKey;
 		return effectiveKey ? validateId(effectiveKey) : null;
 	});
@@ -85,13 +83,14 @@
 	});
 
 	const displayBadges = $derived.by(() => {
-		if (authState.userMode && userVerboseData?.badges?.length > 0) return userVerboseData.badges;
-		if (!authState.userMode && team?.badges?.length > 0) return team.badges;
+		if (authState.userMode && userVerboseData?.badges && userVerboseData.badges.length > 0)
+			return userVerboseData.badges;
+		if (!authState.userMode && team?.badges && team.badges.length > 0) return team.badges;
 		return [];
 	});
 </script>
 
-{#if !authState.ready | loading}
+{#if !authState.ready || loading || !userVerboseData}
 	<div class="mx-auto max-w-5xl space-y-8 py-10">
 		<!-- Skeleton Header -->
 		<div class="space-y-4">

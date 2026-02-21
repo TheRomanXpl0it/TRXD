@@ -18,6 +18,7 @@
 	import CountryFlag from '$lib/components/ui/country-flag.svelte';
 	import countries from '$lib/data/countries.json';
 	import { createQuery } from '@tanstack/svelte-query';
+	import { authState, loadUser } from '$lib/stores/auth';
 
 	let teamEditOpen = $state(false);
 	let activeTab = $state<'overview' | 'solves'>('overview');
@@ -60,8 +61,8 @@
 	}
 
 	$effect(() => {
-		if (authState.ready && authState.userMode && authState.user?.team_id) {
-			goto('/not-found');
+		if (authState.ready && authState.userMode) {
+			goto('/accounts');
 		}
 	});
 </script>
@@ -345,4 +346,6 @@
 	</div>
 {/if}
 
-<TeamEdit bind:open={teamEditOpen} {team} onupdated={() => teamQuery.refetch()} />
+{#if team}
+	<TeamEdit bind:open={teamEditOpen} {team} onupdated={() => teamQuery.refetch()} />
+{/if}

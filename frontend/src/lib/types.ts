@@ -11,6 +11,11 @@ export interface PaginatedResponse<T> {
     };
 }
 
+export interface Badge {
+    name: string;
+    description: string;
+}
+
 export interface User {
     id: number;
     name: string;
@@ -21,16 +26,21 @@ export interface User {
     country?: string;
     joined_at?: string;
     solves?: any[]; // Populated by GetUser / GetTeam
+    badges?: Badge[];
+    score?: number;
 }
 
 export interface Team {
     id: number;
     name: string;
+    email?: string;
     country?: string;
     tags?: string[];
     captain_id?: number;
     members?: User[];
     solves?: any[]; // Populated by GetTeam
+    badges?: Badge[];
+    score?: number;
 }
 
 export interface Category {
