@@ -10,7 +10,7 @@ COPY ./frontend ./
 RUN npm run build
 
 
-FROM golang:1.24-alpine AS backend
+FROM golang:1.26-alpine AS backend
 
 WORKDIR /app
 COPY ./backend/go.mod ./backend/go.sum ./
@@ -28,7 +28,6 @@ FROM alpine:latest
 WORKDIR /app
 
 COPY --from=frontend /app/dist ./frontend
-# COPY --from=backend /app/frontend ./frontend
 
 COPY --from=backend /app/trxd ./trxd
 COPY --from=backend /app/static ./static

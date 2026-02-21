@@ -7,6 +7,7 @@ services:
         GIT_HASH: ${GIT_HASH:-unknown}
     restart: always
     environment:
+      CLICOLOR_FORCE: ${CLICOLOR_FORCE:-0}
       POSTGRES_HOST: postgres
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
