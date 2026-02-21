@@ -176,10 +176,9 @@ func TryCreateChallenge(t *testing.T, name string, category string, description 
 }
 
 func UnveilChallenge(t *testing.T, id int32) {
-	False := false
 	err := challenges_update.UpdateChallenge(t.Context(), &challenges_update.UpdateChallParams{
 		ChallID: &id,
-		Hidden:  &False,
+		Hidden:  new(false),
 	})
 	if err != nil {
 		Fatalf(t, "Failed to update challenge %d: %v", id, err)

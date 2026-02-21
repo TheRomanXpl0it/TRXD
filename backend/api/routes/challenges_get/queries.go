@@ -81,15 +81,13 @@ func GetChallenge(ctx context.Context, id int32, uid int32, tid int32, author bo
 		return nil, err
 	}
 
-	lifetime := int(dockerConfig.Lifetime)
-	maxMemory := int(dockerConfig.MaxMemory)
 	chall.DockerConfig = &DockerConfig{
 		Image:      dockerConfig.Image,
 		Compose:    dockerConfig.Compose,
 		HashDomain: &dockerConfig.HashDomain,
-		Lifetime:   &lifetime,
+		Lifetime:   new(int(dockerConfig.Lifetime)),
 		Envs:       &dockerConfig.Envs,
-		MaxMemory:  &maxMemory,
+		MaxMemory:  new(int(dockerConfig.MaxMemory)),
 		MaxCpu:     &dockerConfig.MaxCpu,
 	}
 

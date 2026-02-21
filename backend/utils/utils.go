@@ -64,7 +64,7 @@ func Compare(a, b interface{}) error {
 	}
 
 	if string(expectedBytes) != string(actualBytes) {
-		return fmt.Errorf("\nExpected:\n%s\nGot:\n%s", expectedBytes, actualBytes)
+		return fmt.Errorf("\n\033[33mExpected:\033[0m\n%s\n\033[31mGot:\033[0m\n%s", expectedBytes, actualBytes)
 	}
 
 	return nil

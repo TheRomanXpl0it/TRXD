@@ -10,8 +10,7 @@ sqlc:
 sql: sqlc
 
 run:
-	@go run . -test-data-WARNING-DO-NOT-USE-IN-PRODUCTION
-	@go run . -t
+	@ALLOW_REGISTER=true go run . -test-data-WARNING-DO-NOT-USE-IN-PRODUCTION
 	@go run .
 
 test:
