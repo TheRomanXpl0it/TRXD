@@ -25,18 +25,13 @@
 	const currentUserId = $derived.by(() => {
 		if (!authState.ready || !authState.user) return null;
 
-		// In User Mode, always fetch by team_id — the route param holds the user ID
-		// which would hit /api/teams/<user_id> and 404.
-		if (authState.userMode) {
-			const teamId = normalizeKey(authState.user?.team_id);
-			return teamId ? validateId(teamId) : null;
-		}
-
-		// In Team Mode, use the route param if present, otherwise fall back to own user id.
 		const routeKey = normalizeKey($page.params.id);
-		const fallbackKey = normalizeKey(authState.user?.id);
-		const effectiveKey = routeKey ?? fallbackKey;
-		return effectiveKey ? validateId(effectiveKey) : null;
+		if (routeKey) return validateId(routeKey);
+
+		// Fallback to own profile
+		const fallbackKey = authState.userMode ? authState.user.team_id : authState.user.id;
+
+		return fallbackKey ? validateId(String(fallbackKey)) : null;
 	});
 
 	function normalizeKey(x: unknown): string | null {

@@ -35,5 +35,12 @@ export default defineConfig({
 	},
 	ssr: {
 		noExternal: ['bits-ui', 'vaul-svelte', 'svelte-sonner', 'svelte-motion', 'paneforge', '@lucide/svelte']
+	},
+	build: {
+		rollupOptions: {
+			output: {
+				experimentalMinChunkSize: 10 * 1024 // 10KB
+			}
+		}
 	}
 });
