@@ -23,10 +23,17 @@
 
 	// Derive currentUserId from params/user
 	const currentUserId = $derived.by(() => {
-		if (!authState.ready) return null;
+		if (!authState.ready || !authState.user) return null;
+
+		// In User Mode, always fetch by team_id — the route param holds the user ID
+		// which would hit /api/teams/<user_id> and 404.
+		if (authState.userMode) {
+			const teamId = normalizeKey(authState.user?.team_id);
+			return teamId ? validateId(teamId) : null;
+		}
+
+		// In Team Mode, use the route param if present, otherwise fall back to own user id.
 		const routeKey = normalizeKey($page.params.id);
-		// In User Mode, getUserData needs a TeamID (since it calls /teams).
-		// So fallback to team_id if available.
 		const fallbackKey = normalizeKey(authState.user?.id);
 		const effectiveKey = routeKey ?? fallbackKey;
 		return effectiveKey ? validateId(effectiveKey) : null;
@@ -46,8 +53,8 @@
 	}
 
 	const userQuery = createQuery(() => ({
-		queryKey: ['user', currentUserId],
-		queryFn: () => getUserData(currentUserId!),
+		queryKey: ['user', currentUserId, authState.userMode],
+		queryFn: () => getUserData(currentUserId!, authState.userMode),
 		enabled: currentUserId !== null,
 		staleTime: 10_000
 	}));
@@ -68,12 +75,20 @@
 	}));
 
 	const team = $derived(teamQuery.data ?? null);
-	const loading = $derived(userQuery.isLoading || teamQuery.isLoading);
+
+	const loading = $derived(
+		(currentUserId !== null && !userQuery.isError && (userQuery.isFetching || !userVerboseData)) ||
+			(currentTeamId !== null && !teamQuery.isError && (teamQuery.isFetching || !team))
+	);
 	const teamError = $derived(userQuery.error?.message ?? teamQuery.error?.message ?? null);
 
-	const isOwnProfile = $derived(
-		authState.user && userVerboseData && String(authState.user.id) === String(userVerboseData.id)
-	);
+	const isOwnProfile = $derived.by(() => {
+		if (!authState.user || !userVerboseData) return false;
+		if (authState.userMode) {
+			return String(authState.user.team_id) === String(userVerboseData.id);
+		}
+		return String(authState.user.id) === String(userVerboseData.id);
+	});
 
 	const solveCount = $derived.by(() => {
 		if (authState.userMode) return userVerboseData?.solves?.length ?? 0;
@@ -90,7 +105,7 @@
 	});
 </script>
 
-{#if !authState.ready || loading || !userVerboseData}
+{#if !authState.ready || loading}
 	<div class="mx-auto max-w-5xl space-y-8 py-10">
 		<!-- Skeleton Header -->
 		<div class="space-y-4">
@@ -102,11 +117,19 @@
 			</div>
 		</div>
 	</div>
-{:else if !authState.user && !$page.params.id}
+{:else if !authState.user}
 	<div class="mx-auto max-w-5xl py-10">
 		<Card.Root>
 			<Card.Content class="py-10 text-center">
 				<p>You're not signed in.</p>
+			</Card.Content>
+		</Card.Root>
+	</div>
+{:else if !userVerboseData}
+	<div class="mx-auto max-w-5xl py-10">
+		<Card.Root>
+			<Card.Content class="py-10 text-center">
+				<p>Profile not found.</p>
 			</Card.Content>
 		</Card.Root>
 	</div>
@@ -161,7 +184,7 @@
 							<h1 class="truncate text-2xl font-bold sm:text-3xl">
 								{userVerboseData?.name ?? 'Unknown User'}
 							</h1>
-							{#if userVerboseData?.role && userVerboseData.role !== 'user'}
+							{#if userVerboseData?.role && userVerboseData.role !== 'User'}
 								<span
 									class="bg-primary/10 text-primary inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium uppercase tracking-wide"
 								>
@@ -366,11 +389,13 @@
 	</div>
 {/if}
 
-<UserUpdate
-	bind:open={editSheetOpen}
-	user={userVerboseData}
-	onupdated={() => {
-		userQuery.refetch();
-		if (!authState.userMode) teamQuery.refetch();
-	}}
-/>
+{#if userVerboseData}
+	<UserUpdate
+		bind:open={editSheetOpen}
+		user={userVerboseData}
+		onupdated={() => {
+			userQuery.refetch();
+			if (!authState.userMode) teamQuery.refetch();
+		}}
+	/>
+{/if}

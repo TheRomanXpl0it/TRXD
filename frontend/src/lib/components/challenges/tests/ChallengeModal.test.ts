@@ -85,8 +85,6 @@ describe('ChallengeModal Component', () => {
 		expect(screen.getByText('forensics')).toBeInTheDocument();
 	});
 
-
-
 	it('shows blood icon for unsolved challenges', () => {
 		const challenge = generateRandomChallenge({
 			solves: 0

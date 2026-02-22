@@ -18,7 +18,7 @@
 	let flag = $state('');
 	let submittingFlag = $state(false);
 	let flagError = $state(false);
-	let flagInputElement = $state<HTMLInputElement>();
+	let flagInputElement = $state<any>();
 
 	async function onSubmitFlag(ev: SubmitEvent) {
 		ev.preventDefault();

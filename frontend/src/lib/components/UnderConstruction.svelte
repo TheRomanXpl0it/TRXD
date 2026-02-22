@@ -1,6 +1,6 @@
-<div class="flex flex-row justify-center items-center">
-    <h1 class="text-2xl flex flex-row justify-center">
-        Under <br>
-        Construction...
-    </h1>
+<div class="flex flex-row items-center justify-center">
+	<h1 class="flex flex-row justify-center text-2xl">
+		Under <br />
+		Construction...
+	</h1>
 </div>

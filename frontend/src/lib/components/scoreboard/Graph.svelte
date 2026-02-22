@@ -7,14 +7,13 @@
 	// Props interface
 	interface Props {
 		data?: any[];
-		topN?: number;
 		timeMin?: number;
 		timeMax?: number;
 		teamNames?: Record<string, string>;
 		userMode?: boolean;
 	}
 
-	let { data = [], topN = 5, timeMin, timeMax, teamNames, userMode = false }: Props = $props();
+	let { data = [], timeMin, timeMax, teamNames, userMode = false }: Props = $props();
 
 	// Detect dark mode
 	let isDark = $state(false);
@@ -84,12 +83,10 @@
 
 	const chartData = $derived.by(() => {
 		const arr = Array.isArray(data) ? data : [];
-		const n = Number(topN ?? 5) || 5;
 
 		const ranked = [...arr]
 			.map((e: any) => ({ ...e, total: totalPoints(e) }))
-			.sort((a: any, b: any) => (b.total || 0) - (a.total || 0))
-			.slice(0, n);
+			.sort((a: any, b: any) => (b.total || 0) - (a.total || 0));
 
 		const series: Array<{
 			name: string;
@@ -205,8 +202,7 @@
 			<Card.Title>Score Progression</Card.Title>
 		</div>
 		<Card.Description>
-			Top {topN}
-			{userMode ? 'Players' : 'Teams'}
+			Score progression for all visible {userMode ? 'Players' : 'Teams'}
 		</Card.Description>
 	</Card.Header>
 

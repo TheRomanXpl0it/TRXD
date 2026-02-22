@@ -15,7 +15,9 @@ export interface PaginatedResponse<T> {
 
 export async function getScoreboard(page = 1, limit = 20): Promise<PaginatedResponse<any>> {
 	const offset = (page - 1) * limit;
-	const response = await api<{ total: number; teams: any[] }>(`/scoreboard?offset=${offset}&limit=${limit}`);
+	const response = await api<{ total: number; teams: any[] }>(
+		`/scoreboard?offset=${offset}&limit=${limit}`
+	);
 	return {
 		success: true,
 		data: response.teams,

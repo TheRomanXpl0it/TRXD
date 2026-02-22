@@ -20,15 +20,13 @@ export function getCountryItems(): CountryItem[] {
 }
 
 export function filterCountries(items: CountryItem[], search: string): CountryItem[] {
-	if (!search.trim()) return items.slice(0, 50);
+	if (!search.trim()) return items;
 
 	const lowerSearch = search.toLowerCase();
-	return items
-		.filter(
-			(c) =>
-				c.label.toLowerCase().includes(lowerSearch) || c.value.toLowerCase().includes(lowerSearch)
-		)
-		.slice(0, 50);
+	return items.filter(
+		(c) =>
+			c.label.toLowerCase().includes(lowerSearch) || c.value.toLowerCase().includes(lowerSearch)
+	);
 }
 
 export function getCountryByIso3(iso3: string): CountryItem | null {

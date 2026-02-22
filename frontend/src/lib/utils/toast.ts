@@ -27,5 +27,5 @@ export const toastMessages = {
 	updateSuccess: (itemName: string) => `${itemName} updated successfully.`,
 	updateError: (itemName: string) => `Failed to update ${itemName}.`,
 	requiredFields: 'Please fill in all required fields.',
-	invalidUrl: 'Please enter a valid URL.',
+	invalidUrl: 'Please enter a valid URL.'
 };

@@ -18,6 +18,8 @@
 	};
 </script>
 
-<span class="{baseClasses} {variantClasses[variant]} {className}">
+<span
+	class="{baseClasses} {variantClasses[variant as 'default' | 'category' | 'type']} {className}"
+>
 	{@render children()}
 </span>

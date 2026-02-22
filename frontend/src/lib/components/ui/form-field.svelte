@@ -34,6 +34,6 @@
 		<Input {id} {type} bind:value {placeholder} {disabled} />
 	{/if}
 	{#if hint}
-		<p class="text-xs text-muted-foreground">{hint}</p>
+		<p class="text-muted-foreground text-xs">{hint}</p>
 	{/if}
 </div>

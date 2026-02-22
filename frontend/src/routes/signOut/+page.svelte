@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
 	import { logout } from '@/auth';
-	import { clearUser, loadUser } from '$lib/stores/auth';
+	import { clearUser } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 
@@ -12,7 +12,6 @@
 			try {
 				await logout();
 				clearUser();
-				await loadUser();
 			} catch (e) {
 				console.error('Logout failed', e);
 			} finally {

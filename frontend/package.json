@@ -34,6 +34,7 @@
 		"@testing-library/jest-dom": "^6.9.1",
 		"@testing-library/svelte": "^5.2.8",
 		"@testing-library/user-event": "^14.6.1",
+		"@types/d3-scale": "^4.0.9",
 		"@types/node": "^24.9.1",
 		"@vitest/ui": "^4.0.8",
 		"bits-ui": "^2.11.4",
@@ -56,13 +57,13 @@
 		"vitest": "^4.0.8"
 	},
 	"dependencies": {
-		"apexcharts": "^4.7.0",
 		"@dvcol/svelte-simple-router": "^2.7.2",
 		"@iconify-icons/circle-flags": "^1.2.41",
 		"@iconify-json/circle-flags": "^1.2.10",
 		"@iconify/svelte": "^5.0.2",
 		"@sveltejs/svelte-virtual-list": "^3.0.1",
 		"@tanstack/svelte-query": "^6.0.5",
+		"apexcharts": "^4.7.0",
 		"country-flag-icons": "^1.5.21",
 		"dompurify": "^3.3.0",
 		"embla-carousel-autoplay": "^8.6.0",

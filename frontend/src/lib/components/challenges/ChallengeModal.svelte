@@ -29,7 +29,6 @@
 		onSolved?: () => void;
 		onCountdownUpdate?: (id: string | number, newCountdown: number) => void;
 		onOpenSolves?: () => void;
-		onOpenSolves?: () => void;
 		onInstanceChange?: (challenge?: any) => void;
 	} = $props();
 

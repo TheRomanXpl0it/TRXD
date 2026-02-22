@@ -14,14 +14,14 @@
 	import ChallengeModal from '$lib/components/challenges/ChallengeModal.svelte';
 	import AdminControls from '$lib/components/challenges/AdminControls.svelte';
 	import { Flag } from '@lucide/svelte';
+	import type { Challenge } from '$lib/types';
 
 	import { config } from '$lib/env';
 
 	// Lazy-loaded admin component handles
-	type Cmp = typeof import('svelte').SvelteComponent;
-	let CreateModalCmp: Cmp | null = $state(null);
-	let DeleteDialogCmp: Cmp | null = $state(null);
-	let ChallengeEditSheetCmp: Cmp | null = $state(null);
+	let CreateModalCmp: any | null = $state(null);
+	let DeleteDialogCmp: any | null = $state(null);
+	let ChallengeEditSheetCmp: any | null = $state(null);
 
 	const isAdmin = $derived(authState.user?.role === 'Admin');
 
@@ -104,30 +104,6 @@
 			.sort((a: any, b: any) => (a.label || '').localeCompare(b.label || ''))
 	);
 
-	// Sort challenges by points (lowest first), stable sort for equal points
-	const sortedChallenges = $derived(
-		filteredChallenges
-			.map((c, i) => ({ ...c, _index: i }))
-			.sort((a, b) => {
-				const pointsDiff = (a.points ?? 0) - (b.points ?? 0);
-				return pointsDiff !== 0 ? pointsDiff : a._index - b._index;
-			})
-	);
-
-	let points: number = $state(500);
-	let category: any = $state(null);
-	let challengeType = $state('Container');
-	let challengeName = $state('');
-	let challengeDescription = $state('');
-	let dynamicScore = $state(false);
-	let createLoading = $state(false);
-
-	let openModal = $state(false);
-	let solvesOpen = $state(false);
-	let editOpen = $state(false);
-	let creatingInstance = $state<Record<number, boolean>>({});
-	let destroyingInstance = $state<Record<number, boolean>>({});
-
 	// Filters
 	let filterCategories = $state<string[]>([]);
 	let filterTags = $state<string[]>([]);
@@ -135,23 +111,6 @@
 	let debouncedSearch = $state('');
 	let tagsOpen = $state(false);
 	let categoriesOpen = $state(false);
-
-	// Load compact view preference from localStorage
-	let compactView = $state(false);
-
-	onMount(() => {
-		const saved = localStorage.getItem('challenges-compact-view');
-		if (saved !== null) {
-			compactView = saved === 'true';
-		}
-	});
-
-	// Save to localStorage when compactView changes
-	$effect(() => {
-		if (typeof localStorage !== 'undefined') {
-			localStorage.setItem('challenges-compact-view', String(compactView));
-		}
-	});
 
 	// Fuzzy search helpers
 	function norm(s: any) {
@@ -177,30 +136,6 @@
 		}
 		return qi === q.length ? 1e5 - penalty : -Infinity;
 	}
-
-	const allTags = $derived(
-		Array.from(
-			new Set<string>(
-				(challenges ?? []).flatMap((ch: any) => (ch?.tags ?? []).map((t: any) => String(t)))
-			)
-		).sort((a, b) => a.localeCompare(b))
-	);
-
-	// Debounce search input
-	let debounceTimeout: ReturnType<typeof setTimeout> | undefined;
-
-	function updateDebouncedSearch() {
-		if (debounceTimeout) clearTimeout(debounceTimeout);
-		debounceTimeout = setTimeout(() => {
-			debouncedSearch = search;
-		}, 300);
-	}
-
-	$effect(() => {
-		// React to search changes
-		search;
-		updateDebouncedSearch();
-	});
 
 	// Optimize filtering with early returns and memoization
 	const filteredChallenges = $derived.by(() => {
@@ -253,6 +188,64 @@
 		});
 	});
 
+	// Sort challenges by points (lowest first), stable sort for equal points
+	const sortedChallenges = $derived(
+		filteredChallenges
+			.map((c: any, i: number) => ({ ...c, _index: i }))
+			.sort((a: any, b: any) => {
+				const pointsDiff = (a.points ?? 0) - (b.points ?? 0);
+				return pointsDiff !== 0 ? pointsDiff : a._index - b._index;
+			})
+	);
+
+	let points: number = $state(500);
+	let category: any = $state(null);
+	let challengeType = $state('Container');
+	let challengeName = $state('');
+	let challengeDescription = $state('');
+	let dynamicScore = $state(false);
+	let createLoading = $state(false);
+
+	let openModal = $state(false);
+	let solvesOpen = $state(false);
+	let editOpen = $state(false);
+	let creatingInstance = $state<Record<number, boolean>>({});
+	let destroyingInstance = $state<Record<number, boolean>>({});
+
+	// Load compact view preference from localStorage
+	let compactView = $state(false);
+
+	onMount(() => {
+		const saved = localStorage.getItem('challenges-compact-view');
+		if (saved !== null) {
+			compactView = saved === 'true';
+		}
+	});
+
+	// Save to localStorage when compactView changes
+	$effect(() => {
+		if (typeof localStorage !== 'undefined') {
+			localStorage.setItem('challenges-compact-view', String(compactView));
+		}
+	});
+
+	const allTags = $derived(
+		Array.from(
+			new Set<string>(
+				(challenges ?? []).flatMap((ch: any) => (ch?.tags ?? []).map((t: any) => String(t)))
+			)
+		).sort((a, b) => a.localeCompare(b))
+	);
+
+	// Debounce search — cleanup on unmount to avoid stale state updates
+	$effect(() => {
+		const q = search;
+		const t = setTimeout(() => {
+			debouncedSearch = q;
+		}, 300);
+		return () => clearTimeout(t);
+	});
+
 	const activeFiltersCount = $derived((filterCategories?.length ?? 0) + (filterTags?.length ?? 0));
 
 	// delete confirmation modal state
@@ -283,8 +276,12 @@
 		}
 	});
 
-	onMount(() => {
-		const timer = setInterval(() => {
+	// Self-stopping countdown timer — only runs while at least one instance is active.
+	let countdownTimer: ReturnType<typeof setInterval> | undefined;
+
+	function startCountdownTimer() {
+		if (countdownTimer) return;
+		countdownTimer = setInterval(() => {
 			let hasActive = false;
 			for (const id in countdowns) {
 				if (countdowns[id] > 0) {
@@ -292,10 +289,22 @@
 					hasActive = true;
 				}
 			}
-			// Optional: clear interval if no active countdowns, but re-enabling it is complex
-			// Keeping it simple but adding the check to avoid useless writes if nothing is active
+			if (!hasActive) {
+				clearInterval(countdownTimer);
+				countdownTimer = undefined;
+			}
 		}, 1000);
-		return () => clearInterval(timer);
+	}
+
+	// Start timer whenever a non-zero countdown appears; stop when all expire.
+	$effect(() => {
+		if (Object.values(countdowns).some((v) => v > 0)) {
+			startCountdownTimer();
+		}
+		return () => {
+			clearInterval(countdownTimer);
+			countdownTimer = undefined;
+		};
 	});
 
 	function groupByCategory(list: Challenge[]) {
@@ -479,7 +488,9 @@
 	}}
 />
 
-<SolveListSheet bind:open={solvesOpen} challenge={selected} />
+{#if selected}
+	<SolveListSheet bind:open={solvesOpen} challenge={selected} />
+{/if}
 
 {#if DeleteDialogCmp}
 	<DeleteDialogCmp bind:open={confirmDeleteOpen} {toDelete} {deleting} onconfirm={confirmDelete} />

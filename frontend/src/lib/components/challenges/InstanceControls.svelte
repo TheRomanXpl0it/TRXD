@@ -4,6 +4,7 @@
 	import { Spinner } from '$lib/components/ui/spinner/index.js';
 	import { toast } from 'svelte-sonner';
 	import { startInstance, stopInstance } from '$lib/instances';
+	import { fmtTimeLeft } from '$lib/utils/time';
 
 	let {
 		challenge = $bindable(),
@@ -14,22 +15,11 @@
 		challenge: any;
 		countdown?: number;
 		onCountdownUpdate?: (id: string | number, newCountdown: number) => void;
-		onCountdownUpdate?: (id: string | number, newCountdown: number) => void;
 		onInstanceChange?: (challenge?: any) => void;
 	} = $props();
 
 	let creatingInstance = $state(false);
 	let destroyingInstance = $state(false);
-
-	function fmtTimeLeft(total: number): string {
-		if (!total || total < 0) total = 0;
-		const h = Math.floor(total / 3600);
-		const m = Math.floor((total % 3600) / 60);
-		const s = Math.floor(total % 60);
-		if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-		if (m > 0) return `${m}:${String(s).padStart(2, '0')}`;
-		return `${s}`;
-	}
 
 	function copyToClipboard(text: string) {
 		if (typeof navigator === 'undefined') return;

@@ -5,7 +5,7 @@
 	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
 	import ScoreHistory from '$lib/components/scoreboard/Graph.svelte';
 	import { Medal, Trophy } from '@lucide/svelte';
-	import { getGraphData, getScoreboard } from '@/scoreboard';
+	import { getScoreboard, getGraphData } from '@/scoreboard';
 	import { goto } from '$app/navigation';
 	import { authState } from '$lib/stores/auth';
 	import ErrorMessage from '$lib/components/ui/error-message.svelte';
@@ -101,7 +101,7 @@
 		<!-- Graph -->
 		<!-- Added shadow/border fix to graph container if needed, but keeping simple div for now -->
 		<div class="mb-8">
-			<ScoreHistory data={graphData} topN={10} {teamNames} userMode={authState.userMode} />
+			<ScoreHistory data={graphData} {teamNames} userMode={authState.userMode} />
 		</div>
 
 		<Card.Root class="overflow-hidden border-0 shadow-sm">

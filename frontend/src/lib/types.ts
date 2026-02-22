@@ -1,106 +1,107 @@
 export interface PaginatedResponse<T> {
-    success: boolean;
-    data: T[];
-    pagination?: {
-        next?: number;
-        prev?: number;
-        page?: number;
-        per_page?: number;
-        total?: number;
-        pages?: number;
-    };
+	success: boolean;
+	data: T[];
+	pagination?: {
+		next?: number;
+		prev?: number;
+		page?: number;
+		per_page?: number;
+		total?: number;
+		pages?: number;
+	};
 }
 
 export interface Badge {
-    name: string;
-    description: string;
+	name: string;
+	description: string;
 }
 
 export interface User {
-    id: number;
-    name: string;
-    email?: string;
-    profileImage?: string;
-    team_id?: number | null;
-    role: 'User' | 'Admin';
-    country?: string;
-    joined_at?: string;
-    solves?: any[]; // Populated by GetUser / GetTeam
-    badges?: Badge[];
-    score?: number;
+	id: number;
+	name: string;
+	email?: string;
+	image?: string;
+	profileImage?: string;
+	team_id?: number | null;
+	role: 'User' | 'Admin';
+	country?: string;
+	joined_at?: string;
+	solves?: any[]; // Populated by GetUser / GetTeam
+	badges?: Badge[];
+	score?: number;
 }
 
 export interface Team {
-    id: number;
-    name: string;
-    email?: string;
-    country?: string;
-    tags?: string[];
-    captain_id?: number;
-    members?: User[];
-    solves?: any[]; // Populated by GetTeam
-    badges?: Badge[];
-    score?: number;
+	id: number;
+	name: string;
+	email?: string;
+	country?: string;
+	tags?: string[];
+	captain_id?: number;
+	members?: User[];
+	solves?: any[]; // Populated by GetTeam
+	badges?: Badge[];
+	score?: number;
 }
 
 export interface Category {
-    id?: number;
-    name: string;
-    icon?: string;
+	id?: number;
+	name: string;
+	icon?: string;
 }
 
 export interface Challenge {
-    id: number;
-    name: string;
-    description: string;
-    category: string;
-    type: 'Container' | 'Compose' | 'Normal';
-    score_type: 'static' | 'dynamic';
-    points: number;
-    max_points?: number;
-    min_points?: number;
-    initial_points?: number;
-    decay?: number;
+	id: number;
+	name: string;
+	description: string;
+	category: string;
+	type: 'Container' | 'Compose' | 'Normal';
+	score_type: 'static' | 'dynamic';
+	points: number;
+	max_points?: number;
+	min_points?: number;
+	initial_points?: number;
+	decay?: number;
 
-    // Metadata
-    tags: string[];
-    authors: string[];
-    attachments?: string[];
-    difficulty?: string;
+	// Metadata
+	tags: string[];
+	authors: string[];
+	attachments?: string[];
+	difficulty?: string;
 
-    // Connection info
-    host?: string;
-    port?: number;
-    connection_info?: string;
+	// Connection info
+	host?: string;
+	port?: number;
+	connection_info?: string;
 
-    // Instance info
-    instance: boolean;
-    instance_host?: string | null;
-    instance_port?: number | null;
-    timeout?: number | null;
+	// Instance info
+	instance: boolean;
+	instance_host?: string | null;
+	instance_port?: number | null;
+	timeout?: number | null;
 
-    // Solve state
-    solved?: boolean;
-    solves?: number;
-    solves_list?: Solve[];
+	// Solve state
+	solved?: boolean;
+	solves?: number;
+	solves_list?: Solve[];
 
-    // Admin fields
-    hidden?: boolean;
+	// Admin fields
+	hidden?: boolean;
 }
 
 export interface Solve {
-    id: number;
-    name: string;
-    timestamp: string;
-    // Optional context-specific fields
-    user_id?: number;
-    category?: string;
-    points?: number;
-    first_blood?: boolean;
+	id: number;
+	name: string;
+	timestamp: string;
+	// Optional context-specific fields
+	user_id?: number;
+	category?: string;
+	points?: number;
+	first_blood?: boolean;
 }
 
 export interface ApiError {
-    success: boolean;
-    errors?: string[];
-    message?: string;
+	success: boolean;
+	errors?: string[];
+	message?: string;
 }

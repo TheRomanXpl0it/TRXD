@@ -21,7 +21,7 @@ vi.mock('svelte-sonner', () => ({
 
 describe('InstanceControls Component', () => {
 	const originalError = console.error;
-	
+
 	beforeEach(() => {
 		vi.clearAllMocks();
 		// Reset clipboard mock
@@ -230,7 +230,10 @@ describe('InstanceControls Component', () => {
 
 		// Make the API call slow
 		mockStart.mockImplementationOnce(
-			() => new Promise((resolve) => setTimeout(() => resolve({ host: 'test', port: 1337, timeout: 3600 }), 100))
+			() =>
+				new Promise((resolve) =>
+					setTimeout(() => resolve({ host: 'test', port: 1337, timeout: 3600 }), 100)
+				)
 		);
 
 		const challenge = { id: challengeId, host: null, port: null, timeout: null };
@@ -242,7 +245,7 @@ describe('InstanceControls Component', () => {
 		});
 
 		const startButton = screen.getByRole('button', { name: /start.*instance/i });
-		
+
 		// Click button
 		await user.click(startButton);
 
@@ -278,7 +281,7 @@ describe('InstanceControls Component', () => {
 		});
 
 		const stopButton = screen.getByRole('button', { name: /stop instance/i });
-		
+
 		// Click button
 		await user.click(stopButton);
 
@@ -294,7 +297,10 @@ describe('InstanceControls Component', () => {
 		const mockStart = vi.mocked(startInstance);
 
 		mockStart.mockImplementationOnce(
-			() => new Promise((resolve) => setTimeout(() => resolve({ host: 'test', port: 1337, timeout: 3600 }), 100))
+			() =>
+				new Promise((resolve) =>
+					setTimeout(() => resolve({ host: 'test', port: 1337, timeout: 3600 }), 100)
+				)
 		);
 
 		const challenge = { id: challengeId, host: null, port: null, timeout: null };
@@ -306,13 +312,9 @@ describe('InstanceControls Component', () => {
 		});
 
 		const startButton = screen.getByRole('button', { name: /start.*instance/i });
-		
+
 		// Try to click multiple times rapidly
-		await Promise.all([
-			user.click(startButton),
-			user.click(startButton),
-			user.click(startButton)
-		]);
+		await Promise.all([user.click(startButton), user.click(startButton), user.click(startButton)]);
 
 		// Wait for request to complete
 		await waitFor(() => {
@@ -411,7 +413,9 @@ describe('InstanceControls Component', () => {
 		const mockToast = vi.mocked(toast);
 
 		// Mock clipboard to reject
-		navigator.clipboard.writeText = vi.fn().mockRejectedValueOnce(new Error('Clipboard access denied'));
+		navigator.clipboard.writeText = vi
+			.fn()
+			.mockRejectedValueOnce(new Error('Clipboard access denied'));
 
 		const challenge = {
 			id: challengeId,
@@ -450,7 +454,9 @@ describe('InstanceControls Component', () => {
 		// Should show Start Instance button
 		expect(screen.getByRole('button', { name: /start.*instance/i })).toBeInTheDocument();
 		// Should NOT show running instance button
-		expect(screen.queryByRole('button', { name: /copy instance connection/i })).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole('button', { name: /copy instance connection/i })
+		).not.toBeInTheDocument();
 	});
 
 	it('shows running instance button when countdown is greater than 0', () => {
@@ -532,7 +538,9 @@ describe('InstanceControls Component', () => {
 
 		// Should now show start button
 		expect(screen.getByRole('button', { name: /start.*instance/i })).toBeInTheDocument();
-		expect(screen.queryByRole('button', { name: /copy instance connection/i })).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole('button', { name: /copy instance connection/i })
+		).not.toBeInTheDocument();
 	});
 
 	it('handles negative countdown values as 0', () => {
@@ -553,6 +561,8 @@ describe('InstanceControls Component', () => {
 
 		// With countdown <= 0, should show start button instead of running state
 		expect(screen.getByRole('button', { name: /start.*instance/i })).toBeInTheDocument();
-		expect(screen.queryByRole('button', { name: /copy instance connection/i })).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole('button', { name: /copy instance connection/i })
+		).not.toBeInTheDocument();
 	});
 });

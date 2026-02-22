@@ -1,26 +1,25 @@
-import { api } from '$lib/api'
+import { api } from '$lib/api';
 
 export async function createTagsForChallenge(tags: any[], chall_id: any) {
-  const list = Array.from(tags ?? [])
-    .map((name) =>
-      api<any>('/tags', {
-        method: 'POST',
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name, chall_id }), // let `api` set JSON headers & stringify
-      })
-    );
+	const list = Array.from(tags ?? []).map((name) =>
+		api<any>('/tags', {
+			method: 'POST',
+			headers: { 'content-type': 'application/json' },
+			body: JSON.stringify({ name, chall_id }) // let `api` set JSON headers & stringify
+		})
+	);
 
-  return Promise.all(list);
+	return Promise.all(list);
 }
 
 export async function deleteTagsFromChallenge(tags: any[], chall_id: any) {
-  const list = Array.from(tags ?? []).map((name) =>
-    api<any>('/tags', {
-      method: 'DELETE',
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name, chall_id }), // no toLowerCase, no trim
-    })
-  );
+	const list = Array.from(tags ?? []).map((name) =>
+		api<any>('/tags', {
+			method: 'DELETE',
+			headers: { 'content-type': 'application/json' },
+			body: JSON.stringify({ name, chall_id }) // no toLowerCase, no trim
+		})
+	);
 
-  return Promise.all(list);
+	return Promise.all(list);
 }

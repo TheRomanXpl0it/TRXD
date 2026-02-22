@@ -8,12 +8,12 @@
 
 	let { content, class: className, ...rest }: Props = $props();
 
-    // Memoize the HTML rendering to avoid re-rendering on every reactivity cycle
-    let html = $derived.by(() => renderMarkdown(content));
+	// Memoize the HTML rendering to avoid re-rendering on every reactivity cycle
+	let html = $derived.by(() => renderMarkdown(content));
 </script>
 
 <div class="markdown-content {className || ''}" {...rest}>
-    {@html html}
+	{@html html}
 </div>
 
 <style>
@@ -130,8 +130,6 @@
 		border-radius: 0.375rem;
 		margin: 0.75rem 0;
 	}
-
-
 
 	.markdown-content :global(table) {
 		width: 100%;

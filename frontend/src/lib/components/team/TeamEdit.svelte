@@ -119,7 +119,7 @@
 					{#if team?.country && team.country !== countryCode}
 						{@const current = getCountryByIso3(team.country)}
 						<p class="text-muted-foreground mt-1 text-sm">
-							Current: {current?.name ?? team.country}
+							Current: {current?.label ?? team.country}
 						</p>
 					{/if}
 				</div>

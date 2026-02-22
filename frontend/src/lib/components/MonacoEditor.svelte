@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import * as monaco from 'monaco-editor';
+	import type monaco from 'monaco-editor';
+	type Monaco = typeof import('monaco-editor');
+	type Editor = monaco.editor.IStandaloneCodeEditor;
 
 	let {
 		value = $bindable(''),
@@ -10,8 +12,9 @@
 	} = $props();
 
 	let editorContainer: HTMLDivElement;
-	let editor: monaco.editor.IStandaloneCodeEditor | null = null;
+	let editor: Editor | null = null;
 	let isUpdatingFromProp = false;
+	let monacoLib: Monaco | null = null;
 
 	// Detect dark mode
 	function isDarkMode(): boolean {
@@ -19,10 +22,14 @@
 		return document.documentElement.classList.contains('dark');
 	}
 
-	onMount(() => {
+	let observer: MutationObserver | null = null;
+
+	onMount(async () => {
 		if (!editorContainer) return;
 
-		editor = monaco.editor.create(editorContainer, {
+		monacoLib = await import('monaco-editor');
+
+		editor = monacoLib.editor.create(editorContainer, {
 			value: value || '',
 			language,
 			theme: isDarkMode() ? 'vs-dark' : 'vs',
@@ -38,19 +45,19 @@
 
 		editor.onDidChangeModelContent(() => {
 			if (!editor || isUpdatingFromProp) return;
-			
+
 			const newValue = editor.getValue();
 			value = newValue;
-			
+
 			if (onChange) {
 				onChange(newValue);
 			}
 		});
 
 		// Watch for theme changes
-		const observer = new MutationObserver(() => {
+		observer = new MutationObserver(() => {
 			if (editor) {
-				monaco.editor.setTheme(isDarkMode() ? 'vs-dark' : 'vs');
+				monacoLib?.editor.setTheme(isDarkMode() ? 'vs-dark' : 'vs');
 			}
 		});
 
@@ -58,14 +65,11 @@
 			attributes: true,
 			attributeFilter: ['class']
 		});
-
-		return () => {
-			observer.disconnect();
-		};
 	});
 
 	$effect(() => {
-		if (!editor || !value) return;
+		if (!editor || !monacoLib) return;
+		if (!value) return;
 
 		const currentValue = editor.getValue();
 		if (currentValue !== value) {
@@ -76,6 +80,7 @@
 	});
 
 	onDestroy(() => {
+		observer?.disconnect();
 		if (editor) {
 			editor.dispose();
 		}

@@ -1,3 +1,7 @@
+<script module lang="ts">
+	declare const __GIT_HASH__: string;
+</script>
+
 <script lang="ts">
 	import { authState } from '$lib/stores/auth';
 

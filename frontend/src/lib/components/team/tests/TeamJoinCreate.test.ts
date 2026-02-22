@@ -147,7 +147,9 @@ describe('TeamJoinCreate Component', () => {
 
 	it('shows loading states', async () => {
 		const user = userEvent.setup();
-		vi.mocked(joinTeam).mockImplementation(() => new Promise((resolve) => setTimeout(() => resolve({ ok: true } as any), 200)));
+		vi.mocked(joinTeam).mockImplementation(
+			() => new Promise((resolve) => setTimeout(() => resolve({ ok: true } as any), 200))
+		);
 
 		render(TeamJoinCreate);
 		await flush();

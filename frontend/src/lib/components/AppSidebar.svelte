@@ -17,6 +17,7 @@
 	import { getUserData } from '$lib/user';
 	import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js';
 	import GeneratedAvatar from '$lib/components/ui/avatar/generated-avatar.svelte';
+	import { createQuery } from '@tanstack/svelte-query';
 
 	const sidebar = useSidebar();
 
@@ -61,24 +62,20 @@
 			.concat(isAdmin ? [configsItem] : [])
 	);
 
-	// Enrich user data to ensure profile image is available in `image`
-	let enrichedUser = $state<any>(null);
-	const displayImage = $derived(enrichedUser?.image ?? user?.image ?? user?.profileImage ?? null);
-
-	$effect(() => {
-		const id = userMode ? user?.id : user?.team_id;
-		if (!id) {
-			enrichedUser = null;
-			return;
-		}
-		(async () => {
-			try {
-				enrichedUser = await getUserData(id);
-			} catch {
-				// leave enrichedUser as null on failure
-			}
-		})();
-	});
+	// Use the same queryKey pattern as account/+page.svelte so TanStack Query
+	// deduplicates the request — no extra network call when the account page
+	// already fetched this data.
+	const profileId = $derived(userMode ? user?.team_id : user?.id);
+	const profileQuery = createQuery(() => ({
+		queryKey: ['user', profileId ?? null, userMode],
+		queryFn: () => getUserData(profileId as number, userMode),
+		enabled: profileId != null,
+		staleTime: 10_000
+	}));
+	const enrichedUser = $derived(profileQuery.data ?? null);
+	const displayImage = $derived(
+		(enrichedUser as any)?.image ?? user?.image ?? user?.profileImage ?? null
+	);
 </script>
 
 <Sidebar.Root>

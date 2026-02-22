@@ -14,7 +14,10 @@ export async function getChallenge(chall_id: string | number): Promise<Challenge
 	return api<Challenge>(`/challenges/${chall_id}`);
 }
 
-export async function submitFlag(chall_id: string, flag: string): Promise<{ status: string }> {
+export async function submitFlag(
+	chall_id: string,
+	flag: string
+): Promise<{ status: string; first_blood?: boolean }> {
 	return api<{ first_blood: boolean; status: string }>(`/submissions`, {
 		headers: { 'content-type': 'application/json' },
 		method: 'POST',

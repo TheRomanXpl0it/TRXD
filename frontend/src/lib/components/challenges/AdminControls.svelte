@@ -8,10 +8,7 @@
 	import { toast } from 'svelte-sonner';
 	import { createCategory } from '$lib/categories';
 
-	let {
-		'onopen-create': onOpenCreate,
-		'oncategory-created': onCategoryCreated
-	} = $props<{
+	let { 'onopen-create': onOpenCreate, 'oncategory-created': onCategoryCreated } = $props<{
 		'onopen-create'?: () => void;
 		'oncategory-created'?: () => void;
 	}>();
@@ -65,8 +62,8 @@
 		</Popover.Trigger>
 		<Popover.Content class="w-[320px] p-4">
 			<div class="mb-4">
-				<h4 class="font-semibold text-base">Create Category</h4>
-				<p class="text-sm text-muted-foreground mt-1">Add a new challenge category</p>
+				<h4 class="text-base font-semibold">Create Category</h4>
+				<p class="text-muted-foreground mt-1 text-sm">Add a new challenge category</p>
 			</div>
 
 			<form class="space-y-4" onsubmit={handleCreateCategory}>

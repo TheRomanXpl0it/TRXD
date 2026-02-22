@@ -1,4 +1,3 @@
-
 export const config = {
 	/**
 	 * Backend URL for API requests and file downloads

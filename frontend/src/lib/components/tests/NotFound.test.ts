@@ -43,4 +43,3 @@ describe('NotFound Component', () => {
 		expect(challLink.tagName).toBe('A');
 	});
 });
-

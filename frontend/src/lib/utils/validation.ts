@@ -22,7 +22,11 @@ export function validateUrl(value: string, fieldName: string = 'URL'): string | 
 	return null;
 }
 
-export function validateMinLength(value: string, minLength: number, fieldName: string = 'Field'): string | null {
+export function validateMinLength(
+	value: string,
+	minLength: number,
+	fieldName: string = 'Field'
+): string | null {
 	if (value.trim().length < minLength) {
 		return `${fieldName} must be at least ${minLength} characters.`;
 	}

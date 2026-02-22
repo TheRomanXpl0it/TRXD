@@ -207,7 +207,13 @@
 						<div class="mt-3">
 							{#if c.type === 'bool'}
 								<div class="bg-background flex items-center gap-3 rounded-md border p-3">
-									<Checkbox bind:checked={form[c.key]} id={c.key} />
+									<Checkbox
+										checked={form[c.key] === true}
+										onCheckedChange={(v) => {
+											form[c.key] = !!v;
+										}}
+										id={c.key}
+									/>
 									<Label for={c.key} class="cursor-pointer text-sm font-medium">
 										{form[c.key] ? 'Enabled' : 'Disabled'}
 									</Label>

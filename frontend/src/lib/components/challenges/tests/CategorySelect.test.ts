@@ -15,8 +15,8 @@ describe('CategorySelect Component', () => {
 	beforeEach(() => {
 		// Clear any existing popovers
 		document.body.innerHTML = '';
-		
-		Element.prototype.scrollIntoView = function() {};
+
+		Element.prototype.scrollIntoView = function () {};
 	});
 
 	it('renders with placeholder text', () => {
@@ -125,7 +125,7 @@ describe('CategorySelect Component', () => {
 		const user = userEvent.setup();
 
 		let selectedValue = '';
-		
+
 		render(CategorySelect, {
 			props: {
 				items: categories,
@@ -288,7 +288,6 @@ describe('CategorySelect Component', () => {
 			expect(document.activeElement).toBe(button);
 		});
 	});
-
 
 	it('shows "No results" when search has no matches', async () => {
 		const user = userEvent.setup();
@@ -598,7 +597,9 @@ describe('CategorySelect Component', () => {
 
 		await waitFor(() => {
 			// The group label is used as the data-value attribute
-			const group = document.querySelector('[data-command-group][data-value="challenge-categories"]');
+			const group = document.querySelector(
+				'[data-command-group][data-value="challenge-categories"]'
+			);
 			expect(group).toBeInTheDocument();
 		});
 	});

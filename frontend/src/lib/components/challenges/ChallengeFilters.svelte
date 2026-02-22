@@ -31,25 +31,21 @@
 
 	const filteredCategories = $derived(
 		categorySearch
-			? categories.filter(c => 
-				c.label.toLowerCase().includes(categorySearch.toLowerCase())
-			).sort()
+			? categories
+					.filter((c) => c.label.toLowerCase().includes(categorySearch.toLowerCase()))
+					.sort()
 			: categories
 	);
 
 	const filteredTags = $derived(
-		tagSearch
-			? allTags.filter(t => 
-				t.toLowerCase().includes(tagSearch.toLowerCase())
-			)
-			: allTags
+		tagSearch ? allTags.filter((t) => t.toLowerCase().includes(tagSearch.toLowerCase())) : allTags
 	);
 
 	function clearFilters() {
 		filterCategories = [];
 		filterTags = [];
 	}
-	
+
 	function toggleCategory(value: string) {
 		const idx = filterCategories.indexOf(value);
 		if (idx > -1) {
@@ -60,7 +56,7 @@
 			filterCategories = filterCategories;
 		}
 	}
-	
+
 	function toggleTag(value: string) {
 		const idx = filterTags.indexOf(value);
 		if (idx > -1) {
@@ -74,7 +70,7 @@
 </script>
 
 <div class="mb-6 flex flex-wrap items-center gap-2">
-	<div class="relative w-full sm:flex-1 sm:w-auto min-w-0">
+	<div class="relative w-full min-w-0 sm:w-auto sm:flex-1">
 		<label for="search-challenges" class="sr-only">Search challenges</label>
 		<Input
 			id="search-challenges"
@@ -101,10 +97,10 @@
 				<Button
 					{...props}
 					variant="outline"
-					class="flex cursor-pointer items-center gap-1 shrink-0"
+					class="flex shrink-0 cursor-pointer items-center gap-1"
 					aria-label={filterCategories.length > 0
 						? `${filterCategories.length} categories selected`
-						: "Filter by categories"}
+						: 'Filter by categories'}
 				>
 					<Shapes class="h-4 w-4" aria-hidden="true" />
 					<span class="hidden sm:inline">Categories</span>
@@ -113,22 +109,16 @@
 		</Popover.Trigger>
 		<Popover.Content class="w-[260px] p-1">
 			<div class="px-2 py-1.5">
-				<Input
-					bind:value={categorySearch}
-					placeholder="Search categories..."
-					class="h-8"
-				/>
+				<Input bind:value={categorySearch} placeholder="Search categories..." class="h-8" />
 			</div>
 			{#if filteredCategories.length === 0}
-				<div class="py-6 text-center text-sm text-muted-foreground">
-					No categories found.
-				</div>
+				<div class="text-muted-foreground py-6 text-center text-sm">No categories found.</div>
 			{:else if filteredCategories.length > 20}
 				<div class="px-1" style="height: 300px;">
 					<VirtualList items={filteredCategories} let:item>
 						<button
 							type="button"
-							class="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+							class="hover:bg-accent hover:text-accent-foreground relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
 							onclick={() => toggleCategory(item.value)}
 						>
 							<Checkbox
@@ -140,11 +130,11 @@
 					</VirtualList>
 				</div>
 			{:else}
-				<div class="px-1 max-h-[300px] overflow-y-auto">
+				<div class="max-h-[300px] overflow-y-auto px-1">
 					{#each filteredCategories as item (item.value)}
 						<button
 							type="button"
-							class="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+							class="hover:bg-accent hover:text-accent-foreground relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
 							onclick={() => toggleCategory(item.value)}
 						>
 							<Checkbox
@@ -165,10 +155,10 @@
 				<Button
 					{...props}
 					variant="outline"
-					class="flex cursor-pointer items-center gap-1 shrink-0"
+					class="flex shrink-0 cursor-pointer items-center gap-1"
 					aria-label={filterTags.length > 0
 						? `${filterTags.length} tags selected`
-						: "Filter by tags"}
+						: 'Filter by tags'}
 				>
 					<Filter class="h-4 w-4" aria-hidden="true" />
 					<span class="hidden sm:inline">Tags</span>
@@ -177,22 +167,16 @@
 		</Popover.Trigger>
 		<Popover.Content class="w-[260px] p-1">
 			<div class="px-2 py-1.5">
-				<Input
-					bind:value={tagSearch}
-					placeholder="Search tags..."
-					class="h-8"
-				/>
+				<Input bind:value={tagSearch} placeholder="Search tags..." class="h-8" />
 			</div>
 			{#if filteredTags.length === 0}
-				<div class="py-6 text-center text-sm text-muted-foreground">
-					No tags found.
-				</div>
+				<div class="text-muted-foreground py-6 text-center text-sm">No tags found.</div>
 			{:else if filteredTags.length > 20}
 				<div class="px-1" style="height: 300px;">
 					<VirtualList items={filteredTags} let:item>
 						<button
 							type="button"
-							class="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+							class="hover:bg-accent hover:text-accent-foreground relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
 							onclick={() => toggleTag(item)}
 						>
 							<Checkbox checked={filterTags.includes(item)} aria-label="Filter by {item}" />
@@ -201,11 +185,11 @@
 					</VirtualList>
 				</div>
 			{:else}
-				<div class="px-1 max-h-[300px] overflow-y-auto">
+				<div class="max-h-[300px] overflow-y-auto px-1">
 					{#each filteredTags as item}
 						<button
 							type="button"
-							class="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+							class="hover:bg-accent hover:text-accent-foreground relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
 							onclick={() => toggleTag(item)}
 						>
 							<Checkbox checked={filterTags.includes(item)} aria-label="Filter by {item}" />
@@ -221,7 +205,7 @@
 		<Button
 			variant="ghost"
 			size="icon"
-			class="cursor-pointer shrink-0"
+			class="shrink-0 cursor-pointer"
 			onclick={clearFilters}
 			aria-label="Clear all filters ({activeFiltersCount} active)"
 		>
@@ -233,7 +217,7 @@
 		<Button
 			variant={compactView ? 'ghost' : 'secondary'}
 			size="icon"
-			class="cursor-pointer shrink-0"
+			class="shrink-0 cursor-pointer"
 			onclick={() => (compactView = false)}
 			aria-label="Grid view"
 			aria-pressed={!compactView}
@@ -243,7 +227,7 @@
 		<Button
 			variant={compactView ? 'secondary' : 'ghost'}
 			size="icon"
-			class="cursor-pointer shrink-0"
+			class="shrink-0 cursor-pointer"
 			onclick={() => (compactView = true)}
 			aria-label="Compact view"
 			aria-pressed={compactView}

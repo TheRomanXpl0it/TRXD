@@ -4,7 +4,6 @@
 	import { ModeWatcher } from 'mode-watcher';
 	import Layout from '$lib/components/Layout.svelte';
 	import { authState, loadUser } from '$lib/stores/auth';
-	import { onMount } from 'svelte';
 	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
 	import { addCollection } from '@iconify/svelte';
 	import circleFlagsData from '@iconify-json/circle-flags/icons.json';
@@ -25,13 +24,6 @@
 	});
 
 	loadUser(false);
-
-	onMount(() => {
-		// Ensure user is loaded
-		if (!authState.ready) {
-			loadUser(false);
-		}
-	});
 </script>
 
 <QueryClientProvider client={queryClient}>

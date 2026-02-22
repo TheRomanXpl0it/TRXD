@@ -3,7 +3,9 @@ import type { Team, PaginatedResponse } from '$lib/types';
 
 export async function getTeams(page = 1, limit = 20): Promise<PaginatedResponse<Team>> {
 	const offset = (page - 1) * limit;
-	const response = await api<{ total: number; teams: Team[] }>(`/teams?offset=${offset}&limit=${limit}`);
+	const response = await api<{ total: number; teams: Team[] }>(
+		`/teams?offset=${offset}&limit=${limit}`
+	);
 	return {
 		success: true,
 		data: response.teams,

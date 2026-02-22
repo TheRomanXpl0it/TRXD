@@ -296,7 +296,7 @@
 				return Object.keys(obj).length > 0 ? JSON.stringify(obj) : undefined;
 			})(),
 			tags,
-			max_cpu: toNum(maxCPU) && toNum(maxCPU) > 0 ? String(toNum(maxCPU)) : ''
+			max_cpu: toNum(maxCPU) && (toNum(maxCPU) as number) > 0 ? String(toNum(maxCPU)) : ''
 		};
 
 		// strip empty arrays
@@ -347,7 +347,7 @@
 
 			// Send authors as indexed array for Go form decoder
 			if (Array.isArray(fields.authors)) {
-				fields.authors.forEach((author, index) => {
+				fields.authors.forEach((author: string, index: number) => {
 					fd.append(`authors[${index}]`, author);
 				});
 			}

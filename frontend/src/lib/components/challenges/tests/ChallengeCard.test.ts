@@ -136,7 +136,8 @@ describe('ChallengeCard Component', () => {
 			props: {
 				challenge,
 				compactView: false,
-				countdown: 3600 // 1 hour
+				countdown: 3600, // 1 hour
+				onclick: vi.fn()
 			}
 		});
 
@@ -153,7 +154,8 @@ describe('ChallengeCard Component', () => {
 			props: {
 				challenge,
 				compactView: false,
-				countdown: 0
+				countdown: 0,
+				onclick: vi.fn()
 			}
 		});
 
@@ -170,7 +172,8 @@ describe('ChallengeCard Component', () => {
 			props: {
 				challenge,
 				compactView: false,
-				countdown: 125 // 2:05
+				countdown: 125, // 2:05
+				onclick: vi.fn()
 			}
 		});
 
@@ -186,7 +189,8 @@ describe('ChallengeCard Component', () => {
 			props: {
 				challenge,
 				compactView: false,
-				countdown: 45
+				countdown: 45,
+				onclick: vi.fn()
 			}
 		});
 
@@ -232,7 +236,6 @@ describe('ChallengeCard Component', () => {
 		).toBeInTheDocument();
 	});
 
-
 	it('does not has instance icon', () => {
 		const challenge = generateRandomChallenge({
 			name: 'Test Challenge',
@@ -248,9 +251,7 @@ describe('ChallengeCard Component', () => {
 				onclick: vi.fn()
 			}
 		});
-		expect(
-			screen.queryByLabelText('Instance-based challenge')
-		).not.toBeInTheDocument();
+		expect(screen.queryByLabelText('Instance-based challenge')).not.toBeInTheDocument();
 	});
 
 	it('includes solved status in accessibility label', () => {
@@ -268,9 +269,7 @@ describe('ChallengeCard Component', () => {
 			}
 		});
 
-		expect(
-			screen.getByRole('button', { name: /solved challenge.*solved/i })
-		).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /solved challenge.*solved/i })).toBeInTheDocument();
 	});
 
 	it('has proper accessibility label in compact view', () => {

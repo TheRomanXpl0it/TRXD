@@ -40,7 +40,7 @@ export default defineConfig({
 			name: 'firefox',
 			use: { ...devices['Firefox'] }
 		}
-	],
+	]
 
 	/* CI: Infrastructure is started by GitHub Actions, so no webServer config */
 });

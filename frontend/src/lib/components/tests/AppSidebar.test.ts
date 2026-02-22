@@ -18,6 +18,16 @@ vi.mock('$app/navigation', () => ({
 	goto: vi.fn()
 }));
 
+// AppSidebar uses createQuery internally to enrich user data (avatar etc.).
+// We stub the whole module so tests don't need a QueryClientProvider.
+vi.mock('@tanstack/svelte-query', () => ({
+	createQuery: vi.fn(() => ({
+		get data() { return undefined; },
+		get isLoading() { return false; },
+		get isError() { return false; }
+	}))
+}));
+
 describe('AppSidebar Component', () => {
 	const mockSetOpenMobile = vi.fn();
 
@@ -160,6 +170,9 @@ describe('AppSidebar Component', () => {
 
 	it('renders user section for logged in users', async () => {
 		vi.mocked(getUserData).mockResolvedValueOnce({
+			id: 42,
+			name: 'Alice',
+			role: 'User',
 			image: 'http://img/avatar.png'
 		});
 
@@ -179,6 +192,9 @@ describe('AppSidebar Component', () => {
 	it('triggers sign out when logout button is clicked', async () => {
 		const user = userEvent.setup();
 		vi.mocked(getUserData).mockResolvedValueOnce({
+			id: 42,
+			name: 'Alice',
+			role: 'User',
 			image: 'http://img/avatar.png'
 		});
 		vi.mocked(useSidebar).mockReturnValue({
@@ -194,7 +210,8 @@ describe('AppSidebar Component', () => {
 			props: {
 				user: {
 					id: 42,
-					name: 'Alice'
+					name: 'Alice',
+					image: 'http://img/avatar.png'
 				},
 				userMode: true
 			} as any
@@ -207,15 +224,12 @@ describe('AppSidebar Component', () => {
 	});
 
 	it('displays user avatar when image is available', async () => {
-		vi.mocked(getUserData).mockResolvedValueOnce({
-			image: 'http://img/avatar.png'
-		});
-
 		render(AppSidebar, {
 			props: {
 				user: {
 					id: 42,
 					name: 'Alice',
+					image: 'http://img/avatar.png',
 					team_id: 123
 				},
 				userMode: true
@@ -228,6 +242,9 @@ describe('AppSidebar Component', () => {
 
 	it('handles missing user avatar gracefully', async () => {
 		vi.mocked(getUserData).mockResolvedValueOnce({
+			id: 42,
+			name: 'Alice',
+			role: 'User',
 			image: ''
 		});
 

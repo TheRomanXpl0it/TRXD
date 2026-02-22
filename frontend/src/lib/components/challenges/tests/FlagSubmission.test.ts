@@ -1,7 +1,6 @@
 import { submitFlag } from '$lib/challenges';
 import { toast } from 'svelte-sonner';
 
-
 import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -45,8 +44,8 @@ describe('FlagSubmission Component - User Workflow', () => {
 		mockSubmit.mockResolvedValueOnce({ status: 'Correct', first_blood: false });
 
 		const onSolved = vi.fn();
-		render(FlagSubmission, { 
-			props: { 
+		render(FlagSubmission, {
+			props: {
 				challenge: { id: challengeId, solved: false },
 				onSolved
 			}
@@ -70,7 +69,7 @@ describe('FlagSubmission Component - User Workflow', () => {
 		await waitFor(() => {
 			expect(screen.getByText(/challenge solved/i)).toBeInTheDocument();
 		});
-		
+
 		// Verify onSolved callback was called
 		expect(onSolved).toHaveBeenCalled();
 	});
@@ -82,15 +81,15 @@ describe('FlagSubmission Component - User Workflow', () => {
 		const mockSubmit = vi.mocked(submitFlag);
 		mockSubmit.mockResolvedValueOnce({ status: 'Wrong' });
 
-		render(FlagSubmission, { 
-			props: { 
+		render(FlagSubmission, {
+			props: {
 				challenge: { id: challengeId, solved: false },
 				onSolved: vi.fn()
 			}
 		});
 
 		const input = screen.getByPlaceholderText(/TRX\{/i) as HTMLInputElement;
-		
+
 		// Submit wrong flag
 		await user.click(input);
 		await user.paste(testFlag);
@@ -107,7 +106,7 @@ describe('FlagSubmission Component - User Workflow', () => {
 		// User starts typing - error should clear immediately
 		await user.clear(input);
 		await user.type(input, 'T');
-		
+
 		// Error state should be gone
 		expect(input).toHaveAttribute('aria-invalid', 'false');
 		const flagIcon = document.querySelector('.text-red-500');
@@ -119,18 +118,18 @@ describe('FlagSubmission Component - User Workflow', () => {
 		const user = userEvent.setup();
 		const mockSubmit = vi.mocked(submitFlag);
 
-		render(FlagSubmission, { 
-			props: { 
+		render(FlagSubmission, {
+			props: {
 				challenge: { id: challengeId, solved: false },
 				onSolved: vi.fn()
 			}
 		});
 
 		const submitButton = screen.getByRole('button', { name: /submit/i });
-		
+
 		// Button should be disabled when input is empty
 		expect(submitButton).toBeDisabled();
-		
+
 		// Clicking disabled button should not call API
 		await user.click(submitButton);
 		expect(mockSubmit).not.toHaveBeenCalled();
@@ -143,8 +142,8 @@ describe('FlagSubmission Component - User Workflow', () => {
 		const mockSubmit = vi.mocked(submitFlag);
 		mockSubmit.mockRejectedValueOnce(new Error('Network error'));
 
-		render(FlagSubmission, { 
-			props: { 
+		render(FlagSubmission, {
+			props: {
 				challenge: { id: challengeId, solved: false },
 				onSolved: vi.fn()
 			}
@@ -161,21 +160,20 @@ describe('FlagSubmission Component - User Workflow', () => {
 		await waitFor(() => {
 			expect(input).toHaveAttribute('aria-invalid', 'true');
 		});
-		
+
 		// Should show error icon instead of flag icon
 		const errorIcon = document.querySelector('.text-red-500');
 		expect(errorIcon).toBeInTheDocument();
 	});
 
-
 	it('Hides flag input and button if submission succeded', async () => {
 		const challengeId = Math.floor(Math.random() * 10000);
-        const testFlag = generateRandomFlag();
+		const testFlag = generateRandomFlag();
 		const user = userEvent.setup();
 		const mockSubmit = vi.mocked(submitFlag);
-		
-		render(FlagSubmission, { 
-			props: { 
+
+		render(FlagSubmission, {
+			props: {
 				challenge: { id: challengeId, solved: false },
 				onSolved: vi.fn()
 			}
@@ -195,8 +193,8 @@ describe('FlagSubmission Component - User Workflow', () => {
 			expect(mockSubmit).toHaveBeenCalledWith(challengeId, testFlag);
 		});
 
-        // try to click again, this should fail
-        await user.click(submitButton);
+		// try to click again, this should fail
+		await user.click(submitButton);
 
 		// The success span (also the success div) should be in the document
 		const successSpan = screen.getByText(/challenge solved/i);
@@ -212,22 +210,19 @@ describe('FlagSubmission Component - User Workflow', () => {
 			expect(submitButton).not.toBeInTheDocument();
 		});
 
-
-
 		expect(mockSubmit).toHaveBeenCalledTimes(1);
 	});
-
 
 	it('allows editing and resubmitting a different flag. Also test wrong flag submission behaviour', async () => {
 		const challengeId = Math.floor(Math.random() * 10000);
 		const testFlag1 = generateRandomFlag();
-        const testFlag2 = generateRandomFlag();
-        
-        const user = userEvent.setup();
+		const testFlag2 = generateRandomFlag();
+
+		const user = userEvent.setup();
 		const mockSubmit = vi.mocked(submitFlag);
-		
-		render(FlagSubmission, { 
-			props: { 
+
+		render(FlagSubmission, {
+			props: {
 				challenge: { id: challengeId, solved: false },
 				onSolved: vi.fn()
 			}
@@ -236,7 +231,7 @@ describe('FlagSubmission Component - User Workflow', () => {
 		const input = screen.getByPlaceholderText(/TRX\{/i) as HTMLInputElement;
 		const submitButton = screen.getByRole('button', { name: /submit/i });
 
-        await user.click(input);
+		await user.click(input);
 		await user.paste(testFlag1);
 		expect(input.value).toBe(testFlag1);
 
@@ -255,13 +250,13 @@ describe('FlagSubmission Component - User Workflow', () => {
 
 	it('Verify that the first blood toast shows up correctly', async () => {
 		const challengeId = Math.floor(Math.random() * 10000);
-        const testFlag = generateRandomFlag();
+		const testFlag = generateRandomFlag();
 		const user = userEvent.setup();
 		const mockSubmit = vi.mocked(submitFlag);
 		const mockToast = vi.mocked(toast);
-		
-		render(FlagSubmission, { 
-			props: { 
+
+		render(FlagSubmission, {
+			props: {
 				challenge: { id: challengeId, solved: false },
 				onSolved: vi.fn()
 			}
@@ -285,23 +280,22 @@ describe('FlagSubmission Component - User Workflow', () => {
 			expect(mockToast.success).toHaveBeenCalledWith('First blood!');
 		});
 		expect(mockSubmit).toHaveBeenCalledTimes(1);
-		
+
 		// Challenge should be marked as solved
 		await waitFor(() => {
 			expect(screen.getByText(/challenge solved/i)).toBeInTheDocument();
 		});
 	});
 
-
 	it('Verify that the first blood toast does not show up', async () => {
 		const challengeId = Math.floor(Math.random() * 10000);
-        const testFlag = generateRandomFlag();
+		const testFlag = generateRandomFlag();
 		const user = userEvent.setup();
 		const mockSubmit = vi.mocked(submitFlag);
 		const mockToast = vi.mocked(toast);
-		
-		render(FlagSubmission, { 
-			props: { 
+
+		render(FlagSubmission, {
+			props: {
 				challenge: { id: challengeId, solved: false },
 				onSolved: vi.fn()
 			}
@@ -323,23 +317,22 @@ describe('FlagSubmission Component - User Workflow', () => {
 		// Verify first blood toast was not shown
 		expect(mockToast.success).not.toHaveBeenCalledWith('First blood!');
 		expect(mockSubmit).toHaveBeenCalledTimes(1);
-		
+
 		// Challenge should be marked as solved
 		await waitFor(() => {
 			expect(screen.getByText(/challenge solved/i)).toBeInTheDocument();
 		});
 	});
 
-
 	it('Verify that the success toast shows up', async () => {
 		const challengeId = Math.floor(Math.random() * 10000);
-        const testFlag = generateRandomFlag();
+		const testFlag = generateRandomFlag();
 		const user = userEvent.setup();
 		const mockSubmit = vi.mocked(submitFlag);
 		const mockToast = vi.mocked(toast);
-		
-		render(FlagSubmission, { 
-			props: { 
+
+		render(FlagSubmission, {
+			props: {
 				challenge: { id: challengeId, solved: false },
 				onSolved: vi.fn()
 			}
@@ -363,22 +356,22 @@ describe('FlagSubmission Component - User Workflow', () => {
 			expect(mockToast.success).toHaveBeenCalledWith('Correct flag!');
 		});
 		expect(mockSubmit).toHaveBeenCalledTimes(1);
-		
+
 		// Challenge should be marked as solved
 		await waitFor(() => {
 			expect(screen.getByText(/challenge solved/i)).toBeInTheDocument();
 		});
 	});
 
-    it('Verify that the success toast does not show up', async () => {
+	it('Verify that the success toast does not show up', async () => {
 		const challengeId = Math.floor(Math.random() * 10000);
-        const testFlag = generateRandomFlag();
+		const testFlag = generateRandomFlag();
 		const user = userEvent.setup();
 		const mockSubmit = vi.mocked(submitFlag);
 		const mockToast = vi.mocked(toast);
-		
-		render(FlagSubmission, { 
-			props: { 
+
+		render(FlagSubmission, {
+			props: {
 				challenge: { id: challengeId, solved: false },
 				onSolved: vi.fn()
 			}
@@ -402,7 +395,7 @@ describe('FlagSubmission Component - User Workflow', () => {
 			expect(mockToast.error).toHaveBeenCalledWith('Incorrect flag');
 		});
 		expect(mockSubmit).toHaveBeenCalledTimes(1);
-		
+
 		// Challenge should not be marked as solved
 		await waitFor(() => {
 			expect(screen.queryByText(/challenge solved/i)).not.toBeInTheDocument();
@@ -411,12 +404,12 @@ describe('FlagSubmission Component - User Workflow', () => {
 
 	it('Flag submission with whitespaces', async () => {
 		const challengeId = Math.floor(Math.random() * 10000);
-        const testFlag = generateRandomFlag();
+		const testFlag = generateRandomFlag();
 		const user = userEvent.setup();
 		const mockSubmit = vi.mocked(submitFlag);
-		
-		render(FlagSubmission, { 
-			props: { 
+
+		render(FlagSubmission, {
+			props: {
 				challenge: { id: challengeId, solved: false },
 				onSolved: vi.fn()
 			}
@@ -427,8 +420,8 @@ describe('FlagSubmission Component - User Workflow', () => {
 
 		await user.click(input);
 
-        const spaces = Math.floor(Math.random() * 10);
-        await user.paste(' '.repeat(spaces) + testFlag + ' '.repeat(spaces));
+		const spaces = Math.floor(Math.random() * 10);
+		await user.paste(' '.repeat(spaces) + testFlag + ' '.repeat(spaces));
 
 		mockSubmit.mockResolvedValueOnce({ status: 'Correct', first_blood: false });
 		await user.click(submitButton);
@@ -438,21 +431,20 @@ describe('FlagSubmission Component - User Workflow', () => {
 		});
 
 		expect(mockSubmit).toHaveBeenCalledTimes(1);
-		
+
 		await waitFor(() => {
 			expect(screen.getByText(/challenge solved/i)).toBeInTheDocument();
 		});
 	});
 
-
 	it('Rapid flag submissions', async () => {
 		const challengeId = Math.floor(Math.random() * 10000);
-        const testFlag = generateRandomFlag();
+		const testFlag = generateRandomFlag();
 		const user = userEvent.setup();
 		const mockSubmit = vi.mocked(submitFlag);
-		
-		render(FlagSubmission, { 
-			props: { 
+
+		render(FlagSubmission, {
+			props: {
 				challenge: { id: challengeId, solved: false },
 				onSolved: vi.fn()
 			}
@@ -463,15 +455,15 @@ describe('FlagSubmission Component - User Workflow', () => {
 
 		await user.click(input);
 
-        await user.paste(testFlag);
+		await user.paste(testFlag);
 
 		mockSubmit.mockResolvedValueOnce({ status: 'Correct', first_blood: false });
-		
+
 		await Promise.all([
 			user.click(submitButton),
 			user.click(submitButton),
-            user.click(submitButton),
-            user.click(submitButton)
+			user.click(submitButton),
+			user.click(submitButton)
 		]);
 
 		await waitFor(() => {
@@ -479,7 +471,7 @@ describe('FlagSubmission Component - User Workflow', () => {
 		});
 
 		expect(mockSubmit).toHaveBeenCalledTimes(1);
-		
+
 		await waitFor(() => {
 			expect(screen.getByText(/challenge solved/i)).toBeInTheDocument();
 		});

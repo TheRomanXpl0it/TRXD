@@ -110,7 +110,9 @@ describe('ChallengeFilters Component', () => {
 			}
 		});
 
-		expect(screen.getByRole('button', { name: /clear all filters \(3 active\)/i })).toBeInTheDocument();
+		expect(
+			screen.getByRole('button', { name: /clear all filters \(3 active\)/i })
+		).toBeInTheDocument();
 	});
 
 	it('does not show clear filters button when activeFiltersCount is 0', () => {
@@ -249,5 +251,4 @@ describe('ChallengeFilters Component', () => {
 
 		expect(await screen.findByPlaceholderText(/search tags/i)).toBeInTheDocument();
 	});
-
 });
