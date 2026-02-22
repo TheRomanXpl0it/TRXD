@@ -81,7 +81,6 @@ func SetupApp(ctx context.Context) *fiber.App {
 	SetupApi(ctx, app)
 
 	app.Static("/", "./frontend")
-	app.Static("/static", "./static")
 
 	app.Use("/attachments", spectator, team, start, middlewares.Attachments)
 	app.Static("/attachments", "./attachments", fiber.Static{

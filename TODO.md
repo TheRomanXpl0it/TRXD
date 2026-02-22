@@ -9,6 +9,11 @@
  - utility:
    - better names for binary flags
    - DOCUMENTATION
+  - backender frontend ideas: (i'm not a pro frontender, so these may not be good ideas)
+    - make the `[overview, solves]` the same between the team and user page
+    - put the category breakdown in the user page when in User Mode
+    - change the url of users from /account to /users
+    - default chall creation, make the points dynamic by default, make the type Normal by default and the types in order (Normal, Container, Compose)
 
 ## Frontend
  - [x] Make countdown timer more efficient
@@ -29,7 +34,6 @@
  - submission page (admin only)
  - deletable submissions (from admin)
  - link to join team
- - endpoint + cli cmd to parse a category/challenge file (maybe yaml) with all infos
  - extract data for ctftime
  - invisible teams
  - N instance limit per team

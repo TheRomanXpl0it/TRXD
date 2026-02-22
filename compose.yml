@@ -26,7 +26,7 @@ services:
     # command: ["tail", "-f", "/dev/null"] #! Debugging
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.app.rule=HostRegexp(`{host:.+}`)"
+      - "traefik.http.routers.app.rule=PathPrefix(`/`)"
       - "traefik.http.services.app.loadbalancer.server.port=1337"
       - "traefik.http.routers.app.entrypoints=web"
       - "traefik.http.routers.app.priority=1"

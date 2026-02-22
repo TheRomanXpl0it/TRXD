@@ -25,7 +25,7 @@ func Test404(t *testing.T) {
 	defer api.Shutdown(app)
 
 	session := test_utils.NewApiTestSession(t, app)
-	session.Get("/nonexistent-endpoint", nil, http.StatusNotFound)
+	session.Get("/api/nonexistent-endpoint", nil, http.StatusNotFound)
 	session.CheckResponse(errorf(consts.NotFound))
 }
 
@@ -77,16 +77,6 @@ func TestCSRF(t *testing.T) {
 	session.CheckResponse(nil)
 	session.Post("/login", nil, http.StatusBadRequest)
 	session.CheckResponse(errorf(consts.InvalidJSON))
-}
-
-func TestStatic(t *testing.T) {
-	app := api.SetupApp(t.Context())
-	defer api.Shutdown(app)
-
-	session := test_utils.NewApiTestSession(t, app, true)
-	session.Get("/static/invalid_file", nil, http.StatusNotFound)
-	session.CheckResponse(errorf(consts.NotFound))
-	session.Get("/static/countries.json", nil, http.StatusOK)
 }
 
 func TestUserMode(t *testing.T) {
