@@ -17,6 +17,15 @@ Object.defineProperty(window, 'matchMedia', {
 	}))
 });
 
+// Mock ResizeObserver for components that use it (like virtual lists)
+if (typeof global !== 'undefined') {
+	global.ResizeObserver = class ResizeObserver {
+		observe = vi.fn();
+		unobserve = vi.fn();
+		disconnect = vi.fn();
+	};
+}
+
 // Ensure each test starts with a clean DOM
 afterEach(async () => {
 	cleanup();

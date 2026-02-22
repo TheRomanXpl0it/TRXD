@@ -34,6 +34,6 @@ export default defineConfig({
 		}
 	},
 	ssr: {
-		noExternal: ['bits-ui', 'vaul-svelte', 'svelte-sonner', 'svelte-motion', 'paneforge']
+		noExternal: ['bits-ui', 'vaul-svelte', 'svelte-sonner', 'svelte-motion', 'paneforge', '@lucide/svelte']
 	}
 });

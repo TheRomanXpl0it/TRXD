@@ -8,7 +8,12 @@ export default defineConfig({
 		environment: 'jsdom',
 		globals: true,
 		setupFiles: ['./src/test/setup.ts'],
-		include: ['src/**/*.{test,spec}.{js,ts}']
+		include: ['src/**/*.{test,spec}.{js,ts}'],
+		server: {
+			deps: {
+				inline: ['@lucide/svelte']
+			}
+		}
 	},
 	resolve: {
 		alias: {

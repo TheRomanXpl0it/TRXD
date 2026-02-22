@@ -11,10 +11,11 @@
    - DOCUMENTATION
 
 ## Frontend
- - Make countdown timer more efficient
- - Lazy load monaco editor
- - Extra:
-   - Add custom button themes for first/second/third bloods?
+ - [x] Make countdown timer more efficient
+ - [x] Lazy load monaco editor
+ - [x] Virtualize country select
+ - [/] Extra:
+   - [ ] Add custom button themes for first/second/third bloods? (Analysis done)
 
 ## Ideas / Features
  - rename "hash domain" (not an hash anymore, only rand bytes)
