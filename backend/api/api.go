@@ -74,7 +74,7 @@ var (
 func SetupApp(ctx context.Context) *fiber.App {
 	app := fiber.New(fiber.Config{
 		AppName:   consts.Name,
-		BodyLimit: 1024 * 1024 * 1024, // 1GB
+		BodyLimit: 50 * 1024 * 1024, // 50MB
 	})
 
 	SetupFeatures(app)

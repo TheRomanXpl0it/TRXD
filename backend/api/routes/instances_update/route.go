@@ -42,7 +42,7 @@ func Route(c *fiber.Ctx) error {
 
 	if chall.Info.Hidden && !utils.In(role,
 		[]sqlc.UserRole{sqlc.UserRoleAuthor, sqlc.UserRoleAdmin}) {
-		return utils.Error(c, fiber.StatusForbidden, consts.Forbidden)
+		return utils.Error(c, fiber.StatusNotFound, consts.ChallengeNotFound)
 	}
 	if chall.Info.Type == sqlc.DeployTypeNormal {
 		return utils.Error(c, fiber.StatusBadRequest, consts.ChallengeNotInstanciable)

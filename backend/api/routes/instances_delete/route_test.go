@@ -39,7 +39,7 @@ func TestRoute(t *testing.T) {
 		t.Fatal("Expected body to not be nil")
 	}
 
-	var challID1, challID3, challID4 int32
+	var challID1, challID3, challID4, challID5 int32
 	for _, chall := range body.([]interface{}) {
 		switch chall.(map[string]interface{})["name"] {
 		case "chall-1":
@@ -48,6 +48,8 @@ func TestRoute(t *testing.T) {
 			challID3 = int32(chall.(map[string]interface{})["id"].(float64))
 		case "chall-4":
 			challID4 = int32(chall.(map[string]interface{})["id"].(float64))
+		case "chall-5":
+			challID5 = int32(chall.(map[string]interface{})["id"].(float64))
 		}
 	}
 
@@ -72,6 +74,9 @@ func TestRoute(t *testing.T) {
 
 	session.Delete("/instances", JSON{"chall_id": math.MaxInt32 + 1}, http.StatusBadRequest)
 	session.CheckResponse(errorf(consts.InvalidJSON))
+
+	session.Delete("/instances", JSON{"chall_id": challID5}, http.StatusNotFound)
+	session.CheckResponse(errorf(consts.ChallengeNotFound))
 
 	session.Delete("/instances", JSON{"chall_id": challID1}, http.StatusBadRequest)
 	session.CheckResponse(errorf(consts.ChallengeNotInstanciable))
