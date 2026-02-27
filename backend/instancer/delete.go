@@ -3,10 +3,8 @@ package instancer
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"trxd/instancer/composes"
 	"trxd/instancer/containers"
-	"trxd/instancer/networks"
 
 	"trxd/utils/log"
 )
@@ -26,12 +24,7 @@ func DeleteInstance(ctx context.Context, tid int32, challID int32, dockerID sql.
 		}
 	}
 
-	err := networks.NetworkDelete(ctx, fmt.Sprintf("net_%d_%d", challID, tid))
-	if err != nil {
-		return err
-	}
-
-	err = dbDeleteInstance(ctx, tid, challID)
+	err := dbDeleteInstance(ctx, tid, challID)
 	if err != nil {
 		return err
 	}

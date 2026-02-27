@@ -2,8 +2,11 @@ import requests
 from urllib.parse import urlparse
 import socket
 import time
+import os
 
 url = 'http://localhost:1337/api'
+
+proxy = os.getenv('PROXY', 'traefik')
 
 
 def login(mail, password):
@@ -211,6 +214,11 @@ LOCAL_HOSTS = {}
 
 original_getaddrinfo = socket.getaddrinfo
 def custom_getaddrinfo(host, *args, **kwargs):
+	# wait for traefik to update its config
+	# (on WSL on laptop I get 0.3s while plugged and 0.5s while unplugged)
+	if proxy == 'traefik':
+		time.sleep(0.5)
+
 	if host in LOCAL_HOSTS:
 		return original_getaddrinfo(LOCAL_HOSTS[host], *args, **kwargs)
 	return original_getaddrinfo(host, *args, **kwargs)
@@ -225,7 +233,7 @@ def hash_request(resp):
 def hash_connection_refused(resp):
 	try:
 		r = hash_request(resp)
-		assert r.status_code == 502, "Instance should be down: " + str(r.status_code) + "\n" + r.text
+		assert r.status_code == 404, "Instance should be down: " + str(r.status_code) + "\n" + r.text
 	except requests.ConnectionError:
 		pass
 
@@ -334,6 +342,8 @@ assert_request(r, True)
 
 kill_instance(s2, chall_id_3)
 
+
+time.sleep(1)
 
 #! (HASH DOMAIN) CONTAINER EXPIRES, SO RECREATED
 

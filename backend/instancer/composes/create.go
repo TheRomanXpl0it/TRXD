@@ -77,7 +77,7 @@ func setupComposeProject(ctx context.Context, info *infos.ComposeInfo) (*types.P
 
 	if info.NetID != "" {
 		project.Networks["default"] = types.NetworkConfig{
-			Name:     info.NetName,
+			Name:     info.NetID,
 			External: true,
 		}
 	}

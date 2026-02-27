@@ -62,7 +62,7 @@ func ReclaimLoop() {
 	}()
 
 	ctx := context.Background()
-	_, err = networks.CreateNetwork(ctx, "trxd-shared", true)
+	_, err = networks.CreateNetwork(ctx, "trxd-shared-external", true)
 	if err != nil {
 		log.Fatal("Failed to initialize instancer:", "err", err)
 	}

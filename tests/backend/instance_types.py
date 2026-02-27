@@ -1,8 +1,12 @@
 import requests
 from urllib.parse import urlparse
 import socket
+import os
+from time import sleep
 
 url = 'http://localhost:1337/api'
+
+proxy = os.getenv('PROXY', 'traefik')
 
 
 def login(mail, password):
@@ -113,6 +117,11 @@ LOCAL_HOSTS = {}
 
 original_getaddrinfo = socket.getaddrinfo
 def custom_getaddrinfo(host, *args, **kwargs):
+	# wait for traefik to update its config
+	# (on WSL on laptop I get 0.3s while plugged and 0.5s while unplugged)
+	if proxy == 'traefik':
+		sleep(0.5)
+
 	if host in LOCAL_HOSTS:
 		return original_getaddrinfo(LOCAL_HOSTS[host], *args, **kwargs)
 	return original_getaddrinfo(host, *args, **kwargs)

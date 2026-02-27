@@ -10,7 +10,7 @@ sqlc:
 sql: sqlc
 
 run:
-	@ALLOW_REGISTER=true go run . -test-data-WARNING-DO-NOT-USE-IN-PRODUCTION
+	@ALLOW_REGISTER=true RECLAIM_INSTANCE_INTERVAL=1 go run . -test-data-WARNING-DO-NOT-USE-IN-PRODUCTION
 	@go run .
 
 test:

@@ -11,7 +11,6 @@ import (
 	"trxd/instancer/composes"
 	"trxd/instancer/containers"
 	"trxd/instancer/infos"
-	"trxd/instancer/networks"
 
 	"trxd/utils/log"
 )
@@ -38,13 +37,9 @@ func spawnInstance(ctx context.Context, info *infos.InstanceInfo,
 	var err error
 
 	if info.UseDomain {
-		netID, err := networks.CreateNetwork(ctx, info.NetName, false)
-		if err != nil {
-			return "", err
-		}
-		info.NetID = netID
+		info.NetID = "trxd-shared-internal"
 	} else if deployType == sqlc.DeployTypeContainer {
-		info.NetID = "trxd-shared"
+		info.NetID = "trxd-shared-external"
 	}
 
 	if deployType == sqlc.DeployTypeContainer && conf.Image != "" {
@@ -91,7 +86,7 @@ func CreateInstance(ctx context.Context, tid int32, challID int32, internalPort 
 	}
 
 	var name string
-	if !conf.HashDomain {
+	if !conf.HashDomain { // TODO: this can be omitted, use chall_cid_tid for all
 		name = fmt.Sprintf("chall_%d_%d", challID, tid)
 	} else {
 		name = "chall_" + strings.Split(info.Host, ".")[0]
@@ -133,7 +128,6 @@ func CreateInstance(ctx context.Context, tid int32, challID int32, internalPort 
 		Envs:         conf.Envs,
 		MaxMemory:    int32(conf.MaxMemory.(int64)),
 		MaxCpu:       conf.MaxCpu.(string),
-		NetName:      fmt.Sprintf("net_%d_%d", challID, tid),
 		Labels:       labels,
 	}
 

@@ -79,7 +79,7 @@ jobs:
     - name: Set up Infra
       run: |
         cd ../
-        docker compose -p $PROJECT_NAME up -d postgres redis nginx
+        docker compose -p $PROJECT_NAME up -d postgres redis traefik
 
     - name: Build Test Service
       run: |

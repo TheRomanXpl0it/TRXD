@@ -4,12 +4,14 @@ from urllib.parse import urlparse
 import socket
 import json
 import os
+from time import sleep
 
 
 url = 'http://localhost:1337/api'
-proxy_name = 'nginx-1'
 
 project_name = os.getenv('PROJECT_NAME', 'trxd')
+proxy = os.getenv('PROXY', 'traefik')
+
 client = docker.from_env()
 
 
@@ -116,6 +118,11 @@ LOCALHOST = "127.0.0.1"
 LOCAL_HOSTS = {}
 original_getaddrinfo = socket.getaddrinfo
 def custom_getaddrinfo(host, *args, **kwargs):
+	# wait for traefik to update its config
+	# (on WSL on laptop I get 0.3s while plugged and 0.5s while unplugged)
+	if proxy == 'traefik':
+		sleep(0.5)
+
 	if host in LOCAL_HOSTS:
 		return original_getaddrinfo(LOCAL_HOSTS[host], *args, **kwargs)
 	return original_getaddrinfo(host, *args, **kwargs)
@@ -127,7 +134,7 @@ def get_network_by_name(name):
 	return res[0]
 
 def net_disconnect(net, hash_name):
-	res = client.containers.list(filters={'name': project_name+'-'+proxy_name})
+	res = client.containers.list(filters={'name': project_name+'-'+proxy+'-1'})
 	assert len(res) == 1, res
 	net.disconnect(res[0], force=True)
 	res = client.containers.list(filters={'name': f'chall_{hash_name}'})
@@ -229,213 +236,96 @@ kill_good_instance(s1, chall_id_4)
 update_challenge(admin, chall_id_3, hash_domain=True)
 update_challenge(admin, chall_id_4, hash_domain=True)
 
-#! DISCONNECT NETWORK
+#! KILL PROXY
 i1 = spawn_good_instance(s1, chall_id_3)
-hash_name = i1['host'].split('.')[0]
-net = get_network_by_name(f'net_{chall_id_3}_{team_id}')
-net_disconnect(net, hash_name)
-r = hash_request(i1['host'])
-assert r.status_code == 502, r.text
-kill_good_instance(s1, chall_id_3)
-
-#! DISCONNECT NETWORK & KILL CONTAINER
-i1 = spawn_good_instance(s1, chall_id_3)
-hash_name = i1['host'].split('.')[0]
-net = get_network_by_name(f'net_{chall_id_3}_{team_id}')
-net_disconnect(net, hash_name)
-kill_container_by_name(f'chall_{hash_name}')
-r = hash_request(i1['host'])
-assert r.status_code == 502, r.text
-kill_good_instance(s1, chall_id_3)
-
-#! DISCONNECT NETWORK & REMOVE CONTAINER
-i1 = spawn_good_instance(s1, chall_id_3)
-hash_name = i1['host'].split('.')[0]
-net = get_network_by_name(f'net_{chall_id_3}_{team_id}')
-net_disconnect(net, hash_name)
-remove_container_by_name(f'chall_{hash_name}')
-r = hash_request(i1['host'])
-assert r.status_code == 502, r.text
-kill_good_instance(s1, chall_id_3)
-
-#! DISCONNECT NETWORK & KILL CONTAINER (COMPOSE)
-i1 = spawn_good_instance(s1, chall_id_4)
-hash_name = i1['host'].split('.')[0]
-net = get_network_by_name(f'net_{chall_id_4}_{team_id}')
-net_disconnect(net, hash_name)
-kill_container_by_name(f'chall_{hash_name}')
-r = hash_request(i1['host'])
-assert r.status_code == 502, r.text
-kill_good_instance(s1, chall_id_4)
-
-#! DISCONNECT NETWORK & REMOVE CONTAINER (COMPOSE)
-i1 = spawn_good_instance(s1, chall_id_4)
-hash_name = i1['host'].split('.')[0]
-net = get_network_by_name(f'net_{chall_id_4}_{team_id}')
-net_disconnect(net, hash_name)
-remove_container_by_name(f'chall_{hash_name}')
-r = hash_request(i1['host'])
-assert r.status_code == 502, r.text
-kill_good_instance(s1, chall_id_4)
-
-#! REMOVE NETWORK
-i1 = spawn_good_instance(s1, chall_id_3)
-hash_name = i1['host'].split('.')[0]
-net = get_network_by_name(f'net_{chall_id_3}_{team_id}')
-net_disconnect(net, hash_name)
-net.remove()
-r = hash_request(i1['host'])
-assert r.status_code == 502, r.text
-kill_good_instance(s1, chall_id_3)
-
-#! REMOVE NETWORK & KILL CONTAINER
-i1 = spawn_good_instance(s1, chall_id_3)
-hash_name = i1['host'].split('.')[0]
-net = get_network_by_name(f'net_{chall_id_3}_{team_id}')
-net_disconnect(net, hash_name)
-net.remove()
-kill_container_by_name(f'chall_{hash_name}')
-r = hash_request(i1['host'])
-assert r.status_code == 502, r.text
-kill_good_instance(s1, chall_id_3)
-
-#! REMOVE NETWORK & REMOVE CONTAINER
-i1 = spawn_good_instance(s1, chall_id_3)
-hash_name = i1['host'].split('.')[0]
-net = get_network_by_name(f'net_{chall_id_3}_{team_id}')
-net_disconnect(net, hash_name)
-net.remove()
-remove_container_by_name(f'chall_{hash_name}')
-r = hash_request(i1['host'])
-assert r.status_code == 502, r.text
-kill_good_instance(s1, chall_id_3)
-
-#! REMOVE NETWORK & KILL CONTAINER (COMPOSE)
-i1 = spawn_good_instance(s1, chall_id_4)
-hash_name = i1['host'].split('.')[0]
-net = get_network_by_name(f'net_{chall_id_4}_{team_id}')
-net_disconnect(net, hash_name)
-net.remove()
-kill_container_by_name(f'chall_{hash_name}')
-r = hash_request(i1['host'])
-assert r.status_code == 502, r.text
-kill_good_instance(s1, chall_id_4)
-
-#! REMOVE NETWORK & REMOVE CONTAINER (COMPOSE)
-i1 = spawn_good_instance(s1, chall_id_4)
-hash_name = i1['host'].split('.')[0]
-net = get_network_by_name(f'net_{chall_id_4}_{team_id}')
-net_disconnect(net, hash_name)
-net.remove()
-remove_container_by_name(f'chall_{hash_name}')
-r = hash_request(i1['host'])
-assert r.status_code == 502, r.text
-kill_good_instance(s1, chall_id_4)
-
-#! SAME NAME NETWORK
-client.networks.create(name=f'net_{chall_id_3}_{team_id}')
-i1 = spawn_good_instance(s1, chall_id_3)
-r = hash_request(i1['host'])
-assert_request(r, True)
-kill_good_instance(s1, chall_id_3)
-
-#! SAME NAME NETWORK (COMPOSE)
-client.networks.create(name=f'net_{chall_id_4}_{team_id}')
-i1 = spawn_good_instance(s1, chall_id_4)
-r = hash_request(i1['host'])
-assert_request(r, True)
-kill_good_instance(s1, chall_id_4)
-
-#! KILL NGINX
-i1 = spawn_good_instance(s1, chall_id_3)
-kill_container_by_name(project_name+'-'+proxy_name)
+kill_container_by_name(project_name+'-'+proxy+'-1')
 fail_hash_request(i1['host'])
 kill_good_instance(s1, chall_id_3)
-res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
+res = os.system(f'cd .. && docker compose -p {project_name} up -d {proxy}')
 assert res == 0, res
 
-#! REMOVE NGINX
+#! REMOVE PROXY
 i1 = spawn_good_instance(s1, chall_id_3)
-remove_container_by_name(project_name+'-'+proxy_name)
+remove_container_by_name(project_name+'-'+proxy+'-1')
 fail_hash_request(i1['host'])
 kill_good_instance(s1, chall_id_3)
-res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
+res = os.system(f'cd .. && docker compose -p {project_name} up -d {proxy}')
 assert res == 0, res
 
-#! KILL NGINX (COMPOSE)
+#! KILL PROXY (COMPOSE)
 i1 = spawn_good_instance(s1, chall_id_4)
-kill_container_by_name(project_name+'-'+proxy_name)
+kill_container_by_name(project_name+'-'+proxy+'-1')
 fail_hash_request(i1['host'])
 kill_good_instance(s1, chall_id_4)
-res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
+res = os.system(f'cd .. && docker compose -p {project_name} up -d {proxy}')
 assert res == 0, res
 
-#! REMOVE NGINX (COMPOSE)
+#! REMOVE PROXY (COMPOSE)
 i1 = spawn_good_instance(s1, chall_id_4)
-remove_container_by_name(project_name+'-'+proxy_name)
+remove_container_by_name(project_name+'-'+proxy+'-1')
 fail_hash_request(i1['host'])
 kill_good_instance(s1, chall_id_4)
-res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
+res = os.system(f'cd .. && docker compose -p {project_name} up -d {proxy}')
 assert res == 0, res
 
-#! KILL NGINX (ROUND 2: CACHE RESET)
+#! KILL PROXY (ROUND 2: CACHE RESET)
 i1 = spawn_good_instance(s1, chall_id_3)
-kill_container_by_name(project_name+'-'+proxy_name)
+kill_container_by_name(project_name+'-'+proxy+'-1')
 fail_hash_request(i1['host'])
 kill_good_instance(s1, chall_id_3)
-res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
+res = os.system(f'cd .. && docker compose -p {project_name} up -d {proxy}')
 assert res == 0, res
 
-#! REMOVE NGINX (ROUND 2: CACHE RESET)
+#! REMOVE PROXY (ROUND 2: CACHE RESET)
 i1 = spawn_good_instance(s1, chall_id_3)
-remove_container_by_name(project_name+'-'+proxy_name)
+remove_container_by_name(project_name+'-'+proxy+'-1')
 fail_hash_request(i1['host'])
 kill_good_instance(s1, chall_id_3)
-res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
+res = os.system(f'cd .. && docker compose -p {project_name} up -d {proxy}')
 assert res == 0, res
 
-#! KILL NGINX (COMPOSE) (ROUND 2: CACHE RESET)
+#! KILL PROXY (COMPOSE) (ROUND 2: CACHE RESET)
 i1 = spawn_good_instance(s1, chall_id_4)
-kill_container_by_name(project_name+'-'+proxy_name)
+kill_container_by_name(project_name+'-'+proxy+'-1')
 fail_hash_request(i1['host'])
 kill_good_instance(s1, chall_id_4)
-res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
+res = os.system(f'cd .. && docker compose -p {project_name} up -d {proxy}')
 assert res == 0, res
 
-#! REMOVE NGINX (COMPOSE) (ROUND 2: CACHE RESET)
+#! REMOVE PROXY (COMPOSE) (ROUND 2: CACHE RESET)
 i1 = spawn_good_instance(s1, chall_id_4)
-remove_container_by_name(project_name+'-'+proxy_name)
+remove_container_by_name(project_name+'-'+proxy+'-1')
 fail_hash_request(i1['host'])
 kill_good_instance(s1, chall_id_4)
-res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
+res = os.system(f'cd .. && docker compose -p {project_name} up -d {proxy}')
 assert res == 0, res
 
-#! REMOVE NGINX BEFOREHAND
-remove_container_by_name(project_name+'-'+proxy_name)
+#! REMOVE PROXY BEFOREHAND
+remove_container_by_name(project_name+'-'+proxy+'-1')
 r = spawn_instance(s1, chall_id_3)
-assert r.status_code == 500, r.text
+assert r.status_code == 200, r.text
 r = kill_instance(s1, chall_id_3)
-assert r.status_code == 404, r.text
-res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
+assert r.status_code == 200, r.text
+res = os.system(f'cd .. && docker compose -p {project_name} up -d {proxy}')
 assert res == 0, res
 
-#! REMOVE NGINX BEFOREHAND (COMPOSE)
-remove_container_by_name(project_name+'-'+proxy_name)
+#! REMOVE PROXY BEFOREHAND (COMPOSE)
+remove_container_by_name(project_name+'-'+proxy+'-1')
 r = spawn_instance(s1, chall_id_4)
-assert r.status_code == 500, r.text
+assert r.status_code == 200, r.text
 r = kill_instance(s1, chall_id_4)
-assert r.status_code == 404, r.text
-res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
+assert r.status_code == 200, r.text
+res = os.system(f'cd .. && docker compose -p {project_name} up -d {proxy}')
 assert res == 0, res
 
-#! REMOVE NGINX BEFOREHAND (WITH NON EMPTY CACHE)
+#! REMOVE PROXY BEFOREHAND (WITH NON EMPTY CACHE)
 r = spawn_instance(s1, chall_id_3)
 assert r.status_code == 200, r.text
 r = kill_instance(s1, chall_id_3)
 assert r.status_code == 200, r.text
 
-remove_container_by_name(project_name+'-'+proxy_name)
-res = os.system(f'cd .. && docker compose -p {project_name} up -d nginx')
+remove_container_by_name(project_name+'-'+proxy+'-1')
+res = os.system(f'cd .. && docker compose -p {project_name} up -d {proxy}')
 assert res == 0, res
 
 r = spawn_instance(s1, chall_id_3)

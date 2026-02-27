@@ -24,7 +24,7 @@ var DefaultConfigs = map[string]any{
 	"domain":                    "",
 	"discord-webhook":           "",
 	"project-name":              "trxd",
-	"proxy":                     "nginx", // "traefik"
+	"proxy":                     "traefik",
 	"proxy-id":                  "",
 	"user-mode":                 false,
 	"scoreboard-top":            10,

@@ -78,7 +78,9 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     networks:
-      - default
+      default:
+      trxd-shared-internal:
+        ipv4_address: 172.137.0.2
 
   traefik:
     image: traefik:v3.6
@@ -96,10 +98,14 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
-      - default
+      default:
+      trxd-shared-internal:
+        ipv4_address: 172.137.0.2
 
 
 networks:
   default:
   internal:
     internal: true
+  trxd-shared-internal:
+    external: true

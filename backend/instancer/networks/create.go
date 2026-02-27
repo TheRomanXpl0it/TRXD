@@ -2,6 +2,7 @@ package networks
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"trxd/db"
 	"trxd/instancer/containers"
@@ -41,7 +42,9 @@ func CreateNetwork(ctx context.Context, name string, disableICC bool) (string, e
 	}
 
 	var netID string
-	if len(summary) == 1 {
+	if len(summary) > 1 {
+		return "", errors.New("multiple networks with the same name") // TODO: test
+	} else if len(summary) == 1 {
 		netID = summary[0].ID
 	} else {
 		options := make(map[string]string)

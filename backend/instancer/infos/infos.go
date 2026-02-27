@@ -9,7 +9,6 @@ type InstanceInfo struct {
 	Envs         string
 	MaxMemory    int32
 	MaxCpu       string
-	NetName      string
 	NetID        string
 	Labels       map[string]string
 }
