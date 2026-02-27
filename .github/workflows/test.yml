@@ -76,6 +76,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v5
     
+    - name: Setup trxd-shared-internal
+      run: |
+        cd ../
+        ./net.sh
+    
     - name: Set up Infra
       run: |
         cd ../
