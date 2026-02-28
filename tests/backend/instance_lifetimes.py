@@ -230,10 +230,15 @@ def hash_request(resp):
 	r = requests.get(f'http://{host}')
 	return r
 
+if proxy == 'traefik':
+	refused_status = 404
+else:
+	refused_status = 502
+
 def hash_connection_refused(resp):
 	try:
 		r = hash_request(resp)
-		assert r.status_code == 404, "Instance should be down: " + str(r.status_code) + "\n" + r.text
+		assert r.status_code == refused_status, "Instance should be down: " + str(r.status_code) + "\n" + r.text
 	except requests.ConnectionError:
 		pass
 
@@ -319,6 +324,8 @@ time.sleep(10)
 hash_connection_refused(i1)
 hash_connection_refused(i3)
 
+
+time.sleep(1)
 
 #! (HASH DOMAIN) CONTAINER EXPIRES, SO RECREATED
 
