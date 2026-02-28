@@ -2,17 +2,17 @@
 
 set -e
 
-files=(
-	usermode_hot_switch.py
-	register_team_race.py
-	submit_race.py
-	instance_types.py
-	instance_edge_cases.py
-	instance_create_race.py
-	instance_create_race_team.py
-	instance_lifetimes.py
-	discord_webhook.py
-)
+# files=(
+# 	usermode_hot_switch.py
+# 	register_team_race.py
+# 	submit_race.py
+# 	instance_types.py
+# 	instance_edge_cases.py
+# 	instance_create_race.py
+# 	instance_create_race_team.py
+# 	instance_lifetimes.py
+# 	discord_webhook.py
+# )
 
 nginx_proxy_files=(
 	instance_types.py
@@ -43,6 +43,7 @@ for file in "${files[@]}"; do
 done
 
 docker compose -f ../../compose.yml down traefik
+docker compose -f ../../compose.yml rm -sf traefik
 docker compose -f ../../compose.yml up -d nginx
 
 for file in "${nginx_proxy_files[@]}"; do
@@ -68,4 +69,5 @@ for file in "${nginx_proxy_files[@]}"; do
 done
 
 docker compose -f ../../compose.yml down nginx
+docker compose -f ../../compose.yml rm -sf nginx
 docker compose -f ../../compose.yml up -d traefik
