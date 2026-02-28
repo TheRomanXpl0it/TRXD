@@ -42,8 +42,8 @@ for file in "${files[@]}"; do
 	cd -
 done
 
-docker compose -f ../../backend/compose.yml down traefik
-docker compose -f ../../backend/compose.yml up -d nginx
+docker compose -f ../../compose.yml down traefik
+docker compose -f ../../compose.yml up -d nginx
 
 for file in "${nginx_proxy_files[@]}"; do
 	echo "Running Test: $file"
@@ -67,5 +67,5 @@ for file in "${nginx_proxy_files[@]}"; do
 	cd -
 done
 
-# docker compose -f ../../backend/compose.yml down nginx
-# docker compose -f ../../backend/compose.yml up -d traefik
+docker compose -f ../../compose.yml down nginx
+docker compose -f ../../compose.yml up -d traefik
