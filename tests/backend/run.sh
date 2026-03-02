@@ -43,7 +43,7 @@ for file in "${files[@]}"; do
 done
 
 docker compose -f ../../compose.yml down traefik
-docker compose -f ../../compose.yml rm -sf traefik
+sleep 1
 docker compose -f ../../compose.yml up -d nginx
 
 for file in "${nginx_proxy_files[@]}"; do
@@ -69,5 +69,5 @@ for file in "${nginx_proxy_files[@]}"; do
 done
 
 docker compose -f ../../compose.yml down nginx
-docker compose -f ../../compose.yml rm -sf nginx
+sleep 1
 docker compose -f ../../compose.yml up -d traefik
