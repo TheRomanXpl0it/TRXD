@@ -42,8 +42,11 @@ for file in "${files[@]}"; do
 	cd -
 done
 
+docker version
+docker compose version
+
 docker compose -f ../../compose.yml down traefik
-sleep 1
+sed -i '/^  traefik:/,/^[^[:space:]]/ s/ipv4_address:.*/ipv4_address: 172.137.0.3/' compose.yml
 docker compose -f ../../compose.yml up -d nginx
 
 for file in "${nginx_proxy_files[@]}"; do
@@ -67,7 +70,3 @@ for file in "${nginx_proxy_files[@]}"; do
 	wait $PID || true
 	cd -
 done
-
-docker compose -f ../../compose.yml down nginx
-sleep 1
-docker compose -f ../../compose.yml up -d traefik

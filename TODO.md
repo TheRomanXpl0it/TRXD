@@ -1,9 +1,6 @@
 # TODO
  - resolve TODOs left into the code
  - tests:
-   - tests with removal of trxd-shared (and fault tolerance)
-   - tg webhook tests in pipeline
-   - add tests with a lot of hash named challs (hard cap for networks on nginx?) (try change IPAM to /30 to preserve addrs)
    - integration tests (for generic behaviour)
    - tests for distributed functioning
  - utility:
@@ -38,7 +35,7 @@
  - invisible teams
  - N instance limit per team
  - scoreboard freeze (idea: use a table or a view to take a snapshot of the scoreboard, update it every time someone solves if not in freeze time (or just prefetch and compute if not exists))
- - telegram bot for first bloods (and webhook generalization)
+ - telegram bot for first bloods (and webhook generalization) + pipeline tests
  - login via CTFTime
  - default starting points for challenges as global config
  - kube support
