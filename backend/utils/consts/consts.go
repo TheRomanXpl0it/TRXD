@@ -2,16 +2,12 @@ package consts
 
 import (
 	"trxd/db/sqlc"
-
-	"github.com/moby/go-archive"
 )
 
-// ! DO NOT TOUCH THIS
-const Gzip = archive.Gzip //! DO NOT TOUCH THIS
-// ! DO NOT TOUCH THIS
-// ! (IT PREVENTS GO MOD TIDY TO UPGRADE THE LIBRARY, THE DOCKER DEVELOPERS USE AN OLD VERSION, BLAME THEM)
-
 const Name = "TRXd"
+
+const NetworkExternal = "trxd-shared-external"
+const NetworkInternal = "trxd-shared-internal"
 
 var Roles = []sqlc.UserRole{sqlc.UserRoleSpectator, sqlc.UserRolePlayer, sqlc.UserRoleAuthor, sqlc.UserRoleAdmin}
 var RolesStr = []string{string(sqlc.UserRoleSpectator), string(sqlc.UserRolePlayer), string(sqlc.UserRoleAuthor), string(sqlc.UserRoleAdmin)}

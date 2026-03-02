@@ -3,40 +3,17 @@ package networks
 import (
 	"context"
 	"errors"
-	"strings"
-	"trxd/db"
 	"trxd/instancer/containers"
 
-	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/network"
 )
-
-func proxyConnect(ctx context.Context, netID string) error {
-	proxyID, err := containers.FetchProxyID(ctx)
-	if err != nil {
-		return err
-	}
-
-	err = containers.Cli.NetworkConnect(ctx, netID, proxyID, nil)
-	if err != nil {
-		if !strings.Contains(err.Error(), "already exists in network") {
-			return err
-		}
-	}
-
-	return nil
-}
 
 func CreateNetwork(ctx context.Context, name string, disableICC bool) (string, error) {
 	if containers.Cli == nil {
 		return "", nil
 	}
 
-	args := filters.NewArgs()
-	args.Add("name", name)
-	summary, err := containers.Cli.NetworkList(ctx, network.ListOptions{
-		Filters: args,
-	})
+	summary, err := FetchNetwork(ctx, name)
 	if err != nil {
 		return "", err
 	}
@@ -60,27 +37,6 @@ func CreateNetwork(ctx context.Context, name string, disableICC bool) (string, e
 			return "", err
 		}
 		netID = net.ID
-	}
-
-	if disableICC {
-		return netID, nil
-	}
-
-	err = proxyConnect(ctx, netID)
-	if err != nil {
-		if !strings.Contains(err.Error(), "No such container") {
-			return "", err
-		}
-
-		err := db.StorageDelete(ctx, "proxy-id")
-		if err != nil {
-			return "", err
-		}
-
-		err = proxyConnect(ctx, netID)
-		if err != nil {
-			return "", err
-		}
 	}
 
 	return netID, nil
