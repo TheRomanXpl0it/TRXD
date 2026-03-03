@@ -153,6 +153,9 @@ func TestRoute(t *testing.T) {
 
 	session.Post("/instances", JSON{"chall_id": id3}, http.StatusOK)
 	body = session.Body()
+	if body == nil {
+		t.Fatal("Expected instance, got nil")
+	}
 
 	expectedInstance := JSON{
 		"docker_config": JSON{
