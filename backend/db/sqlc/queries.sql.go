@@ -236,6 +236,16 @@ func (q *Queries) DeleteInstance(ctx context.Context, arg DeleteInstanceParams) 
 	return err
 }
 
+const deleteSubmission = `-- name: DeleteSubmission :exec
+DELETE FROM submissions WHERE id = $1
+`
+
+// Delete a submission by its ID
+func (q *Queries) DeleteSubmission(ctx context.Context, id int32) error {
+	_, err := q.exec(ctx, q.deleteSubmissionStmt, deleteSubmission, id)
+	return err
+}
+
 const getAllChallengesInfo = `-- name: GetAllChallengesInfo :many
 WITH tid AS (SELECT team_id FROM users WHERE users.id = $1)
 SELECT
@@ -613,6 +623,83 @@ func (q *Queries) GetNextInstanceToDelete(ctx context.Context) (GetNextInstanceT
 	return i, err
 }
 
+const getSubmissions = `-- name: GetSubmissions :many
+SELECT
+    s.id,
+    s.user_id,
+    u.name AS user_name,
+    t.id AS team_id,
+    t.name AS team_name,
+    s.chall_id,
+    c.name AS chall_name,
+    s.status,
+    s.first_blood,
+    s.flag,
+    s.timestamp
+  FROM submissions s
+  JOIN users u ON s.user_id = u.id
+  JOIN teams t ON u.team_id = t.id
+  JOIN challenges c ON s.chall_id = c.id
+  ORDER BY s.id DESC
+  OFFSET $1
+  LIMIT $2
+`
+
+type GetSubmissionsParams struct {
+	Offset int32         `json:"offset"`
+	Limit  sql.NullInt32 `json:"limit"`
+}
+
+type GetSubmissionsRow struct {
+	ID         int32            `json:"id"`
+	UserID     int32            `json:"user_id"`
+	UserName   string           `json:"user_name"`
+	TeamID     int32            `json:"team_id"`
+	TeamName   string           `json:"team_name"`
+	ChallID    int32            `json:"chall_id"`
+	ChallName  string           `json:"chall_name"`
+	Status     SubmissionStatus `json:"status"`
+	FirstBlood bool             `json:"first_blood"`
+	Flag       string           `json:"flag"`
+	Timestamp  time.Time        `json:"timestamp"`
+}
+
+// fetches all submissions, with pagination
+func (q *Queries) GetSubmissions(ctx context.Context, arg GetSubmissionsParams) ([]GetSubmissionsRow, error) {
+	rows, err := q.query(ctx, q.getSubmissionsStmt, getSubmissions, arg.Offset, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetSubmissionsRow
+	for rows.Next() {
+		var i GetSubmissionsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.UserName,
+			&i.TeamID,
+			&i.TeamName,
+			&i.ChallID,
+			&i.ChallName,
+			&i.Status,
+			&i.FirstBlood,
+			&i.Flag,
+			&i.Timestamp,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getTeamMembers = `-- name: GetTeamMembers :many
 SELECT id, name, role, score FROM users WHERE team_id = $1 ORDER BY id
 `
@@ -918,6 +1005,18 @@ func (q *Queries) GetTeamsScoreboardGraph(ctx context.Context) ([]GetTeamsScoreb
 		return nil, err
 	}
 	return items, nil
+}
+
+const getTotalSubmissions = `-- name: GetTotalSubmissions :one
+SELECT COUNT(*) FROM submissions
+`
+
+// fetches total number of submissions
+func (q *Queries) GetTotalSubmissions(ctx context.Context) (int64, error) {
+	row := q.queryRow(ctx, q.getTotalSubmissionsStmt, getTotalSubmissions)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
 const getTotalUsers = `-- name: GetTotalUsers :one

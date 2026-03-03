@@ -66,6 +66,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteInstanceStmt, err = db.PrepareContext(ctx, deleteInstance); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteInstance: %w", err)
 	}
+	if q.deleteSubmissionStmt, err = db.PrepareContext(ctx, deleteSubmission); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteSubmission: %w", err)
+	}
 	if q.getAllChallengesInfoStmt, err = db.PrepareContext(ctx, getAllChallengesInfo); err != nil {
 		return nil, fmt.Errorf("error preparing query GetAllChallengesInfo: %w", err)
 	}
@@ -111,6 +114,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getNextInstanceToDeleteStmt, err = db.PrepareContext(ctx, getNextInstanceToDelete); err != nil {
 		return nil, fmt.Errorf("error preparing query GetNextInstanceToDelete: %w", err)
 	}
+	if q.getSubmissionsStmt, err = db.PrepareContext(ctx, getSubmissions); err != nil {
+		return nil, fmt.Errorf("error preparing query GetSubmissions: %w", err)
+	}
 	if q.getTeamByIDStmt, err = db.PrepareContext(ctx, getTeamByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTeamByID: %w", err)
 	}
@@ -134,6 +140,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.getTeamsScoreboardGraphStmt, err = db.PrepareContext(ctx, getTeamsScoreboardGraph); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTeamsScoreboardGraph: %w", err)
+	}
+	if q.getTotalSubmissionsStmt, err = db.PrepareContext(ctx, getTotalSubmissions); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTotalSubmissions: %w", err)
 	}
 	if q.getTotalTeamsStmt, err = db.PrepareContext(ctx, getTotalTeams); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTotalTeams: %w", err)
@@ -279,6 +288,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteInstanceStmt: %w", cerr)
 		}
 	}
+	if q.deleteSubmissionStmt != nil {
+		if cerr := q.deleteSubmissionStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteSubmissionStmt: %w", cerr)
+		}
+	}
 	if q.getAllChallengesInfoStmt != nil {
 		if cerr := q.getAllChallengesInfoStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getAllChallengesInfoStmt: %w", cerr)
@@ -354,6 +368,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getNextInstanceToDeleteStmt: %w", cerr)
 		}
 	}
+	if q.getSubmissionsStmt != nil {
+		if cerr := q.getSubmissionsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getSubmissionsStmt: %w", cerr)
+		}
+	}
 	if q.getTeamByIDStmt != nil {
 		if cerr := q.getTeamByIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getTeamByIDStmt: %w", cerr)
@@ -392,6 +411,11 @@ func (q *Queries) Close() error {
 	if q.getTeamsScoreboardGraphStmt != nil {
 		if cerr := q.getTeamsScoreboardGraphStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getTeamsScoreboardGraphStmt: %w", cerr)
+		}
+	}
+	if q.getTotalSubmissionsStmt != nil {
+		if cerr := q.getTotalSubmissionsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTotalSubmissionsStmt: %w", cerr)
 		}
 	}
 	if q.getTotalTeamsStmt != nil {
@@ -562,6 +586,7 @@ type Queries struct {
 	deleteChallengeStmt          *sql.Stmt
 	deleteFlagStmt               *sql.Stmt
 	deleteInstanceStmt           *sql.Stmt
+	deleteSubmissionStmt         *sql.Stmt
 	getAllChallengesInfoStmt     *sql.Stmt
 	getAttachmentHashStmt        *sql.Stmt
 	getBadgesFromTeamStmt        *sql.Stmt
@@ -577,6 +602,7 @@ type Queries struct {
 	getHiddenAndAttachmentsStmt  *sql.Stmt
 	getInstanceStmt              *sql.Stmt
 	getNextInstanceToDeleteStmt  *sql.Stmt
+	getSubmissionsStmt           *sql.Stmt
 	getTeamByIDStmt              *sql.Stmt
 	getTeamByNameStmt            *sql.Stmt
 	getTeamFromUserStmt          *sql.Stmt
@@ -585,6 +611,7 @@ type Queries struct {
 	getTeamsPreviewStmt          *sql.Stmt
 	getTeamsScoreboardStmt       *sql.Stmt
 	getTeamsScoreboardGraphStmt  *sql.Stmt
+	getTotalSubmissionsStmt      *sql.Stmt
 	getTotalTeamsStmt            *sql.Stmt
 	getTotalUsersStmt            *sql.Stmt
 	getUserByEmailStmt           *sql.Stmt
@@ -628,6 +655,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deleteChallengeStmt:          q.deleteChallengeStmt,
 		deleteFlagStmt:               q.deleteFlagStmt,
 		deleteInstanceStmt:           q.deleteInstanceStmt,
+		deleteSubmissionStmt:         q.deleteSubmissionStmt,
 		getAllChallengesInfoStmt:     q.getAllChallengesInfoStmt,
 		getAttachmentHashStmt:        q.getAttachmentHashStmt,
 		getBadgesFromTeamStmt:        q.getBadgesFromTeamStmt,
@@ -643,6 +671,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getHiddenAndAttachmentsStmt:  q.getHiddenAndAttachmentsStmt,
 		getInstanceStmt:              q.getInstanceStmt,
 		getNextInstanceToDeleteStmt:  q.getNextInstanceToDeleteStmt,
+		getSubmissionsStmt:           q.getSubmissionsStmt,
 		getTeamByIDStmt:              q.getTeamByIDStmt,
 		getTeamByNameStmt:            q.getTeamByNameStmt,
 		getTeamFromUserStmt:          q.getTeamFromUserStmt,
@@ -651,6 +680,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getTeamsPreviewStmt:          q.getTeamsPreviewStmt,
 		getTeamsScoreboardStmt:       q.getTeamsScoreboardStmt,
 		getTeamsScoreboardGraphStmt:  q.getTeamsScoreboardGraphStmt,
+		getTotalSubmissionsStmt:      q.getTotalSubmissionsStmt,
 		getTotalTeamsStmt:            q.getTotalTeamsStmt,
 		getTotalUsersStmt:            q.getTotalUsersStmt,
 		getUserByEmailStmt:           q.getUserByEmailStmt,

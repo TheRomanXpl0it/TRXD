@@ -26,6 +26,8 @@ import (
 	"trxd/api/routes/instances_delete"
 	"trxd/api/routes/instances_update"
 	"trxd/api/routes/submissions_create"
+	"trxd/api/routes/submissions_delete"
+	"trxd/api/routes/submissions_get"
 	"trxd/api/routes/teams_all_get"
 	"trxd/api/routes/teams_get"
 	"trxd/api/routes/teams_join"
@@ -204,8 +206,8 @@ func SetupApi(ctx context.Context, app *fiber.App) {
 	// api.Get("/instances", admin, instances_get.Route)
 
 	api.Post("/submissions", spectator, team, start, end, submissions_create.Route)
-	// api.Get("/submissions", admin, submissions_get.Route)
-	// api.Delete("/submissions", admin, submissions_delete.Route)
+	api.Get("/submissions", admin, submissions_get.Route)
+	api.Delete("/submissions", admin, submissions_delete.Route)
 
 	api.Post("/attachments", author, attachments_create.Route)
 	api.Delete("/attachments", author, attachments_delete.Route)

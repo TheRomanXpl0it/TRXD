@@ -1,8 +1,7 @@
-package users_all_get
+package submissions_get
 
 import (
 	"math"
-	"trxd/db/sqlc"
 	"trxd/utils"
 	"trxd/utils/consts"
 
@@ -10,8 +9,6 @@ import (
 )
 
 func Route(c *fiber.Ctx) error {
-	role := c.Locals("role")
-
 	offset := c.QueryInt("offset", 0)
 	if offset < 0 || offset > math.MaxInt32 {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidParam)
@@ -22,17 +19,13 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusBadRequest, consts.InvalidParam)
 	}
 
-	allData := false
-	if role != nil {
-		allData = utils.In(role.(sqlc.UserRole), []sqlc.UserRole{sqlc.UserRoleAuthor, sqlc.UserRoleAdmin})
-	}
-	totalUsers, usersData, err := GetUsers(c.Context(), allData, int32(offset), int32(limit))
+	totalUsers, submissionsData, err := GetSubmissions(c.Context(), int32(offset), int32(limit))
 	if err != nil {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUsers, err)
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingSubmissions, err)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"total": totalUsers,
-		"users": usersData,
+		"total":       totalUsers,
+		"submissions": submissionsData,
 	})
 }
