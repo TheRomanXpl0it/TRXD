@@ -138,9 +138,6 @@ func TestRoute(t *testing.T) {
 	session.Post("/login", JSON{"email": "test-2@test.test", "password": "testpass"}, http.StatusOK)
 	session.Get("/challenges", nil, http.StatusOK)
 	body := session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
 	var challID5 int32
 	for _, chall := range body.([]interface{}) {
 		if chall.(map[string]interface{})["name"] == "chall-5" {

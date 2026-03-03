@@ -264,9 +264,6 @@ func TestRoute(t *testing.T) {
 				passwords[test.teamNumber] = newPass.(string)
 			} else {
 				sessionBody := session.Body()
-				if sessionBody == nil {
-					t.Fatal("Expected body to not be nil")
-				}
 				body := sessionBody.(map[string]interface{})
 				newPasswordInterface, ok := body["new_password"]
 				if !ok {

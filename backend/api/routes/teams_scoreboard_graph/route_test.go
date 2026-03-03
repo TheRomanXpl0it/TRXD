@@ -79,48 +79,23 @@ func TestRoute(t *testing.T) {
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Get("/scoreboard/graph", nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatalf("Expected non-nil body")
-	}
-	body = test_utils.DeleteKeys(body, "timestamp")
-	test_utils.Compare(t, expected, body)
+	session.CheckFilteredResponse(expected, "timestamp")
 
 	test_utils.UpdateConfig(t, "scoreboard-top", "3")
 	session.Get("/scoreboard/graph", nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatalf("Expected non-nil body")
-	}
-	body = test_utils.DeleteKeys(body, "timestamp")
-	test_utils.Compare(t, expected, body)
+	session.CheckFilteredResponse(expected, "timestamp")
 
 	test_utils.UpdateConfig(t, "scoreboard-top", "2")
 	session.Get("/scoreboard/graph", nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatalf("Expected non-nil body")
-	}
-	body = test_utils.DeleteKeys(body, "timestamp")
-	test_utils.Compare(t, expected, body)
+	session.CheckFilteredResponse(expected, "timestamp")
 
 	test_utils.UpdateConfig(t, "scoreboard-top", "1")
 	session.Get("/scoreboard/graph", nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatalf("Expected non-nil body")
-	}
-	body = test_utils.DeleteKeys(body, "timestamp")
-	test_utils.Compare(t, expected[:1], body)
+	session.CheckFilteredResponse(expected[:1], "timestamp")
 
 	test_utils.UpdateConfig(t, "scoreboard-top", "0")
 	session.Get("/scoreboard/graph", nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatalf("Expected non-nil body")
-	}
-	body = test_utils.DeleteKeys(body, "timestamp")
-	test_utils.Compare(t, []JSON{}, body)
+	session.CheckFilteredResponse([]JSON{}, "timestamp")
 
 	test_utils.UpdateConfig(t, "scoreboard-top", "10")
 	sessionC := test_utils.NewApiTestSession(t, app)
@@ -189,10 +164,5 @@ func TestRoute(t *testing.T) {
 	}
 
 	session.Get("/scoreboard/graph", nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatalf("Expected non-nil body")
-	}
-	body = test_utils.DeleteKeys(body, "timestamp")
-	test_utils.Compare(t, expected3, body)
+	session.CheckFilteredResponse(expected3, "timestamp")
 }

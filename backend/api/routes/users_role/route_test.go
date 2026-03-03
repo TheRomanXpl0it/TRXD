@@ -76,9 +76,6 @@ func TestRoute(t *testing.T) {
 	session.CheckResponse(nil)
 	session.Get("/users", nil, http.StatusOK)
 	body := session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
 	var uid int32
 	for _, user := range body.(map[string]interface{})["users"].([]interface{}) {
 		if user.(map[string]interface{})["name"] == "a" {
@@ -100,9 +97,6 @@ func TestRoute(t *testing.T) {
 	session.CheckResponse(nil)
 	session.Get(fmt.Sprintf("/users/%d", uid), nil, http.StatusOK)
 	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
 	if body.(map[string]interface{})["role"] != "Author" {
 		t.Fatalf("Expected role to be 'Author', got '%v'", body.(map[string]interface{})["role"])
 	}
@@ -114,9 +108,6 @@ func TestRoute(t *testing.T) {
 	session.CheckResponse(nil)
 	session.Get(fmt.Sprintf("/users/%d", uid), nil, http.StatusOK)
 	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
 	if body.(map[string]interface{})["role"] != "Spectator" {
 		t.Fatalf("Expected role to be 'Spectator', got '%v'", body.(map[string]interface{})["role"])
 	}
@@ -128,9 +119,6 @@ func TestRoute(t *testing.T) {
 	session.CheckResponse(nil)
 	session.Get(fmt.Sprintf("/users/%d", uid), nil, http.StatusOK)
 	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
 	if body.(map[string]interface{})["role"] != "Player" {
 		t.Fatalf("Expected role to be 'Player', got '%v'", body.(map[string]interface{})["role"])
 	}

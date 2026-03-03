@@ -30,9 +30,6 @@ func TestRoute(t *testing.T) {
 	session.Post("/teams/register", JSON{"name": "test-team", "password": "testpass"}, http.StatusOK)
 	session.Get("/challenges", nil, http.StatusOK)
 	body := session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
 	var id int32
 	for _, chall := range body.([]interface{}) {
 		if chall.(map[string]interface{})["name"] == "chall-1" {
@@ -72,12 +69,7 @@ func TestRoute(t *testing.T) {
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/login", JSON{"email": "test2@test.test", "password": "testpass"}, http.StatusOK)
 	session.Get(fmt.Sprintf("/challenges/%d", id), nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id", "timestamp")
-	test_utils.Compare(t, expectedPlayer, body)
+	session.CheckFilteredResponse(expectedPlayer, "id", "timestamp")
 
 	expectedAuthor := JSON{
 		"flags": []JSON{
@@ -104,12 +96,7 @@ func TestRoute(t *testing.T) {
 	session.Post("/login", JSON{"email": "test3@test.test", "password": "testpass"}, http.StatusOK)
 	session.Post("/teams/register", JSON{"name": "test-team-2", "password": "testpass"}, http.StatusOK)
 	session.Get(fmt.Sprintf("/challenges/%d", id), nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id", "timestamp")
-	test_utils.Compare(t, expectedAuthor, body)
+	session.CheckFilteredResponse(expectedAuthor, "id", "timestamp")
 
 	expectedAuthorHidden := JSON{
 		"flags": []JSON{
@@ -124,9 +111,6 @@ func TestRoute(t *testing.T) {
 
 	session.Get("/challenges", nil, http.StatusOK)
 	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
 	var id3, id5 int32
 	for _, chall := range body.([]interface{}) {
 		switch chall.(map[string]interface{})["name"] {
@@ -138,12 +122,7 @@ func TestRoute(t *testing.T) {
 	}
 
 	session.Get(fmt.Sprintf("/challenges/%d", id5), nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id", "timestamp")
-	test_utils.Compare(t, expectedAuthorHidden, body)
+	session.CheckFilteredResponse(expectedAuthorHidden, "id", "timestamp")
 
 	expectedDocker := JSON{
 		"docker_config": JSON{
@@ -170,18 +149,10 @@ func TestRoute(t *testing.T) {
 	}
 
 	session.Get(fmt.Sprintf("/challenges/%d", id3), nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id", "timestamp")
-	test_utils.Compare(t, expectedDocker, body)
+	session.CheckFilteredResponse(expectedDocker, "id", "timestamp")
 
 	session.Post("/instances", JSON{"chall_id": id3}, http.StatusOK)
 	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
 
 	expectedInstance := JSON{
 		"docker_config": JSON{
@@ -208,10 +179,5 @@ func TestRoute(t *testing.T) {
 	}
 
 	session.Get(fmt.Sprintf("/challenges/%d", id3), nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id", "timestamp", "timeout")
-	test_utils.Compare(t, expectedInstance, body)
+	session.CheckFilteredResponse(expectedInstance, "id", "timestamp", "timeout")
 }

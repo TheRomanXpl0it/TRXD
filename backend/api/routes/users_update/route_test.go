@@ -96,9 +96,6 @@ func TestRoute(t *testing.T) {
 	session.CheckResponse(nil)
 	session.Get("/info", nil, http.StatusOK)
 	body := session.Body()
-	if body == nil {
-		t.Fatal("Expected body")
-	}
 	if body.(map[string]interface{})["team_id"] != nil {
 		t.Fatal("Expected no team_id")
 	}
@@ -110,9 +107,6 @@ func TestRoute(t *testing.T) {
 
 	session.Get("/info", nil, http.StatusOK)
 	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body")
-	}
 	tid := body.(map[string]interface{})["team_id"]
 	if tid == nil {
 		t.Fatal("Expected team_id")
@@ -120,9 +114,6 @@ func TestRoute(t *testing.T) {
 
 	session.Get(fmt.Sprintf("/teams/%v", int(tid.(float64))), nil, http.StatusOK)
 	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body")
-	}
 	if body.(map[string]interface{})["name"] != "updated-name" {
 		t.Fatal("Expected updated name")
 	}

@@ -89,22 +89,12 @@ func TestRoute(t *testing.T) {
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Get(fmt.Sprintf("/teams/%d", A.ID), nil, http.StatusOK)
-	body := session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id", "timestamp", "user_id")
-	test_utils.Compare(t, expectedPlayer, body)
+	session.CheckFilteredResponse(expectedPlayer, "id", "timestamp", "user_id")
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/register", JSON{"name": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
 	session.Get(fmt.Sprintf("/teams/%d", A.ID), nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id", "timestamp", "user_id")
-	test_utils.Compare(t, expectedPlayer, body)
+	session.CheckFilteredResponse(expectedPlayer, "id", "timestamp", "user_id")
 
 	expectedAdmin := JSON{
 		"badges": []JSON{
@@ -159,22 +149,14 @@ func TestRoute(t *testing.T) {
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/login", JSON{"email": "admin@admin.com", "password": "adminpass"}, http.StatusOK)
 	session.Get(fmt.Sprintf("/teams/%d", A.ID), nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id", "timestamp", "user_id")
-	test_utils.Compare(t, expectedAdmin, body)
+	session.CheckFilteredResponse(expectedAdmin, "id", "timestamp", "user_id")
 
 	//! User Mode tests
 	test_utils.UpdateConfig(t, "user-mode", "true")
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/register", JSON{"name": "single", "email": "single@gmail.com", "password": "testpass"}, http.StatusOK)
 	session.Get("/info", nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
+	body := session.Body()
 	bodyMap := body.(map[string]interface{})
 	teamID := int32(bodyMap["team_id"].(float64))
 	userID := int32(bodyMap["id"].(float64))
@@ -191,11 +173,7 @@ func TestRoute(t *testing.T) {
 		"user_id": userID,
 	}
 	session.Get(fmt.Sprintf("/teams/%d", teamID), nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.Compare(t, expected, body)
+	session.CheckResponse(expected)
 
 	expected = JSON{
 		"badges": []JSON{
@@ -231,10 +209,5 @@ func TestRoute(t *testing.T) {
 		},
 	}
 	session.Get(fmt.Sprintf("/teams/%d", A.ID), nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id", "user_id", "timestamp")
-	test_utils.Compare(t, expected, body)
+	session.CheckFilteredResponse(expected, "id", "timestamp", "user_id")
 }

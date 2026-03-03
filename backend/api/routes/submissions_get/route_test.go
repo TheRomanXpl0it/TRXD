@@ -120,12 +120,7 @@ func TestRoute(t *testing.T) {
 	session := test_utils.NewApiTestSession(t, app)
 	session.Post("/login", JSON{"email": "admin@email.com", "password": "testpass"}, http.StatusOK)
 	session.Get("/submissions", nil, http.StatusOK)
-	body := session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id", "user_id", "team_id", "chall_id", "timestamp")
-	test_utils.Compare(t, expected, body) // TODO: make a CheckResponse functions with delete keys integrated
+	session.CheckFilteredResponse(expected, "id", "user_id", "team_id", "chall_id", "timestamp")
 
 	session.Get("/submissions?offset=-1", nil, http.StatusBadRequest)
 	session.CheckResponse(errorf(consts.InvalidParam))
@@ -144,26 +139,14 @@ func TestRoute(t *testing.T) {
 	}
 
 	session.Get("/submissions?offset=1", nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id", "user_id", "team_id", "chall_id", "timestamp")
-	test_utils.Compare(t, subSet(expected, 1, len(expected["submissions"].([]JSON))), body)
+	sub := subSet(expected, 1, len(expected["submissions"].([]JSON)))
+	session.CheckFilteredResponse(sub, "id", "user_id", "team_id", "chall_id", "timestamp")
 
 	session.Get("/submissions?limit=2", nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id", "user_id", "team_id", "chall_id", "timestamp")
-	test_utils.Compare(t, subSet(expected, 0, 2), body)
+	sub = subSet(expected, 0, 2)
+	session.CheckFilteredResponse(sub, "id", "user_id", "team_id", "chall_id", "timestamp")
 
 	session.Get("/submissions?offset=1&limit=2", nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id", "user_id", "team_id", "chall_id", "timestamp")
-	test_utils.Compare(t, subSet(expected, 1, 3), body)
+	sub = subSet(expected, 1, 3)
+	session.CheckFilteredResponse(sub, "id", "user_id", "team_id", "chall_id", "timestamp")
 }

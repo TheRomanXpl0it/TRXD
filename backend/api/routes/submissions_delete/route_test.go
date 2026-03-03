@@ -1,13 +1,13 @@
 package submissions_delete_test
 
 import (
+	"math"
 	"net/http"
 	"testing"
 	"trxd/api"
+	"trxd/utils/consts"
 	"trxd/utils/test_utils"
 )
-
-//! TODO
 
 type JSON map[string]interface{}
 
@@ -36,19 +36,19 @@ func TestRoute(t *testing.T) {
 	session := test_utils.NewApiTestSession(t, app)
 	session.Post("/login", JSON{"email": "admin@email.com", "password": "testpass"}, http.StatusOK)
 	session.Get("/submissions", nil, http.StatusOK)
-	body := session.Body() // TODO: make an optional argument (NoNull bool) (it throws an error if the body is nil) or make the opposite (Nullable bool) (so by default it is not nullable and throws an error if it is nil)
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
+	body := session.Body()
 	firstID := Int(Json(List(Json(body)["submissions"])[0])["id"])
+
+	session.Delete("/submissions", JSON{"sub_id": -1}, http.StatusBadRequest)
+	session.CheckResponse(errorf(test_utils.Format(consts.MinError, "SubID", 0)))
+	session.Delete("/submissions", JSON{"sub_id": math.MaxInt32 + 1}, http.StatusBadRequest)
+	session.CheckResponse(errorf(consts.InvalidJSON))
+
 	session.Delete("/submissions", JSON{"sub_id": firstID}, http.StatusOK)
 	session.CheckResponse(nil)
 
 	session.Get("/submissions", nil, http.StatusOK)
 	body2 := session.Body()
-	if body2 == nil {
-		t.Fatal("Expected body to not be nil")
-	}
 
 	newFirstID := Int(Json(List(Json(body2)["submissions"])[0])["id"])
 	if newFirstID >= firstID {

@@ -36,9 +36,6 @@ func TestRoute(t *testing.T) {
 	session.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
 	session.Get("/challenges", nil, http.StatusOK)
 	body := session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
 
 	var challID1, challID2, challID3, challID4, challID5 int32
 	for _, chall := range body.([]interface{}) {
@@ -84,9 +81,6 @@ func TestRoute(t *testing.T) {
 
 	session.Post("/instances", JSON{"chall_id": challID3}, http.StatusOK)
 	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
 	if host, ok := body.(map[string]interface{})["host"]; !ok {
 		t.Fatalf("Expected host to be present in response: %+v", body)
 	} else {
@@ -117,9 +111,6 @@ func TestRoute(t *testing.T) {
 	session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
 	session.Post("/instances", JSON{"chall_id": challID3}, http.StatusOK)
 	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
 	if host, ok := body.(map[string]interface{})["host"]; !ok {
 		t.Fatalf("Expected host to be present in response: %+v", body)
 	} else {
@@ -144,9 +135,6 @@ func TestRoute(t *testing.T) {
 	session.Post("/login", JSON{"email": "test@test.test", "password": "testpass"}, http.StatusOK)
 	session.Post("/instances", JSON{"chall_id": challID3}, http.StatusOK)
 	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
 	if host, ok := body.(map[string]interface{})["host"]; !ok {
 		t.Fatalf("Expected host to be present in response: %+v", body)
 	} else {
@@ -187,9 +175,6 @@ func TestRoute(t *testing.T) {
 
 	session.Post("/instances", JSON{"chall_id": challID4}, http.StatusOK)
 	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
 	if _, ok := body.(map[string]interface{})["host"]; !ok {
 		t.Fatalf("Expected host to be present in response: %+v", body)
 	}

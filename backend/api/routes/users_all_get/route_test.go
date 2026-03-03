@@ -53,12 +53,7 @@ func TestRoute(t *testing.T) {
 
 	session := test_utils.NewApiTestSession(t, app)
 	session.Get("/users", nil, http.StatusOK)
-	body := session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id")
-	test_utils.Compare(t, expectedNoAuth, body)
+	session.CheckFilteredResponse(expectedNoAuth, "id")
 
 	expectedPlayer := JSON{
 		"total": 5,
@@ -94,12 +89,7 @@ func TestRoute(t *testing.T) {
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/register", JSON{"name": "test", "email": "test@test.test", "password": "testpass"}, http.StatusOK)
 	session.Get("/users", nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id")
-	test_utils.Compare(t, expectedPlayer, body)
+	session.CheckFilteredResponse(expectedPlayer, "id")
 
 	session.Get("/users?offset=-1", nil, http.StatusBadRequest)
 	session.CheckResponse(errorf(consts.InvalidParam))
@@ -118,28 +108,16 @@ func TestRoute(t *testing.T) {
 	}
 
 	session.Get("/users?offset=1", nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id")
-	test_utils.Compare(t, subSet(expectedPlayer, 1, len(expectedPlayer["users"].([]JSON))), body)
+	sub := subSet(expectedPlayer, 1, len(expectedPlayer["users"].([]JSON)))
+	session.CheckFilteredResponse(sub, "id")
 
 	session.Get("/users?limit=2", nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id")
-	test_utils.Compare(t, subSet(expectedPlayer, 0, 2), body)
+	sub = subSet(expectedPlayer, 0, 2)
+	session.CheckFilteredResponse(sub, "id")
 
 	session.Get("/users?offset=1&limit=2", nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id")
-	test_utils.Compare(t, subSet(expectedPlayer, 1, 3), body)
+	sub = subSet(expectedPlayer, 1, 3)
+	session.CheckFilteredResponse(sub, "id")
 
 	expectedAdmin := JSON{
 		"total": 8,
@@ -200,35 +178,17 @@ func TestRoute(t *testing.T) {
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/login", JSON{"email": "admin@test.com", "password": "testpass"}, http.StatusOK)
 	session.Get("/users", nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id")
-	test_utils.Compare(t, expectedAdmin, body)
+	session.CheckFilteredResponse(expectedAdmin, "id")
 
 	session.Get("/users?offset=1", nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id")
-	test_utils.Compare(t, subSet(expectedAdmin, 1, len(expectedAdmin["users"].([]JSON))), body)
+	sub = subSet(expectedAdmin, 1, len(expectedAdmin["users"].([]JSON)))
+	session.CheckFilteredResponse(sub, "id")
 
 	session.Get("/users?limit=2", nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id")
-	test_utils.Compare(t, subSet(expectedAdmin, 0, 2), body)
+	sub = subSet(expectedAdmin, 0, 2)
+	session.CheckFilteredResponse(sub, "id")
 
 	session.Get("/users?offset=1&limit=2", nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id")
-	test_utils.Compare(t, subSet(expectedAdmin, 1, 3), body)
-
+	sub = subSet(expectedAdmin, 1, 3)
+	session.CheckFilteredResponse(sub, "id")
 }

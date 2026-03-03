@@ -127,9 +127,6 @@ func TestRoute(t *testing.T) {
 	session.Post("/teams/register", JSON{"name": "test-team", "password": "testpass"}, http.StatusOK)
 	session.Get("/challenges", nil, http.StatusOK)
 	body := session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
 	var challID int32
 	for _, chall := range body.([]interface{}) {
 		if chall.(map[string]interface{})["name"] == "chall-3" {
@@ -267,9 +264,6 @@ func TestRoute(t *testing.T) {
 	session.Post("/instances", JSON{"chall_id": challID}, http.StatusOK)
 	session.Get("/challenges", nil, http.StatusOK)
 	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
 	conf, err := db.GetConfig(t.Context(), "instance-lifetime")
 	if err != nil {
 		t.Fatalf("Failed to get config: %v", err)

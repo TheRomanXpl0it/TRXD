@@ -81,12 +81,7 @@ func TestRoute(t *testing.T) {
 		"user_mode": false,
 	}
 	session.Get("/info", nil, http.StatusOK)
-	body := session.Body()
-	if body == nil {
-		t.Fatal("Expected body")
-	}
-	test_utils.DeleteKeys(body, "id")
-	test_utils.Compare(t, expected, body)
+	session.CheckFilteredResponse(expected, "id")
 
 	ok, err = users_register.SetNXUserData(t.Context(), users_register.Data{
 		Name:     "m",

@@ -88,9 +88,6 @@ func TestRoute(t *testing.T) {
 
 		session.Get("/configs", nil, http.StatusOK)
 		body := session.Body()
-		if body == nil {
-			t.Fatal("Expected response body to be non-nil")
-		}
 		for _, itemInt := range body.([]interface{}) {
 			item := itemInt.(map[string]interface{})
 			if item["key"] == test.testBody.(JSON)["key"] {

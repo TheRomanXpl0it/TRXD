@@ -31,9 +31,6 @@ func TestRoute(t *testing.T) {
 	session.Post("/login", JSON{"email": "admin@test.com", "password": "testpass"}, http.StatusOK)
 	session.Get("/users", nil, http.StatusOK)
 	body := session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
 	var idPlayer, idAdmin int32
 	for _, user := range body.(map[string]interface{})["users"].([]interface{}) {
 		switch user.(map[string]interface{})["name"] {
@@ -48,9 +45,6 @@ func TestRoute(t *testing.T) {
 	session.Post("/register", JSON{"name": "self", "email": "self@test.com", "password": "testpass"}, http.StatusOK)
 	session.Get("/info", nil, http.StatusOK)
 	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
 	idSelf := int32(body.(map[string]interface{})["id"].(float64))
 
 	expectedNoAuth := JSON{
@@ -103,12 +97,7 @@ func TestRoute(t *testing.T) {
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Get(fmt.Sprintf("/users/%d", idPlayer), nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id", "joined_at", "team_id", "timestamp")
-	test_utils.Compare(t, expectedNoAuth, body)
+	session.CheckFilteredResponse(expectedNoAuth, "id", "joined_at", "team_id", "timestamp")
 
 	expectedPlayer := JSON{
 		"country": "",
@@ -152,22 +141,12 @@ func TestRoute(t *testing.T) {
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/login", JSON{"email": "self@test.com", "password": "testpass"}, http.StatusOK)
 	session.Get(fmt.Sprintf("/users/%d", idPlayer), nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id", "joined_at", "team_id", "timestamp")
-	test_utils.Compare(t, expectedPlayer, body)
+	session.CheckFilteredResponse(expectedPlayer, "id", "joined_at", "team_id", "timestamp")
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/login", JSON{"email": "self@test.com", "password": "testpass"}, http.StatusOK)
 	session.Get(fmt.Sprintf("/users/%d", idSelf), nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id", "joined_at", "team_id", "timestamp")
-	test_utils.Compare(t, expectedSelf, body)
+	session.CheckFilteredResponse(expectedSelf, "id", "joined_at", "team_id", "timestamp")
 
 	expectedPlayerAdmin := JSON{
 		"country": "",
@@ -208,20 +187,10 @@ func TestRoute(t *testing.T) {
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/login", JSON{"email": "admin@test.com", "password": "testpass"}, http.StatusOK)
 	session.Get(fmt.Sprintf("/users/%d", idPlayer), nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id", "joined_at", "team_id", "timestamp")
-	test_utils.Compare(t, expectedPlayerAdmin, body)
+	session.CheckFilteredResponse(expectedPlayerAdmin, "id", "joined_at", "team_id", "timestamp")
 
 	session = test_utils.NewApiTestSession(t, app)
 	session.Post("/login", JSON{"email": "admin@test.com", "password": "testpass"}, http.StatusOK)
 	session.Get(fmt.Sprintf("/users/%d", idAdmin), nil, http.StatusOK)
-	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
-	test_utils.DeleteKeys(body, "id", "joined_at", "timestamp")
-	test_utils.Compare(t, expectedAdmin, body)
+	session.CheckFilteredResponse(expectedAdmin, "id", "joined_at", "timestamp")
 }

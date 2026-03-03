@@ -230,9 +230,6 @@ func TestRoute(t *testing.T) {
 		if i == len(testData)-1 {
 			session.Get("/challenges", nil, http.StatusOK)
 			body := session.Body()
-			if body == nil {
-				t.Fatal("Expected body to not be nil")
-			}
 			expected := JSON{
 				"attachments": []string{},
 				"authors":     test.testBody["authors"],
@@ -265,9 +262,6 @@ func TestRoute(t *testing.T) {
 
 			session.Get(fmt.Sprintf("/challenges/%d", challID), nil, http.StatusOK)
 			body = session.Body()
-			if body == nil {
-				t.Fatal("Expected body to not be nil")
-			}
 			expected = JSON{
 				"docker_config": JSON{
 					"compose":     test.testBody["compose"],
@@ -314,9 +308,6 @@ func TestRoute(t *testing.T) {
 
 	session.Get("/challenges/", nil, http.StatusOK)
 	body := session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
 	expected := JSON{
 		"attachments": []string{},
 		"authors":     testBody["authors"],
@@ -349,9 +340,6 @@ func TestRoute(t *testing.T) {
 
 	session.Get(fmt.Sprintf("/challenges/%d", challID), nil, http.StatusOK)
 	body = session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
 	expected = JSON{
 		"docker_config": JSON{
 			"compose":     testBody["compose"],

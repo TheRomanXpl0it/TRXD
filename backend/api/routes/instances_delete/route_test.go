@@ -35,9 +35,6 @@ func TestRoute(t *testing.T) {
 	session.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
 	session.Get("/challenges", nil, http.StatusOK)
 	body := session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
 
 	var challID1, challID3, challID4, challID5 int32
 	for _, chall := range body.([]interface{}) {

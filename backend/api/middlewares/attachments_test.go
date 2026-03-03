@@ -13,10 +13,11 @@ func TestAttachments(t *testing.T) {
 	app := api.SetupApp(t.Context())
 	defer api.Shutdown(app)
 
+	FILE_CONTENT := "test-line 1\n"
 	module := test_utils.GetModuleName(t)
 	dir := "/tmp/" + module + "/"
 	test_utils.CreateDir(t, dir)
-	test_utils.CreateFile(t, dir+"b.txt", "test-line 1\n")
+	test_utils.CreateFile(t, dir+"b.txt", FILE_CONTENT)
 	hash := test_utils.HashFile(t, dir+"b.txt")
 
 	session := test_utils.NewApiTestSession(t, app, true)
@@ -26,9 +27,6 @@ func TestAttachments(t *testing.T) {
 	session.Post("/api/login", JSON{"email": "admin@email.com", "password": "testpass"}, http.StatusOK)
 	session.Get("/api/challenges", nil, http.StatusOK)
 	body := session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
 
 	var challID1, challID5 int32
 	for _, chall := range body.([]interface{}) {
@@ -80,9 +78,9 @@ func TestAttachments(t *testing.T) {
 	}
 
 	session.Get(fmt.Sprintf("/attachments/%d/%s/b.txt", challID1, hash), nil, http.StatusOK)
-	session.CheckResponse(nil)
+	session.CheckResponse(FILE_CONTENT)
 	session.Get(fmt.Sprintf("/attachments/%d/%s/b.txt", challID5, hash), nil, http.StatusOK)
-	session.CheckResponse(nil)
+	session.CheckResponse(FILE_CONTENT)
 
 	session = test_utils.NewApiTestSession(t, app, true)
 	session.Post("/api/register", JSON{"name": "test", "email": "user@email.com", "password": "testpass"}, http.StatusOK)
@@ -96,7 +94,7 @@ func TestAttachments(t *testing.T) {
 	}
 
 	session.Get(fmt.Sprintf("/attachments/%d/%s/b.txt", challID1, hash), nil, http.StatusOK)
-	session.CheckResponse(nil)
+	session.CheckResponse(FILE_CONTENT)
 	session.Get(fmt.Sprintf("/attachments/%d/%s/b.txt", challID5, hash), nil, http.StatusNotFound)
 	session.CheckResponse(errorf(consts.NotFound))
 }

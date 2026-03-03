@@ -224,7 +224,7 @@ func (s *apiTestSession) DeleteMultipart(url string, body map[string]interface{}
 	return s.RequestMultipart(http.MethodDelete, url, body, files, nil, expectedStatus)
 }
 
-func (s *apiTestSession) Body() interface{} {
+func (s *apiTestSession) Body(Nullable ...bool) interface{} {
 	defer func() {
 		err := s.lastResp.Body.Close()
 		if err != nil {
@@ -239,7 +239,18 @@ func (s *apiTestSession) Body() interface{} {
 	var jsonDecoded interface{}
 	err = json.Unmarshal(bodyBytes, &jsonDecoded)
 	if err != nil {
-		return nil
+		if (s.lastResp.StatusCode == http.StatusOK && string(bodyBytes) == "OK") ||
+			(s.lastResp.StatusCode == http.StatusForbidden && string(bodyBytes) == "Forbidden") {
+			return nil // Some routes return "OK" or "Forbidden" as plain text
+		}
+
+		return string(bodyBytes)
+	}
+
+	if len(Nullable) == 0 || !Nullable[0] {
+		if jsonDecoded == nil {
+			s.t.Fatal("Expected body to not be nil")
+		}
 	}
 
 	return jsonDecoded
@@ -247,6 +258,16 @@ func (s *apiTestSession) Body() interface{} {
 
 func (s *apiTestSession) CheckResponse(expectedResponse interface{}) {
 	jsonDecoded := s.Body()
+
+	err := utils.Compare(expectedResponse, jsonDecoded)
+	if err != nil {
+		Fatalf(s.t, "Response body does not match: %v", err)
+	}
+}
+
+func (s *apiTestSession) CheckFilteredResponse(expectedResponse interface{}, keysToDelete ...string) {
+	jsonDecoded := s.Body()
+	DeleteKeys(jsonDecoded, keysToDelete...)
 
 	err := utils.Compare(expectedResponse, jsonDecoded)
 	if err != nil {

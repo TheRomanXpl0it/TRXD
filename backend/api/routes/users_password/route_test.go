@@ -113,9 +113,6 @@ func TestRoute(t *testing.T) {
 	session.Post("/login", JSON{"email": "admin@test.test", "password": "old_adminpass"}, http.StatusOK)
 	session.Patch("/users/password", JSON{}, http.StatusOK)
 	body := session.Body()
-	if body == nil {
-		t.Fatal("Expected body to not be nil")
-	}
 	respBody := body.(map[string]interface{})
 	newAdminPassInterface, ok := respBody["new_password"]
 	if !ok {
@@ -164,9 +161,6 @@ func TestRoute(t *testing.T) {
 				password = newPass.(string)
 			} else {
 				sessionBody := session.Body()
-				if sessionBody == nil {
-					t.Fatal("Expected body to not be nil")
-				}
 				body := sessionBody.(map[string]interface{})
 				newPasswordInterface, ok := body["new_password"]
 				if !ok {
