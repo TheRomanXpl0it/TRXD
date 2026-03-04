@@ -12,6 +12,7 @@ import (
 	"trxd/instancer/containers"
 	"trxd/instancer/infos"
 
+	"trxd/utils/consts"
 	"trxd/utils/log"
 )
 
@@ -86,7 +87,7 @@ func CreateInstance(ctx context.Context, tid int32, challID int32, internalPort 
 	}
 
 	var name string
-	if !conf.HashDomain { // TODO: this can be omitted, use chall_cid_tid for all
+	if !conf.HashDomain { // TODO: this can be omitted, use chall_cid_tid for all (if done nginx support will be broken)
 		name = fmt.Sprintf("chall_%d_%d", challID, tid)
 	} else {
 		name = "chall_" + strings.Split(info.Host, ".")[0]
@@ -111,11 +112,12 @@ func CreateInstance(ctx context.Context, tid int32, challID int32, internalPort 
 		}
 
 		labels = map[string]string{
-			"traefik.enable":   "true",
-			traefikRule:        hostRule,
-			traefikPort:        traefikPortValue,
-			traefikEntrypoints: "web",
-			traefikPriority:    "10",
+			"traefik.enable":         "true",
+			"traefik.docker.network": consts.NetworkInternal,
+			traefikRule:              hostRule,
+			traefikPort:              traefikPortValue,
+			traefikEntrypoints:       "web",
+			traefikPriority:          "10",
 		}
 	}
 
