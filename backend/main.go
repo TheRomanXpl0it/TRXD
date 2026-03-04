@@ -186,7 +186,7 @@ func parseFlags(ctx context.Context) {
 }
 
 func main() {
-	if _, err := os.Stat("DEV"); !os.IsNotExist(err) {
+	if _, err := os.Stat("DEBUG"); !os.IsNotExist(err) {
 		log.SetLevel(log.DebugLevel)
 	}
 
@@ -197,6 +197,11 @@ func main() {
 				log.Fatal("Error loading .env file", "err", err)
 			}
 		}
+	}
+
+	debug := os.Getenv("DEBUG")
+	if debug != "" && (debug == "1" || strings.ToLower(debug) == "true") {
+		log.SetLevel(log.DebugLevel)
 	}
 
 	consts.LoadEnvConfigs()
@@ -218,7 +223,7 @@ func main() {
 	go instancer.ReclaimLoop()
 
 	for {
-		log.Info("Starting TRXd server")
+		log.Info("Starting server")
 
 		app := api.SetupApp(ctx)
 		err = app.Listen(":1337")

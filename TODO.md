@@ -28,8 +28,7 @@
  - editable homepage & theme
  - instances page (admin only)
  - deletable instances (from admin)
- - submission page (admin only)
- - deletable submissions (from admin)
+ - submissions page filers (first bloods, only wrong, group filter [correct, repeated])
  - link to join team
  - extract data for ctftime
  - invisible teams
