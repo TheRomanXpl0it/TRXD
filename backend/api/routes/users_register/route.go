@@ -164,7 +164,7 @@ func Route(c *fiber.Ctx) error {
 		return err
 	}
 
-	// TODO: hash password here
+	// TODO: change the mail system to only get the mail, and the rest after the url with jwt
 
 	enabled, err := registerViaMail(c, data)
 	if err != nil || enabled {

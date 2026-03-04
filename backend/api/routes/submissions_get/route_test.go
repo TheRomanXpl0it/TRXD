@@ -149,4 +149,92 @@ func TestRoute(t *testing.T) {
 	session.Get("/submissions?offset=1&limit=2", nil, http.StatusOK)
 	sub = subSet(expected, 1, 3)
 	session.CheckFilteredResponse(sub, "id", "user_id", "team_id", "chall_id", "timestamp")
+
+	// User Mode
+
+	test_utils.UpdateConfig(t, "user-mode", "true")
+	expected = JSON{
+		"submissions": []JSON{
+			{
+				"chall_name":  "chall-3",
+				"first_blood": false,
+				"flag":        "flag",
+				"status":      "Correct",
+				"team_name":   "C",
+			},
+			{
+				"chall_name":  "chall-2",
+				"first_blood": true,
+				"flag":        "flag",
+				"status":      "Correct",
+				"team_name":   "B",
+			},
+			{
+				"chall_name":  "chall-4",
+				"first_blood": false,
+				"flag":        "flag",
+				"status":      "Correct",
+				"team_name":   "B",
+			},
+			{
+				"chall_name":  "chall-3",
+				"first_blood": false,
+				"flag":        "flag",
+				"status":      "Repeated",
+				"team_name":   "A",
+			},
+			{
+				"chall_name":  "chall-1",
+				"first_blood": false,
+				"flag":        "flag",
+				"status":      "Repeated",
+				"team_name":   "A",
+			},
+			{
+				"chall_name":  "chall-4",
+				"first_blood": false,
+				"flag":        "flag",
+				"status":      "Repeated",
+				"team_name":   "A",
+			},
+			{
+				"chall_name":  "chall-4",
+				"first_blood": true,
+				"flag":        "flag",
+				"status":      "Correct",
+				"team_name":   "A",
+			},
+			{
+				"chall_name":  "chall-3",
+				"first_blood": true,
+				"flag":        "flag",
+				"status":      "Correct",
+				"team_name":   "A",
+			},
+			{
+				"chall_name":  "chall-1",
+				"first_blood": true,
+				"flag":        "flag",
+				"status":      "Correct",
+				"team_name":   "A",
+			},
+			{
+				"chall_name":  "chall-1",
+				"first_blood": false,
+				"flag":        "flag",
+				"status":      "Repeated",
+				"team_name":   "A",
+			},
+			{
+				"chall_name":  "chall-1",
+				"first_blood": false,
+				"flag":        "flag",
+				"status":      "Wrong",
+				"team_name":   "A",
+			},
+		},
+		"total": 12,
+	}
+	session.Get("/submissions", nil, http.StatusOK)
+	session.CheckFilteredResponse(expected, "id", "team_id", "chall_id", "timestamp")
 }

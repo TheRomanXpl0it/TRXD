@@ -204,6 +204,9 @@ func Compare(t *testing.T, expected, value interface{}) {
 	}
 }
 
+// NOTE: this function only works for maps and slices,
+// aliases such as `type JSON map\[string\]interface{}`
+// will not work with this function.
 func DeleteKeys(data interface{}, keys ...string) interface{} {
 	switch val := data.(type) {
 	case map[string]interface{}:
