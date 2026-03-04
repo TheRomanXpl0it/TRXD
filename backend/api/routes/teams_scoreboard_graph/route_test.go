@@ -7,7 +7,19 @@ import (
 	"trxd/utils/test_utils"
 )
 
-type JSON map[string]interface{}
+type JSON map[string]any
+
+func Json(val any) map[string]any {
+	return val.(map[string]any)
+}
+
+func List(val any) []any {
+	return val.([]any)
+}
+
+func Int32(val any) int32 {
+	return int32(val.(float64))
+}
 
 func TestMain(m *testing.M) {
 	test_utils.Main(m)
@@ -26,16 +38,16 @@ func TestRoute(t *testing.T) {
 	session.Get("/challenges", nil, http.StatusOK)
 	body := session.Body()
 	var challID1, challID2, challID3, challID4 int32
-	for _, chall := range body.([]interface{}) {
-		switch chall.(map[string]interface{})["name"] {
+	for _, chall := range List(body) {
+		switch Json(chall)["name"] {
 		case "chall-1":
-			challID1 = int32(chall.(map[string]interface{})["id"].(float64))
+			challID1 = Int32(Json(chall)["id"])
 		case "chall-2":
-			challID2 = int32(chall.(map[string]interface{})["id"].(float64))
+			challID2 = Int32(Json(chall)["id"])
 		case "chall-3":
-			challID3 = int32(chall.(map[string]interface{})["id"].(float64))
+			challID3 = Int32(Json(chall)["id"])
 		case "chall-4":
-			challID4 = int32(chall.(map[string]interface{})["id"].(float64))
+			challID4 = Int32(Json(chall)["id"])
 		}
 	}
 

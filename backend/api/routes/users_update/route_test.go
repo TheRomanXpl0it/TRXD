@@ -10,10 +10,22 @@ import (
 	"trxd/utils/test_utils"
 )
 
-type JSON map[string]interface{}
+type JSON map[string]any
 
-func errorf(val interface{}) JSON {
+func errorf(val any) JSON {
 	return JSON{"error": val}
+}
+
+func Json(val any) map[string]any {
+	return val.(map[string]any)
+}
+
+func List(val any) []any {
+	return val.([]any)
+}
+
+func Int32(val any) int32 {
+	return int32(val.(float64))
 }
 
 func TestMain(m *testing.M) {
@@ -21,7 +33,7 @@ func TestMain(m *testing.M) {
 }
 
 var testData = []struct {
-	testBody         interface{}
+	testBody         any
 	expectedStatus   int
 	expectedResponse JSON
 }{
@@ -96,7 +108,7 @@ func TestRoute(t *testing.T) {
 	session.CheckResponse(nil)
 	session.Get("/info", nil, http.StatusOK)
 	body := session.Body()
-	if body.(map[string]interface{})["team_id"] != nil {
+	if Json(body)["team_id"] != nil {
 		t.Fatal("Expected no team_id")
 	}
 
@@ -107,17 +119,17 @@ func TestRoute(t *testing.T) {
 
 	session.Get("/info", nil, http.StatusOK)
 	body = session.Body()
-	tid := body.(map[string]interface{})["team_id"]
+	tid := Json(body)["team_id"]
 	if tid == nil {
 		t.Fatal("Expected team_id")
 	}
 
-	session.Get(fmt.Sprintf("/teams/%v", int(tid.(float64))), nil, http.StatusOK)
+	session.Get(fmt.Sprintf("/teams/%v", Int32(tid)), nil, http.StatusOK)
 	body = session.Body()
-	if body.(map[string]interface{})["name"] != "updated-name" {
+	if Json(body)["name"] != "updated-name" {
 		t.Fatal("Expected updated name")
 	}
-	if body.(map[string]interface{})["country"] != "USA" {
+	if Json(body)["country"] != "USA" {
 		t.Fatal("Expected updated country")
 	}
 }

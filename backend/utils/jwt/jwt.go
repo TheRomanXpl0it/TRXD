@@ -52,7 +52,7 @@ func ParseAndValidateJWT(ctx context.Context, tokenString string) (Map, error) {
 		return nil, err
 	}
 
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New(consts.InvalidSigningMethod)
 		}

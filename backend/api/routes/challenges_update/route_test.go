@@ -12,10 +12,22 @@ import (
 	"trxd/utils/test_utils"
 )
 
-type JSON map[string]interface{}
+type JSON map[string]any
 
-func errorf(val interface{}) JSON {
+func errorf(val any) JSON {
 	return JSON{"error": val}
+}
+
+func Json(val any) map[string]any {
+	return val.(map[string]any)
+}
+
+func List(val any) []any {
+	return val.([]any)
+}
+
+func Int32(val any) int32 {
+	return int32(val.(float64))
 }
 
 func TestMain(m *testing.M) {
@@ -251,9 +263,9 @@ func TestRoute(t *testing.T) {
 				"tags":        test.testBody["tags"],
 				"timeout":     0,
 			}
-			var challengeBody interface{}
-			for _, v := range body.([]interface{}) {
-				if int32(v.(map[string]interface{})["id"].(float64)) == challID {
+			var challengeBody any
+			for _, v := range List(body) {
+				if Int32(Json(v)["id"]) == challID {
 					challengeBody = v
 					break
 				}
@@ -329,9 +341,9 @@ func TestRoute(t *testing.T) {
 		"tags":        testBody["tags"],
 		"timeout":     0,
 	}
-	var challengeBody interface{}
-	for _, v := range body.([]interface{}) {
-		if int32(v.(map[string]interface{})["id"].(float64)) == challID {
+	var challengeBody any
+	for _, v := range List(body) {
+		if Int32(Json(v)["id"]) == challID {
 			challengeBody = v
 			break
 		}

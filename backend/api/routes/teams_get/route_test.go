@@ -11,10 +11,18 @@ import (
 	"trxd/utils/test_utils"
 )
 
-type JSON map[string]interface{}
+type JSON map[string]any
 
-func errorf(val interface{}) JSON {
+func errorf(val any) JSON {
 	return JSON{"error": val}
+}
+
+func Json(val any) map[string]any {
+	return val.(map[string]any)
+}
+
+func Int32(val any) int32 {
+	return int32(val.(float64))
 }
 
 func TestMain(m *testing.M) {
@@ -157,19 +165,18 @@ func TestRoute(t *testing.T) {
 	session.Post("/register", JSON{"name": "single", "email": "single@gmail.com", "password": "testpass"}, http.StatusOK)
 	session.Get("/info", nil, http.StatusOK)
 	body := session.Body()
-	bodyMap := body.(map[string]interface{})
-	teamID := int32(bodyMap["team_id"].(float64))
-	userID := int32(bodyMap["id"].(float64))
+	teamID := Int32(Json(body)["team_id"])
+	userID := Int32(Json(body)["id"])
 
 	expected := JSON{
-		"badges":  []interface{}{},
+		"badges":  []any{},
 		"country": "",
 		"email":   "single@gmail.com",
 		"id":      teamID,
 		"name":    "single",
 		"role":    "Player",
 		"score":   0,
-		"solves":  []interface{}{},
+		"solves":  []any{},
 		"user_id": userID,
 	}
 	session.Get(fmt.Sprintf("/teams/%d", teamID), nil, http.StatusOK)

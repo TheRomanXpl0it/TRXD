@@ -10,9 +10,9 @@ import (
 	"trxd/utils/test_utils"
 )
 
-type JSON map[string]interface{}
+type JSON map[string]any
 
-func errorf(val interface{}) JSON {
+func errorf(val any) JSON {
 	return JSON{"error": val}
 }
 
@@ -21,7 +21,7 @@ func TestMain(m *testing.M) {
 }
 
 var testData = []struct {
-	testBody         interface{}
+	testBody         any
 	expectedStatus   int
 	expectedResponse JSON
 }{

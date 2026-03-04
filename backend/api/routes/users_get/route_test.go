@@ -11,10 +11,22 @@ import (
 	"trxd/utils/test_utils"
 )
 
-type JSON map[string]interface{}
+type JSON map[string]any
 
-func errorf(val interface{}) JSON {
+func errorf(val any) JSON {
 	return JSON{"error": val}
+}
+
+func Json(val any) map[string]any {
+	return val.(map[string]any)
+}
+
+func List(val any) []any {
+	return val.([]any)
+}
+
+func Int32(val any) int32 {
+	return int32(val.(float64))
 }
 
 func TestMain(m *testing.M) {
@@ -32,12 +44,12 @@ func TestRoute(t *testing.T) {
 	session.Get("/users", nil, http.StatusOK)
 	body := session.Body()
 	var idPlayer, idAdmin int32
-	for _, user := range body.(map[string]interface{})["users"].([]interface{}) {
-		switch user.(map[string]interface{})["name"] {
+	for _, user := range List(Json(body)["users"]) {
+		switch Json(user)["name"] {
 		case "a":
-			idPlayer = int32(user.(map[string]interface{})["id"].(float64))
+			idPlayer = Int32(Json(user)["id"])
 		case "admin":
-			idAdmin = int32(user.(map[string]interface{})["id"].(float64))
+			idAdmin = Int32(Json(user)["id"])
 		}
 	}
 
@@ -45,13 +57,11 @@ func TestRoute(t *testing.T) {
 	session.Post("/register", JSON{"name": "self", "email": "self@test.com", "password": "testpass"}, http.StatusOK)
 	session.Get("/info", nil, http.StatusOK)
 	body = session.Body()
-	idSelf := int32(body.(map[string]interface{})["id"].(float64))
+	idSelf := Int32(Json(body)["id"])
 
 	expectedNoAuth := JSON{
 		"country": "",
-		"email":   "",
 		"name":    "a",
-		"role":    "",
 		"score":   1498,
 		"solves": []JSON{
 			{
@@ -101,9 +111,7 @@ func TestRoute(t *testing.T) {
 
 	expectedPlayer := JSON{
 		"country": "",
-		"email":   "",
 		"name":    "a",
-		"role":    "",
 		"score":   1498,
 		"solves": []JSON{
 			{

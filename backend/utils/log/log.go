@@ -115,7 +115,7 @@ func (l *Logger) SetLogLevel(level string) {
 	l.SetLevel(lvl)
 }
 
-func (l *Logger) With(keyvals ...interface{}) *Logger {
+func (l *Logger) With(keyvals ...any) *Logger {
 	return &Logger{l.Logger.With(keyvals...)}
 }
 
@@ -123,22 +123,22 @@ func (l *Logger) WithPrefix(prefix string) *Logger {
 	return &Logger{l.Logger.WithPrefix(prefix)}
 }
 
-func (l *Logger) Notice(msg interface{}, keyvals ...interface{}) {
+func (l *Logger) Notice(msg any, keyvals ...any) {
 	l.Helper()
 	l.Log(NoticeLevel, msg, keyvals...)
 }
 
-func (l *Logger) Noticef(format string, keyvals ...interface{}) {
+func (l *Logger) Noticef(format string, keyvals ...any) {
 	l.Helper()
 	l.Logf(NoticeLevel, format, keyvals...)
 }
 
-func (l *Logger) Critical(msg interface{}, keyvals ...interface{}) {
+func (l *Logger) Critical(msg any, keyvals ...any) {
 	l.Helper()
 	l.Log(CriticalLevel, msg, keyvals...)
 }
 
-func (l *Logger) Criticalf(format string, keyvals ...interface{}) {
+func (l *Logger) Criticalf(format string, keyvals ...any) {
 	l.Helper()
 	l.Logf(CriticalLevel, format, keyvals...)
 }

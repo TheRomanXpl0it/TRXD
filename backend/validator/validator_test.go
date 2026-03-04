@@ -11,7 +11,7 @@ import (
 	"trxd/validator"
 )
 
-func varTest(t *testing.T, tag string, v interface{}, results ...string) {
+func varTest(t *testing.T, tag string, v any, results ...string) {
 	var result string
 	if len(results) != 0 {
 		result = results[0]

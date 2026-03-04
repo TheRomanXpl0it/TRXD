@@ -9,7 +9,11 @@ import (
 	"trxd/utils/test_utils"
 )
 
-type JSON map[string]interface{}
+type JSON map[string]any
+
+func Json(val any) map[string]any {
+	return val.(map[string]any)
+}
 
 func TestMain(m *testing.M) {
 	test_utils.Main(m)
@@ -64,7 +68,7 @@ func TestRoute(t *testing.T) {
 	session.Get("/info", nil, http.StatusOK)
 	body := session.Body()
 	test_utils.DeleteKeys(body, "id")
-	if body.(map[string]interface{})["team_id"] == nil {
+	if Json(body)["team_id"] == nil {
 		t.Errorf("Expected team_id to be set, got nil")
 	}
 	test_utils.DeleteKeys(body, "team_id")

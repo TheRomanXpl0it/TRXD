@@ -10,10 +10,18 @@ import (
 	"trxd/utils/test_utils"
 )
 
-type JSON map[string]interface{}
+type JSON map[string]any
 
-func errorf(val interface{}) JSON {
+func errorf(val any) JSON {
 	return JSON{"error": val}
+}
+
+func Json(val any) map[string]any {
+	return val.(map[string]any)
+}
+
+func List(val any) []any {
+	return val.([]any)
 }
 
 func TestMain(m *testing.M) {
@@ -21,7 +29,7 @@ func TestMain(m *testing.M) {
 }
 
 var testData = []struct {
-	testBody         interface{}
+	testBody         any
 	expectedStatus   int
 	expectedResponse JSON
 }{
@@ -85,8 +93,8 @@ func TestRoute(t *testing.T) {
 
 	count_cat_1 := 0
 	count_challs_1 := 0
-	for _, chall := range body.([]interface{}) {
-		switch chall.(map[string]interface{})["category"] {
+	for _, chall := range List(body) {
+		switch Json(chall)["category"] {
 		case "cat-1":
 			count_cat_1++
 		case "challs-1":

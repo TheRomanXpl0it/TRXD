@@ -197,7 +197,7 @@ func GetTeamByName(t *testing.T, name string) *sqlc.Team {
 	return team
 }
 
-func Compare(t *testing.T, expected, value interface{}) {
+func Compare(t *testing.T, expected, value any) {
 	err := utils.Compare(expected, value)
 	if err != nil {
 		Fatalf(t, "Failed to compare values: %v", err)
@@ -205,11 +205,11 @@ func Compare(t *testing.T, expected, value interface{}) {
 }
 
 // NOTE: this function only works for maps and slices,
-// aliases such as `type JSON map\[string\]interface{}`
+// aliases such as `type JSON map\[string\]any`
 // will not work with this function.
-func DeleteKeys(data interface{}, keys ...string) interface{} {
+func DeleteKeys(data any, keys ...string) any {
 	switch val := data.(type) {
-	case map[string]interface{}:
+	case map[string]any:
 		for _, key := range keys {
 			delete(val, key)
 		}
@@ -218,7 +218,7 @@ func DeleteKeys(data interface{}, keys ...string) interface{} {
 		}
 		return val
 
-	case []interface{}:
+	case []any:
 		for i, v := range val {
 			val[i] = DeleteKeys(v, keys...)
 		}

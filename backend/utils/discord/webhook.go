@@ -17,7 +17,7 @@ import (
 
 const WebhookTimeout = 5 * time.Second
 
-func BroadcastWebhook(url string, body interface{}) error {
+func BroadcastWebhook(url string, body any) error {
 	payload, err := json.Marshal(body)
 	if err != nil {
 		return fmt.Errorf("failed to marshal payload: %w", err)

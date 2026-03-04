@@ -74,7 +74,7 @@ func errHandle(c *fiber.Ctx, err error) error {
 	return utils.Error(c, fiber.StatusBadRequest, errs[0].Translate(trans))
 }
 
-func Struct(c *fiber.Ctx, s interface{}) (bool, error) {
+func Struct(c *fiber.Ctx, s any) (bool, error) {
 	err := validate.Struct(s)
 	if err != nil {
 		return false, errHandle(c, err)
@@ -83,7 +83,7 @@ func Struct(c *fiber.Ctx, s interface{}) (bool, error) {
 	return true, nil
 }
 
-func Var(c *fiber.Ctx, v interface{}, tag string) (bool, error) {
+func Var(c *fiber.Ctx, v any, tag string) (bool, error) {
 	err := validate.Var(v, tag)
 	if err != nil {
 		return false, errHandle(c, err)

@@ -9,7 +9,23 @@ import (
 	"trxd/utils/test_utils"
 )
 
-type JSON map[string]interface{}
+type JSON map[string]any
+
+func Json(val any) map[string]any {
+	return val.(map[string]any)
+}
+
+func List(val any) []any {
+	return val.([]any)
+}
+
+func Int32(val any) int32 {
+	return int32(val.(float64))
+}
+
+func Int(val any) int {
+	return int(val.(float64))
+}
 
 func TestMain(m *testing.M) {
 	test_utils.Main(m)
@@ -128,9 +144,9 @@ func TestRoute(t *testing.T) {
 	session.Get("/challenges", nil, http.StatusOK)
 	body := session.Body()
 	var challID int32
-	for _, chall := range body.([]interface{}) {
-		if chall.(map[string]interface{})["name"] == "chall-3" {
-			challID = int32(chall.(map[string]interface{})["id"].(float64))
+	for _, chall := range List(body) {
+		if Json(chall)["name"] == "chall-3" {
+			challID = Int32(Json(chall)["id"])
 			break
 		}
 	}
@@ -277,9 +293,9 @@ func TestRoute(t *testing.T) {
 		t.Fatalf("Failed to parse config value: %v", err)
 	}
 	timeout := 0
-	for _, chall := range body.([]interface{}) {
-		if int32(chall.(map[string]interface{})["id"].(float64)) == challID {
-			timeout = int(chall.(map[string]interface{})["timeout"].(float64))
+	for _, chall := range List(body) {
+		if Int32(Json(chall)["id"]) == challID {
+			timeout = Int(Json(chall)["timeout"])
 			break
 		}
 	}

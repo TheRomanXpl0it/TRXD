@@ -15,7 +15,7 @@ func decodeJSONBody(body []byte) string {
 
 	defaultBody := string(body)
 
-	var tmp interface{}
+	var tmp any
 	if err := json.Unmarshal(body, &tmp); err == nil {
 		if tmp2, err := json.MarshalIndent(tmp, "", "  "); err == nil {
 			return string(tmp2)

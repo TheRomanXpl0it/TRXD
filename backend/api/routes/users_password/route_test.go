@@ -10,10 +10,14 @@ import (
 	"trxd/utils/test_utils"
 )
 
-type JSON map[string]interface{}
+type JSON map[string]any
 
-func errorf(val interface{}) JSON {
+func errorf(val any) JSON {
 	return JSON{"error": val}
+}
+
+func Json(val any) map[string]any {
+	return val.(map[string]any)
 }
 
 func TestMain(m *testing.M) {
@@ -22,7 +26,7 @@ func TestMain(m *testing.M) {
 
 var testData = []struct {
 	isAdmin          bool
-	testBody         interface{}
+	testBody         any
 	expectedStatus   int
 	expectedResponse JSON
 }{
@@ -113,10 +117,9 @@ func TestRoute(t *testing.T) {
 	session.Post("/login", JSON{"email": "admin@test.test", "password": "old_adminpass"}, http.StatusOK)
 	session.Patch("/users/password", JSON{}, http.StatusOK)
 	body := session.Body()
-	respBody := body.(map[string]interface{})
-	newAdminPassInterface, ok := respBody["new_password"]
+	newAdminPassInterface, ok := Json(body)["new_password"]
 	if !ok {
-		t.Fatalf("Expected 'new_password' in response, got: %v", respBody)
+		t.Fatalf("Expected 'new_password' in response, got: %v", body)
 	}
 	AdminPass := newAdminPassInterface.(string)
 
@@ -148,7 +151,7 @@ func TestRoute(t *testing.T) {
 		}
 		session.Patch("/users/password", test.testBody, test.expectedStatus)
 
-		var newPass interface{}
+		var newPass any
 		var passOk bool
 		if test.testBody != nil {
 			newPass, passOk = test.testBody.(JSON)["new_password"]
@@ -160,9 +163,8 @@ func TestRoute(t *testing.T) {
 			if passOk {
 				password = newPass.(string)
 			} else {
-				sessionBody := session.Body()
-				body := sessionBody.(map[string]interface{})
-				newPasswordInterface, ok := body["new_password"]
+				body := session.Body()
+				newPasswordInterface, ok := Json(body)["new_password"]
 				if !ok {
 					t.Fatalf("Expected 'new_password' in response, got: %v", body)
 				}

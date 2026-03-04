@@ -10,10 +10,26 @@ import (
 	"trxd/utils/test_utils"
 )
 
-type JSON map[string]interface{}
+type JSON map[string]any
 
-func errorf(val interface{}) JSON {
+func errorf(val any) JSON {
 	return JSON{"error": val}
+}
+
+func Json(val any) map[string]any {
+	return val.(map[string]any)
+}
+
+func List(val any) []any {
+	return val.([]any)
+}
+
+func Int32(val any) int32 {
+	return int32(val.(float64))
+}
+
+func Int(val any) int {
+	return int(val.(float64))
 }
 
 func TestMain(m *testing.M) {
@@ -21,7 +37,7 @@ func TestMain(m *testing.M) {
 }
 
 var testData = []struct {
-	testBody         interface{}
+	testBody         any
 	expectedStatus   int
 	expectedResponse JSON
 }{
@@ -77,9 +93,9 @@ func TestRoute(t *testing.T) {
 	session.Get("/users", nil, http.StatusOK)
 	body := session.Body()
 	var uid int32
-	for _, user := range body.(map[string]interface{})["users"].([]interface{}) {
-		if user.(map[string]interface{})["name"] == "a" {
-			uid = int32(user.(map[string]interface{})["id"].(float64))
+	for _, user := range List(Json(body)["users"]) {
+		if Json(user)["name"] == "a" {
+			uid = Int32(Json(user)["id"])
 		}
 	}
 
@@ -97,32 +113,32 @@ func TestRoute(t *testing.T) {
 	session.CheckResponse(nil)
 	session.Get(fmt.Sprintf("/users/%d", uid), nil, http.StatusOK)
 	body = session.Body()
-	if body.(map[string]interface{})["role"] != "Author" {
-		t.Fatalf("Expected role to be 'Author', got '%v'", body.(map[string]interface{})["role"])
+	if Json(body)["role"] != "Author" {
+		t.Fatalf("Expected role to be 'Author', got '%v'", Json(body)["role"])
 	}
-	if int(body.(map[string]interface{})["score"].(float64)) != 0 {
-		t.Fatalf("Expected score to be 0, got %v", body.(map[string]interface{})["score"])
+	if Int(Json(body)["score"]) != 0 {
+		t.Fatalf("Expected score to be 0, got %v", Json(body)["score"])
 	}
 
 	session.Patch("/users/role", JSON{"user_id": uid, "new_role": "Spectator"}, http.StatusOK)
 	session.CheckResponse(nil)
 	session.Get(fmt.Sprintf("/users/%d", uid), nil, http.StatusOK)
 	body = session.Body()
-	if body.(map[string]interface{})["role"] != "Spectator" {
-		t.Fatalf("Expected role to be 'Spectator', got '%v'", body.(map[string]interface{})["role"])
+	if Json(body)["role"] != "Spectator" {
+		t.Fatalf("Expected role to be 'Spectator', got '%v'", Json(body)["role"])
 	}
-	if int(body.(map[string]interface{})["score"].(float64)) != 0 {
-		t.Fatalf("Expected score to be 0, got %v", body.(map[string]interface{})["score"])
+	if Int(Json(body)["score"]) != 0 {
+		t.Fatalf("Expected score to be 0, got %v", Json(body)["score"])
 	}
 
 	session.Patch("/users/role", JSON{"user_id": uid, "new_role": "Player"}, http.StatusOK)
 	session.CheckResponse(nil)
 	session.Get(fmt.Sprintf("/users/%d", uid), nil, http.StatusOK)
 	body = session.Body()
-	if body.(map[string]interface{})["role"] != "Player" {
-		t.Fatalf("Expected role to be 'Player', got '%v'", body.(map[string]interface{})["role"])
+	if Json(body)["role"] != "Player" {
+		t.Fatalf("Expected role to be 'Player', got '%v'", Json(body)["role"])
 	}
-	if int(body.(map[string]interface{})["score"].(float64)) == 0 {
-		t.Fatalf("Expected score to be restored, got %v", body.(map[string]interface{})["score"])
+	if Int(Json(body)["score"]) == 0 {
+		t.Fatalf("Expected score to be restored, got %v", Json(body)["score"])
 	}
 }

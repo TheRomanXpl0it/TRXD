@@ -12,8 +12,8 @@ import (
 type UserData struct {
 	ID       int32                   `json:"id"`
 	Name     string                  `json:"name"`
-	Email    string                  `json:"email"`
-	Role     string                  `json:"role"`
+	Email    string                  `json:"email,omitempty"`
+	Role     string                  `json:"role,omitempty"`
 	Score    int32                   `json:"score"`
 	Country  string                  `json:"country"`
 	TeamID   *int32                  `json:"team_id"`

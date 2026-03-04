@@ -11,10 +11,14 @@ import (
 	"trxd/utils/test_utils"
 )
 
-type JSON map[string]interface{}
+type JSON map[string]any
 
-func errorf(val interface{}) JSON {
+func errorf(val any) JSON {
 	return JSON{"error": val}
+}
+
+func Json(val any) map[string]any {
+	return val.(map[string]any)
 }
 
 func TestMain(m *testing.M) {
@@ -24,7 +28,7 @@ func TestMain(m *testing.M) {
 var testData = []struct {
 	isAdmin          int
 	teamNumber       int
-	testBody         interface{}
+	testBody         any
 	expectedStatus   int
 	expectedResponse JSON
 }{
@@ -251,7 +255,7 @@ func TestRoute(t *testing.T) {
 			test.teamNumber = 0
 		}
 
-		var newPass interface{}
+		var newPass any
 		var passOk bool
 		if test.testBody != nil {
 			newPass, passOk = test.testBody.(JSON)["new_password"]
@@ -264,7 +268,7 @@ func TestRoute(t *testing.T) {
 				passwords[test.teamNumber] = newPass.(string)
 			} else {
 				sessionBody := session.Body()
-				body := sessionBody.(map[string]interface{})
+				body := Json(sessionBody)
 				newPasswordInterface, ok := body["new_password"]
 				if !ok {
 					t.Fatalf("Expected 'new_password' in response, got: %v", body)

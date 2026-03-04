@@ -77,7 +77,7 @@ func (s *apiTestSession) SendRequest(req *http.Request, expectedStatus int) *htt
 	return resp
 }
 
-func (s *apiTestSession) Request(method string, url string, body interface{}, expectedStatus int) *http.Response {
+func (s *apiTestSession) Request(method string, url string, body any, expectedStatus int) *http.Response {
 	var reqBody []byte
 	var err error
 
@@ -104,7 +104,7 @@ func (s *apiTestSession) Request(method string, url string, body interface{}, ex
 	return s.SendRequest(req, expectedStatus)
 }
 
-func (s *apiTestSession) RequestMultipart(method string, url string, body map[string]interface{}, files []string, fileNames []string, expectedStatus int) *http.Response {
+func (s *apiTestSession) RequestMultipart(method string, url string, body map[string]any, files []string, fileNames []string, expectedStatus int) *http.Response {
 	var requestBody bytes.Buffer
 	writer := multipart.NewWriter(&requestBody)
 
@@ -180,51 +180,51 @@ func (s *apiTestSession) RequestMultipart(method string, url string, body map[st
 	return s.SendRequest(req, expectedStatus)
 }
 
-func (s *apiTestSession) Get(url string, body interface{}, expectedStatus int) *http.Response {
+func (s *apiTestSession) Get(url string, body any, expectedStatus int) *http.Response {
 	return s.Request(http.MethodGet, url, body, expectedStatus)
 }
 
-func (s *apiTestSession) Post(url string, body interface{}, expectedStatus int) *http.Response {
+func (s *apiTestSession) Post(url string, body any, expectedStatus int) *http.Response {
 	return s.Request(http.MethodPost, url, body, expectedStatus)
 }
 
-func (s *apiTestSession) Put(url string, body interface{}, expectedStatus int) *http.Response {
+func (s *apiTestSession) Put(url string, body any, expectedStatus int) *http.Response {
 	return s.Request(http.MethodPut, url, body, expectedStatus)
 }
 
-func (s *apiTestSession) Patch(url string, body interface{}, expectedStatus int) *http.Response {
+func (s *apiTestSession) Patch(url string, body any, expectedStatus int) *http.Response {
 	return s.Request(http.MethodPatch, url, body, expectedStatus)
 }
 
-func (s *apiTestSession) Delete(url string, body interface{}, expectedStatus int) *http.Response {
+func (s *apiTestSession) Delete(url string, body any, expectedStatus int) *http.Response {
 	return s.Request(http.MethodDelete, url, body, expectedStatus)
 }
 
-func (s *apiTestSession) Options(url string, body interface{}, expectedStatus int) *http.Response {
+func (s *apiTestSession) Options(url string, body any, expectedStatus int) *http.Response {
 	return s.Request(http.MethodOptions, url, body, expectedStatus)
 }
 
-func (s *apiTestSession) GetMultipart(url string, body map[string]interface{}, files []string, expectedStatus int) *http.Response {
+func (s *apiTestSession) GetMultipart(url string, body map[string]any, files []string, expectedStatus int) *http.Response {
 	return s.RequestMultipart(http.MethodGet, url, body, files, nil, expectedStatus)
 }
 
-func (s *apiTestSession) PostMultipart(url string, body map[string]interface{}, files []string, expectedStatus int) *http.Response {
+func (s *apiTestSession) PostMultipart(url string, body map[string]any, files []string, expectedStatus int) *http.Response {
 	return s.RequestMultipart(http.MethodPost, url, body, files, nil, expectedStatus)
 }
 
-func (s *apiTestSession) PutMultipart(url string, body map[string]interface{}, files []string, expectedStatus int) *http.Response {
+func (s *apiTestSession) PutMultipart(url string, body map[string]any, files []string, expectedStatus int) *http.Response {
 	return s.RequestMultipart(http.MethodPut, url, body, files, nil, expectedStatus)
 }
 
-func (s *apiTestSession) PatchMultipart(url string, body map[string]interface{}, files []string, expectedStatus int) *http.Response {
+func (s *apiTestSession) PatchMultipart(url string, body map[string]any, files []string, expectedStatus int) *http.Response {
 	return s.RequestMultipart(http.MethodPatch, url, body, files, nil, expectedStatus)
 }
 
-func (s *apiTestSession) DeleteMultipart(url string, body map[string]interface{}, files []string, expectedStatus int) *http.Response {
+func (s *apiTestSession) DeleteMultipart(url string, body map[string]any, files []string, expectedStatus int) *http.Response {
 	return s.RequestMultipart(http.MethodDelete, url, body, files, nil, expectedStatus)
 }
 
-func (s *apiTestSession) Body(Nullable ...bool) interface{} {
+func (s *apiTestSession) Body(Nullable ...bool) any {
 	defer func() {
 		err := s.lastResp.Body.Close()
 		if err != nil {
@@ -236,7 +236,7 @@ func (s *apiTestSession) Body(Nullable ...bool) interface{} {
 		s.t.Fatalf("Failed to read response body: %v", err)
 	}
 
-	var jsonDecoded interface{}
+	var jsonDecoded any
 	err = json.Unmarshal(bodyBytes, &jsonDecoded)
 	if err != nil {
 		if (s.lastResp.StatusCode == http.StatusOK && string(bodyBytes) == "OK") ||
@@ -256,7 +256,7 @@ func (s *apiTestSession) Body(Nullable ...bool) interface{} {
 	return jsonDecoded
 }
 
-func (s *apiTestSession) CheckResponse(expectedResponse interface{}) {
+func (s *apiTestSession) CheckResponse(expectedResponse any) {
 	jsonDecoded := s.Body()
 
 	err := utils.Compare(expectedResponse, jsonDecoded)
@@ -265,7 +265,7 @@ func (s *apiTestSession) CheckResponse(expectedResponse interface{}) {
 	}
 }
 
-func (s *apiTestSession) CheckFilteredResponse(expectedResponse interface{}, keysToDelete ...string) {
+func (s *apiTestSession) CheckFilteredResponse(expectedResponse any, keysToDelete ...string) {
 	jsonDecoded := s.Body()
 	DeleteKeys(jsonDecoded, keysToDelete...)
 

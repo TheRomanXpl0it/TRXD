@@ -10,10 +10,22 @@ import (
 	"trxd/utils/test_utils"
 )
 
-type JSON map[string]interface{}
+type JSON map[string]any
 
-func errorf(val interface{}) JSON {
+func errorf(val any) JSON {
 	return JSON{"error": val}
+}
+
+func Json(val any) map[string]any {
+	return val.(map[string]any)
+}
+
+func List(val any) []any {
+	return val.([]any)
+}
+
+func Int32(val any) int32 {
+	return int32(val.(float64))
 }
 
 func TestMain(m *testing.M) {
@@ -21,7 +33,7 @@ func TestMain(m *testing.M) {
 }
 
 var testData = []struct {
-	testBody         interface{}
+	testBody         any
 	expectedStatus   int
 	expectedResponse JSON
 }{
@@ -98,10 +110,10 @@ func TestRoute(t *testing.T) {
 	session.Get("/challenges", nil, http.StatusOK)
 	body := session.Body()
 
-	challID := 0
-	for _, chall := range body.([]interface{}) {
-		if chall.(map[string]interface{})["name"] == "chall-1" {
-			challID = int(chall.(map[string]interface{})["id"].(float64))
+	var challID int32
+	for _, chall := range List(body) {
+		if Json(chall)["name"] == "chall-1" {
+			challID = Int32(Json(chall)["id"])
 			break
 		}
 	}

@@ -29,12 +29,12 @@ func TestAttachments(t *testing.T) {
 	body := session.Body()
 
 	var challID1, challID5 int32
-	for _, chall := range body.([]interface{}) {
-		switch chall.(map[string]interface{})["name"] {
+	for _, chall := range body.([]any) {
+		switch chall.(map[string]any)["name"] {
 		case "chall-1":
-			challID1 = int32(chall.(map[string]interface{})["id"].(float64))
+			challID1 = int32(chall.(map[string]any)["id"].(float64))
 		case "chall-5":
-			challID5 = int32(chall.(map[string]interface{})["id"].(float64))
+			challID5 = int32(chall.(map[string]any)["id"].(float64))
 		}
 	}
 	session.PostMultipart("/api/attachments", JSON{"chall_id": challID1}, []string{dir + "b.txt"}, http.StatusOK)

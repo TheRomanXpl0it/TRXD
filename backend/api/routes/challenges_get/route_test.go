@@ -11,10 +11,22 @@ import (
 	"trxd/utils/test_utils"
 )
 
-type JSON map[string]interface{}
+type JSON map[string]any
 
-func errorf(val interface{}) JSON {
+func errorf(val any) JSON {
 	return JSON{"error": val}
+}
+
+func Json(val any) map[string]any {
+	return val.(map[string]any)
+}
+
+func List(val any) []any {
+	return val.([]any)
+}
+
+func Int32(val any) int32 {
+	return int32(val.(float64))
 }
 
 func TestMain(m *testing.M) {
@@ -31,9 +43,9 @@ func TestRoute(t *testing.T) {
 	session.Get("/challenges", nil, http.StatusOK)
 	body := session.Body()
 	var id int32
-	for _, chall := range body.([]interface{}) {
-		if chall.(map[string]interface{})["name"] == "chall-1" {
-			id = int32(chall.(map[string]interface{})["id"].(float64))
+	for _, chall := range List(body) {
+		if Json(chall)["name"] == "chall-1" {
+			id = Int32(Json(chall)["id"])
 			break
 		}
 	}
@@ -105,19 +117,19 @@ func TestRoute(t *testing.T) {
 				"regex": false,
 			},
 		},
-		"solves_list": []interface{}{},
+		"solves_list": []any{},
 		"type":        "Normal",
 	}
 
 	session.Get("/challenges", nil, http.StatusOK)
 	body = session.Body()
 	var id3, id5 int32
-	for _, chall := range body.([]interface{}) {
-		switch chall.(map[string]interface{})["name"] {
+	for _, chall := range List(body) {
+		switch Json(chall)["name"] {
 		case "chall-3":
-			id3 = int32(chall.(map[string]interface{})["id"].(float64))
+			id3 = Int32(Json(chall)["id"])
 		case "chall-5":
-			id5 = int32(chall.(map[string]interface{})["id"].(float64))
+			id5 = Int32(Json(chall)["id"])
 		}
 	}
 

@@ -52,7 +52,7 @@ func HextoBytes(dataHex string) ([]byte, error) {
 	return data, nil
 }
 
-func Compare(a, b interface{}) error {
+func Compare(a, b any) error {
 	expectedBytes, err := json.MarshalIndent(a, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal expected response: %v", err)

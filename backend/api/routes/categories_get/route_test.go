@@ -7,7 +7,7 @@ import (
 	"trxd/utils/test_utils"
 )
 
-type JSON map[string]interface{}
+type JSON map[string]any
 
 func TestMain(m *testing.M) {
 	test_utils.Main(m)
