@@ -69,7 +69,7 @@ services:
     environment:
       - ECHO_MESSAGE=Hello from app
       - INSTANCE_PORT=${INSTANCE_PORT}
-      - INSTANCE_HOST=${INSTANCE_HOST}
+      - INSTANCE_DOMAIN=${INSTANCE_DOMAIN}
     ', hash_domain=TRUE WHERE chall_id=(SELECT id FROM challenges WHERE name='chall-4');
   INSERT INTO flags (flag, chall_id) VALUES ('flag{test-1}', (SELECT id FROM challenges WHERE name='chall-1'));
   INSERT INTO flags (flag, chall_id, regex) VALUES ('flag\{test-[a-z]{2}\}', (SELECT id FROM challenges WHERE name='chall-1'), true);

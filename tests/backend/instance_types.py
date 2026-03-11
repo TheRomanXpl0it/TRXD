@@ -168,6 +168,9 @@ assert r.status_code == 200, r.text
 i3 = r.json()
 print(i3)
 
+#! Note: this test can still pass on traefik
+#! beacuse it routes via open port instead of th internal network
+
 host = i1['host']
 LOCAL_HOSTS[host] = LOCALHOST
 r = requests.get(f'http://{host}')

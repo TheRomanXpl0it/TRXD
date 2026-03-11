@@ -70,9 +70,20 @@ func setupComposeProject(ctx context.Context, info *infos.ComposeInfo) (*types.P
 			for k, v := range info.Labels {
 				s.CustomLabels[k] = v
 			}
+
+			if info.NetID != "" {
+				s.Networks[info.NetID] = nil
+			}
 		}
 
 		project.Services[i] = s
+	}
+
+	if info.NetID != "" {
+		project.Networks[info.NetID] = types.NetworkConfig{
+			Name:     info.NetID,
+			External: true,
+		}
 	}
 
 	return project, nil
