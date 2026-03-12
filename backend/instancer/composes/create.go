@@ -72,7 +72,9 @@ func setupComposeProject(ctx context.Context, info *infos.ComposeInfo) (*types.P
 			}
 
 			if info.NetID != "" {
-				s.Networks[info.NetID] = nil
+				if _, ok := s.Networks[info.NetID]; !ok {
+					s.Networks[info.NetID] = nil
+				}
 			}
 		}
 
@@ -80,9 +82,11 @@ func setupComposeProject(ctx context.Context, info *infos.ComposeInfo) (*types.P
 	}
 
 	if info.NetID != "" {
-		project.Networks[info.NetID] = types.NetworkConfig{
-			Name:     info.NetID,
-			External: true,
+		if _, ok := project.Networks[info.NetID]; !ok {
+			project.Networks[info.NetID] = types.NetworkConfig{
+				Name:     info.NetID,
+				External: true,
+			}
 		}
 	}
 
