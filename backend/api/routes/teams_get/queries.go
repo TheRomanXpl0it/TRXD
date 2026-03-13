@@ -114,9 +114,12 @@ func GetTeam(ctx context.Context, teamID int32, admin bool) (*TeamData, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		teamData.UserID = &user.ID
-		teamData.Email = user.Email
 		teamData.Role = string(user.Role)
+		if admin {
+			teamData.Email = user.Email
+		}
 	}
 
 	solves, err := getSolves(ctx, teamID, userMode)

@@ -190,7 +190,6 @@ func TestRoute(t *testing.T) {
 			},
 		},
 		"country": "",
-		"email":   "a@a.a",
 		"name":    "A",
 		"role":    "Player",
 		"score":   1498,
@@ -217,4 +216,25 @@ func TestRoute(t *testing.T) {
 	}
 	session.Get(fmt.Sprintf("/teams/%d", A.ID), nil, http.StatusOK)
 	session.CheckFilteredResponse(expected, "id", "timestamp", "user_id")
+
+	session = test_utils.NewApiTestSession(t, app)
+	session.Post("/login", JSON{"email": "admin@email.com", "password": "testpass"}, http.StatusOK)
+
+	expected["email"] = "a@a.a"
+	session.Get(fmt.Sprintf("/teams/%d", A.ID), nil, http.StatusOK)
+	session.CheckFilteredResponse(expected, "id", "timestamp", "user_id")
+
+	expected = JSON{
+		"badges":  []any{},
+		"country": "",
+		"email":   "single@gmail.com",
+		"id":      teamID,
+		"name":    "single",
+		"role":    "Player",
+		"score":   0,
+		"solves":  []any{},
+		"user_id": userID,
+	}
+	session.Get(fmt.Sprintf("/teams/%d", teamID), nil, http.StatusOK)
+	session.CheckResponse(expected)
 }

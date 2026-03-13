@@ -10,6 +10,7 @@ import (
 )
 
 func Route(c *fiber.Ctx) error {
+	tid := c.Locals("tid")
 	role := c.Locals("role")
 
 	teamIDInt, err := c.ParamsInt("id")
@@ -23,6 +24,9 @@ func Route(c *fiber.Ctx) error {
 	}
 
 	allData := false
+	if tid != nil {
+		allData = tid.(int32) == int32(teamID)
+	}
 	if !allData && role != nil {
 		allData = utils.In(role.(sqlc.UserRole), []sqlc.UserRole{sqlc.UserRoleAuthor, sqlc.UserRoleAdmin})
 	}
