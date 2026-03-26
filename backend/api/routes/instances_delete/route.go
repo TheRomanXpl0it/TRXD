@@ -12,13 +12,8 @@ import (
 )
 
 func Route(c *fiber.Ctx) error {
-	role := c.Locals("role").(sqlc.UserRole)
-	tid := c.Locals("tid").(int32)
-	if tid == -1 {
-		return utils.Error(c, fiber.StatusForbidden, consts.TeamNotFound)
-	}
-
 	var data struct {
+		TeamID  *int32 `json:"team_id" validate:"omitnil,id"`
 		ChallID *int32 `json:"chall_id" validate:"required,id"`
 	}
 	if err := c.BodyParser(&data); err != nil {
@@ -38,12 +33,24 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusNotFound, consts.ChallengeNotFound)
 	}
 
+	role := c.Locals("role").(sqlc.UserRole)
 	if chall.Info.Hidden && !utils.In(role,
 		[]sqlc.UserRole{sqlc.UserRoleAuthor, sqlc.UserRoleAdmin}) {
 		return utils.Error(c, fiber.StatusNotFound, consts.ChallengeNotFound)
 	}
 	if chall.Info.Type == sqlc.DeployTypeNormal {
 		return utils.Error(c, fiber.StatusBadRequest, consts.ChallengeNotInstanciable)
+	}
+
+	var tid int32 = -1
+	if role == sqlc.UserRoleAdmin && data.TeamID != nil {
+		tid = *data.TeamID
+	} else {
+		tid = c.Locals("tid").(int32)
+	}
+
+	if tid == -1 {
+		return utils.Error(c, fiber.StatusForbidden, consts.TeamNotFound)
 	}
 
 	instance, err := instancer.GetInstance(c.Context(), *data.ChallID, tid)

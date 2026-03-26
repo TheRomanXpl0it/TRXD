@@ -26,7 +26,6 @@
  - divide configs by section (secrets, instances, something like this...)
  - dropdown menu for containers (for container instances)
  - editable homepage & theme
- - deletable instances (from admin)
  - submissions page filers (first bloods, only wrong, group filter [correct, repeated])
  - extract data for ctftime
  - N instance limit per team

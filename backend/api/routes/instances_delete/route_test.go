@@ -98,4 +98,38 @@ func TestRoute(t *testing.T) {
 
 	session.Delete("/instances", JSON{"chall_id": challID4}, http.StatusNotFound)
 	session.CheckResponse(errorf(consts.InstanceNotFound))
+
+	admin := test_utils.NewApiTestSession(t, app)
+	admin.Post("/login", JSON{"email": "admin@email.com", "password": "testpass"}, http.StatusOK)
+	admin.CheckResponse(nil)
+
+	author := test_utils.NewApiTestSession(t, app)
+	author.Post("/login", JSON{"email": "author@test.test", "password": "authorpass"}, http.StatusOK)
+	author.CheckResponse(nil)
+
+	session.Get("/info", nil, http.StatusOK)
+	body = session.Body()
+	tid := Int32(Json(body)["team_id"])
+
+	author.Delete("/instances", JSON{"chall_id": challID3, "team_id": tid}, http.StatusNotFound)
+	author.CheckResponse(errorf(consts.InstanceNotFound))
+	admin.Delete("/instances", JSON{"chall_id": challID3, "team_id": tid}, http.StatusNotFound)
+	admin.CheckResponse(errorf(consts.InstanceNotFound))
+
+	session.Post("/instances", JSON{"chall_id": challID3}, http.StatusOK)
+	author.Delete("/instances", JSON{"chall_id": challID3, "team_id": tid}, http.StatusNotFound)
+	author.CheckResponse(errorf(consts.InstanceNotFound))
+	admin.Delete("/instances", JSON{"chall_id": challID3, "team_id": tid}, http.StatusOK)
+	admin.CheckResponse(nil)
+
+	author.Delete("/instances", JSON{"chall_id": challID3, "team_id": tid}, http.StatusNotFound)
+	author.CheckResponse(errorf(consts.InstanceNotFound))
+	admin.Delete("/instances", JSON{"chall_id": challID4, "team_id": tid}, http.StatusNotFound)
+	admin.CheckResponse(errorf(consts.InstanceNotFound))
+
+	session.Post("/instances", JSON{"chall_id": challID4}, http.StatusOK)
+	author.Delete("/instances", JSON{"chall_id": challID4, "team_id": tid}, http.StatusNotFound)
+	author.CheckResponse(errorf(consts.InstanceNotFound))
+	admin.Delete("/instances", JSON{"chall_id": challID4, "team_id": tid}, http.StatusOK)
+	admin.CheckResponse(nil)
 }
