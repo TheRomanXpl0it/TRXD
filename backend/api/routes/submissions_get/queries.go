@@ -8,7 +8,7 @@ import (
 	"trxd/db/sqlc"
 )
 
-type GetSubmissionsUserMode struct {
+type Submissions struct {
 	ID         int32                 `json:"id"`
 	UserID     *int32                `json:"user_id,omitempty"`
 	UserName   string                `json:"user_name,omitempty"`
@@ -42,7 +42,7 @@ func getSubs(ctx context.Context, offset int32, limit int32) (int64, []sqlc.GetS
 	return total, submissions, nil
 }
 
-func GetSubmissions(ctx context.Context, offset int32, limit int32) (int64, []GetSubmissionsUserMode, error) {
+func GetSubmissions(ctx context.Context, offset int32, limit int32) (int64, []Submissions, error) {
 	userModeStr, err := db.GetConfig(ctx, "user-mode")
 	if err != nil {
 		return 0, nil, err
@@ -54,9 +54,9 @@ func GetSubmissions(ctx context.Context, offset int32, limit int32) (int64, []Ge
 		return 0, nil, err
 	}
 
-	subs := make([]GetSubmissionsUserMode, len(submissions))
+	subs := make([]Submissions, len(submissions))
 	for i, submission := range submissions {
-		subs[i] = GetSubmissionsUserMode{
+		subs[i] = Submissions{
 			ID:         submission.ID,
 			TeamID:     submission.TeamID,
 			TeamName:   submission.TeamName,

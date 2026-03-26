@@ -12,7 +12,7 @@ import (
 	"github.com/lib/pq"
 )
 
-func RegisterTeam(ctx context.Context, tx *sql.Tx, name, password string, userID int32) (*sqlc.Team, error) {
+func RegisterTeam(ctx context.Context, tx *sql.Tx, name string, password string, userID int32) (*sqlc.Team, error) {
 	hash, salt, err := crypto_utils.Hash(password)
 	if err != nil {
 		return nil, err

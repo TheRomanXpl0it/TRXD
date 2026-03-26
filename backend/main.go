@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 	"trxd/api"
+	"trxd/api/routes/teams_register"
 	"trxd/api/routes/users_register"
 	"trxd/db"
 	"trxd/db/sqlc"
@@ -111,6 +112,14 @@ func registerAdmin(ctx context.Context, userInfo string) {
 	}
 	if user == nil {
 		log.Fatal("Failed to register admin user: user already exists")
+	}
+
+	team, err := teams_register.RegisterTeam(ctx, tx, name, password, user.ID)
+	if err != nil {
+		log.Fatal("Error registering admin team", "err", err)
+	}
+	if team == nil {
+		log.Fatal("Failed to register admin team: team already exists")
 	}
 
 	err = tx.Commit()
