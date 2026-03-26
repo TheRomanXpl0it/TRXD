@@ -591,6 +591,69 @@ func (q *Queries) GetInstance(ctx context.Context, arg GetInstanceParams) (Insta
 	return i, err
 }
 
+const getInstances = `-- name: GetInstances :many
+SELECT
+  i.team_id,
+  t.name AS team_name,
+  i.chall_id,
+  c.name AS chall_name,
+  i.expires_at,
+  c.conn_type,
+  i.host,
+  COALESCE(i.port, 0) AS port,
+  COALESCE(i.docker_id, '') AS docker_id
+FROM instances i
+JOIN teams t ON i.team_id = t.id
+JOIN challenges c ON i.chall_id = c.id
+ORDER BY i.expires_at ASC
+`
+
+type GetInstancesRow struct {
+	TeamID    int32     `json:"team_id"`
+	TeamName  string    `json:"team_name"`
+	ChallID   int32     `json:"chall_id"`
+	ChallName string    `json:"chall_name"`
+	ExpiresAt time.Time `json:"expires_at"`
+	ConnType  ConnType  `json:"conn_type"`
+	Host      string    `json:"host"`
+	Port      int32     `json:"port"`
+	DockerID  string    `json:"docker_id"`
+}
+
+// Get all instances
+func (q *Queries) GetInstances(ctx context.Context) ([]GetInstancesRow, error) {
+	rows, err := q.query(ctx, q.getInstancesStmt, getInstances)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetInstancesRow
+	for rows.Next() {
+		var i GetInstancesRow
+		if err := rows.Scan(
+			&i.TeamID,
+			&i.TeamName,
+			&i.ChallID,
+			&i.ChallName,
+			&i.ExpiresAt,
+			&i.ConnType,
+			&i.Host,
+			&i.Port,
+			&i.DockerID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getNextInstanceToDelete = `-- name: GetNextInstanceToDelete :one
 SELECT team_id, chall_id, expires_at, docker_id
   FROM instances

@@ -83,6 +83,7 @@ const (
 	ErrorFetchingConfig           = "Error fetching configuration"
 	ErrorFetchingConfigs          = "Error fetching configurations"
 	ErrorFetchingInstance         = "Error fetching instance"
+	ErrorFetchingInstances        = "Error fetching instances"
 	ErrorFetchingScoreboardGraph  = "Error fetching scoreboard graph"
 	ErrorFetchingSession          = "Error fetching session"
 	ErrorFetchingSubmissions      = "Error fetching submissions"

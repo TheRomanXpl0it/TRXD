@@ -112,6 +112,7 @@ func registerAdmin(ctx context.Context, userInfo string) {
 	}
 	if user == nil {
 		log.Fatal("Failed to register admin user: user already exists")
+		return // linter sees "user.ID" below -> SA5011: possible nil pointer dereference (staticcheck)
 	}
 
 	team, err := teams_register.RegisterTeam(ctx, tx, name, password, user.ID)
