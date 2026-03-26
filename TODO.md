@@ -29,7 +29,6 @@
  - instances page (admin only)
  - deletable instances (from admin)
  - submissions page filers (first bloods, only wrong, group filter [correct, repeated])
- - link to join team
  - extract data for ctftime
  - invisible teams
  - N instance limit per team

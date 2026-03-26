@@ -31,6 +31,7 @@ import (
 	"trxd/api/routes/teams_all_get"
 	"trxd/api/routes/teams_get"
 	"trxd/api/routes/teams_join"
+	"trxd/api/routes/teams_join_get"
 	"trxd/api/routes/teams_password"
 	"trxd/api/routes/teams_register"
 	"trxd/api/routes/teams_scoreboard"
@@ -182,7 +183,7 @@ func SetupApi(ctx context.Context, app *fiber.App) {
 	if mode != "true" {
 		api.Post("/teams/register", player, teams_register.Route)
 		api.Post("/teams/join", player, teams_join.Route)
-		// api.Get("/teams/join/:token", player, teams_join_token.Route)
+		api.Get("/teams/join", player, teams_join_get.Route)
 		api.Patch("/teams", player, team, teams_update.Route)
 		api.Patch("/teams/password", spectator, team, teams_password.Route)
 	}

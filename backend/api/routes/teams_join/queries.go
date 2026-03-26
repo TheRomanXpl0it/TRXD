@@ -25,6 +25,18 @@ func authTeam(ctx context.Context, name, password string) (*sqlc.Team, error) {
 	return team, nil
 }
 
+func AddTeamMember(ctx context.Context, teamID int32, userID int32) error {
+	err := db.Sql.AddTeamMember(ctx, sqlc.AddTeamMemberParams{
+		TeamID: sql.NullInt32{Int32: teamID, Valid: true},
+		ID:     userID,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func JoinTeam(ctx context.Context, name, password string, userID int32) (*sqlc.Team, error) {
 	team, err := authTeam(ctx, name, password)
 	if err != nil {
@@ -34,10 +46,7 @@ func JoinTeam(ctx context.Context, name, password string, userID int32) (*sqlc.T
 		return nil, nil
 	}
 
-	err = db.Sql.AddTeamMember(ctx, sqlc.AddTeamMemberParams{
-		TeamID: sql.NullInt32{Int32: team.ID, Valid: true},
-		ID:     userID,
-	})
+	err = AddTeamMember(ctx, team.ID, userID)
 	if err != nil {
 		return nil, err
 	}
