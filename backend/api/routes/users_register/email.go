@@ -30,6 +30,11 @@ func verifyMailEnabled(c *fiber.Ctx) (bool, error) {
 }
 
 func registerViaMail(c *fiber.Ctx, registerEmail string) error {
+	valid, err := validator.Var(c, registerEmail, "required,user_email")
+	if err != nil || !valid {
+		return err
+	}
+
 	domain, err := db.GetConfig(c.Context(), "domain")
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingConfig, err)
@@ -68,6 +73,11 @@ func registerViaMail(c *fiber.Ctx, registerEmail string) error {
 }
 
 func parseAndValidateToken(c *fiber.Ctx, token string) (string, error) {
+	valid, err := validator.Var(c, token, "required,jwt")
+	if err != nil || !valid {
+		return "", err
+	}
+
 	claims, err := jwt.ParseAndValidateJWT(c.Context(), token)
 	if err != nil {
 		return "", utils.Error(c, fiber.StatusUnauthorized, err.Error())
@@ -83,7 +93,7 @@ func parseAndValidateToken(c *fiber.Ctx, token string) (string, error) {
 		return "", utils.Error(c, fiber.StatusUnauthorized, consts.InvalidToken)
 	}
 
-	valid, err := validator.Var(c, email, "user_email")
+	valid, err = validator.Var(c, email, "required,user_email")
 	if err != nil || !valid {
 		return "", utils.Error(c, fiber.StatusUnauthorized, consts.InvalidEmail)
 	}

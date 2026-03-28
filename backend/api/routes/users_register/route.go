@@ -109,17 +109,7 @@ func Route(c *fiber.Ctx) error {
 
 	if enabled {
 		if data.JWT == "" {
-			valid, err := validator.Var(c, data.Email, "required,user_email")
-			if err != nil || !valid {
-				return err
-			}
-
 			return registerViaMail(c, data.Email)
-		}
-
-		valid, err := validator.Var(c, data.JWT, "required,jwt")
-		if err != nil || !valid {
-			return err
 		}
 
 		mail, err := parseAndValidateToken(c, data.JWT)

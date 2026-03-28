@@ -23,7 +23,7 @@ py-test:
 lint:
 	@go vet ./...
 	@ineffassign ./...
-	@gocyclo -ignore "sqlc|_test|test_" -over 20 .
+	@gocyclo -ignore "sqlc|_test|test_" -over 15 .
 	@misspell -error .
 	@golangci-lint run
 
