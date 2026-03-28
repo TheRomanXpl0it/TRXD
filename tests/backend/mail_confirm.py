@@ -25,61 +25,49 @@ def login(mail, password):
 	assert r.status_code == 200, r.text
 	return s
 
-def register(name, mail, password):
+def register(name=None, mail=None, password=None, token=None):
+	data = {}
+	if name is not None:
+		data["name"] = name
+	if mail is not None:
+		data["email"] = mail
+	if password is not None:
+		data["password"] = password
+	if token is not None:
+		data["token"] = token
+
 	s = requests.Session()
 	r = s.get(f'{url}/info')
 	assert r.status_code == 200, r.text
-	r = s.post(f'{url}/register', json={
-		"name": name,
-		"email": mail,
-		"password": password,
-	}, headers={"X-CSRF-Token": s.cookies.get('csrf_')})
+	r = s.post(f'{url}/register', json=data,
+		headers={"X-CSRF-Token": s.cookies.get('csrf_')})
 	assert r.status_code == 200, r.text
 	return s
 
+def change_conf(s, key, value):
+	r = s.patch(f'{url}/configs',
+		json={'key': key, 'value': value},
+		headers={"X-CSRF-Token": s.cookies.get('csrf_')})
+	assert r.status_code == 200, r.text
 
 admin = login('admin@email.com', 'testpass')
 
-r = admin.patch(f'{url}/configs',
-	json={'key': 'domain', 'value': 'localhost:1337'},
-	headers={"X-CSRF-Token": admin.cookies.get('csrf_')})
-assert r.status_code == 200, r.text
-r = admin.patch(f'{url}/configs',
-	json={'key': 'email-server', 'value': server},
-	headers={"X-CSRF-Token": admin.cookies.get('csrf_')})
-assert r.status_code == 200, r.text
-r = admin.patch(f'{url}/configs',
-	json={'key': 'email-port', 'value': str(port)},
-	headers={"X-CSRF-Token": admin.cookies.get('csrf_')})
-assert r.status_code == 200, r.text
-r = admin.patch(f'{url}/configs',
-	json={'key': 'email-addr', 'value': addr},
-	headers={"X-CSRF-Token": admin.cookies.get('csrf_')})
-assert r.status_code == 200, r.text
-r = admin.patch(f'{url}/configs',
-	json={'key': 'email-passwd', 'value': passwd},
-	headers={"X-CSRF-Token": admin.cookies.get('csrf_')})
-assert r.status_code == 200, r.text
+change_conf(admin, 'domain', 'localhost:1337')
+change_conf(admin, 'email-server', server)
+change_conf(admin, 'email-port', str(port))
+change_conf(admin, 'email-addr', addr)
+change_conf(admin, 'email-passwd', passwd)
 
 
 name = "tester"
 mail = toAddr
 password = "testpass"
 
-s = requests.Session()
-r = s.get(f'{url}/info')
-assert r.status_code == 200, r.text
-r = s.post(f'{url}/register', json={
-	"name": name,
-	"email": mail,
-	"password": password,
-}, headers={"X-CSRF-Token": s.cookies.get('csrf_')})
-assert r.status_code == 200, r.text
+s = register(mail=mail)
 
 
-verify_url = input("Enter verification URL: ")
-r = s.get(verify_url)
-assert r.status_code == 200, r.text
+token = input("Enter verification TOKEN: ").strip()
+s = register(name=name, password=password, token=token)
 
 r = s.get(f'{url}/info')
 assert r.status_code == 200, r.text

@@ -42,7 +42,7 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusBadRequest, consts.ChallengeNotInstanciable)
 	}
 
-	var tid int32 = -1
+	var tid int32
 	if role == sqlc.UserRoleAdmin && data.TeamID != nil {
 		tid = *data.TeamID
 	} else {
