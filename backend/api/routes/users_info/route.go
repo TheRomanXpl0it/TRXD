@@ -10,22 +10,7 @@ import (
 )
 
 func Route(c *fiber.Ctx) error {
-	uidLocal := c.Locals("uid")
-	if uidLocal == nil {
-		return c.SendStatus(fiber.StatusOK)
-	}
-
-	uid := uidLocal.(int32)
-
-	user, err := db.GetUserByID(c.Context(), uid)
-	if err != nil {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
-	}
-	if user == nil {
-		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, fmt.Errorf("user not found"))
-	}
-
-	userMode, err := db.GetConfig(c.Context(), "user-mode")
+	emailVerification, err := db.GetConfig(c.Context(), "email-verification")
 	if err != nil {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingConfig, err)
 	}
@@ -38,24 +23,45 @@ func Route(c *fiber.Ctx) error {
 		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingConfig, err)
 	}
 
-	var teamID *int32
-	if user.TeamID.Valid {
-		teamID = &user.TeamID.Int32
-	}
 	info := fiber.Map{
-		"id":        user.ID,
-		"name":      user.Name,
-		"role":      user.Role,
-		"team_id":   teamID,
-		"user_mode": userMode == "true",
+		"email_verification": emailVerification == "true",
 	}
-
 	if startTime != "" {
 		info["start_time"] = startTime
 	}
 	if endTime != "" {
 		info["end_time"] = endTime
 	}
+
+	uidLocal := c.Locals("uid")
+	if uidLocal == nil {
+		return c.Status(fiber.StatusOK).JSON(info)
+	}
+
+	uid := uidLocal.(int32)
+
+	user, err := db.GetUserByID(c.Context(), uid)
+	if err != nil {
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, err)
+	}
+	if user == nil {
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingUser, fmt.Errorf("user not found"))
+	}
+	info["id"] = user.ID
+	info["name"] = user.Name
+	info["role"] = user.Role
+
+	userMode, err := db.GetConfig(c.Context(), "user-mode")
+	if err != nil {
+		return utils.Error(c, fiber.StatusInternalServerError, consts.ErrorFetchingConfig, err)
+	}
+	info["user_mode"] = userMode == "true"
+
+	var teamID *int32
+	if user.TeamID.Valid {
+		teamID = &user.TeamID.Int32
+	}
+	info["team_id"] = teamID
 
 	return c.Status(fiber.StatusOK).JSON(info)
 }

@@ -31,6 +31,7 @@ var DefaultConfigs = map[string]any{
 	"start-time":                "",
 	"end-time":                  "",
 	"jwt-secret":                "",
+	"email-verification":        false,
 	"email-server":              "",
 	"email-port":                587,
 	"email-addr":                "",

@@ -25,17 +25,21 @@ func TestRoute(t *testing.T) {
 
 	session := test_utils.NewApiTestSession(t, app)
 
+	expected := JSON{
+		"email_verification": false,
+	}
 	session.Get("/info", nil, http.StatusOK)
-	session.CheckResponse(nil)
+	session.CheckResponse(expected)
 
 	session.Post("/register", JSON{"name": "test", "email": "allow@test.test", "password": "testpass"}, http.StatusOK)
 	session.CheckResponse(nil)
 
-	expected := JSON{
-		"name":      "test",
-		"role":      sqlc.UserRolePlayer,
-		"team_id":   nil,
-		"user_mode": false,
+	expected = JSON{
+		"email_verification": false,
+		"name":               "test",
+		"role":               sqlc.UserRolePlayer,
+		"team_id":            nil,
+		"user_mode":          false,
 	}
 	session.Get("/info", nil, http.StatusOK)
 	session.CheckFilteredResponse(expected, "id")
@@ -46,12 +50,13 @@ func TestRoute(t *testing.T) {
 	test_utils.UpdateConfig(t, "end-time", endTime)
 
 	expected = JSON{
-		"end_time":   endTime,
-		"name":       "test",
-		"role":       sqlc.UserRolePlayer,
-		"start_time": startTime,
-		"team_id":    nil,
-		"user_mode":  false,
+		"email_verification": false,
+		"end_time":           endTime,
+		"name":               "test",
+		"role":               sqlc.UserRolePlayer,
+		"start_time":         startTime,
+		"team_id":            nil,
+		"user_mode":          false,
 	}
 	session.Get("/info", nil, http.StatusOK)
 	session.CheckFilteredResponse(expected, "id")
@@ -61,9 +66,10 @@ func TestRoute(t *testing.T) {
 	session.Post("/teams/register", JSON{"name": "test", "password": "testpass"}, http.StatusOK)
 
 	expected = JSON{
-		"name":      "test",
-		"role":      sqlc.UserRolePlayer,
-		"user_mode": false,
+		"email_verification": false,
+		"name":               "test",
+		"role":               sqlc.UserRolePlayer,
+		"user_mode":          false,
 	}
 	session.Get("/info", nil, http.StatusOK)
 	body := session.Body()
@@ -73,4 +79,9 @@ func TestRoute(t *testing.T) {
 	}
 	test_utils.DeleteKeys(body, "team_id")
 	test_utils.Compare(t, expected, body)
+
+	test_utils.UpdateConfig(t, "email-verification", "true")
+	expected["email_verification"] = true
+	session.Get("/info", nil, http.StatusOK)
+	session.CheckFilteredResponse(expected, "id", "team_id")
 }

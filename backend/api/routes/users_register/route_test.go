@@ -6,7 +6,10 @@ import (
 	"testing"
 	"trxd/api"
 	"trxd/utils/consts"
+	jwt_utils "trxd/utils/jwt"
 	"trxd/utils/test_utils"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type JSON map[string]any
@@ -130,6 +133,8 @@ func TestRoute(t *testing.T) {
 		session.CheckResponse(test.expectedResponse)
 	}
 
+	// APP 2
+
 	app2 := api.SetupApp(t.Context())
 	defer api.Shutdown(app2)
 	test_utils.UpdateConfig(t, "user-mode", "true")
@@ -141,4 +146,63 @@ func TestRoute(t *testing.T) {
 	if Json(body)["team_id"] == nil {
 		t.Fatal("Expected team_id")
 	}
+	test_utils.UpdateConfig(t, "user-mode", "false")
+
+	// Email verification
+
+	test_utils.UpdateConfig(t, "email-verification", "true")
+
+	session = test_utils.NewApiTestSession(t, app)
+	session.Post("/register", JSON{"token": "AAA"}, http.StatusBadRequest)
+	session.CheckResponse(errorf(consts.InvalidJWT))
+
+	session.Post("/register", JSON{"token": "AAA", "name": "test", "password": "testpass"}, http.StatusBadRequest)
+	session.CheckResponse(errorf(consts.InvalidJWT))
+
+	key := []byte("test-secret-key")
+	token := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt_utils.Map{"a": "b"})
+	signed, err := token.SignedString(key)
+	if err != nil {
+		t.Fatalf("failed to sign JWT: %v", err)
+	}
+	session.Post("/register", JSON{"token": signed, "name": "test", "password": "testpass"}, http.StatusUnauthorized)
+	session.CheckResponse(errorf("token is unverifiable: error while executing keyfunc: " + consts.InvalidSigningAlgorithm))
+
+	tokenStr, err := jwt_utils.GenerateJWT(t.Context(), jwt_utils.Map{"a": "b"})
+	if err != nil {
+		t.Fatalf("failed to generate JWT: %v", err)
+	}
+	session.Post("/register", JSON{"token": tokenStr, "name": "test", "password": "testpass"}, http.StatusUnauthorized)
+	session.CheckResponse(errorf(consts.InvalidToken))
+
+	tokenStr, err = jwt_utils.GenerateJWT(t.Context(), jwt_utils.Map{"email": "m@m.m"})
+	if err != nil {
+		t.Fatalf("failed to generate JWT: %v", err)
+	}
+	session.Post("/register", JSON{"token": tokenStr}, http.StatusBadRequest)
+	session.CheckResponse(errorf(consts.MissingRequiredFields))
+	session.Post("/register", JSON{"token": tokenStr, "name": "m", "password": "12345678"}, http.StatusOK)
+	session.CheckResponse(nil)
+
+	expected := JSON{
+		"email_verification": true,
+		"name":               "m",
+		"role":               "Player",
+		"team_id":            nil,
+		"user_mode":          false,
+	}
+	session.Get("/info", nil, http.StatusOK)
+	session.CheckFilteredResponse(expected, "id")
+
+	tokenStr, err = jwt_utils.GenerateJWT(t.Context(), jwt_utils.Map{"email": "m@m.m"})
+	if err != nil {
+		t.Fatalf("failed to generate JWT: %v", err)
+	}
+	session = test_utils.NewApiTestSession(t, app)
+	session.Post("/register", JSON{"token": tokenStr, "name": "m2", "password": "testpass"}, http.StatusConflict)
+	session.CheckResponse(errorf(consts.UserAlreadyExists))
+
+	session = test_utils.NewApiTestSession(t, app)
+	session.Post("/login", JSON{"email": "m@m.m", "password": "12345678"}, http.StatusOK)
+	session.CheckResponse(nil)
 }

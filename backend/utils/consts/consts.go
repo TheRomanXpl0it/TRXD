@@ -121,6 +121,7 @@ const (
 	InvalidHttpUrl          = "Invalid http(s) url"
 	InvalidImage            = "Invalid image"
 	InvalidJSON             = "Invalid JSON format"
+	InvalidJWT              = "invalid JWT"
 	InvalidJWTSecret        = "invalid JWT secret"
 	InvalidMaxCpu           = "Invalid Max CPU, must be a positive 32-bit integer"
 	InvalidMultipartForm    = "Invalid multipart form"

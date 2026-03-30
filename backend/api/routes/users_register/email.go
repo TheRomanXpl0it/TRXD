@@ -18,11 +18,11 @@ const SUBJECT = "Email Verification Required"
 const BODY_TEMPLATE = "Hello,\n\nTo Confirm your email address, please click the link below:\nhttp://%s/api/register?token=%s\n\nThank you!"
 
 func verifyMailEnabled(c *fiber.Ctx) (bool, error) {
-	server, err := db.GetConfig(c.Context(), "email-server")
+	verification, err := db.GetConfig(c.Context(), "email-verification")
 	if err != nil {
 		return false, err
 	}
-	if server == "" {
+	if verification == "" || verification == "false" {
 		return false, nil
 	}
 

@@ -165,7 +165,6 @@ func SetupApi(ctx context.Context, app *fiber.App) {
 	}
 
 	api.Post("/register", noAuth, users_register.Route)
-	// api.Get("/verify", noAuth, users_verify.Route)
 	api.Post("/login", noAuth, users_login.Route)
 	api.Post("/logout", noAuth, users_logout.Route)
 	api.Get("/info", noAuth, users_info.Route)
