@@ -23,14 +23,19 @@ func createInstance(c *fiber.Ctx, tid int32, chall *db.Chall) (*InstanceInfo, er
 	if chall.DockerConfig.Lifetime == 0 {
 		return nil, utils.Error(c, fiber.StatusInternalServerError, consts.MissingLifetime, errors.New(consts.MissingLifetime))
 	}
-	lifetime := time.Second * time.Duration(chall.DockerConfig.Lifetime.(int64))
-	expires_at := time.Now().Add(lifetime)
-	var internalPort *int32
-	if chall.Info.Port != 0 {
-		internalPort = &chall.Info.Port
+	params := &instancer.CreateInstanceParams{
+		Tid:          tid,
+		ChallID:      chall.Info.ID,
+		ConnType:     chall.Info.ConnType,
+		DeployType:   chall.Info.Type,
+		DockerConfig: chall.DockerConfig,
 	}
 
-	host, port, err := instancer.CreateInstance(c.Context(), tid, chall.Info.ID, internalPort, expires_at, chall.Info.Type, chall.DockerConfig)
+	if chall.Info.Port != 0 {
+		params.InternalPort = &chall.Info.Port
+	}
+
+	res, err := instancer.CreateInstance(c.Context(), params)
 	if err != nil {
 		switch err.Error() {
 		case "[race condition]":
@@ -43,9 +48,9 @@ func createInstance(c *fiber.Ctx, tid int32, chall *db.Chall) (*InstanceInfo, er
 	}
 
 	return &InstanceInfo{
-		Host:    host,
-		Port:    port,
-		Timeout: max(int(time.Until(expires_at).Seconds()), 0),
+		Host:    res.Host,
+		Port:    res.Port,
+		Timeout: max(int(time.Until(res.Expiration).Seconds()), 0),
 	}, nil
 }
 
