@@ -152,134 +152,136 @@
 	}
 </script>
 
-<div
-	class="from-muted/20 to-background mb-6 mt-6 rounded-xl border-0 bg-gradient-to-br p-6 shadow-sm"
->
-	<div class="flex items-center gap-4">
-		<div
-			class="bg-background flex h-16 w-16 shrink-0 items-center justify-center rounded-full shadow-sm"
-		>
-			<Settings class="text-muted-foreground h-8 w-8" />
-		</div>
-		<div>
-			<h1 class="text-3xl font-bold tracking-tight">Configuration</h1>
-			<p class="text-muted-foreground mt-2 text-sm">Manage global instance settings.</p>
-		</div>
-	</div>
-</div>
-
-{#if loading}
-	<LoadingState message="Loading configuration..." />
-{:else if error}
+<div class="mx-auto max-w-5xl space-y-8 px-6 py-10">
 	<div
-		class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-600 dark:border-red-800 dark:bg-red-950/20"
+		class="from-muted/20 to-background mb-6 mt-6 rounded-xl border-0 bg-gradient-to-br p-6 shadow-sm"
 	>
-		<p class="font-semibold">Error loading configuration</p>
-		<p class="text-sm">{error}</p>
+		<div class="flex items-center gap-4">
+			<div
+				class="bg-background flex h-16 w-16 shrink-0 items-center justify-center rounded-full shadow-sm"
+			>
+				<Settings class="text-muted-foreground h-8 w-8" />
+			</div>
+			<div>
+				<h1 class="text-3xl font-bold tracking-tight">Configuration</h1>
+				<p class="text-muted-foreground mt-2 text-sm">Manage global instance settings.</p>
+			</div>
+		</div>
 	</div>
-{:else}
-	<div class="relative">
-		<div class="space-y-6 pb-24">
-			<!-- Config cards -->
-			<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-				{#each configs as c (c.key)}
-					<div
-						class="bg-muted/20 hover:bg-background rounded-lg border-0 p-4 shadow-none transition-all hover:shadow-md"
-					>
-						<div class="mb-3 flex items-start justify-between gap-3">
-							<div class="min-w-0 flex-1">
-								<Label class="mb-1 block font-semibold text-gray-900 dark:text-white">
-									{c.key}
-								</Label>
-								{#if c.description}
-									<p class="line-clamp-2 text-xs text-gray-600 dark:text-gray-400">
-										{c.description}
-									</p>
+
+	{#if loading}
+		<LoadingState message="Loading configuration..." />
+	{:else if error}
+		<div
+			class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-600 dark:border-red-800 dark:bg-red-950/20"
+		>
+			<p class="font-semibold">Error loading configuration</p>
+			<p class="text-sm">{error}</p>
+		</div>
+	{:else}
+		<div class="relative">
+			<div class="space-y-6 pb-24">
+				<!-- Config cards -->
+				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+					{#each configs as c (c.key)}
+						<div
+							class="bg-muted/20 hover:bg-background rounded-lg border-0 p-4 shadow-none transition-all hover:shadow-md"
+						>
+							<div class="mb-3 flex items-start justify-between gap-3">
+								<div class="min-w-0 flex-1">
+									<Label class="mb-1 block font-semibold text-gray-900 dark:text-white">
+										{c.key}
+									</Label>
+									{#if c.description}
+										<p class="line-clamp-2 text-xs text-gray-600 dark:text-gray-400">
+											{c.description}
+										</p>
+									{/if}
+								</div>
+								<span
+									class="shrink-0 rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+								>
+									{c.type}
+								</span>
+							</div>
+
+							<div class="mt-3">
+								{#if c.type === 'bool'}
+									<div class="bg-background flex items-center gap-3 rounded-md border p-3">
+										<Checkbox
+											checked={form[c.key] === true}
+											onCheckedChange={(v) => {
+												form[c.key] = !!v;
+											}}
+											id={c.key}
+										/>
+										<Label for={c.key} class="cursor-pointer text-sm font-medium">
+											{form[c.key] ? 'Enabled' : 'Disabled'}
+										</Label>
+									</div>
+								{:else if c.type === 'int'}
+									<Input
+										type="number"
+										class="bg-background w-full"
+										bind:value={form[c.key]}
+										placeholder="Enter number"
+									/>
+								{:else}
+									<Input
+										type="text"
+										class="bg-background w-full"
+										bind:value={form[c.key]}
+										placeholder="Enter value"
+									/>
 								{/if}
 							</div>
-							<span
-								class="shrink-0 rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300"
-							>
-								{c.type}
-							</span>
 						</div>
-
-						<div class="mt-3">
-							{#if c.type === 'bool'}
-								<div class="bg-background flex items-center gap-3 rounded-md border p-3">
-									<Checkbox
-										checked={form[c.key] === true}
-										onCheckedChange={(v) => {
-											form[c.key] = !!v;
-										}}
-										id={c.key}
-									/>
-									<Label for={c.key} class="cursor-pointer text-sm font-medium">
-										{form[c.key] ? 'Enabled' : 'Disabled'}
-									</Label>
-								</div>
-							{:else if c.type === 'int'}
-								<Input
-									type="number"
-									class="bg-background w-full"
-									bind:value={form[c.key]}
-									placeholder="Enter number"
-								/>
-							{:else}
-								<Input
-									type="text"
-									class="bg-background w-full"
-									bind:value={form[c.key]}
-									placeholder="Enter value"
-								/>
-							{/if}
-						</div>
-					</div>
-				{/each}
+					{/each}
+				</div>
 			</div>
-		</div>
 
-		<div class="bg-background sticky bottom-0 border-t p-4 shadow-lg dark:border-gray-700">
-			<div class="flex flex-wrap items-center gap-3">
-				<Button onclick={save} disabled={saving || !hasChanges} class="cursor-pointer">
-					{#if saving}
-						<div
-							class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
-						></div>
-						Saving...
-					{:else}
-						Save Changes
+			<div class="bg-background sticky bottom-0 border-t p-4 shadow-lg dark:border-gray-700">
+				<div class="flex flex-wrap items-center gap-3">
+					<Button onclick={save} disabled={saving || !hasChanges} class="cursor-pointer">
+						{#if saving}
+							<div
+								class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+							></div>
+							Saving...
+						{:else}
+							Save Changes
+						{/if}
+					</Button>
+
+					{#if saveOk && !hasChanges}
+						<div class="flex items-center gap-2 text-green-600 dark:text-green-400">
+							<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M5 13l4 4L19 7"
+								></path>
+							</svg>
+							<span class="font-medium">Changes saved</span>
+						</div>
 					{/if}
-				</Button>
 
-				{#if saveOk && !hasChanges}
-					<div class="flex items-center gap-2 text-green-600 dark:text-green-400">
-						<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M5 13l4 4L19 7"
-							></path>
-						</svg>
-						<span class="font-medium">Changes saved</span>
-					</div>
-				{/if}
-
-				{#if saveError}
-					<div class="flex items-center gap-2 text-red-600 dark:text-red-400">
-						<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M6 18L18 6M6 6l12 12"
-							></path>
-						</svg>
-						<span class="font-medium">{saveError}</span>
-					</div>
-				{/if}
+					{#if saveError}
+						<div class="flex items-center gap-2 text-red-600 dark:text-red-400">
+							<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M6 18L18 6M6 6l12 12"
+								></path>
+							</svg>
+							<span class="font-medium">{saveError}</span>
+						</div>
+					{/if}
+				</div>
 			</div>
 		</div>
-	</div>
-{/if}
+	{/if}
+</div>

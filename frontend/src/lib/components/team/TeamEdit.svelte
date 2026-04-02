@@ -5,10 +5,11 @@
 	import Label from '$lib/components/ui/label/label.svelte';
 	import CountrySelect from '$lib/components/ui/country-select.svelte';
 	import GeneratedAvatar from '$lib/components/ui/avatar/generated-avatar.svelte';
-	import { updateTeam } from '$lib/team';
+	import { updateTeam, resetTeamPassword } from '$lib/team';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import { showSuccess, showError } from '$lib/utils/toast';
 	import { getCountryByIso3 } from '$lib/utils/countries';
+	import { authState } from '$lib/stores/auth';
 
 	const queryClient = useQueryClient();
 
@@ -32,12 +33,22 @@
 	let tags = $state<string[]>([]);
 	let newTag = $state('');
 	let saving = $state(false);
+	
+	let newPassword = $state('');
+	let generatedPassword = $state('');
+	let resetting = $state(false);
+
+	const isAdmin = $derived(authState.user?.role === 'Admin');
 
 	$effect(() => {
 		if (team) {
 			name = team.name ?? '';
 			countryCode = team.country?.toUpperCase?.() ?? '';
 			tags = team.tags ?? [];
+		}
+		if (!open) {
+			newPassword = '';
+			generatedPassword = '';
 		}
 	});
 
@@ -78,6 +89,27 @@
 
 	function removeTag(tag: string) {
 		tags = tags.filter((t) => t !== tag);
+	}
+	
+	async function handleResetPassword() {
+		if (resetting || !team?.id) return;
+		resetting = true;
+		generatedPassword = '';
+		
+		try {
+			const res = await resetTeamPassword(team.id, isAdmin ? undefined : newPassword.trim());
+			if (isAdmin && res?.new_password) {
+				generatedPassword = res.new_password;
+				showSuccess('New password generated.');
+			} else {
+				showSuccess('Team password updated successfully.');
+				newPassword = '';
+			}
+		} catch (err: any) {
+			showError(err, 'Failed to reset password.');
+		} finally {
+			resetting = false;
+		}
 	}
 </script>
 
@@ -122,6 +154,33 @@
 							Current: {current?.label ?? team.country}
 						</p>
 					{/if}
+				</div>
+				
+				<div class="border-t pt-4">
+					<h4 class="mb-2 text-sm font-semibold">Security</h4>
+					<div class="space-y-2">
+						<Label for="pf-password" class="mb-1 block">Reset Password</Label>
+						{#if isAdmin}
+							<div class="flex items-center gap-2">
+								<Button type="button" variant="outline" onclick={handleResetPassword} disabled={resetting}>
+									{#if resetting}Resetting...{:else}Generate New Password{/if}
+								</Button>
+								{#if generatedPassword}
+									<p class="text-sm font-mono bg-muted px-2 py-1 rounded select-all cursor-text">{generatedPassword}</p>
+								{/if}
+							</div>
+							<p class="text-muted-foreground mt-1 text-xs">
+								As an admin, you can generate a new random password for this team.
+							</p>
+						{:else}
+							<div class="flex flex-col gap-2">
+								<Input id="pf-password" type="password" bind:value={newPassword} placeholder="Enter new password" />
+								<Button type="button" variant="outline" class="w-fit" onclick={handleResetPassword} disabled={resetting || !newPassword.trim()}>
+									{#if resetting}Resetting...{:else}Update Password{/if}
+								</Button>
+							</div>
+						{/if}
+					</div>
 				</div>
 			</div>
 

@@ -50,3 +50,14 @@ export async function updateTeam(
 		body: JSON.stringify({ id, name, country, tags })
 	});
 }
+
+export async function resetTeamPassword(teamId: number, newPassword?: string): Promise<any> {
+	const body: any = { team_id: teamId };
+	if (newPassword) body.new_password = newPassword;
+	
+	return api<any>('/teams/password', {
+		headers: { 'content-type': 'application/json' },
+		method: 'PATCH',
+		body: JSON.stringify(body)
+	});
+}

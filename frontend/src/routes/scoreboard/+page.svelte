@@ -52,13 +52,6 @@
 		)
 	);
 
-	function medalClass(rank: number) {
-		if (rank === 1) return 'text-yellow-500 fill-yellow-500/20';
-		if (rank === 2) return 'text-gray-400 fill-gray-400/20';
-		if (rank === 3) return 'text-amber-700 fill-amber-700/20';
-		return '';
-	}
-
 	$effect(() => {
 		if (currentPage > 1) {
 			setTimeout(() => {
@@ -76,35 +69,24 @@
 	}
 </script>
 
-<div class="mx-auto max-w-5xl space-y-8 px-6 py-10">
-	<div
-		class="from-muted/20 to-background mb-6 mt-6 rounded-xl border-0 bg-gradient-to-br p-6 shadow-sm"
-	>
-		<div class="flex items-center gap-4">
-			<div
-				class="bg-background flex h-16 w-16 shrink-0 items-center justify-center rounded-full shadow-sm"
-			>
-				<Trophy class="text-muted-foreground h-8 w-8" />
-			</div>
-			<div>
-				<h1 class="text-3xl font-bold tracking-tight">Scoreboard</h1>
-				<p class="text-muted-foreground mt-2 text-sm">
-					Ranking of all competing {authState.userMode ? 'players' : 'teams'}.
-				</p>
-			</div>
-		</div>
+<div class="mx-auto max-w-6xl space-y-12 px-4 py-8 sm:px-6 sm:py-12">
+	<!-- Header Region -->
+	<div class="mb-8 mt-2 text-center">
+		<h1 class="text-5xl font-black tracking-tighter sm:text-6xl text-foreground">Scoreboard</h1>
+		<p class="mt-4 text-lg text-muted-foreground font-medium tracking-tight">
+			Rankings for all competing {authState.userMode ? 'players' : 'teams'}
+		</p>
 	</div>
 
 	{#if error}
 		<ErrorMessage title="Error loading scoreboard" message={error} />
 	{:else}
-		<!-- Graph -->
-		<!-- Added shadow/border fix to graph container if needed, but keeping simple div for now -->
-		<div class="mb-8">
+		<!-- Graph Container -->
+		<div class="mb-12">
 			<ScoreHistory data={graphData} {teamNames} userMode={authState.userMode} />
 		</div>
 
-		<Card.Root class="overflow-hidden border-0 shadow-sm">
+		<Card.Root class="overflow-hidden border-0 shadow-sm mt-8">
 			<Card.Content class="p-0">
 				<div class="relative mx-4 overflow-auto sm:mx-6">
 					<Table.Root>
@@ -163,12 +145,14 @@
 											onclick={() =>
 												goto(authState.userMode ? `/account/${row.id}` : `/team/${row.id}`)}
 										>
-											<Table.Cell class="font-medium">
-												<div class="flex items-center gap-2">
-													<span class="text-muted-foreground w-6 text-sm">#{rank}</span>
-													{#if rank <= 3}
-														<Medal class={`h-4 w-4 ${medalClass(rank)}`} />
-													{/if}
+											<Table.Cell class="font-medium align-middle">
+												<div class="flex items-center gap-3 w-16">
+													<span 
+														class={`text-xl font-black tabular-nums tracking-tighter drop-shadow-sm ${rank > 3 ? 'text-muted-foreground' : ''}`}
+														style={rank === 1 ? 'color: #fbbf24; text-shadow: 0 0 10px rgba(251,191,36,0.3);' : rank === 2 ? 'color: #94a3b8; text-shadow: 0 0 10px rgba(148,163,184,0.3);' : rank === 3 ? 'color: #cd7f32; text-shadow: 0 0 10px rgba(205,127,50,0.3);' : ''}
+													>
+														#{rank}
+													</span>
 												</div>
 											</Table.Cell>
 

@@ -46,7 +46,9 @@
 			: (challenge?.host ?? '');
 		const p = challenge?.instance ? challenge?.instance_port : challenge?.port;
 		let str = p ? `${h}:${p}` : h;
-		if (str && challenge?.conn_type === 'HTTP' && !str.startsWith('http')) {
+		if (str && challenge?.conn_type === 'TCP') {
+			str = p ? `nc ${h} ${p}` : `nc ${h}`;
+		} else if (str && challenge?.conn_type === 'HTTP' && !str.startsWith('http')) {
 			str = `http://${str}`;
 		} else if (str && challenge?.conn_type === 'HTTPS' && !str.startsWith('http')) {
 			str = `https://${str}`;

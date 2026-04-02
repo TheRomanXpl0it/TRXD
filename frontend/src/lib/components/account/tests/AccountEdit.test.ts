@@ -20,6 +20,10 @@ vi.mock('$lib/user', () => ({
 	updateUser: vi.fn()
 }));
 
+vi.mock('$lib/components/ui/avatar/generated-avatar.svelte', () => ({
+	default: () => ({})
+}));
+
 describe('AccountEdit Component', () => {
 	const baseUser = {
 		id: 5,

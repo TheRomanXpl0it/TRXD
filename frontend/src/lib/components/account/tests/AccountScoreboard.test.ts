@@ -12,11 +12,21 @@ describe('AccountScoreboard', () => {
 	it('sorts by clicking headers', async () => {
 		render(AccountScoreboard, { props: { solves } });
 
-		// Clicking headers does not remove rows
-		fireEvent.click(screen.getByText(/points/i));
-		fireEvent.click(screen.getByText(/challenge/i));
+		await tick();
 
-		fireEvent.click(screen.getByText(/category/i));
+		// Clicking headers does not remove rows
+		const pointsHeader = screen.getByText(/points/i);
+		await fireEvent.click(pointsHeader);
+		await tick();
+
+		const challengeHeader = screen.getByText(/challenge/i);
+		await fireEvent.click(challengeHeader);
+		await tick();
+
+		const categoryHeader = screen.getByText(/category/i);
+		await fireEvent.click(categoryHeader);
+		await tick();
+
 		expect(screen.getByText('X')).toBeInTheDocument();
 		expect(screen.getByText('Y')).toBeInTheDocument();
 	});

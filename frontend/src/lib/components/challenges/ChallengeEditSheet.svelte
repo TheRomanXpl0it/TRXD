@@ -256,7 +256,7 @@
 		};
 		const str = (x: any) => {
 			const s = String(x ?? '').trim();
-			return s || undefined;
+			return s;
 		};
 
 		// build the fields exactly as backend expects (snake_case)
@@ -359,7 +359,7 @@
 			}
 
 			for (const [k, v] of Object.entries(entries)) {
-				if (v !== undefined && v !== null && v !== '') {
+				if (v !== undefined && v !== null) {
 					fd.append(k, String(v));
 				}
 			}

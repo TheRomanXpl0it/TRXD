@@ -25,16 +25,23 @@ export async function submitFlag(
 	});
 }
 
-export async function getCategories(): Promise<Category[]> {
-	return api<Category[]>('/categories');
+export async function getSubmissions(page = 1, limit = 50): Promise<any> {
+	const offset = (page - 1) * limit;
+	return api<any>(`/submissions?offset=${offset}&limit=${limit}`, {
+		method: 'GET'
+	});
 }
 
-export async function createCategory(name: string, icon: string): Promise<any> {
-	return api<any>('/categories', {
+export async function deleteSubmission(id: number | string): Promise<any> {
+	return api<any>(`/submissions`, {
 		headers: { 'content-type': 'application/json' },
-		method: 'POST',
-		body: JSON.stringify({ name, icon })
+		method: 'DELETE',
+		body: JSON.stringify({ sub_id: Number(id) })
 	});
+}
+
+export async function getCategories(): Promise<Category[]> {
+	return api<Category[]>('/categories');
 }
 
 export async function createChallenge(

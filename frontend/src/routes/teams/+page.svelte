@@ -5,6 +5,7 @@
 	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
 	import { getTeams } from '@/team';
 	import { goto } from '$app/navigation';
+	import { page as pageStore } from '$app/stores';
 	import ErrorMessage from '$lib/components/ui/error-message.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import countries from '$lib/data/countries.json';
@@ -22,7 +23,14 @@
 	});
 
 	let perPage = $state(20);
-	let currentPage = $state(1);
+
+	function parsePageParam(value: string | null): number {
+		if (!value) return 1;
+		const pageValue = Number.parseInt(value, 10);
+		return Number.isFinite(pageValue) && pageValue > 0 ? pageValue : 1;
+	}
+
+	let currentPage = $state(parsePageParam($pageStore.url.searchParams.get('page')));
 
 	const teamsQuery = createQuery(() => ({
 		queryKey: ['teams', currentPage, perPage],
@@ -94,6 +102,29 @@
 		)
 	);
 	const count = $derived(totalCount);
+
+	// Keep pagination state synchronized with URL for browser history navigation.
+	$effect(() => {
+		const pageFromUrl = parsePageParam($pageStore.url.searchParams.get('page'));
+		if (currentPage !== pageFromUrl) {
+			currentPage = pageFromUrl;
+		}
+	});
+
+	$effect(() => {
+		const nextUrl = new URL($pageStore.url);
+		if (currentPage > 1) {
+			nextUrl.searchParams.set('page', String(currentPage));
+		} else {
+			nextUrl.searchParams.delete('page');
+		}
+
+		const currentHref = `${$pageStore.url.pathname}${$pageStore.url.search}${$pageStore.url.hash}`;
+		const nextHref = `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
+		if (nextHref !== currentHref) {
+			goto(nextHref, { replaceState: true, noScroll: true, keepFocus: true });
+		}
+	});
 
 	// Track page changes
 	$effect(() => {

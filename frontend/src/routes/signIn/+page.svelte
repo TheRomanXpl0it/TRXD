@@ -8,7 +8,7 @@
 
 	import { login } from '$lib/auth';
 	import { goto } from '$app/navigation';
-	import { authState, loadUser } from '@/stores/auth';
+	import { authState, loadUser } from '$lib/stores/auth';
 	import { Lock } from '@lucide/svelte';
 
 	// --- State (Svelte 5 runes) ----------------------------------------------
@@ -121,12 +121,14 @@
 					<div class="space-y-2">
 						<div class="flex items-center justify-between">
 							<Label for="password" class="font-medium">Password</Label>
-							<a
-								href="/forgot"
-								class="text-muted-foreground hover:text-primary text-xs font-medium hover:underline"
-							>
-								Forgot password?
-							</a>
+							{#if authState.emailVerification}
+								<a
+									href="/forgot"
+									class="text-muted-foreground hover:text-primary text-xs font-medium hover:underline"
+								>
+									Forgot password?
+								</a>
+							{/if}
 						</div>
 						<Input
 							id="password"

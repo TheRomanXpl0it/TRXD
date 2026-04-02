@@ -1,6 +1,5 @@
 <script lang="ts">
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-	// No shadcn Avatar component — using plain img
 	import { goto } from '$app/navigation';
 	import {
 		HouseIcon,
@@ -51,7 +50,13 @@
 	const teamItem: NavItem = { title: 'My Team', url: '/team', icon: ShieldHalf };
 
 	// Admin-only visibility
+	const isAtleastAuthor = $derived(
+		(user as any)?.role === 'Admin' || (user as any)?.role === 'Author'
+	);
 	const isAdmin = $derived((user as any)?.role === 'Admin');
+
+	const submissionsItem: NavItem = { title: 'Submissions', url: '/submissions', icon: Settings }; // Placeholder icon for now, actually maybe Flag?
+	const instancesItem: NavItem = { title: 'Instances', url: '/instances', icon: Settings };
 	const configsItem: NavItem = { title: 'Configs', url: '/configs', icon: Settings };
 
 	// Combine items based on userMode and role
@@ -59,12 +64,9 @@
 		[...baseItems]
 			.concat(user ? [accountsItem] : [])
 			.concat(user && !userMode ? [teamsItem, teamItem] : [])
-			.concat(isAdmin ? [configsItem] : [])
+			.concat(isAdmin ? [instancesItem, submissionsItem, configsItem] : []) // Only true Admins see these
 	);
 
-	// Use the same queryKey pattern as account/+page.svelte so TanStack Query
-	// deduplicates the request — no extra network call when the account page
-	// already fetched this data.
 	const profileId = $derived(userMode ? user?.team_id : user?.id);
 	const profileQuery = createQuery(() => ({
 		queryKey: ['user', profileId ?? null, userMode],

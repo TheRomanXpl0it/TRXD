@@ -36,10 +36,6 @@
 			A platform for hackers and cybersecurity enthusiasts
 		</p>
 
-		<p class="mx-auto mb-8 max-w-xl text-base italic text-gray-500 dark:text-gray-400">
-			"ALZATI SUBITO"
-		</p>
-
 		<div class="flex flex-wrap justify-center gap-4">
 			<a
 				href="/challenges"

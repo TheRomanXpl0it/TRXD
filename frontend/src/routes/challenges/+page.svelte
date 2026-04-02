@@ -13,17 +13,55 @@
 	import ChallengeCard from '$lib/components/challenges/ChallengeCard.svelte';
 	import ChallengeModal from '$lib/components/challenges/ChallengeModal.svelte';
 	import AdminControls from '$lib/components/challenges/AdminControls.svelte';
+	import WaitingPage from '$lib/components/challenges/WaitingPage.svelte';
 	import { Flag } from '@lucide/svelte';
 	import type { Challenge } from '$lib/types';
 
 	import { config } from '$lib/env';
 
-	// Lazy-loaded admin component handles
+	// 1. Basic Auth Deriveds
+	const isAdmin = $derived(authState.user?.role === 'Admin' || authState.user?.role === 'Author');
+	const upcoming = $derived.by(() => {
+		if (!authState.ready || !authState.startTime) return false;
+		return new Date(authState.startTime).getTime() > Date.now();
+	});
+
+	// 2. Local State
+	let createChallengeOpen = $state(false);
+	let selectedId = $state<number | null>(null);
+	let countdowns: Record<string, number> = $state({});
+	const queryClient = useQueryClient();
+
+	// 3. Lazy-loaded admin component handles
 	let CreateModalCmp: any | null = $state(null);
 	let DeleteDialogCmp: any | null = $state(null);
 	let ChallengeEditSheetCmp: any | null = $state(null);
 
-	const isAdmin = $derived(authState.user?.role === 'Admin');
+	// 4. Queries (Dependent on 1)
+	const challengesQuery = createQuery(() => ({
+		queryKey: ['challenges'],
+		queryFn: getChallenges,
+		staleTime: 5 * 60 * 1000,
+		enabled: !upcoming || isAdmin
+	}));
+
+	const categoriesQuery = createQuery(() => ({
+		queryKey: ['categories'],
+		queryFn: getCategories,
+		staleTime: 10 * 60 * 1000,
+		enabled: !upcoming || isAdmin
+	}));
+
+	// 5. Query-dependent Deriveds
+	const challenges = $derived(challengesQuery.data ?? []);
+	const loading = $derived(challengesQuery.isLoading || categoriesQuery.isLoading);
+	const error = $derived(challengesQuery.error?.message ?? categoriesQuery.error?.message ?? null);
+	const isNotStarted = $derived(
+		error === 'Not started yet' || 
+		(challengesQuery?.error?.message === 'Not started yet') || 
+		(categoriesQuery?.error?.message === 'Not started yet') || 
+		(upcoming && !isAdmin)
+	);
 
 	// Preload admin components when page loads if user is admin
 	onMount(() => {
@@ -64,31 +102,6 @@
 		}
 		editOpen = true;
 	}
-
-	// Local state
-	let createChallengeOpen = $state(false);
-
-	// Track selected challenge ID instead of the full object to avoid circular dependencies
-	let selectedId = $state<number | null>(null);
-	let countdowns: Record<string, number> = $state({});
-	const queryClient = useQueryClient();
-
-	const challengesQuery = createQuery(() => ({
-		queryKey: ['challenges'],
-		queryFn: getChallenges,
-		staleTime: 5 * 60 * 1000 // 5 minutes
-	}));
-
-	// Don't need to refetch categories
-	const categoriesQuery = createQuery(() => ({
-		queryKey: ['categories'],
-		queryFn: getCategories,
-		staleTime: 10 * 60 * 1000 // 10 minutes
-	}));
-
-	const challenges = $derived(challengesQuery.data ?? []);
-	const loading = $derived(challengesQuery.isLoading || categoriesQuery.isLoading);
-	const error = $derived(challengesQuery.error?.message ?? categoriesQuery.error?.message ?? null);
 
 	// Derive the actual selected challenge from the ID - always fresh from challenges array
 	const selected = $derived(
@@ -237,7 +250,6 @@
 		).sort((a, b) => a.localeCompare(b))
 	);
 
-	// Debounce search — cleanup on unmount to avoid stale state updates
 	$effect(() => {
 		const q = search;
 		const t = setTimeout(() => {
@@ -261,22 +273,41 @@
 
 	// Update countdowns when challenges data changes
 	$effect(() => {
-		const next: Record<string, number> = {};
-		for (const c of challenges) {
-			if (typeof c?.timeout === 'number' && c.timeout > 0) next[c.id] = c.timeout;
-		}
-		countdowns = next;
+		const currentChallenges = challenges;
+		untrack(() => {
+			let changed = false;
+			const next: Record<string, number> = { ...countdowns };
+
+			for (const c of currentChallenges) {
+				if (typeof c?.timeout === 'number' && c.timeout > 0) {
+					if (next[c.id] === undefined) {
+						next[c.id] = c.timeout;
+						changed = true;
+					}
+				} else if (next[c.id] !== undefined) {
+					delete next[c.id];
+					changed = true;
+				}
+			}
+
+			if (changed) countdowns = next;
+		});
 	});
 
 	// Handle errors
 	$effect(() => {
 		if (challengesQuery.error) {
-			toast.error('You need to join a team first!');
-			goto('/team');
+			if (challengesQuery.error.message === 'Not started yet') {
+				// This is handled in the UI
+				return;
+			}
+			toast.error(challengesQuery.error.message || 'You need to join a team first!');
+			if (challengesQuery.error.message?.toLowerCase().includes('team')) {
+				goto('/team');
+			}
 		}
 	});
 
-	// Self-stopping countdown timer — only runs while at least one instance is active.
 	let countdownTimer: ReturnType<typeof setInterval> | undefined;
 
 	function startCountdownTimer() {
@@ -379,9 +410,6 @@
 		</div>
 		<div>
 			<h1 class="text-3xl font-bold tracking-tight">Challenges</h1>
-			<p class="text-muted-foreground mt-2 text-sm">
-				"A man who loves to walk will walk more than a man who loves his destination"
-			</p>
 		</div>
 	</div>
 </div>
@@ -406,7 +434,9 @@
 	{activeFiltersCount}
 />
 
-{#if loading}
+{#if isNotStarted}
+	<WaitingPage startTime={authState.startTime} />
+{:else if loading}
 	<div class="flex flex-col items-center justify-center py-12">
 		<Spinner class="mb-4 h-8 w-8" />
 		<p class="text-gray-600 dark:text-gray-400">Loading challenges...</p>

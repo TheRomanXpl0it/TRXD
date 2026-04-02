@@ -23,7 +23,7 @@ export interface User {
 	image?: string;
 	profileImage?: string;
 	team_id?: number | null;
-	role: 'User' | 'Admin';
+	role: 'User' | 'Admin' | 'Author';
 	country?: string;
 	joined_at?: string;
 	solves?: any[]; // Populated by GetUser / GetTeam
@@ -47,7 +47,7 @@ export interface Team {
 export interface Category {
 	id?: number;
 	name: string;
-	icon?: string;
+	color?: string;
 }
 
 export interface Challenge {
@@ -68,6 +68,7 @@ export interface Challenge {
 	authors: string[];
 	attachments?: string[];
 	difficulty?: string;
+	colors?: string[];
 
 	// Connection info
 	host?: string;

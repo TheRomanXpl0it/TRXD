@@ -11,7 +11,7 @@ export default defineConfig({
 		include: ['src/**/*.{test,spec}.{js,ts}'],
 		server: {
 			deps: {
-				inline: ['@lucide/svelte']
+				inline: ['@lucide/svelte', 'bits-ui', 'svelte-sonner', 'clsx', 'tailwind-merge', 'layerchart', 'd3-scale']
 			}
 		}
 	},

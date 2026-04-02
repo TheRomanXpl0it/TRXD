@@ -6,10 +6,16 @@ export const authState = $state<{
 	user: UserDataType | null;
 	ready: boolean;
 	userMode: boolean;
+	emailVerification: boolean;
+	startTime: string | null;
+	endTime: string | null;
 }>({
 	user: null,
 	ready: false,
-	userMode: true
+	userMode: true,
+	emailVerification: true,
+	startTime: null,
+	endTime: null
 });
 
 let loadingPromise: Promise<void> | null = null;
@@ -29,10 +35,16 @@ export async function loadUser(force = true) {
 				return;
 			}
 
-			try {
+			if (userfetched) {
+				authState.emailVerification = userfetched.email_verification ?? true;
+				authState.startTime = userfetched.start_time ?? null;
+				authState.endTime = userfetched.end_time ?? null;
+			}
+
+			if (userfetched && userfetched.id) {
 				authState.userMode = userfetched.user_mode;
 				authState.user = userfetched;
-			} catch (e) {
+			} else {
 				authState.user = null;
 			}
 			authState.ready = true;

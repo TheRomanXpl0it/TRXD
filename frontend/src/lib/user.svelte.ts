@@ -65,3 +65,14 @@ export async function updateUserRole(userId: number, role: string): Promise<any>
 		body: JSON.stringify({ user_id: userId, new_role: role })
 	});
 }
+
+export async function resetUserPassword(userId: number, newPassword?: string): Promise<any> {
+	const body: any = { user_id: userId };
+	if (newPassword) body.new_password = newPassword;
+	
+	return api<any>('/users/password', {
+		headers: { 'content-type': 'application/json' },
+		method: 'PATCH',
+		body: JSON.stringify(body)
+	});
+}

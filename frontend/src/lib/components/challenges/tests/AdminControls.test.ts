@@ -102,8 +102,6 @@ describe('AdminControls Component', () => {
 	});
 
 	it('create button is enabled when category name field is filled', async () => {
-		// TODO: Implement this once the backend removes the icon support
-		/*
 		const user = userEvent.setup();
 
 		render(AdminControls);
@@ -115,16 +113,13 @@ describe('AdminControls Component', () => {
 		});
 
 		const nameInput = screen.getByLabelText(/category name/i);
-		const iconInput = screen.getByLabelText(/icon/i);
 
 		await user.type(nameInput, 'Web');
-		await user.type(iconInput, 'Globe');
 
 		await waitFor(() => {
 			const createButton = screen.getByRole('button', { name: /^create$/i });
 			expect(createButton).not.toBeDisabled();
 		});
-		*/
 	});
 
 	it('closes popover when cancel is clicked', async () => {
@@ -147,8 +142,6 @@ describe('AdminControls Component', () => {
 	});
 
 	it('creates category successfully', async () => {
-		// TODO: Implement this once the backend removes the icon support
-		/*
 		const user = userEvent.setup();
 		const mockCreateCategory = vi.mocked(createCategory);
 		mockCreateCategory.mockResolvedValueOnce(undefined);
@@ -162,23 +155,18 @@ describe('AdminControls Component', () => {
 		});
 
 		const nameInput = screen.getByLabelText(/category name/i);
-		const iconInput = screen.getByLabelText(/icon/i);
 
 		await user.type(nameInput, 'Forensics');
-		await user.type(iconInput, 'Search');
 
 		const createButton = screen.getByRole('button', { name: /^create$/i });
 		await user.click(createButton);
 
 		await waitFor(() => {
-			expect(mockCreateCategory).toHaveBeenCalledWith('Forensics', 'Search');
+			expect(mockCreateCategory).toHaveBeenCalledWith('Forensics');
 		});
-		*/
 	});
 
 	it('shows success toast after creating category', async () => {
-		// TODO: Implement this once the backend removes the icon support
-		/*
 		const user = userEvent.setup();
 		const mockCreateCategory = vi.mocked(createCategory);
 		const mockToast = vi.mocked(toast);
@@ -193,23 +181,18 @@ describe('AdminControls Component', () => {
 		});
 
 		const nameInput = screen.getByLabelText(/category name/i);
-		const iconInput = screen.getByLabelText(/icon/i);
 
 		await user.type(nameInput, 'Crypto');
-		await user.type(iconInput, 'Lock');
 
 		const createButton = screen.getByRole('button', { name: /^create$/i });
 		await user.click(createButton);
 
 		await waitFor(() => {
-			expect(mockToast.success).toHaveBeenCalledWith('Category created!');
+			expect(mockToast.success).toHaveBeenCalledWith('Category "Crypto" created successfully.');
 		});
-		*/
 	});
 
 	it('calls oncategory-created callback after successful creation', async () => {
-		// TODO: Implement this once the backend removes the icon support
-		/*
 		const user = userEvent.setup();
 		const mockCreateCategory = vi.mocked(createCategory);
 		const handleCategoryCreated = vi.fn();
@@ -228,10 +211,8 @@ describe('AdminControls Component', () => {
 		});
 
 		const nameInput = screen.getByLabelText(/category name/i);
-		const iconInput = screen.getByLabelText(/icon/i);
 
 		await user.type(nameInput, 'Pwn');
-		await user.type(iconInput, 'Zap');
 
 		const createButton = screen.getByRole('button', { name: /^create$/i });
 		await user.click(createButton);
@@ -239,12 +220,9 @@ describe('AdminControls Component', () => {
 		await waitFor(() => {
 			expect(handleCategoryCreated).toHaveBeenCalledTimes(1);
 		});
-		*/
 	});
 
 	it('closes popover after successful creation', async () => {
-		// TODO: Implement this once the backend removes the icon support
-		/*
 		const user = userEvent.setup();
 		const mockCreateCategory = vi.mocked(createCategory);
 		mockCreateCategory.mockResolvedValueOnce(undefined);
@@ -258,10 +236,8 @@ describe('AdminControls Component', () => {
 		});
 
 		const nameInput = screen.getByLabelText(/category name/i);
-		const iconInput = screen.getByLabelText(/icon/i);
 
 		await user.type(nameInput, 'Rev');
-		await user.type(iconInput, 'Code');
 
 		const createButton = screen.getByRole('button', { name: /^create$/i });
 		await user.click(createButton);
@@ -269,12 +245,9 @@ describe('AdminControls Component', () => {
 		await waitFor(() => {
 			expect(screen.queryByLabelText(/category name/i)).not.toBeInTheDocument();
 		});
-		*/
 	});
 
 	it('clears form after successful creation', async () => {
-		// TODO: Implement this once the backend removes the icon support
-		/*
 		const user = userEvent.setup();
 		const mockCreateCategory = vi.mocked(createCategory);
 		mockCreateCategory.mockResolvedValueOnce(undefined);
@@ -288,10 +261,8 @@ describe('AdminControls Component', () => {
 		});
 
 		let nameInput = screen.getByLabelText(/category name/i);
-		let iconInput = screen.getByLabelText(/icon/i);
 
 		await user.type(nameInput, 'OSINT');
-		await user.type(iconInput, 'Eye');
 
 		const createButton = screen.getByRole('button', { name: /^create$/i });
 		await user.click(createButton);
@@ -309,16 +280,11 @@ describe('AdminControls Component', () => {
 		});
 
 		nameInput = screen.getByLabelText(/category name/i);
-		iconInput = screen.getByLabelText(/icon/i);
 
 		expect(nameInput).toHaveValue('');
-		expect(iconInput).toHaveValue('');
-		*/
 	});
 
 	it('shows error toast when creation fails', async () => {
-		// TODO: Implement this once the backend removes the icon support
-		/*
 		const user = userEvent.setup();
 		const mockCreateCategory = vi.mocked(createCategory);
 		const mockToast = vi.mocked(toast);
@@ -333,10 +299,8 @@ describe('AdminControls Component', () => {
 		});
 
 		const nameInput = screen.getByLabelText(/category name/i);
-		const iconInput = screen.getByLabelText(/icon/i);
 
 		await user.type(nameInput, 'Web');
-		await user.type(iconInput, 'Globe');
 
 		const createButton = screen.getByRole('button', { name: /^create$/i });
 		await user.click(createButton);
@@ -344,12 +308,9 @@ describe('AdminControls Component', () => {
 		await waitFor(() => {
 			expect(mockToast.error).toHaveBeenCalledWith('API error');
 		});
-		*/
 	});
 
 	it('shows generic error message when error has no message', async () => {
-		// TODO: Implement this once the backend removes the icon support
-		/*
 		const user = userEvent.setup();
 		const mockCreateCategory = vi.mocked(createCategory);
 		const mockToast = vi.mocked(toast);
@@ -364,10 +325,8 @@ describe('AdminControls Component', () => {
 		});
 
 		const nameInput = screen.getByLabelText(/category name/i);
-		const iconInput = screen.getByLabelText(/icon/i);
 
 		await user.type(nameInput, 'Misc');
-		await user.type(iconInput, 'Star');
 
 		const createButton = screen.getByRole('button', { name: /^create$/i });
 		await user.click(createButton);
@@ -375,48 +334,14 @@ describe('AdminControls Component', () => {
 		await waitFor(() => {
 			expect(mockToast.error).toHaveBeenCalledWith('Failed to create category.');
 		});
-		*/
 	});
 
 	it('shows error toast when name is empty on submit', async () => {
-		// TODO: Implement this once the backend removes the icon support
-		/*
-		const user = userEvent.setup();
 		const mockToast = vi.mocked(toast);
 
 		render(AdminControls);
 
-		await user.click(screen.getByRole('button', { name: /new category/i }));
-
-		await waitFor(() => {
-			expect(screen.getByLabelText(/icon/i)).toBeInTheDocument();
-		});
-
-		const iconInput = screen.getByLabelText(/icon/i);
-		await user.type(iconInput, 'Lock');
-
-		// Manually trigger form submission (button should be disabled but test the logic)
-		const form = iconInput.closest('form');
-		if (form) {
-			form.dispatchEvent(new Event('submit', { cancelable: true }));
-		}
-
-		await waitFor(() => {
-			expect(mockToast.error).toHaveBeenCalledWith(
-				'Please enter a category name and an icon.'
-			);
-		});
-		*/
-	});
-
-	it('shows error toast when icon is empty on submit', async () => {
-		// TODO: Implement this once the backend removes the icon support
-		/*
 		const user = userEvent.setup();
-		const mockToast = vi.mocked(toast);
-
-		render(AdminControls);
-
 		await user.click(screen.getByRole('button', { name: /new category/i }));
 
 		await waitFor(() => {
@@ -424,25 +349,19 @@ describe('AdminControls Component', () => {
 		});
 
 		const nameInput = screen.getByLabelText(/category name/i);
-		await user.type(nameInput, 'Hardware');
 
-		// Manually trigger form submission
+		// Manually trigger form submission (button should be disabled but test the logic)
 		const form = nameInput.closest('form');
 		if (form) {
 			form.dispatchEvent(new Event('submit', { cancelable: true }));
 		}
 
 		await waitFor(() => {
-			expect(mockToast.error).toHaveBeenCalledWith(
-				'Please enter a category name and an icon.'
-			);
+			expect(mockToast.error).toHaveBeenCalledWith('Category name is required.');
 		});
-		*/
 	});
 
 	it('trims whitespace from category name', async () => {
-		// TODO: Implement this once the backend removes the icon support
-		/*
 		const user = userEvent.setup();
 		const mockCreateCategory = vi.mocked(createCategory);
 		mockCreateCategory.mockResolvedValueOnce(undefined);
@@ -456,23 +375,18 @@ describe('AdminControls Component', () => {
 		});
 
 		const nameInput = screen.getByLabelText(/category name/i);
-		const iconInput = screen.getByLabelText(/icon/i);
 
 		await user.type(nameInput, '  Web  ');
-		await user.type(iconInput, '  Globe  ');
 
 		const createButton = screen.getByRole('button', { name: /^create$/i });
 		await user.click(createButton);
 
 		await waitFor(() => {
-			expect(mockCreateCategory).toHaveBeenCalledWith('Web', 'Globe');
+			expect(mockCreateCategory).toHaveBeenCalledWith('Web');
 		});
-		*/
 	});
 
 	it('shows loading state during category creation', async () => {
-		// TODO: Implement this once the backend removes the icon support
-		/*
 		const user = userEvent.setup();
 		const mockCreateCategory = vi.mocked(createCategory);
 		
@@ -492,10 +406,8 @@ describe('AdminControls Component', () => {
 		});
 
 		const nameInput = screen.getByLabelText(/category name/i);
-		const iconInput = screen.getByLabelText(/icon/i);
 
 		await user.type(nameInput, 'Test');
-		await user.type(iconInput, 'TestTube');
 
 		const createButton = screen.getByRole('button', { name: /^create$/i });
 		await user.click(createButton);
@@ -507,6 +419,5 @@ describe('AdminControls Component', () => {
 
 		// Resolve the promise
 		resolveCreate!();
-		*/
 	});
 });

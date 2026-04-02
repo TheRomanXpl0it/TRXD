@@ -26,6 +26,10 @@ if (typeof global !== 'undefined') {
 	};
 }
 
+if (typeof window !== 'undefined' && !HTMLElement.prototype.scrollIntoView) {
+	HTMLElement.prototype.scrollIntoView = vi.fn();
+}
+
 // Ensure each test starts with a clean DOM
 afterEach(async () => {
 	cleanup();

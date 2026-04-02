@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
-	import { logout } from '@/auth';
+	import { logout } from '$lib/auth';
 	import { clearUser } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';

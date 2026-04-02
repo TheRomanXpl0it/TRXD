@@ -17,3 +17,17 @@ export async function stopInstance(chall_id: string): Promise<void> {
 		body: JSON.stringify({ chall_id })
 	});
 }
+
+export async function getInstances(): Promise<any[]> {
+	return api<any[]>('/instances', {
+		method: 'GET'
+	});
+}
+
+export async function adminStopInstance(teamId: number, challId: number): Promise<void> {
+	return api<void>('/instances', {
+		headers: { 'content-type': 'application/json' },
+		method: 'DELETE',
+		body: JSON.stringify({ team_id: teamId, chall_id: challId })
+	});
+}

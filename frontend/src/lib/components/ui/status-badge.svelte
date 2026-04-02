@@ -1,10 +1,11 @@
 <script lang="ts">
+	import { type Snippet } from 'svelte';
 	let {
 		children,
 		variant = 'default',
 		class: className = ''
 	} = $props<{
-		children: any;
+		children: Snippet;
 		variant?: 'default' | 'category' | 'type';
 		class?: string;
 	}>();
