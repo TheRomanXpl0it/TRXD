@@ -77,6 +77,16 @@ func TestRoute(t *testing.T) {
 				"points":      498,
 			},
 		},
+		"total_category_challenges": []JSON{
+			{
+				"category": "cat-1",
+				"count":    3,
+			},
+			{
+				"category": "cat-2",
+				"count":    2,
+			},
+		},
 	}
 
 	session := test_utils.NewApiTestSession(t, app)
@@ -151,6 +161,16 @@ func TestRoute(t *testing.T) {
 				"points":      498,
 			},
 		},
+		"total_category_challenges": []JSON{
+			{
+				"category": "cat-1",
+				"count":    3,
+			},
+			{
+				"category": "cat-2",
+				"count":    2,
+			},
+		},
 	}
 
 	test_utils.RegisterUser(t, "admin", "admin@admin.com", "adminpass", sqlc.UserRoleAdmin)
@@ -177,6 +197,16 @@ func TestRoute(t *testing.T) {
 		"role":    "Player",
 		"score":   0,
 		"solves":  []any{},
+		"total_category_challenges": []JSON{
+			{
+				"category": "cat-1",
+				"count":    3,
+			},
+			{
+				"category": "cat-2",
+				"count":    2,
+			},
+		},
 		"user_id": userID,
 	}
 	session.Get(fmt.Sprintf("/teams/%d", teamID), nil, http.StatusOK)
@@ -213,6 +243,16 @@ func TestRoute(t *testing.T) {
 				"points":      498,
 			},
 		},
+		"total_category_challenges": []JSON{
+			{
+				"category": "cat-1",
+				"count":    3,
+			},
+			{
+				"category": "cat-2",
+				"count":    2,
+			},
+		},
 	}
 	session.Get(fmt.Sprintf("/teams/%d", A.ID), nil, http.StatusOK)
 	session.CheckFilteredResponse(expected, "id", "timestamp", "user_id")
@@ -233,6 +273,16 @@ func TestRoute(t *testing.T) {
 		"role":    "Player",
 		"score":   0,
 		"solves":  []any{},
+		"total_category_challenges": []JSON{
+			{
+				"category": "cat-1",
+				"count":    3,
+			},
+			{
+				"category": "cat-2",
+				"count":    2,
+			},
+		},
 		"user_id": userID,
 	}
 	session.Get(fmt.Sprintf("/teams/%d", teamID), nil, http.StatusOK)

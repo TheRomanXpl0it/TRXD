@@ -804,7 +804,14 @@ func (q *Queries) GetTeamMembers(ctx context.Context, teamID sql.NullInt32) ([]G
 }
 
 const getTeamSolves = `-- name: GetTeamSolves :many
-SELECT c.id, c.name, c.category, c.points, s.first_blood, s.timestamp, s.user_id
+SELECT
+    c.id,
+    c.name,
+    c.category,
+    c.points,
+    s.first_blood,
+    s.timestamp,
+    s.user_id
   FROM submissions s
   JOIN users u ON u.id = s.user_id
   JOIN teams t ON u.team_id = t.id
@@ -1057,6 +1064,42 @@ func (q *Queries) GetTeamsScoreboardGraph(ctx context.Context) ([]GetTeamsScoreb
 			&i.FirstBlood,
 			&i.Timestamp,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTotalCategoryChallenges = `-- name: GetTotalCategoryChallenges :many
+SELECT category, COUNT(*)
+  FROM challenges
+  GROUP BY category
+  ORDER BY category ASC
+`
+
+type GetTotalCategoryChallengesRow struct {
+	Category string `json:"category"`
+	Count    int64  `json:"count"`
+}
+
+// Retrieve the total number of challenges for each category
+func (q *Queries) GetTotalCategoryChallenges(ctx context.Context) ([]GetTotalCategoryChallengesRow, error) {
+	rows, err := q.query(ctx, q.getTotalCategoryChallengesStmt, getTotalCategoryChallenges)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTotalCategoryChallengesRow
+	for rows.Next() {
+		var i GetTotalCategoryChallengesRow
+		if err := rows.Scan(&i.Category, &i.Count); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

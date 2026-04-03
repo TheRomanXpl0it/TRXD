@@ -4,7 +4,14 @@ SELECT id, name, role, score FROM users WHERE team_id = $1 ORDER BY id;
 
 -- name: GetTeamSolves :many
 -- Retrieve all challenges solved by a team's members
-SELECT c.id, c.name, c.category, c.points, s.first_blood, s.timestamp, s.user_id
+SELECT
+    c.id,
+    c.name,
+    c.category,
+    c.points,
+    s.first_blood,
+    s.timestamp,
+    s.user_id
   FROM submissions s
   JOIN users u ON u.id = s.user_id
   JOIN teams t ON u.team_id = t.id
@@ -13,6 +20,13 @@ SELECT c.id, c.name, c.category, c.points, s.first_blood, s.timestamp, s.user_id
     AND t.id = $1
     AND s.status = 'Correct'
   ORDER BY s.timestamp DESC;
+
+-- name: GetTotalCategoryChallenges :many
+-- Retrieve the total number of challenges for each category
+SELECT category, COUNT(*)
+  FROM challenges
+  GROUP BY category
+  ORDER BY category ASC;
 
 -- name: GetBadgesFromTeam :many
 -- Retrieve all badges associated with a team

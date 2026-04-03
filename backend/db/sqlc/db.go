@@ -144,6 +144,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getTeamsScoreboardGraphStmt, err = db.PrepareContext(ctx, getTeamsScoreboardGraph); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTeamsScoreboardGraph: %w", err)
 	}
+	if q.getTotalCategoryChallengesStmt, err = db.PrepareContext(ctx, getTotalCategoryChallenges); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTotalCategoryChallenges: %w", err)
+	}
 	if q.getTotalSubmissionsStmt, err = db.PrepareContext(ctx, getTotalSubmissions); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTotalSubmissions: %w", err)
 	}
@@ -421,6 +424,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getTeamsScoreboardGraphStmt: %w", cerr)
 		}
 	}
+	if q.getTotalCategoryChallengesStmt != nil {
+		if cerr := q.getTotalCategoryChallengesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTotalCategoryChallengesStmt: %w", cerr)
+		}
+	}
 	if q.getTotalSubmissionsStmt != nil {
 		if cerr := q.getTotalSubmissionsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getTotalSubmissionsStmt: %w", cerr)
@@ -578,141 +586,143 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db                           DBTX
-	tx                           *sql.Tx
-	addTeamMemberStmt            *sql.Stmt
-	changeUserRoleStmt           *sql.Stmt
-	checkFlagsStmt               *sql.Stmt
-	createAttachmentStmt         *sql.Stmt
-	createCategoryStmt           *sql.Stmt
-	createChallengeStmt          *sql.Stmt
-	createConfigStmt             *sql.Stmt
-	createFlagStmt               *sql.Stmt
-	createInstanceStmt           *sql.Stmt
-	deleteAttachmentStmt         *sql.Stmt
-	deleteCategoryStmt           *sql.Stmt
-	deleteChallengeStmt          *sql.Stmt
-	deleteFlagStmt               *sql.Stmt
-	deleteInstanceStmt           *sql.Stmt
-	deleteSubmissionStmt         *sql.Stmt
-	getAllChallengesInfoStmt     *sql.Stmt
-	getAttachmentHashStmt        *sql.Stmt
-	getBadgesFromTeamStmt        *sql.Stmt
-	getCategoriesStmt            *sql.Stmt
-	getCategoryStmt              *sql.Stmt
-	getChallDockerConfigStmt     *sql.Stmt
-	getChallengeByIDStmt         *sql.Stmt
-	getChallengeSolvesStmt       *sql.Stmt
-	getConfigStmt                *sql.Stmt
-	getConfigsStmt               *sql.Stmt
-	getDockerConfigsByIDStmt     *sql.Stmt
-	getFlagsByChallengeStmt      *sql.Stmt
-	getHiddenAndAttachmentsStmt  *sql.Stmt
-	getInstanceStmt              *sql.Stmt
-	getInstancesStmt             *sql.Stmt
-	getNextInstanceToDeleteStmt  *sql.Stmt
-	getSubmissionsStmt           *sql.Stmt
-	getTeamByIDStmt              *sql.Stmt
-	getTeamByNameStmt            *sql.Stmt
-	getTeamFromUserStmt          *sql.Stmt
-	getTeamMembersStmt           *sql.Stmt
-	getTeamSolvesStmt            *sql.Stmt
-	getTeamsPreviewStmt          *sql.Stmt
-	getTeamsScoreboardStmt       *sql.Stmt
-	getTeamsScoreboardGraphStmt  *sql.Stmt
-	getTotalSubmissionsStmt      *sql.Stmt
-	getTotalTeamsStmt            *sql.Stmt
-	getTotalUsersStmt            *sql.Stmt
-	getUserByEmailStmt           *sql.Stmt
-	getUserByIDStmt              *sql.Stmt
-	getUserByNameStmt            *sql.Stmt
-	getUserByTeamIDStmt          *sql.Stmt
-	getUserSolvesStmt            *sql.Stmt
-	getUsersStmt                 *sql.Stmt
-	registerTeamStmt             *sql.Stmt
-	registerUserStmt             *sql.Stmt
-	resetTeamPasswordStmt        *sql.Stmt
-	resetUserPasswordStmt        *sql.Stmt
-	submitStmt                   *sql.Stmt
-	updateChallengeStmt          *sql.Stmt
-	updateChallengesCategoryStmt *sql.Stmt
-	updateConfigStmt             *sql.Stmt
-	updateDockerConfigsStmt      *sql.Stmt
-	updateFlagStmt               *sql.Stmt
-	updateInstanceDockerIDStmt   *sql.Stmt
-	updateInstanceExpireStmt     *sql.Stmt
-	updateTeamStmt               *sql.Stmt
-	updateUserStmt               *sql.Stmt
-	userExistsByEmailStmt        *sql.Stmt
+	db                             DBTX
+	tx                             *sql.Tx
+	addTeamMemberStmt              *sql.Stmt
+	changeUserRoleStmt             *sql.Stmt
+	checkFlagsStmt                 *sql.Stmt
+	createAttachmentStmt           *sql.Stmt
+	createCategoryStmt             *sql.Stmt
+	createChallengeStmt            *sql.Stmt
+	createConfigStmt               *sql.Stmt
+	createFlagStmt                 *sql.Stmt
+	createInstanceStmt             *sql.Stmt
+	deleteAttachmentStmt           *sql.Stmt
+	deleteCategoryStmt             *sql.Stmt
+	deleteChallengeStmt            *sql.Stmt
+	deleteFlagStmt                 *sql.Stmt
+	deleteInstanceStmt             *sql.Stmt
+	deleteSubmissionStmt           *sql.Stmt
+	getAllChallengesInfoStmt       *sql.Stmt
+	getAttachmentHashStmt          *sql.Stmt
+	getBadgesFromTeamStmt          *sql.Stmt
+	getCategoriesStmt              *sql.Stmt
+	getCategoryStmt                *sql.Stmt
+	getChallDockerConfigStmt       *sql.Stmt
+	getChallengeByIDStmt           *sql.Stmt
+	getChallengeSolvesStmt         *sql.Stmt
+	getConfigStmt                  *sql.Stmt
+	getConfigsStmt                 *sql.Stmt
+	getDockerConfigsByIDStmt       *sql.Stmt
+	getFlagsByChallengeStmt        *sql.Stmt
+	getHiddenAndAttachmentsStmt    *sql.Stmt
+	getInstanceStmt                *sql.Stmt
+	getInstancesStmt               *sql.Stmt
+	getNextInstanceToDeleteStmt    *sql.Stmt
+	getSubmissionsStmt             *sql.Stmt
+	getTeamByIDStmt                *sql.Stmt
+	getTeamByNameStmt              *sql.Stmt
+	getTeamFromUserStmt            *sql.Stmt
+	getTeamMembersStmt             *sql.Stmt
+	getTeamSolvesStmt              *sql.Stmt
+	getTeamsPreviewStmt            *sql.Stmt
+	getTeamsScoreboardStmt         *sql.Stmt
+	getTeamsScoreboardGraphStmt    *sql.Stmt
+	getTotalCategoryChallengesStmt *sql.Stmt
+	getTotalSubmissionsStmt        *sql.Stmt
+	getTotalTeamsStmt              *sql.Stmt
+	getTotalUsersStmt              *sql.Stmt
+	getUserByEmailStmt             *sql.Stmt
+	getUserByIDStmt                *sql.Stmt
+	getUserByNameStmt              *sql.Stmt
+	getUserByTeamIDStmt            *sql.Stmt
+	getUserSolvesStmt              *sql.Stmt
+	getUsersStmt                   *sql.Stmt
+	registerTeamStmt               *sql.Stmt
+	registerUserStmt               *sql.Stmt
+	resetTeamPasswordStmt          *sql.Stmt
+	resetUserPasswordStmt          *sql.Stmt
+	submitStmt                     *sql.Stmt
+	updateChallengeStmt            *sql.Stmt
+	updateChallengesCategoryStmt   *sql.Stmt
+	updateConfigStmt               *sql.Stmt
+	updateDockerConfigsStmt        *sql.Stmt
+	updateFlagStmt                 *sql.Stmt
+	updateInstanceDockerIDStmt     *sql.Stmt
+	updateInstanceExpireStmt       *sql.Stmt
+	updateTeamStmt                 *sql.Stmt
+	updateUserStmt                 *sql.Stmt
+	userExistsByEmailStmt          *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:                           tx,
-		tx:                           tx,
-		addTeamMemberStmt:            q.addTeamMemberStmt,
-		changeUserRoleStmt:           q.changeUserRoleStmt,
-		checkFlagsStmt:               q.checkFlagsStmt,
-		createAttachmentStmt:         q.createAttachmentStmt,
-		createCategoryStmt:           q.createCategoryStmt,
-		createChallengeStmt:          q.createChallengeStmt,
-		createConfigStmt:             q.createConfigStmt,
-		createFlagStmt:               q.createFlagStmt,
-		createInstanceStmt:           q.createInstanceStmt,
-		deleteAttachmentStmt:         q.deleteAttachmentStmt,
-		deleteCategoryStmt:           q.deleteCategoryStmt,
-		deleteChallengeStmt:          q.deleteChallengeStmt,
-		deleteFlagStmt:               q.deleteFlagStmt,
-		deleteInstanceStmt:           q.deleteInstanceStmt,
-		deleteSubmissionStmt:         q.deleteSubmissionStmt,
-		getAllChallengesInfoStmt:     q.getAllChallengesInfoStmt,
-		getAttachmentHashStmt:        q.getAttachmentHashStmt,
-		getBadgesFromTeamStmt:        q.getBadgesFromTeamStmt,
-		getCategoriesStmt:            q.getCategoriesStmt,
-		getCategoryStmt:              q.getCategoryStmt,
-		getChallDockerConfigStmt:     q.getChallDockerConfigStmt,
-		getChallengeByIDStmt:         q.getChallengeByIDStmt,
-		getChallengeSolvesStmt:       q.getChallengeSolvesStmt,
-		getConfigStmt:                q.getConfigStmt,
-		getConfigsStmt:               q.getConfigsStmt,
-		getDockerConfigsByIDStmt:     q.getDockerConfigsByIDStmt,
-		getFlagsByChallengeStmt:      q.getFlagsByChallengeStmt,
-		getHiddenAndAttachmentsStmt:  q.getHiddenAndAttachmentsStmt,
-		getInstanceStmt:              q.getInstanceStmt,
-		getInstancesStmt:             q.getInstancesStmt,
-		getNextInstanceToDeleteStmt:  q.getNextInstanceToDeleteStmt,
-		getSubmissionsStmt:           q.getSubmissionsStmt,
-		getTeamByIDStmt:              q.getTeamByIDStmt,
-		getTeamByNameStmt:            q.getTeamByNameStmt,
-		getTeamFromUserStmt:          q.getTeamFromUserStmt,
-		getTeamMembersStmt:           q.getTeamMembersStmt,
-		getTeamSolvesStmt:            q.getTeamSolvesStmt,
-		getTeamsPreviewStmt:          q.getTeamsPreviewStmt,
-		getTeamsScoreboardStmt:       q.getTeamsScoreboardStmt,
-		getTeamsScoreboardGraphStmt:  q.getTeamsScoreboardGraphStmt,
-		getTotalSubmissionsStmt:      q.getTotalSubmissionsStmt,
-		getTotalTeamsStmt:            q.getTotalTeamsStmt,
-		getTotalUsersStmt:            q.getTotalUsersStmt,
-		getUserByEmailStmt:           q.getUserByEmailStmt,
-		getUserByIDStmt:              q.getUserByIDStmt,
-		getUserByNameStmt:            q.getUserByNameStmt,
-		getUserByTeamIDStmt:          q.getUserByTeamIDStmt,
-		getUserSolvesStmt:            q.getUserSolvesStmt,
-		getUsersStmt:                 q.getUsersStmt,
-		registerTeamStmt:             q.registerTeamStmt,
-		registerUserStmt:             q.registerUserStmt,
-		resetTeamPasswordStmt:        q.resetTeamPasswordStmt,
-		resetUserPasswordStmt:        q.resetUserPasswordStmt,
-		submitStmt:                   q.submitStmt,
-		updateChallengeStmt:          q.updateChallengeStmt,
-		updateChallengesCategoryStmt: q.updateChallengesCategoryStmt,
-		updateConfigStmt:             q.updateConfigStmt,
-		updateDockerConfigsStmt:      q.updateDockerConfigsStmt,
-		updateFlagStmt:               q.updateFlagStmt,
-		updateInstanceDockerIDStmt:   q.updateInstanceDockerIDStmt,
-		updateInstanceExpireStmt:     q.updateInstanceExpireStmt,
-		updateTeamStmt:               q.updateTeamStmt,
-		updateUserStmt:               q.updateUserStmt,
-		userExistsByEmailStmt:        q.userExistsByEmailStmt,
+		db:                             tx,
+		tx:                             tx,
+		addTeamMemberStmt:              q.addTeamMemberStmt,
+		changeUserRoleStmt:             q.changeUserRoleStmt,
+		checkFlagsStmt:                 q.checkFlagsStmt,
+		createAttachmentStmt:           q.createAttachmentStmt,
+		createCategoryStmt:             q.createCategoryStmt,
+		createChallengeStmt:            q.createChallengeStmt,
+		createConfigStmt:               q.createConfigStmt,
+		createFlagStmt:                 q.createFlagStmt,
+		createInstanceStmt:             q.createInstanceStmt,
+		deleteAttachmentStmt:           q.deleteAttachmentStmt,
+		deleteCategoryStmt:             q.deleteCategoryStmt,
+		deleteChallengeStmt:            q.deleteChallengeStmt,
+		deleteFlagStmt:                 q.deleteFlagStmt,
+		deleteInstanceStmt:             q.deleteInstanceStmt,
+		deleteSubmissionStmt:           q.deleteSubmissionStmt,
+		getAllChallengesInfoStmt:       q.getAllChallengesInfoStmt,
+		getAttachmentHashStmt:          q.getAttachmentHashStmt,
+		getBadgesFromTeamStmt:          q.getBadgesFromTeamStmt,
+		getCategoriesStmt:              q.getCategoriesStmt,
+		getCategoryStmt:                q.getCategoryStmt,
+		getChallDockerConfigStmt:       q.getChallDockerConfigStmt,
+		getChallengeByIDStmt:           q.getChallengeByIDStmt,
+		getChallengeSolvesStmt:         q.getChallengeSolvesStmt,
+		getConfigStmt:                  q.getConfigStmt,
+		getConfigsStmt:                 q.getConfigsStmt,
+		getDockerConfigsByIDStmt:       q.getDockerConfigsByIDStmt,
+		getFlagsByChallengeStmt:        q.getFlagsByChallengeStmt,
+		getHiddenAndAttachmentsStmt:    q.getHiddenAndAttachmentsStmt,
+		getInstanceStmt:                q.getInstanceStmt,
+		getInstancesStmt:               q.getInstancesStmt,
+		getNextInstanceToDeleteStmt:    q.getNextInstanceToDeleteStmt,
+		getSubmissionsStmt:             q.getSubmissionsStmt,
+		getTeamByIDStmt:                q.getTeamByIDStmt,
+		getTeamByNameStmt:              q.getTeamByNameStmt,
+		getTeamFromUserStmt:            q.getTeamFromUserStmt,
+		getTeamMembersStmt:             q.getTeamMembersStmt,
+		getTeamSolvesStmt:              q.getTeamSolvesStmt,
+		getTeamsPreviewStmt:            q.getTeamsPreviewStmt,
+		getTeamsScoreboardStmt:         q.getTeamsScoreboardStmt,
+		getTeamsScoreboardGraphStmt:    q.getTeamsScoreboardGraphStmt,
+		getTotalCategoryChallengesStmt: q.getTotalCategoryChallengesStmt,
+		getTotalSubmissionsStmt:        q.getTotalSubmissionsStmt,
+		getTotalTeamsStmt:              q.getTotalTeamsStmt,
+		getTotalUsersStmt:              q.getTotalUsersStmt,
+		getUserByEmailStmt:             q.getUserByEmailStmt,
+		getUserByIDStmt:                q.getUserByIDStmt,
+		getUserByNameStmt:              q.getUserByNameStmt,
+		getUserByTeamIDStmt:            q.getUserByTeamIDStmt,
+		getUserSolvesStmt:              q.getUserSolvesStmt,
+		getUsersStmt:                   q.getUsersStmt,
+		registerTeamStmt:               q.registerTeamStmt,
+		registerUserStmt:               q.registerUserStmt,
+		resetTeamPasswordStmt:          q.resetTeamPasswordStmt,
+		resetUserPasswordStmt:          q.resetUserPasswordStmt,
+		submitStmt:                     q.submitStmt,
+		updateChallengeStmt:            q.updateChallengeStmt,
+		updateChallengesCategoryStmt:   q.updateChallengesCategoryStmt,
+		updateConfigStmt:               q.updateConfigStmt,
+		updateDockerConfigsStmt:        q.updateDockerConfigsStmt,
+		updateFlagStmt:                 q.updateFlagStmt,
+		updateInstanceDockerIDStmt:     q.updateInstanceDockerIDStmt,
+		updateInstanceExpireStmt:       q.updateInstanceExpireStmt,
+		updateTeamStmt:                 q.updateTeamStmt,
+		updateUserStmt:                 q.updateUserStmt,
+		userExistsByEmailStmt:          q.userExistsByEmailStmt,
 	}
 }
