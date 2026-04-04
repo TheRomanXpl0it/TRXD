@@ -30,5 +30,6 @@ GROUP BY c.hidden;
 -- Retrieve the total number of challenges for each category
 SELECT category, COUNT(*)
 FROM challenges
+WHERE hidden = FALSE
 GROUP BY category
 ORDER BY category ASC;

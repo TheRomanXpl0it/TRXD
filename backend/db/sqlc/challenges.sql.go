@@ -105,6 +105,7 @@ func (q *Queries) GetHiddenAndAttachments(ctx context.Context, id int32) (GetHid
 const getTotalCategoryChallenges = `-- name: GetTotalCategoryChallenges :many
 SELECT category, COUNT(*)
 FROM challenges
+WHERE hidden = FALSE
 GROUP BY category
 ORDER BY category ASC
 `

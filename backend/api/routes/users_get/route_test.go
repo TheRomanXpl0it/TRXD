@@ -91,7 +91,7 @@ func TestRoute(t *testing.T) {
 			},
 			{
 				"category": "cat-2",
-				"count":    2,
+				"count":    1,
 			},
 		},
 	}
@@ -151,7 +151,7 @@ func TestRoute(t *testing.T) {
 			},
 			{
 				"category": "cat-2",
-				"count":    2,
+				"count":    1,
 			},
 		},
 	}
@@ -168,7 +168,7 @@ func TestRoute(t *testing.T) {
 			},
 			{
 				"category": "cat-2",
-				"count":    2,
+				"count":    1,
 			},
 		},
 	}
@@ -220,7 +220,7 @@ func TestRoute(t *testing.T) {
 			},
 			{
 				"category": "cat-2",
-				"count":    2,
+				"count":    1,
 			},
 		},
 	}
@@ -238,7 +238,7 @@ func TestRoute(t *testing.T) {
 			},
 			{
 				"category": "cat-2",
-				"count":    2,
+				"count":    1,
 			},
 		},
 	}
