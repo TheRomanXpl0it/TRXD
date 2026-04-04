@@ -1,6 +1,3 @@
-// Uses __mocks__/apexcharts.ts stub automatically (no factory = safe hoist)
-vi.mock('apexcharts');
-
 import { render, screen } from '@testing-library/svelte';
 import RadarChart from '$lib/components/RadarChart.svelte';
 
