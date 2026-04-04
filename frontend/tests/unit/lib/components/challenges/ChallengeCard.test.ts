@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import ChallengeCard from '../ChallengeCard.svelte';
+import ChallengeCard from '$lib/components/challenges/ChallengeCard.svelte';
 
 function generateRandomChallenge(overrides = {}) {
 	return {

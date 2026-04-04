@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/svelte';
 import { describe, it, expect } from 'vitest';
-import NotFound from '../NotFound.svelte';
+import NotFound from '$lib/components/NotFound.svelte';
 
 describe('NotFound Component', () => {
 	it('renders 404 error message', () => {

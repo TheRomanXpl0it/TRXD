@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import { describe, it, expect } from 'vitest';
-import AccountScoreboard from '../AccountScoreboard.svelte';
+import AccountScoreboard from '$lib/components/account/AccountScoreboard.svelte';
 
 const solves = [
 	{ id: 1, name: 'X', category: 'Web', points: 50, timestamp: '2024-01-02T00:00:00Z' },

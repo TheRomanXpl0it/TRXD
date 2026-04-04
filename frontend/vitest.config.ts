@@ -8,7 +8,7 @@ export default defineConfig({
 		environment: 'jsdom',
 		globals: true,
 		setupFiles: ['./src/test/setup.ts'],
-		include: ['src/**/*.{test,spec}.{js,ts}'],
+		include: ['src/**/*.{test,spec}.{js,ts}', 'tests/**/*.{test,spec}.{js,ts}'],
 		server: {
 			deps: {
 				inline: ['@lucide/svelte', 'bits-ui', 'svelte-sonner', 'clsx', 'tailwind-merge', 'layerchart', 'd3-scale']
@@ -19,8 +19,10 @@ export default defineConfig({
 		alias: {
 			$lib: resolve('./src/lib'),
 			'@': resolve('./src/lib'),
+			$routes: resolve('./src/routes'),
 			'$app/navigation': resolve('./src/test/mocks/app-navigation.ts'),
-			'$app/stores': resolve('./src/test/mocks/app-stores.ts')
+			'$app/stores': resolve('./src/test/mocks/app-stores.ts'),
+			'$app/environment': resolve('./src/test/mocks/app-environment.ts')
 		},
 		conditions: ['browser']
 	}

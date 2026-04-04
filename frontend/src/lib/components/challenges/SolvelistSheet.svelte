@@ -110,9 +110,9 @@
 							<Table.Cell
 								class="whitespace-nowrap py-2 text-right text-xs text-gray-600 sm:text-sm dark:text-gray-400"
 							>
-								<span class="hidden sm:inline">{new Date(t(s)).toLocaleString()}</span>
+								<span class="hidden sm:inline">{new Date(t(s)).toLocaleString('en-GB')}</span>
 								<span class="sm:hidden"
-									>{new Date(t(s)).toLocaleString(undefined, {
+									>{new Date(t(s)).toLocaleString('en-GB', {
 										month: 'short',
 										day: 'numeric',
 										hour: '2-digit',

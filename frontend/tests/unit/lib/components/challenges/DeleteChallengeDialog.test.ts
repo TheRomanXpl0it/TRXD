@@ -1,7 +1,7 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import DeleteChallengeDialog from '../DeleteChallengeDialog.svelte';
+import DeleteChallengeDialog from '$lib/components/challenges/DeleteChallengeDialog.svelte';
 
 describe('DeleteChallengeDialog Component', () => {
 	beforeEach(() => {

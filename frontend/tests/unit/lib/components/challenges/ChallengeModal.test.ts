@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import ChallengeModal from '../ChallengeModal.svelte';
+import ChallengeModal from '$lib/components/challenges/ChallengeModal.svelte';
 import { toast } from 'svelte-sonner';
 
 // Mock toast

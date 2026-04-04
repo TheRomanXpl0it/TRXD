@@ -6,11 +6,13 @@
 		challenge,
 		compactView = false,
 		countdown = 0,
+		isAdmin = false,
 		onclick
 	}: {
 		challenge: any;
 		compactView?: boolean;
 		countdown?: number;
+		isAdmin?: boolean;
 		onclick: () => void;
 	} = $props();
 </script>
@@ -37,7 +39,7 @@
 		<div class="min-w-0 flex-1">
 			<div class="flex items-center gap-2">
 				<span class="truncate font-semibold">{challenge.name}</span>
-				{#if challenge.instance}
+				{#if isAdmin && challenge.instance}
 					<Container class="h-4 w-4 shrink-0 opacity-50" aria-label="Instance-based challenge" />
 				{/if}
 			</div>

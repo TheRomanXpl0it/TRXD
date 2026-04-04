@@ -29,6 +29,7 @@ export interface User {
 	solves?: any[]; // Populated by GetUser / GetTeam
 	badges?: Badge[];
 	score?: number;
+	total_category_challenges?: { category: string; count: number }[];
 }
 
 export interface Team {
@@ -42,6 +43,7 @@ export interface Team {
 	solves?: any[]; // Populated by GetTeam
 	badges?: Badge[];
 	score?: number;
+	total_category_challenges?: { category: string; count: number }[];
 }
 
 export interface Category {
@@ -70,15 +72,17 @@ export interface Challenge {
 	difficulty?: string;
 	colors?: string[];
 
-	// Connection info
+	// Host and connection info
 	host?: string;
 	port?: number;
+	conn_type?: 'NONE' | 'TCP' | 'TCP_TLS' | 'HTTP' | 'HTTPS';
 	connection_info?: string;
 
 	// Instance info
 	instance: boolean;
 	instance_host?: string | null;
 	instance_port?: number | null;
+	hash_domain?: boolean;
 	timeout?: number | null;
 
 	// Solve state

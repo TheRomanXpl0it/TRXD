@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import TeamMemberlist from '../TeamMemberlist.svelte';
+import TeamMemberlist from '$lib/components/team/TeamMemberlist.svelte';
 
 const mockGetUserData = vi.fn();
 vi.mock('$lib/user', () => ({

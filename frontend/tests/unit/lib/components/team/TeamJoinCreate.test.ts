@@ -2,7 +2,7 @@ import { render, screen, waitFor, within, fireEvent } from '@testing-library/sve
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { toast } from 'svelte-sonner';
-import TeamJoinCreate from '../TeamJoinCreate.svelte';
+import TeamJoinCreate from '$lib/components/team/TeamJoinCreate.svelte';
 import { joinTeam, createTeam } from '@/team';
 import { tick } from 'svelte';
 

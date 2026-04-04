@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
-import CountrySelect from '../country-select.svelte';
+import CountrySelect from '$lib/components/ui/country-select.svelte';
 import * as countriesUtil from '$lib/utils/countries';
 
 // Mock getCountryItems to have a small controlled set

@@ -60,10 +60,9 @@
 		return null;
 	}
 
-	$effect(() => {
-		if (authState.ready && authState.userMode) {
-			goto('/accounts');
-		}
+	const notStarted = $derived.by(() => {
+		if (!authState.ready || !authState.startTime) return false;
+		return new Date(authState.startTime).getTime() > Date.now();
 	});
 </script>
 
@@ -233,82 +232,81 @@
 		</div>
 
 		{#if activeTab === 'overview'}
-			<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-				<!-- Row 1: Left: Category List (4 cols), Right: Stats (3 cols) -->
+			<div class="grid gap-4 lg:grid-cols-7">
+				<!-- Radar Chart (Left, 3 cols, or full if not started) -->
+				<Card.Root class="bg-card flex flex-col items-center justify-center border-0 shadow-sm {notStarted ? 'lg:col-span-7' : 'lg:col-span-3'}">
+					<Card.Content class="w-full pt-6">
+						<RadarChart 
+							solves={team.solves} 
+							totalChallenges={team.total_category_challenges} 
+						/>
+					</Card.Content>
+				</Card.Root>
 
-				<!-- Category Breakdown (List) -->
-				<Card.Root class="bg-card border-0 shadow-sm lg:col-span-4">
-					<Card.Header class="pb-2">
-						<Card.Title class="text-muted-foreground text-sm font-medium uppercase tracking-wider"
-							>Category Breakdown</Card.Title
-						>
-					</Card.Header>
-					<Card.Content>
-						{#if team?.solves && team.solves.length > 0}
-							{@const categories = (() => {
-								const map = new Map();
-								for (const s of team.solves) map.set(s.category, (map.get(s.category) ?? 0) + 1);
-								const total = [...map.values()].reduce((a, b) => a + b, 0) || 1;
-								return [...map.entries()]
-									.sort((a, b) => b[1] - a[1])
-									.map(([cat, count]) => ({ cat, count, pct: Math.round((count / total) * 100) }));
-							})()}
-							<div class="grid gap-4 sm:grid-cols-2">
-								{#each categories as c}
-									<div class="space-y-1">
-										<div class="flex justify-between text-xs font-medium">
-											<span>{c.cat}</span>
-											<span class="text-muted-foreground">{c.count} ({c.pct}%)</span>
-										</div>
-										<div class="bg-muted h-1.5 w-full overflow-hidden rounded-full">
-											<div class="bg-primary h-full" style="width: {c.pct}%"></div>
-										</div>
+				{#if !notStarted}
+					<!-- Stats Section (Right, 4 cols) -->
+					<div class="flex flex-col gap-4 lg:col-span-4">
+						<!-- Category Breakdown -->
+						<Card.Root class="bg-card flex-1 border-0 shadow-sm">
+							<Card.Header class="pb-2">
+								<Card.Title class="text-muted-foreground text-sm font-medium uppercase tracking-wider"
+									>Category Breakdown</Card.Title
+								>
+							</Card.Header>
+							<Card.Content>
+								{#if team?.solves && team.solves.length > 0}
+									{@const categories = (() => {
+										const map = new Map();
+										for (const s of team.solves) map.set(s.category, (map.get(s.category) ?? 0) + 1);
+										const total = [...map.values()].reduce((a, b) => a + b, 0) || 1;
+										return [...map.entries()]
+											.sort((a, b) => b[1] - a[1])
+											.map(([cat, count]) => ({ cat, count, pct: Math.round((count / total) * 100) }));
+									})()}
+									<div class="grid gap-4 sm:grid-cols-2">
+										{#each categories as c}
+											<div class="space-y-1">
+												<div class="flex justify-between text-xs font-medium">
+													<span>{c.cat}</span>
+													<span class="text-muted-foreground">{c.count} ({c.pct}%)</span>
+												</div>
+												<div class="bg-muted h-1.5 w-full overflow-hidden rounded-full">
+													<div class="bg-primary h-full" style="width: {c.pct}%"></div>
+												</div>
+											</div>
+										{/each}
 									</div>
-								{/each}
-							</div>
-						{:else}
-							<p class="text-muted-foreground text-sm">No solves yet.</p>
-						{/if}
-					</Card.Content>
-				</Card.Root>
+								{:else}
+									<p class="text-muted-foreground text-sm">No solves yet.</p>
+								{/if}
+							</Card.Content>
+						</Card.Root>
 
-				<!-- Stats Card -->
-				<Card.Root class="bg-card border-0 shadow-sm lg:col-span-3">
-					<Card.Header class="pb-2">
-						<Card.Title class="text-muted-foreground text-sm font-medium uppercase tracking-wider"
-							>Team Status</Card.Title
-						>
-					</Card.Header>
-					<Card.Content>
-						<div class="grid grid-cols-2 gap-4">
-							<div>
-								<p class="text-muted-foreground text-xs uppercase">Score</p>
-								<p class="font-mono text-xl font-bold">{team.score}</p>
-							</div>
-							<div>
-								<p class="text-muted-foreground text-xs uppercase">Solves</p>
-								<p class="font-mono text-xl font-bold">{team.solves?.length ?? 0}</p>
-							</div>
-						</div>
-					</Card.Content>
-				</Card.Root>
+						<!-- Team Status -->
+						<Card.Root class="bg-card border-0 shadow-sm">
+							<Card.Header class="pb-2">
+								<Card.Title class="text-muted-foreground text-sm font-medium uppercase tracking-wider"
+									>Team Status</Card.Title
+								>
+							</Card.Header>
+							<Card.Content>
+								<div class="grid grid-cols-2 gap-4">
+									<div>
+										<p class="text-muted-foreground text-xs uppercase">Score</p>
+										<p class="font-mono text-xl font-bold">{team.score}</p>
+									</div>
+									<div>
+										<p class="text-muted-foreground text-xs uppercase">Solves</p>
+										<p class="font-mono text-xl font-bold">{team.solves?.length ?? 0}</p>
+									</div>
+								</div>
+							</Card.Content>
+						</Card.Root>
+					</div>
+				{/if}
 
-				<!-- Row 2: Radar Chart (Full Width) -->
-				<!-- Temporarily commented out
-				<Card.Root class="bg-card border-0 shadow-sm md:col-span-2 lg:col-span-7">
-					<Card.Header class="pb-2">
-						<Card.Title class="text-muted-foreground text-sm font-medium uppercase tracking-wider"
-							>Skill Radar</Card.Title
-						>
-					</Card.Header>
-					<Card.Content>
-						<RadarChart solves={team.solves} />
-					</Card.Content>
-				</Card.Root>
-				-->
-
-				<!-- Row 3: Members (Full Width) -->
-				<Card.Root class="bg-card border-0 shadow-sm md:col-span-2 lg:col-span-7">
+				<!-- Row 2: Members (Full Width) -->
+				<Card.Root class="bg-card border-0 shadow-sm lg:col-span-7">
 					<Card.Header class="pb-2">
 						<Card.Title class="text-muted-foreground text-sm font-medium uppercase tracking-wider"
 							>Team Members</Card.Title

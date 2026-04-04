@@ -4,7 +4,7 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
 	import ScoreHistory from '$lib/components/scoreboard/Graph.svelte';
-	import { Medal, Trophy } from '@lucide/svelte';
+	import { Trophy, LayoutDashboard, Layout } from '@lucide/svelte';
 	import { getScoreboard, getGraphData } from '@/scoreboard';
 	import { goto } from '$app/navigation';
 	import { authState } from '$lib/stores/auth';
@@ -13,15 +13,17 @@
 	import EmptyState from '$lib/components/ui/empty-state.svelte';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import GeneratedAvatar from '$lib/components/ui/avatar/generated-avatar.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
 
 	let perPage = $state(20);
 	let currentPage = $state(1);
+	let isCompact = $state(false);
 
 	const scoreboardQuery = createQuery(() => ({
 		queryKey: ['scoreboard', currentPage, perPage],
 		queryFn: () => getScoreboard(currentPage, perPage),
 		staleTime: 30_000,
-		placeholderData: (previousData) => previousData
+		placeholderData: (previousData: any) => previousData
 	}));
 
 	const graphQuery = createQuery(() => ({
@@ -67,9 +69,30 @@
 		if (!name || name.length <= maxLength) return name;
 		return name.slice(0, maxLength) + '...';
 	}
+
+	function handlePageChange(newPage: number) {
+		currentPage = newPage;
+	}
 </script>
 
-<div class="mx-auto max-w-6xl space-y-12 px-4 py-8 sm:px-6 sm:py-12">
+<div class="mx-auto max-w-6xl space-y-12 px-4 py-8 sm:px-6 sm:py-12 relative">
+	<!-- Compact Mode Toggle -->
+	<div class="absolute top-4 right-4 sm:top-8 sm:right-8 z-10">
+		<Button
+			variant="ghost"
+			size="icon"
+			class="text-muted-foreground/50 hover:text-foreground transition-colors hover:bg-muted/50 cursor-pointer"
+			onclick={() => (isCompact = !isCompact)}
+			title={isCompact ? 'Full View' : 'Compact View (Hide Legend)'}
+		>
+			{#if isCompact}
+				<LayoutDashboard class="h-4 w-4" />
+			{:else}
+				<Layout class="h-4 w-4" />
+			{/if}
+		</Button>
+	</div>
+
 	<!-- Header Region -->
 	<div class="mb-8 mt-2 text-center">
 		<h1 class="text-5xl font-black tracking-tighter sm:text-6xl text-foreground">Scoreboard</h1>
@@ -83,9 +106,8 @@
 	{:else}
 		<!-- Graph Container -->
 		<div class="mb-12">
-			<ScoreHistory data={graphData} {teamNames} userMode={authState.userMode} />
+			<ScoreHistory data={graphData} {teamNames} userMode={authState.userMode} compact={isCompact} />
 		</div>
-
 		<Card.Root class="overflow-hidden border-0 shadow-sm mt-8">
 			<Card.Content class="p-0">
 				<div class="relative mx-4 overflow-auto sm:mx-6">
@@ -199,7 +221,7 @@
 												<div
 													class="font-mono text-sm font-medium tabular-nums leading-none tracking-tight"
 												>
-													{row.score?.toLocaleString() ?? 0} pts
+													{row.score?.toLocaleString('en-GB') ?? 0} pts
 												</div>
 											</Table.Cell>
 										</Table.Row>
@@ -214,12 +236,12 @@
 
 		<!-- Pagination -->
 		{#if count > perPage}
-			<Pagination.Root {count} {perPage} bind:page={currentPage} siblingCount={1} class="mt-4">
+			<Pagination.Root {count} {perPage} page={currentPage} onPageChange={handlePageChange} siblingCount={1} class="mt-4">
 				{#snippet children({ pages, currentPage: pageNum })}
 					<div class="flex w-full justify-center overflow-x-auto py-4" id="pagination-controls">
 						<Pagination.Content class="gap-4">
 							<Pagination.Item class="mx-2">
-								<Pagination.PrevButton class="h-9 w-9" />
+								<Pagination.PrevButton class="h-9 w-9 cursor-pointer" />
 							</Pagination.Item>
 
 							{#each pages as page (page.key)}
@@ -232,7 +254,7 @@
 										<Pagination.Link
 											{page}
 											isActive={pageNum === page.value}
-											class="data-[selected]:bg-foreground data-[selected]:text-background h-9 w-9 transition-all data-[selected]:shadow-md"
+											class="data-[selected]:bg-foreground data-[selected]:text-background h-9 w-9 transition-all data-[selected]:shadow-md cursor-pointer"
 										>
 											{page.value}
 										</Pagination.Link>
@@ -241,7 +263,7 @@
 							{/each}
 
 							<Pagination.Item class="mx-2">
-								<Pagination.NextButton class="h-9 w-9" />
+								<Pagination.NextButton class="h-9 w-9 cursor-pointer" />
 							</Pagination.Item>
 						</Pagination.Content>
 					</div>

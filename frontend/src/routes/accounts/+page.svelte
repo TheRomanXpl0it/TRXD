@@ -118,32 +118,28 @@
 		}
 	});
 
-	$effect(() => {
+	function handlePageChange(newPage: number) {
+		currentPage = newPage;
+		// Sync URL
 		const nextUrl = new URL($pageStore.url);
-		if (currentPage > 1) {
-			nextUrl.searchParams.set('page', String(currentPage));
+		if (newPage > 1) {
+			nextUrl.searchParams.set('page', String(newPage));
 		} else {
 			nextUrl.searchParams.delete('page');
 		}
-
 		const currentHref = `${$pageStore.url.pathname}${$pageStore.url.search}${$pageStore.url.hash}`;
 		const nextHref = `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
 		if (nextHref !== currentHref) {
 			goto(nextHref, { replaceState: true, noScroll: true, keepFocus: true });
 		}
-	});
-
-	// Track page changes
-	$effect(() => {
-		if (currentPage > 1) {
-			setTimeout(() => {
-				const paginationEl = document.getElementById('pagination-controls');
-				if (paginationEl) {
-					paginationEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-				}
-			}, 0);
-		}
-	});
+		// Scroll to pagination
+		setTimeout(() => {
+			const paginationEl = document.getElementById('pagination-controls');
+			if (paginationEl) {
+				paginationEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+			}
+		}, 0);
+	}
 </script>
 
 <div class="mx-auto max-w-5xl space-y-8 px-6 py-10">
@@ -297,7 +293,7 @@
 
 		<!-- Pagination -->
 		{#if count > perPage}
-			<Pagination.Root {count} {perPage} bind:page={currentPage} siblingCount={1} class="mt-4">
+			<Pagination.Root {count} {perPage} page={currentPage} onPageChange={handlePageChange} siblingCount={1} class="mt-4">
 				{#snippet children({ pages, currentPage: pageNum })}
 					<div class="flex w-full justify-center overflow-x-auto py-4" id="pagination-controls">
 						<Pagination.Content class="gap-4">

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import ChallengeFilters from '../ChallengeFilters.svelte';
+import ChallengeFilters from '$lib/components/challenges/ChallengeFilters.svelte';
 
 describe('ChallengeFilters Component', () => {
 	const defaultProps = {

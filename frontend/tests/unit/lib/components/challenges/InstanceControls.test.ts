@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import InstanceControls from '../InstanceControls.svelte';
+import InstanceControls from '$lib/components/challenges/InstanceControls.svelte';
 import { startInstance, stopInstance } from '$lib/instances';
 import { toast } from 'svelte-sonner';
 

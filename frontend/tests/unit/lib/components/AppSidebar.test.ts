@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import AppSidebar from '../AppSidebar.svelte';
+import AppSidebar from '$lib/components/AppSidebar.svelte';
 import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js';
 import { getUserData } from '$lib/user';
 import { goto } from '$app/navigation';

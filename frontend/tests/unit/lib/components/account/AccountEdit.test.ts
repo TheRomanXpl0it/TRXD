@@ -1,7 +1,7 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import AccountEdit from '../AccountEdit.svelte';
+import AccountEdit from '$lib/components/account/AccountEdit.svelte';
 import { updateUser } from '$lib/user';
 import { showError, showSuccess } from '$lib/utils/toast';
 import { tick } from 'svelte';

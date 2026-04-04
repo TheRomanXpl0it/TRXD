@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { Chart, Svg, Axis, Spline, Highlight, Tooltip, Points } from 'layerchart';
+	import { Chart, Svg, Axis, Spline, Highlight, Tooltip as ChartTooltip } from 'layerchart';
 	import { scaleTime, scaleLinear } from 'd3-scale';
 	// @ts-ignore - Ignore missing type declarations for d3-shape
-	import { curveLinear } from 'd3-shape';
+	import { curveStepAfter } from 'd3-shape';
 
 	// Props interface
 	interface Props {
@@ -11,9 +11,11 @@
 		timeMax?: number;
 		teamNames?: Record<string, string>;
 		userMode?: boolean;
+		compact?: boolean;
+		height?: string;
 	}
 
-	let { data = [], timeMin, timeMax, teamNames, userMode = false }: Props = $props();
+	let { data = [], timeMin, timeMax, teamNames, userMode = false, compact = false, height = '' }: Props = $props();
 
 	// Detect dark mode
 	let isDark = $state(false);
@@ -67,17 +69,30 @@
 		return String(team?.team_id ?? '');
 	}
 
-	// Dynamic vibrant colors
+	// Competitive colors for top 3
+	const top3Colors = ['#fbbf24', '#94a3b8', '#cd7f32'];
+	// Dynamic vibrant colors for others
 	const colors = [
 		'#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#f97316', '#84cc16', '#ec4899', '#6366f1'
 	];
+
+	let highlightedTeam = $state<string | number | null>(null);
 
 	const chartData = $derived.by(() => {
 		const arr = Array.isArray(data) ? data : [];
 
 		const ranked = [...arr]
-			.map((e: any) => ({ ...e, total: totalPoints(e) }))
-			.sort((a: any, b: any) => (b.total || 0) - (a.total || 0));
+			.map((e: any) => {
+				const solves = normalizeTeam(e);
+				const total = solves.length > 0 ? Math.max(...solves.map((s) => Number(s?.points ?? 0))) : 0;
+				const lastSolve = solves.length > 0 ? Math.max(...solves.map((s) => s.date?.getTime() || 0)) : 0;
+				return { ...e, total, lastSolve };
+			})
+			.sort((a: any, b: any) => 
+				(b.total - a.total) || 
+				(a.lastSolve - b.lastSolve) || 
+				((a.id || a.team_id || 0) - (b.id || b.team_id || 0))
+			);
 
 		let minTime = Date.now();
 		let hasData = false;
@@ -85,20 +100,14 @@
 			const solves = normalizeTeam(team).filter((s: any) => s.date !== null);
 			if (solves.length > 0 && solves[0].date) {
 				hasData = true;
-				minTime = Math.min(minTime, solves[0].date.getTime() - 60000); // 1m buffer start
+				minTime = Math.min(minTime, solves[0].date.getTime() - 60000);
 			}
 		});
 
 		const nowMs = Date.now();
-		// Create 150 dense intervals for pixel-perfect smooth cursor tracking on lines
-		const INTERVALS = 150;
-		const timeStep = Math.max(1, (nowMs - minTime) / INTERVALS);
-		const gridTimes: number[] = [];
-		if (hasData) {
-			for (let i = 0; i <= INTERVALS; i++) gridTimes.push(minTime + i * timeStep);
-		}
 
 		const series: Array<{
+			id: string | number;
 			name: string;
 			data: Array<{ date: Date; value: number; name?: string; color?: string; }>;
 			color: string;
@@ -106,51 +115,37 @@
 
 		ranked.forEach((team: any, index: number) => {
 			const name = nameForTeam(team);
-			const color = colors[index % colors.length];
+			const color = index < 3 ? top3Colors[index] : colors[(index - 3) % colors.length];
 			const solves = normalizeTeam(team)
 				.filter((s: any) => s.date !== null)
 				.sort((a: any, b: any) => a.date!.getTime() - b.date!.getTime());
 
 			if (solves.length === 0) return;
 
-			// Actual sparse solves
-			const sparsePoints: Array<{ time: number; value: number }> = [];
-			sparsePoints.push({ time: minTime, value: 0 }); 
-
-			for (const s of solves) {
-				sparsePoints.push({ time: s.date.getTime(), value: Number(s.points ?? 0) });
-			}
-			sparsePoints.push({ time: nowMs, value: sparsePoints[sparsePoints.length - 1].value });
-
-			// Superimpose active solve moments onto the dense tracking grid
-			const allT = [...new Set([...gridTimes, ...sparsePoints.map(sp => sp.time)])].sort((a, b) => a - b);
+			// Use only actual solve data points — step function via curveStepAfter
 			const points: Array<{ date: Date; value: number; name: string; color: string; }> = [];
 
-			for (const t of allT) {
-				let val = 0;
-				for (let i = 0; i < sparsePoints.length; i++) {
-					if (sparsePoints[i].time === t) {
-						val = sparsePoints[i].value;
-						break;
-					}
-					// Linear interpolation
-					if (i < sparsePoints.length - 1 && sparsePoints[i].time < t && sparsePoints[i + 1].time > t) {
-						const p1 = sparsePoints[i];
-						const p2 = sparsePoints[i + 1];
-						const ratio = (t - p1.time) / (p2.time - p1.time);
-						val = p1.value + ratio * (p2.value - p1.value);
-						break;
-					}
-				}
+			// Start at 0
+			points.push({ date: new Date(minTime), value: 0, name, color });
+
+			for (const s of solves) {
 				points.push({
-					date: new Date(t),
-					value: Math.round(val),
+					date: s.date,
+					value: Number(s.points ?? 0),
 					name,
 					color
 				});
 			}
 
-			series.push({ name, data: points, color });
+			// Extend to now
+			points.push({
+				date: new Date(nowMs),
+				value: points[points.length - 1].value,
+				name,
+				color
+			});
+
+			series.push({ id: team.team_id || team.id, name, data: points, color });
 		});
 
 		return series;
@@ -158,28 +153,9 @@
 
 	const textColor = $derived('hsl(var(--muted-foreground))');
 	const gridColor = $derived('hsl(var(--border))');
-
-	const timeRangeInfo = $derived.by(() => {
-		if (chartData.length === 0) return { ticks: 6, format: (d: Date) => d.toLocaleDateString() };
-
-		const allDates = chartData.flatMap((s) => s.data.map((p) => p.date.getTime()));
-		const minTime = Math.min(...allDates);
-		const maxTime = Math.max(...allDates);
-		const rangeHours = (maxTime - minTime) / (1000 * 60 * 60);
-
-		if (rangeHours <= 12) {
-			return { ticks: Math.ceil(rangeHours / 2), format: (d: Date) => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) };
-		} else if (rangeHours <= 48) {
-			return { ticks: Math.ceil(rangeHours / 5), format: (d: Date) => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) };
-		} else if (rangeHours <= 168) {
-			return { ticks: Math.ceil(rangeHours / 12), format: (d: Date) => `${d.getDate()}/${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}` };
-		} else {
-			return { ticks: Math.ceil(rangeHours / 24), format: (d: Date) => d.toLocaleDateString([], { month: 'short', day: 'numeric' }) };
-		}
-	});
 </script>
 
-<div class="w-full flex-col flex h-[480px]">
+<div class="w-full flex-col flex" style={height ? `height: ${height}` : `height: ${compact ? '280px' : '380px'}`}>
 	<div class="flex-grow w-full">
 		{#if chartData.length > 0}
 			<Chart
@@ -189,40 +165,33 @@
 				y="value"
 				yScale={scaleLinear()}
 				yDomain={[0, null]}
-				padding={{ left: 24, bottom: 24, top: 12, right: 12 }}
+				padding={{ left: compact ? 16 : 24, bottom: 8, top: compact ? 8 : 12, right: compact ? 8 : 12 }}
 				tooltip={{ mode: 'voronoi' }}
 			>
 				<Svg>
 					<Axis
 						placement="left"
 						grid={{ style: `stroke: ${gridColor}; stroke-dasharray: 4` }}
-						rule={{ style: `font-size: 11px; fill: ${textColor}; font-weight: bold;` }}
-					/>
-					<Axis
-						placement="bottom"
-						format={timeRangeInfo.format}
-						ticks={timeRangeInfo.ticks}
-						grid={{ style: `stroke: ${gridColor}; stroke-dasharray: 4` }}
-						rule={{ style: `font-size: 11px; fill: ${textColor}; font-weight: bold;` }}
+						rule={{ style: `font-size: ${compact ? '9px' : '11px'}; fill: ${textColor}; font-weight: bold;` }}
 					/>
 					{#each chartData as series}
 						<Spline 
 							data={series.data} 
-							class="stroke-[3px]" 
-							style={`stroke: ${series.color}; filter: drop-shadow(0 0 6px ${series.color}40);`} 
-							curve={curveLinear} 
+							class="stroke-[3px] transition-all duration-300" 
+							style={`stroke: ${series.color}; opacity: ${highlightedTeam === null || highlightedTeam === series.id ? 1 : 0.1};`} 
+							curve={curveStepAfter} 
 						/>
 					{/each}
-					<Highlight lines points={{ r: 3 }} />
+					<Highlight lines points={{ r: 6 }} />
 				</Svg>
-				<Tooltip.Root 
+				<ChartTooltip.Root 
 					class="bg-card/95 backdrop-blur-sm text-card-foreground shadow-xl border border-muted/30 rounded-lg p-3 min-w-[150px] z-50 text-sm"
 				>
 					{#snippet children({ data })}
 						{@const active = Array.isArray(data) ? data[0] : data}
 						{#if active && active.name}
 							<div class="font-bold border-b border-muted/50 pb-1.5 mb-2 text-xs text-muted-foreground uppercase tracking-widest">
-								{active.date ? new Date(active.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+								{active.date ? new Date(active.date).toLocaleString([], { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : ''}
 							</div>
 							<div class="flex items-center gap-3">
 								<div class="w-3 h-3 rounded-full shadow-sm" style="background-color: {active.color}"></div>
@@ -231,7 +200,7 @@
 							</div>
 						{/if}
 					{/snippet}
-				</Tooltip.Root>
+				</ChartTooltip.Root>
 			</Chart>
 		{:else}
 			<div class="text-muted-foreground font-mono text-sm uppercase tracking-widest flex h-full items-center justify-center">
@@ -241,16 +210,28 @@
 	</div>
 
 	<!-- Legend at bottom -->
-	{#if chartData.length > 0}
+	{#if chartData.length > 0 && !compact}
 		<div class="mt-6 flex flex-wrap justify-center gap-4 px-6 text-sm">
 			{#each chartData as series}
-				<div class="flex items-center gap-2 group cursor-pointer transition-opacity hover:opacity-100 opacity-80">
+				{@const lastScore = series.data.length > 0 ? series.data[series.data.length - 1].value : 0}
+				<button
+					type="button"
+					class="flex items-center gap-2 group cursor-pointer transition-all duration-200 rounded-md px-2 py-1 hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 {highlightedTeam !== null && highlightedTeam !== series.id ? 'opacity-30 grayscale-[50%]' : 'opacity-100'}"
+					title="{series.name}: {lastScore} pts"
+					onclick={() => {
+						if (highlightedTeam === series.id) {
+							highlightedTeam = null;
+						} else {
+							highlightedTeam = series.id;
+						}
+					}}
+				>
 					<div
-						class="h-4 w-4 rounded-full shadow-md"
-						style="background-color: {series.color}; box-shadow: 0 0 10px {series.color}60;"
+						class="h-4 w-4 rounded-full shadow-md transition-transform duration-200 {highlightedTeam === series.id ? 'scale-125 border-2 border-white' : ''}"
+						style="background-color: {series.color};"
 					></div>
 					<span class="text-foreground tracking-tight font-bold">{series.name}</span>
-				</div>
+				</button>
 			{/each}
 		</div>
 	{/if}

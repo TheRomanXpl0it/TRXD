@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { toast } from 'svelte-sonner';
-import AdminControls from '../AdminControls.svelte';
+import AdminControls from '$lib/components/challenges/AdminControls.svelte';
 import { createCategory } from '$lib/categories';
 
 vi.mock('svelte-sonner', () => ({

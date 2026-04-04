@@ -98,6 +98,11 @@
 		if (!authState.userMode && team?.badges && team.badges.length > 0) return team.badges;
 		return [];
 	});
+
+	const notStarted = $derived.by(() => {
+		if (!authState.ready || !authState.startTime) return false;
+		return new Date(authState.startTime).getTime() > Date.now();
+	});
 </script>
 
 {#if !authState.ready || loading}
@@ -197,7 +202,7 @@
 							{/if}
 							{#if userVerboseData?.joined_at}
 								<span class="flex items-center gap-1.5">
-									Joined {new Date(userVerboseData.joined_at).toLocaleDateString(undefined, {
+									Joined {new Date(userVerboseData.joined_at).toLocaleDateString('en-GB', {
 										year: 'numeric',
 										month: 'long'
 									})}
@@ -301,62 +306,85 @@
 
 		<!-- Tab Content -->
 		{#if activeTab === 'overview'}
-			<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-				<!-- Stat Cards -->
-				<Card.Root class="bg-card border-0 shadow-sm">
-					<Card.Header class="pb-2">
-						<Card.Title class="text-muted-foreground text-sm font-medium uppercase tracking-wider"
-							>Total Score</Card.Title
-						>
-					</Card.Header>
-					<Card.Content>
-						<div class="font-mono text-2xl font-bold">
-							{userVerboseData?.score?.toLocaleString() ?? 0} pts
+			<div class="grid gap-4 lg:grid-cols-7">
+				<!-- Radar Chart (Left, 3 cols, or full if not started) -->
+				<Card.Root class="bg-card flex flex-col items-center justify-center border-0 shadow-sm {notStarted ? 'lg:col-span-7' : 'lg:col-span-3'}">
+					<Card.Content class="w-full pt-6">
+						<RadarChart 
+							solves={userVerboseData?.solves} 
+							totalChallenges={userVerboseData?.total_category_challenges} 
+						/>
+					</Card.Content>
+				</Card.Root>
+
+				{#if !notStarted}
+					<!-- Stats and Breakdown Section (Right, 4 cols) -->
+					<div class="flex flex-col gap-4 lg:col-span-4">
+						<!-- Category Breakdown -->
+						<Card.Root class="bg-card flex-1 border-0 shadow-sm">
+							<Card.Header class="pb-2">
+								<Card.Title class="text-muted-foreground text-sm font-medium uppercase tracking-wider"
+									>Category Breakdown</Card.Title
+								>
+							</Card.Header>
+							<Card.Content>
+								{#if userVerboseData?.solves && userVerboseData.solves.length > 0}
+									{@const categories = (() => {
+										const map = new Map();
+										for (const s of userVerboseData.solves) map.set(s.category, (map.get(s.category) ?? 0) + 1);
+										const total = [...map.values()].reduce((a, b) => a + b, 0) || 1;
+										return [...map.entries()]
+											.sort((a, b) => b[1] - a[1])
+											.map(([cat, count]) => ({ cat, count, pct: Math.round((count / total) * 100) }));
+									})()}
+									<div class="grid gap-4 sm:grid-cols-2">
+										{#each categories as c}
+											<div class="space-y-1">
+												<div class="flex justify-between text-xs font-medium">
+													<span>{c.cat}</span>
+													<span class="text-muted-foreground">{c.count} ({c.pct}%)</span>
+												</div>
+												<div class="bg-muted h-1.5 w-full overflow-hidden rounded-full">
+													<div class="bg-primary h-full" style="width: {c.pct}%"></div>
+												</div>
+											</div>
+										{/each}
+									</div>
+								{:else}
+									<p class="text-muted-foreground text-sm">No solves yet.</p>
+								{/if}
+							</Card.Content>
+						</Card.Root>
+
+						<!-- Basic Stats Cards -->
+						<div class="grid gap-4 sm:grid-cols-2">
+							<Card.Root class="bg-card border-0 shadow-sm">
+								<Card.Header class="pb-2">
+									<Card.Title class="text-muted-foreground text-sm font-medium uppercase tracking-wider"
+										>Total Score</Card.Title
+									>
+								</Card.Header>
+								<Card.Content>
+									<div class="font-mono text-2xl font-bold">
+										{userVerboseData?.score?.toLocaleString() ?? 0} pts
+									</div>
+								</Card.Content>
+							</Card.Root>
+
+							<Card.Root class="bg-card border-0 shadow-sm">
+								<Card.Header class="pb-2">
+									<Card.Title class="text-muted-foreground text-sm font-medium uppercase tracking-wider"
+										>Challenges Solved</Card.Title
+									>
+								</Card.Header>
+								<Card.Content>
+									<div class="font-mono text-2xl font-bold">{solveCount}</div>
+									<p class="text-muted-foreground mt-1 text-xs">Across all categories</p>
+								</Card.Content>
+							</Card.Root>
 						</div>
-					</Card.Content>
-				</Card.Root>
-
-				<Card.Root class="bg-card border-0 shadow-sm">
-					<Card.Header class="pb-2">
-						<Card.Title class="text-muted-foreground text-sm font-medium uppercase tracking-wider"
-							>Challenges Solved</Card.Title
-						>
-					</Card.Header>
-					<Card.Content>
-						<div class="font-mono text-2xl font-bold">{solveCount}</div>
-						<p class="text-muted-foreground mt-1 text-xs">Across all categories</p>
-					</Card.Content>
-				</Card.Root>
-
-				{#if !authState.userMode && team}
-					<Card.Root class="bg-card border-0 shadow-sm">
-						<Card.Header class="pb-2">
-							<Card.Title class="text-muted-foreground text-sm font-medium uppercase tracking-wider"
-								>Team Status</Card.Title
-							>
-						</Card.Header>
-						<Card.Content>
-							<div class="truncate text-lg font-bold">{team.name}</div>
-							<p class="text-muted-foreground mt-1 text-xs">
-								{team.members?.length ?? 0} members
-							</p>
-						</Card.Content>
-					</Card.Root>
+					</div>
 				{/if}
-
-				<!-- Radar Chart -->
-				<!-- Temporarily commented out
-				<Card.Root class="bg-card border-0 shadow-sm md:col-span-2 lg:col-span-3">
-					<Card.Header class="pb-2">
-						<Card.Title class="text-muted-foreground text-sm font-medium uppercase tracking-wider"
-							>Skill Radar</Card.Title
-						>
-					</Card.Header>
-					<Card.Content>
-						<RadarChart solves={userVerboseData?.solves} />
-					</Card.Content>
-				</Card.Root>
-				-->
 			</div>
 		{:else if activeTab === 'solves'}
 			<Card.Root class="overflow-hidden border-0 shadow-sm">

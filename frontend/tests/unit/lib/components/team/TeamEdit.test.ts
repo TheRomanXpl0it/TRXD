@@ -1,7 +1,7 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import TeamEdit from '../TeamEdit.svelte';
+import TeamEdit from '$lib/components/team/TeamEdit.svelte';
 import { updateTeam } from '$lib/team';
 import { useQueryClient } from '@tanstack/svelte-query';
 import { showError, showSuccess } from '$lib/utils/toast';

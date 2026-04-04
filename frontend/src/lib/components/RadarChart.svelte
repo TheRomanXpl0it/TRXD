@@ -1,144 +1,142 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 
-	const browser = typeof window !== 'undefined';
+	interface CategoryTotal {
+		category: string;
+		count: number;
+	}
 
-	let { solves = [] } = $props<{ solves?: any[] }>();
+	interface Props {
+		solves?: any[];
+		totalChallenges?: CategoryTotal[];
+	}
 
-	let chart: any;
-	let chartEl: HTMLDivElement;
+	let { solves = [], totalChallenges = [] }: Props = $props();
 
-	// Handle null prop explicit (default value only handles undefined)
-	const safeSolves = $derived(Array.isArray(solves) ? solves : []);
+	let chartEl = $state<HTMLDivElement>();
+	let chart = $state<any>();
 
-	const categories = $derived.by(() => {
-		const cats = new Set<string>();
-		// Process solves to get all categories
-		safeSolves.forEach((s: any) => {
-			if (s.category) cats.add(s.category);
-		});
-		return Array.from(cats).sort();
-	});
+	// Process data for the radar chart
+	const processedData = $derived.by(() => {
+		if (!totalChallenges || totalChallenges.length === 0) return { labels: [], series: [] };
 
-	const seriesData = $derived.by(() => {
-		if (!categories.length) return [0, 0, 0, 0, 0]; // dummy
-
-		// Sum points per category
-		const sums: Record<string, number> = {};
-		categories.forEach((c) => (sums[c] = 0));
-
-		safeSolves.forEach((s: any) => {
+		const solveCounts: Record<string, number> = {};
+		solves.forEach((s) => {
 			if (s.category) {
-				sums[s.category] += Number(s.points || 0);
+				solveCounts[s.category] = (solveCounts[s.category] || 0) + 1;
 			}
 		});
 
-		return categories.map((c) => sums[c]);
+		const labels = totalChallenges.map((tc) => tc.category);
+		const seriesData = totalChallenges.map((tc) => {
+			const count = solveCounts[tc.category] || 0;
+			const total = tc.count || 1;
+			return Math.round((count / total) * 100);
+		});
+
+		return { labels, series: seriesData };
 	});
 
 	$effect(() => {
-		if (!browser || !chartEl) return;
+		if (!browser || !chartEl || processedData.labels.length === 0) return;
 
-		// Dynamic import to avoid SSR issues
 		import('apexcharts').then((mod) => {
 			const ApexCharts = mod.default;
+
+			const isDark = document.documentElement.classList.contains('dark');
+			const primaryColor = 'hsl(217.2 91.2% 59.8%)'; // Standard blue, adjust if needed
 
 			const options = {
 				series: [
 					{
-						name: 'Points',
-						data: seriesData.length ? seriesData : [0]
+						name: 'Completion',
+						data: processedData.series
 					}
 				],
 				chart: {
-					height: 250,
+					height: 350,
 					type: 'radar',
 					toolbar: { show: false },
-					parentHeightOffset: 0,
-					background: 'transparent'
-				},
-				labels: categories.length ? categories : ['None'],
-				title: {
-					text: undefined
-				},
-				stroke: {
-					width: 2,
-					colors: ['#3b82f6'] // blue-500
-				},
-				fill: {
-					opacity: 0.2,
-					colors: ['#3b82f6'] // blue-500
-				},
-				markers: {
-					size: 4,
-					colors: ['#3b82f6'],
-					strokeColors: '#fff',
-					strokeWidth: 2
-				},
-				yaxis: {
-					show: false
-				},
-				xaxis: {
-					labels: {
-						style: {
-							colors: [], // inherit
-							fontSize: '12px',
-							fontFamily: 'inherit',
-							fontWeight: 600
-						}
+					background: 'transparent',
+					dropShadow: {
+						enabled: true,
+						blur: 8,
+						left: 1,
+						top: 1,
+						opacity: 0.2
 					}
 				},
-				theme: {
-					mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
-					palette: 'palette1'
-				},
+				colors: [primaryColor],
 				plotOptions: {
 					radar: {
+						size: 110,
 						polygons: {
-							strokeColors: 'var(--border)', // subtle grid
-							connectorColors: 'var(--border)'
+							strokeColors: isDark ? '#334155' : '#e2e8f0',
+							strokeWidth: '1px',
+							connectorColors: isDark ? '#334155' : '#e2e8f0',
+							fill: {
+								colors: isDark ? ['#1e293b', '#0f172a'] : ['#f8fafc', '#fff']
+							}
 						}
+					}
+				},
+				stroke: {
+					width: 3,
+					curve: 'smooth'
+				},
+				fill: {
+					opacity: 0.4
+				},
+				markers: {
+					size: 5,
+					colors: ['#fff'],
+					strokeColors: primaryColor,
+					strokeWidth: 3
+				},
+				labels: processedData.labels,
+				xaxis: {
+					labels: {
+						show: true,
+						style: {
+							colors: isDark ? '#94a3b8' : '#64748b',
+							fontSize: '11px',
+							fontWeight: 800,
+							fontFamily: 'inherit'
+						}
+					}
+				},
+				yaxis: {
+					show: false,
+					min: 0,
+					max: 100,
+					tickAmount: 5
+				},
+				tooltip: {
+					theme: isDark ? 'dark' : 'light',
+					y: {
+						formatter: (val: number) => val + '%'
 					}
 				}
 			};
 
-			// Update theme dynamically
-			const observer = new MutationObserver(() => {
-				const isDark = document.documentElement.classList.contains('dark');
-				if (chart) {
-					chart.updateOptions({
-						theme: { mode: isDark ? 'dark' : 'light' },
-						plotOptions: {
-							radar: {
-								polygons: {
-									strokeColors: isDark ? '#374151' : '#e5e7eb',
-									connectorColors: isDark ? '#374151' : '#e5e7eb'
-								}
-							}
-						}
-					});
-				}
-			});
-			observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-
-			// Initial chart
 			if (chart) chart.destroy();
-			// Only render if we have categories (even if dummy data generated for derived, we check explicit length or solves)
-			if (categories.length > 0) {
-				chart = new ApexCharts(chartEl, options);
-				chart.render();
-			}
-
-			return () => {
-				observer.disconnect();
-				if (chart) chart.destroy();
-			};
+			chart = new ApexCharts(chartEl, options);
+			chart.render();
 		});
+
+		return () => {
+			if (chart) chart.destroy();
+		};
 	});
 </script>
 
-<div class="flex h-[250px] w-full items-center justify-center p-2" bind:this={chartEl}>
-	{#if safeSolves.length === 0}
-		<p class="text-muted-foreground w-full text-center text-sm">No solve data available</p>
+<div class="flex min-h-[350px] w-full items-center justify-center p-4">
+	{#if processedData.labels.length > 0}
+		<div bind:this={chartEl} class="w-full"></div>
+	{:else}
+		<div class="text-muted-foreground font-mono text-xs uppercase tracking-widest opacity-50">
+			The competition hasn't started yet
+		</div>
 	{/if}
 </div>

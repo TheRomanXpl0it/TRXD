@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import { describe, it, expect } from 'vitest';
-import TeamScoreboard from '../TeamScoreboard.svelte';
+import TeamScoreboard from '$lib/components/team/TeamScoreboard.svelte';
 
 const team = {
 	name: 'CyberCats',

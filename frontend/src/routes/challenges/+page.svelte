@@ -14,7 +14,8 @@
 	import ChallengeModal from '$lib/components/challenges/ChallengeModal.svelte';
 	import AdminControls from '$lib/components/challenges/AdminControls.svelte';
 	import WaitingPage from '$lib/components/challenges/WaitingPage.svelte';
-	import { Flag } from '@lucide/svelte';
+	import { Flag, Users } from '@lucide/svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import type { Challenge } from '$lib/types';
 
 	import { config } from '$lib/env';
@@ -25,6 +26,7 @@
 		if (!authState.ready || !authState.startTime) return false;
 		return new Date(authState.startTime).getTime() > Date.now();
 	});
+	const isMissingTeam = $derived(authState.ready && authState.user && !authState.userMode && !authState.user?.team_id && !isAdmin);
 
 	// 2. Local State
 	let createChallengeOpen = $state(false);
@@ -42,14 +44,14 @@
 		queryKey: ['challenges'],
 		queryFn: getChallenges,
 		staleTime: 5 * 60 * 1000,
-		enabled: !upcoming || isAdmin
+		enabled: (!upcoming || isAdmin) && !isMissingTeam
 	}));
 
 	const categoriesQuery = createQuery(() => ({
 		queryKey: ['categories'],
 		queryFn: getCategories,
 		staleTime: 10 * 60 * 1000,
-		enabled: !upcoming || isAdmin
+		enabled: (!upcoming || isAdmin) && !isMissingTeam
 	}));
 
 	// 5. Query-dependent Deriveds
@@ -399,20 +401,22 @@
 	}
 </script>
 
-<div
-	class="from-muted/20 to-background mb-6 mt-6 rounded-xl border-0 bg-gradient-to-br p-6 shadow-sm"
->
-	<div class="flex items-center gap-4">
-		<div
-			class="bg-background flex h-16 w-16 shrink-0 items-center justify-center rounded-full shadow-sm"
-		>
-			<Flag class="text-muted-foreground h-8 w-8" />
-		</div>
-		<div>
-			<h1 class="text-3xl font-bold tracking-tight">Challenges</h1>
+{#if !upcoming}
+	<div
+		class="from-muted/20 to-background mb-6 mt-6 rounded-xl border-0 bg-gradient-to-br p-6 shadow-sm"
+	>
+		<div class="flex items-center gap-4">
+			<div
+				class="bg-background flex h-16 w-16 shrink-0 items-center justify-center rounded-full shadow-sm"
+			>
+				<Flag class="text-muted-foreground h-8 w-8" />
+			</div>
+			<div>
+				<h1 class="text-3xl font-bold tracking-tight">Challenges</h1>
+			</div>
 		</div>
 	</div>
-</div>
+{/if}
 
 {#if isAdmin}
 	<AdminControls
@@ -424,6 +428,7 @@
 	/>
 {/if}
 
+{#if !upcoming}
 <ChallengeFilters
 	bind:search
 	bind:filterCategories
@@ -433,8 +438,22 @@
 	{allTags}
 	{activeFiltersCount}
 />
+{/if}
 
-{#if isNotStarted}
+{#if isMissingTeam}
+	<div class="flex flex-col items-center justify-center py-20 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+		<div class="bg-muted/50 rounded-full p-6 mb-6">
+			<Users class="h-12 w-12 text-muted-foreground opacity-50" />
+		</div>
+		<h2 class="text-3xl font-bold tracking-tight mb-3">Team Required</h2>
+		<p class="text-muted-foreground mb-8 max-w-md mx-auto text-lg leading-relaxed">
+			You must join or create a team to participate in the competition and view challenges. 
+		</p>
+		<div class="flex gap-4">
+			<Button href="/team" class="px-8 h-11 text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95">Go to Team Page</Button>
+		</div>
+	</div>
+{:else if isNotStarted}
 	<WaitingPage startTime={authState.startTime} />
 {:else if loading}
 	<div class="flex flex-col items-center justify-center py-12">
@@ -472,6 +491,7 @@
 						<ChallengeCard
 							challenge={ch}
 							{compactView}
+							{isAdmin}
 							countdown={countdowns[ch.id] ?? 0}
 							onclick={() => openChallenge(ch)}
 						/>
@@ -487,6 +507,7 @@
 						<ChallengeCard
 							challenge={ch}
 							{compactView}
+							{isAdmin}
 							countdown={countdowns[ch.id] ?? 0}
 							onclick={() => openChallenge(ch)}
 						/>

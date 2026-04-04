@@ -76,14 +76,22 @@
 			? (challenge?.instance_host ?? challenge?.host ?? '')
 			: (challenge?.host ?? '');
 		const p = challenge?.instance ? challenge?.instance_port : challenge?.port;
+		
 		let str = p ? `${h}:${p}` : h;
-		if (str && challenge?.conn_type === 'HTTP' && !str.startsWith('http')) {
+		if (!str) return '';
+
+		// Use conn_type for accurate protocol prefixing
+		const type = challenge?.conn_type;
+		if (type === 'HTTP' && !str.startsWith('http')) {
 			str = `http://${str}`;
-		} else if (str && challenge?.conn_type === 'HTTPS' && !str.startsWith('http')) {
+		} else if (type === 'HTTPS' && !str.startsWith('http')) {
 			str = `https://${str}`;
 		}
+		
 		return str;
 	});
+
+	const isTLS = $derived(challenge?.conn_type === 'TCP_TLS' || challenge?.conn_type === 'HTTPS');
 </script>
 
 <div class="mb-6">
@@ -99,6 +107,13 @@
 				<div class="flex items-center gap-2">
 					<Container class="h-5 w-5 shrink-0" aria-hidden="true" />
 					<span class="hidden sm:inline">Running</span>
+					{#if isTLS}
+						<span
+							class="bg-blue-400/20 text-blue-100 flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+						>
+							TLS
+						</span>
+					{/if}
 				</div>
 				<span class="truncate font-mono text-xs sm:text-sm">{connectionString}</span>
 				<span class="shrink-0 text-xs sm:text-sm" aria-label="Expires in {fmtTimeLeft(countdown)}">

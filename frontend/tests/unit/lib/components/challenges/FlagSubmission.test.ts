@@ -4,7 +4,7 @@ import { toast } from 'svelte-sonner';
 import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import FlagSubmission from '../FlagSubmission.svelte';
+import FlagSubmission from '$lib/components/challenges/FlagSubmission.svelte';
 
 // Mock the submitFlag API
 vi.mock('$lib/challenges', () => ({
