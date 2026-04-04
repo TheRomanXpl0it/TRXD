@@ -44,9 +44,6 @@ if (typeof window !== 'undefined' && !HTMLElement.prototype.scrollIntoView) {
 }
 
 // Ensure each test starts with a clean DOM
-afterEach(async () => {
+afterEach(() => {
 	cleanup();
-	// Wait for any pending timers to complete before tearing down
-	// This prevents bits-ui cleanup timers from firing after test teardown
-	await new Promise((resolve) => setTimeout(resolve, 100));
 });
