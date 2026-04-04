@@ -18,6 +18,7 @@ export default defineConfig({
 	},
 	resolve: {
 		alias: {
+			'monaco-editor': resolve('./src/test/mocks/monaco-editor.ts'),
 			$lib: resolve('./src/lib'),
 			'@': resolve('./src/lib'),
 			$routes: resolve('./src/routes'),

@@ -39,6 +39,21 @@
 	let DeleteDialogCmp: any | null = $state(null);
 	let ChallengeEditSheetCmp: any | null = $state(null);
 
+	async function preloadAdminComponent(
+		load: () => Promise<{ default: any }>,
+		assign: (component: any) => void,
+		isActive: () => boolean
+	) {
+		try {
+			const mod = await load();
+			if (isActive()) {
+				assign(mod.default);
+			}
+		} catch {
+			// Admin preloading is best-effort and should not surface background import failures.
+		}
+	}
+
 	// 4. Queries (Dependent on 1)
 	const challengesQuery = createQuery(() => ({
 		queryKey: ['challenges'],
@@ -67,17 +82,36 @@
 
 	// Preload admin components when page loads if user is admin
 	onMount(() => {
-		if (isAdmin) {
-			import('$lib/components/challenges/CreateChallengeModal.svelte').then((mod) => {
-				CreateModalCmp = mod.default;
-			});
-			import('$lib/components/challenges/DeleteChallengeDialog.svelte').then((mod) => {
-				DeleteDialogCmp = mod.default;
-			});
-			import('$lib/components/challenges/ChallengeEditSheet.svelte').then((mod) => {
-				ChallengeEditSheetCmp = mod.default;
-			});
-		}
+		if (!isAdmin) return;
+
+		let active = true;
+		const isActive = () => active;
+
+		void preloadAdminComponent(
+			() => import('$lib/components/challenges/CreateChallengeModal.svelte'),
+			(component) => {
+				CreateModalCmp = component;
+			},
+			isActive
+		);
+		void preloadAdminComponent(
+			() => import('$lib/components/challenges/DeleteChallengeDialog.svelte'),
+			(component) => {
+				DeleteDialogCmp = component;
+			},
+			isActive
+		);
+		void preloadAdminComponent(
+			() => import('$lib/components/challenges/ChallengeEditSheet.svelte'),
+			(component) => {
+				ChallengeEditSheetCmp = component;
+			},
+			isActive
+		);
+
+		return () => {
+			active = false;
+		};
 	});
 
 	async function openCreate() {
