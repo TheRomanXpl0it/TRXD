@@ -25,3 +25,10 @@ LEFT JOIN attachments a
   ON a.chall_id = c.id
 WHERE c.id = $1
 GROUP BY c.hidden;
+
+-- name: GetTotalCategoryChallenges :many
+-- Retrieve the total number of challenges for each category
+SELECT category, COUNT(*)
+FROM challenges
+GROUP BY category
+ORDER BY category ASC;

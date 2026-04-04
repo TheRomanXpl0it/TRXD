@@ -5,6 +5,7 @@ import (
 	"math"
 	"net/http"
 	"testing"
+	"time"
 	"trxd/api"
 	"trxd/db/sqlc"
 	"trxd/utils/consts"
@@ -83,6 +84,16 @@ func TestRoute(t *testing.T) {
 				"points":      498,
 			},
 		},
+		"total_category_challenges": []JSON{
+			{
+				"category": "cat-1",
+				"count":    3,
+			},
+			{
+				"category": "cat-2",
+				"count":    2,
+			},
+		},
 	}
 
 	session = test_utils.NewApiTestSession(t, app)
@@ -133,6 +144,16 @@ func TestRoute(t *testing.T) {
 				"points":      498,
 			},
 		},
+		"total_category_challenges": []JSON{
+			{
+				"category": "cat-1",
+				"count":    3,
+			},
+			{
+				"category": "cat-2",
+				"count":    2,
+			},
+		},
 	}
 	expectedSelf := JSON{
 		"country": "",
@@ -140,6 +161,16 @@ func TestRoute(t *testing.T) {
 		"name":    "self",
 		"role":    "Player",
 		"score":   0,
+		"total_category_challenges": []JSON{
+			{
+				"category": "cat-1",
+				"count":    3,
+			},
+			{
+				"category": "cat-2",
+				"count":    2,
+			},
+		},
 	}
 
 	session = test_utils.NewApiTestSession(t, app)
@@ -182,6 +213,16 @@ func TestRoute(t *testing.T) {
 				"points":      498,
 			},
 		},
+		"total_category_challenges": []JSON{
+			{
+				"category": "cat-1",
+				"count":    3,
+			},
+			{
+				"category": "cat-2",
+				"count":    2,
+			},
+		},
 	}
 	expectedAdmin := JSON{
 		"country": "",
@@ -190,6 +231,16 @@ func TestRoute(t *testing.T) {
 		"role":    "Admin",
 		"score":   0,
 		"team_id": nil,
+		"total_category_challenges": []JSON{
+			{
+				"category": "cat-1",
+				"count":    3,
+			},
+			{
+				"category": "cat-2",
+				"count":    2,
+			},
+		},
 	}
 
 	session = test_utils.NewApiTestSession(t, app)
@@ -201,4 +252,19 @@ func TestRoute(t *testing.T) {
 	session.Post("/login", JSON{"email": "admin@test.com", "password": "testpass"}, http.StatusOK)
 	session.Get(fmt.Sprintf("/users/%d", idAdmin), nil, http.StatusOK)
 	session.CheckFilteredResponse(expectedAdmin, "id", "joined_at", "timestamp")
+
+	test_utils.UpdateConfig(t, "start-time", time.Now().Add(10*time.Hour).Format(time.RFC3339))
+	delete(expectedPlayerAdmin, "total_category_challenges")
+	delete(expectedAdmin, "total_category_challenges")
+
+	session = test_utils.NewApiTestSession(t, app)
+	session.Post("/login", JSON{"email": "admin@test.com", "password": "testpass"}, http.StatusOK)
+	session.Get(fmt.Sprintf("/users/%d", idPlayer), nil, http.StatusOK)
+	session.CheckFilteredResponse(expectedPlayerAdmin, "id", "joined_at", "team_id", "timestamp")
+
+	session = test_utils.NewApiTestSession(t, app)
+	session.Post("/login", JSON{"email": "admin@test.com", "password": "testpass"}, http.StatusOK)
+	session.Get(fmt.Sprintf("/users/%d", idAdmin), nil, http.StatusOK)
+	session.CheckFilteredResponse(expectedAdmin, "id", "joined_at", "timestamp")
+
 }

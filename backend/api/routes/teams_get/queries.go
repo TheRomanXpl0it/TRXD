@@ -28,7 +28,7 @@ type TeamData struct {
 	Score                   int32                                `json:"score"`
 	Country                 string                               `json:"country"`
 	Members                 []sqlc.GetTeamMembersRow             `json:"members,omitempty"`
-	TotalCategoryChallenges []sqlc.GetTotalCategoryChallengesRow `json:"total_category_challenges"`
+	TotalCategoryChallenges []sqlc.GetTotalCategoryChallengesRow `json:"total_category_challenges,omitempty"`
 	Solves                  []Solve                              `json:"solves"`
 	Badges                  []sqlc.GetBadgesFromTeamRow          `json:"badges"`
 }
@@ -78,21 +78,6 @@ func getSolves(ctx context.Context, teamID int32, userMode bool) ([]Solve, error
 	}
 
 	return solves, nil
-}
-
-func getTotalCategoryChallenges(ctx context.Context) ([]sqlc.GetTotalCategoryChallengesRow, error) {
-	challenges, err := db.Sql.GetTotalCategoryChallenges(ctx)
-	if err != nil {
-		if err != sql.ErrNoRows {
-			return nil, err
-		}
-	}
-
-	if challenges == nil {
-		challenges = make([]sqlc.GetTotalCategoryChallengesRow, 0)
-	}
-
-	return challenges, nil
 }
 
 func GetBadgesFromTeam(ctx context.Context, teamID int32) ([]sqlc.GetBadgesFromTeamRow, error) {
@@ -157,7 +142,7 @@ func GetTeam(ctx context.Context, teamID int32, admin bool) (*TeamData, error) {
 		return nil, err
 	}
 
-	teamData.TotalCategoryChallenges, err = getTotalCategoryChallenges(ctx)
+	teamData.TotalCategoryChallenges, err = db.GetTotalCategoryChallenges(ctx)
 	if err != nil {
 		return nil, err
 	}

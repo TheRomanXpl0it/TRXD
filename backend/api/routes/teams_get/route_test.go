@@ -5,6 +5,7 @@ import (
 	"math"
 	"net/http"
 	"testing"
+	"time"
 	"trxd/api"
 	"trxd/db/sqlc"
 	"trxd/utils/consts"
@@ -285,6 +286,11 @@ func TestRoute(t *testing.T) {
 		},
 		"user_id": userID,
 	}
+	session.Get(fmt.Sprintf("/teams/%d", teamID), nil, http.StatusOK)
+	session.CheckResponse(expected)
+
+	test_utils.UpdateConfig(t, "start-time", time.Now().Add(10*time.Hour).Format(time.RFC3339))
+	delete(expected, "total_category_challenges")
 	session.Get(fmt.Sprintf("/teams/%d", teamID), nil, http.StatusOK)
 	session.CheckResponse(expected)
 }

@@ -21,13 +21,6 @@ SELECT
     AND s.status = 'Correct'
   ORDER BY s.timestamp DESC;
 
--- name: GetTotalCategoryChallenges :many
--- Retrieve the total number of challenges for each category
-SELECT category, COUNT(*)
-  FROM challenges
-  GROUP BY category
-  ORDER BY category ASC;
-
 -- name: GetBadgesFromTeam :many
 -- Retrieve all badges associated with a team
 SELECT badges.name, badges.description FROM badges

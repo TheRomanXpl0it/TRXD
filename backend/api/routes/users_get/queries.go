@@ -10,15 +10,16 @@ import (
 )
 
 type UserData struct {
-	ID       int32                   `json:"id"`
-	Name     string                  `json:"name"`
-	Email    string                  `json:"email,omitempty"`
-	Role     string                  `json:"role,omitempty"`
-	Score    int32                   `json:"score"`
-	Country  string                  `json:"country"`
-	TeamID   *int32                  `json:"team_id"`
-	JoinedAt *time.Time              `json:"joined_at,omitempty"`
-	Solves   []sqlc.GetUserSolvesRow `json:"solves,omitempty"`
+	ID                      int32                                `json:"id"`
+	Name                    string                               `json:"name"`
+	Email                   string                               `json:"email,omitempty"`
+	Role                    string                               `json:"role,omitempty"`
+	Score                   int32                                `json:"score"`
+	Country                 string                               `json:"country"`
+	TeamID                  *int32                               `json:"team_id"`
+	JoinedAt                *time.Time                           `json:"joined_at,omitempty"`
+	Solves                  []sqlc.GetUserSolvesRow              `json:"solves,omitempty"`
+	TotalCategoryChallenges []sqlc.GetTotalCategoryChallengesRow `json:"total_category_challenges,omitempty"`
 }
 
 func GetUser(ctx context.Context, id int32, admin bool) (*UserData, error) {
@@ -61,6 +62,11 @@ func GetUser(ctx context.Context, id int32, admin bool) (*UserData, error) {
 	data.Solves = []sqlc.GetUserSolvesRow{}
 	if solves != nil {
 		data.Solves = solves
+	}
+
+	data.TotalCategoryChallenges, err = db.GetTotalCategoryChallenges(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	return &data, nil
