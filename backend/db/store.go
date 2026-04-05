@@ -24,6 +24,7 @@ func initStorage(host string, port int, password string) {
 	storeConf := session.Config{
 		Expiration:     30 * 24 * time.Hour,
 		CookiePath:     "/",
+		CookieHTTPOnly: true,
 		CookieSameSite: fiber.CookieSameSiteLaxMode,
 	}
 

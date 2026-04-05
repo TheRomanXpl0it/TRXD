@@ -16,6 +16,7 @@ type Submission struct {
 
 type Top struct {
 	TeamID      int          `json:"team_id"`
+	TeamName    string       `json:"team_name"`
 	Submissions []Submission `json:"submissions"`
 }
 
@@ -30,6 +31,7 @@ func QueryTeamScoreboardGraph(ctx context.Context) ([]Top, error) {
 		if _, ok := top[row.TeamID]; !ok {
 			top[row.TeamID] = Top{
 				TeamID:      int(row.TeamID),
+				TeamName:    row.TeamName,
 				Submissions: make([]Submission, 0),
 			}
 		}

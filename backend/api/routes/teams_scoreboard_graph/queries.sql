@@ -1,6 +1,12 @@
 -- name: GetTeamsScoreboardGraph :many
 -- Get the top N teams along with their correct submissions and challenge points for scoreboard graphing
-SELECT t.id AS team_id, c.id AS chall_id, c.points, s.first_blood, s."timestamp"
+SELECT
+    t.id AS team_id,
+    t.name AS team_name,
+    c.id AS chall_id,
+    c.points,
+    s.first_blood,
+    s."timestamp"
   FROM (
       SELECT * FROM teams t
       ORDER BY t.score DESC

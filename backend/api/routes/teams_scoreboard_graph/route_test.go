@@ -70,7 +70,8 @@ func TestRoute(t *testing.T) {
 					"score":       1498,
 				},
 			},
-			"team_id": A.ID,
+			"team_id":   A.ID,
+			"team_name": A.Name,
 		},
 		{
 			"submissions": []JSON{
@@ -85,7 +86,8 @@ func TestRoute(t *testing.T) {
 					"score":       998,
 				},
 			},
-			"team_id": B.ID,
+			"team_id":   B.ID,
+			"team_name": B.Name,
 		},
 	}
 
@@ -136,7 +138,8 @@ func TestRoute(t *testing.T) {
 					"score":       1494,
 				},
 			},
-			"team_id": A.ID,
+			"team_id":   A.ID,
+			"team_name": A.Name,
 		},
 		{
 			"submissions": []JSON{
@@ -156,7 +159,8 @@ func TestRoute(t *testing.T) {
 					"score":       1494,
 				},
 			},
-			"team_id": C.ID,
+			"team_id":   C.ID,
+			"team_name": C.Name,
 		},
 		{
 			"submissions": []JSON{
@@ -171,7 +175,8 @@ func TestRoute(t *testing.T) {
 					"score":       996,
 				},
 			},
-			"team_id": B.ID,
+			"team_id":   B.ID,
+			"team_name": B.Name,
 		},
 	}
 

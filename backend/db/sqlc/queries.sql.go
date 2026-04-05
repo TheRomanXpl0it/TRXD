@@ -1025,7 +1025,13 @@ func (q *Queries) GetTeamsScoreboard(ctx context.Context, arg GetTeamsScoreboard
 }
 
 const getTeamsScoreboardGraph = `-- name: GetTeamsScoreboardGraph :many
-SELECT t.id AS team_id, c.id AS chall_id, c.points, s.first_blood, s."timestamp"
+SELECT
+    t.id AS team_id,
+    t.name AS team_name,
+    c.id AS chall_id,
+    c.points,
+    s.first_blood,
+    s."timestamp"
   FROM (
       SELECT id, name, password_hash, password_salt, score, country FROM teams t
       ORDER BY t.score DESC
@@ -1041,6 +1047,7 @@ SELECT t.id AS team_id, c.id AS chall_id, c.points, s.first_blood, s."timestamp"
 
 type GetTeamsScoreboardGraphRow struct {
 	TeamID     int32     `json:"team_id"`
+	TeamName   string    `json:"team_name"`
 	ChallID    int32     `json:"chall_id"`
 	Points     int32     `json:"points"`
 	FirstBlood bool      `json:"first_blood"`
@@ -1059,6 +1066,7 @@ func (q *Queries) GetTeamsScoreboardGraph(ctx context.Context) ([]GetTeamsScoreb
 		var i GetTeamsScoreboardGraphRow
 		if err := rows.Scan(
 			&i.TeamID,
+			&i.TeamName,
 			&i.ChallID,
 			&i.Points,
 			&i.FirstBlood,
