@@ -57,7 +57,7 @@ func makeLabels(info *infos.InstanceInfo, p *CreateInstanceParams) {
 	loadbalancerPort := "traefik.%s.services.%s.loadbalancer.server.port"
 
 	var protocol, rule, entrypoint string
-	if p.ConnType == sqlc.ConnTypeTCP || p.ConnType == sqlc.ConnTypeTCPTLS {
+	if p.ConnType == sqlc.ConnTypeTCP {
 		protocol = "tcp"
 		rule = "HostSNI(`%s`)"
 		entrypoint = "tcp"

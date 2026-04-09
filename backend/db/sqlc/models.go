@@ -14,11 +14,10 @@ import (
 type ConnType string
 
 const (
-	ConnTypeNONE   ConnType = "NONE"
-	ConnTypeTCP    ConnType = "TCP"
-	ConnTypeTCPTLS ConnType = "TCP_TLS"
-	ConnTypeHTTP   ConnType = "HTTP"
-	ConnTypeHTTPS  ConnType = "HTTPS"
+	ConnTypeNONE  ConnType = "NONE"
+	ConnTypeTCP   ConnType = "TCP"
+	ConnTypeHTTP  ConnType = "HTTP"
+	ConnTypeHTTPS ConnType = "HTTPS"
 )
 
 func (e *ConnType) Scan(src interface{}) error {

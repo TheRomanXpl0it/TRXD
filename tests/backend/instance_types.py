@@ -80,42 +80,42 @@ def assert_request(r: requests.Response, hash_domain):
 		assert line in resp, f'"{line}" not in resp\n{req}\n-----DIFF-----\n{resp}'
 
 
-# r = spawn_instance(s1, chall_id_3)
-# assert r.status_code == 200, r.text
-# i1 = r.json()
-# print(i1)
-# r = spawn_instance(s2, chall_id_3)
-# assert r.status_code == 409, r.text
-# r = spawn_instance(s3, chall_id_3)
-# assert r.status_code == 200, r.text
-# i3 = r.json()
-# print(i3)
+r = spawn_instance(s1, chall_id_3)
+assert r.status_code == 200, r.text
+i1 = r.json()
+print(i1)
+r = spawn_instance(s2, chall_id_3)
+assert r.status_code == 409, r.text
+r = spawn_instance(s3, chall_id_3)
+assert r.status_code == 200, r.text
+i3 = r.json()
+print(i3)
 
-# r = requests.get(f'http://localhost:{i1["port"]}')
-# assert_request(r, False)
-# r = requests.get(f'http://localhost:{i3["port"]}')
-# assert_request(r, False)
+r = requests.get(f'http://localhost:{i1["port"]}')
+assert_request(r, False)
+r = requests.get(f'http://localhost:{i3["port"]}')
+assert_request(r, False)
 
-# kill_instance(s1, chall_id_3)
-# kill_instance(s3, chall_id_3)
+kill_instance(s1, chall_id_3)
+kill_instance(s3, chall_id_3)
 
 
-# r = spawn_instance(s1, chall_id_4)
-# assert r.status_code == 200, r.text
-# i1 = r.json()
-# print(i1)
-# r = spawn_instance(s3, chall_id_4)
-# assert r.status_code == 200, r.text
-# i3 = r.json()
-# print(i3)
+r = spawn_instance(s1, chall_id_4)
+assert r.status_code == 200, r.text
+i1 = r.json()
+print(i1)
+r = spawn_instance(s3, chall_id_4)
+assert r.status_code == 200, r.text
+i3 = r.json()
+print(i3)
 
-# r = requests.get(f'http://localhost:{i1["port"]}')
-# assert_request(r, False)
-# r = requests.get(f'http://localhost:{i3["port"]}')
-# assert_request(r, False)
+r = requests.get(f'http://localhost:{i1["port"]}')
+assert_request(r, False)
+r = requests.get(f'http://localhost:{i3["port"]}')
+assert_request(r, False)
 
-# kill_instance(s1, chall_id_4)
-# kill_instance(s3, chall_id_4)
+kill_instance(s1, chall_id_4)
+kill_instance(s3, chall_id_4)
 
 
 
@@ -139,57 +139,57 @@ update_challenge(admin, chall_id_3, hash_domain=True)
 update_challenge(admin, chall_id_4, hash_domain=True)
 
 
-# r = spawn_instance(s1, chall_id_3)
-# assert r.status_code == 200, r.text
-# i1 = r.json()
-# print(i1)
-# r = spawn_instance(s2, chall_id_3)
-# assert r.status_code == 409, r.text
-# r = spawn_instance(s3, chall_id_3)
-# assert r.status_code == 200, r.text
-# i3 = r.json()
-# print(i3)
+r = spawn_instance(s1, chall_id_3)
+assert r.status_code == 200, r.text
+i1 = r.json()
+print(i1)
+r = spawn_instance(s2, chall_id_3)
+assert r.status_code == 409, r.text
+r = spawn_instance(s3, chall_id_3)
+assert r.status_code == 200, r.text
+i3 = r.json()
+print(i3)
 
-# host = i1['host']
-# LOCAL_HOSTS[host] = LOCALHOST
-# r = requests.get(f'http://{host}')
-# assert_request(r, True)
+host = i1['host']
+LOCAL_HOSTS[host] = LOCALHOST
+r = requests.get(f'http://{host}')
+assert_request(r, True)
 
-# host = i3['host']
-# LOCAL_HOSTS[host] = LOCALHOST
-# r = requests.get(f'http://{host}')
-# assert_request(r, True)
+host = i3['host']
+LOCAL_HOSTS[host] = LOCALHOST
+r = requests.get(f'http://{host}')
+assert_request(r, True)
 
-# kill_instance(s1, chall_id_3)
-# kill_instance(s3, chall_id_3)
+kill_instance(s1, chall_id_3)
+kill_instance(s3, chall_id_3)
 
 
-# r = spawn_instance(s1, chall_id_4)
-# assert r.status_code == 200, r.text
-# i1 = r.json()
-# print(i1)
-# r = spawn_instance(s2, chall_id_4)
-# assert r.status_code == 409, r.text
-# r = spawn_instance(s3, chall_id_4)
-# assert r.status_code == 200, r.text
-# i3 = r.json()
-# print(i3)
+r = spawn_instance(s1, chall_id_4)
+assert r.status_code == 200, r.text
+i1 = r.json()
+print(i1)
+r = spawn_instance(s2, chall_id_4)
+assert r.status_code == 409, r.text
+r = spawn_instance(s3, chall_id_4)
+assert r.status_code == 200, r.text
+i3 = r.json()
+print(i3)
 
-# #! Note: this test can still pass on traefik even with broken netowrking
-# #! beacuse it routes via open port instead of the internal network
+#! Note: this test can still pass on traefik even with broken netowrking
+#! beacuse it routes via open port instead of the internal network
 
-# host = i1['host']
-# LOCAL_HOSTS[host] = LOCALHOST
-# r = requests.get(f'http://{host}')
-# assert_request(r, True)
+host = i1['host']
+LOCAL_HOSTS[host] = LOCALHOST
+r = requests.get(f'http://{host}')
+assert_request(r, True)
 
-# host = i3['host']
-# LOCAL_HOSTS[host] = LOCALHOST
-# r = requests.get(f'http://{host}')
-# assert_request(r, True)
+host = i3['host']
+LOCAL_HOSTS[host] = LOCALHOST
+r = requests.get(f'http://{host}')
+assert_request(r, True)
 
-# kill_instance(s1, chall_id_4)
-# kill_instance(s3, chall_id_4)
+kill_instance(s1, chall_id_4)
+kill_instance(s3, chall_id_4)
 
 
 
@@ -212,61 +212,6 @@ update_challenge(admin, chall_id_4, conn_type="TCP")
 
 request = b"GET /\r\n\r\n"
 correct_resp = b'HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nGET /\r\n\r\n'
-
-r = spawn_instance(s1, chall_id_3)
-assert r.status_code == 200, r.text
-i1 = r.json()
-print(i1)
-r = spawn_instance(s2, chall_id_3)
-assert r.status_code == 409, r.text
-r = spawn_instance(s3, chall_id_3)
-assert r.status_code == 200, r.text
-i3 = r.json()
-print(i3)
-
-host = i1['host']
-LOCAL_HOSTS[host] = LOCALHOST
-received = ssl_dial(host, 443, request)
-assert received == correct_resp, f"Expected:\n{correct_resp}\nReceived:\n{received}"
-
-host = i3['host']
-LOCAL_HOSTS[host] = LOCALHOST
-received = ssl_dial(host, 443, request)
-assert received == correct_resp, f"Expected:\n{correct_resp}\nReceived:\n{received}"
-
-kill_instance(s1, chall_id_3)
-kill_instance(s3, chall_id_3)
-
-
-r = spawn_instance(s1, chall_id_4)
-assert r.status_code == 200, r.text
-i1 = r.json()
-print(i1)
-r = spawn_instance(s2, chall_id_4)
-assert r.status_code == 409, r.text
-r = spawn_instance(s3, chall_id_4)
-assert r.status_code == 200, r.text
-i3 = r.json()
-print(i3)
-
-host = i1['host']
-LOCAL_HOSTS[host] = LOCALHOST
-received = ssl_dial(host, 443, request)
-assert received == correct_resp, f"Expected:\n{correct_resp}\nReceived:\n{received}"
-
-host = i3['host']
-LOCAL_HOSTS[host] = LOCALHOST
-received = ssl_dial(host, 443, request)
-assert received == correct_resp, f"Expected:\n{correct_resp}\nReceived:\n{received}"
-
-kill_instance(s1, chall_id_4)
-kill_instance(s3, chall_id_4)
-
-
-
-update_challenge(admin, chall_id_3, conn_type="TCP_TLS")
-update_challenge(admin, chall_id_4, conn_type="TCP_TLS")
-
 
 r = spawn_instance(s1, chall_id_3)
 assert r.status_code == 200, r.text

@@ -26,7 +26,6 @@ CREATE TYPE submission_status AS ENUM (
 CREATE TYPE conn_type AS ENUM (
   'NONE',
   'TCP',
-  'TCP_TLS',
   'HTTP',
   'HTTPS'
 );
