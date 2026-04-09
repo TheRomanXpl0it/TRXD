@@ -14,7 +14,7 @@ func Route(c *fiber.Ctx) error {
 	var data struct {
 		Name        string          `json:"name" validate:"required,challenge_name"`
 		Category    string          `json:"category" validate:"required,category_name"`
-		Description string          `json:"description" validate:"required,challenge_description"`
+		Description string          `json:"description" validate:"challenge_description"`
 		Type        sqlc.DeployType `json:"type" validate:"required,challenge_type"`
 		MaxPoints   int32           `json:"max_points" validate:"required,challenge_max_points"`
 		ScoreType   sqlc.ScoreType  `json:"score_type" validate:"required,challenge_score_type"`

@@ -111,7 +111,7 @@ var testData = []struct {
 		expectedResponse: errorf(consts.ChallengeAlreadyExists),
 	},
 	{
-		testBody:       JSON{"name": "test2", "category": "cat", "description": "test-desc", "type": "Normal", "max_points": 1, "score_type": "Static"},
+		testBody:       JSON{"name": "test2", "category": "cat", "description": "", "type": "Normal", "max_points": 1, "score_type": "Static"},
 		expectedStatus: http.StatusOK,
 	},
 }
