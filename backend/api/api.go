@@ -42,14 +42,13 @@ import (
 	"trxd/api/routes/teams_update"
 	"trxd/api/routes/users_all_get"
 	"trxd/api/routes/users_get"
-	"trxd/api/routes/users_get_email"
-	"trxd/api/routes/users_get_name"
 	"trxd/api/routes/users_info"
 	"trxd/api/routes/users_login"
 	"trxd/api/routes/users_logout"
 	"trxd/api/routes/users_password"
 	"trxd/api/routes/users_register"
 	"trxd/api/routes/users_role"
+	"trxd/api/routes/users_search"
 	"trxd/api/routes/users_update"
 	"trxd/db"
 	"trxd/utils"
@@ -180,8 +179,7 @@ func SetupApi(ctx context.Context, app *fiber.App) {
 	api.Patch("/users/password", spectator, users_password.Route)
 	if mode != "true" {
 		api.Get("/users", noAuth, users_all_get.Route)
-		api.Get("/users/name", noAuth, users_get_name.Route)
-		api.Get("/users/email", admin, users_get_email.Route)
+		api.Get("/users/search", noAuth, users_search.Route)
 		api.Get("/users/:id", noAuth, users_get.Route)
 	}
 
