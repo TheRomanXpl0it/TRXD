@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 	"trxd/api/middlewares"
+	"trxd/api/routes/admin_stats"
 	"trxd/api/routes/attachments_create"
 	"trxd/api/routes/attachments_delete"
 	"trxd/api/routes/categories_create"
@@ -16,6 +17,7 @@ import (
 	"trxd/api/routes/challenges_create"
 	"trxd/api/routes/challenges_delete"
 	"trxd/api/routes/challenges_get"
+	"trxd/api/routes/challenges_hidden"
 	"trxd/api/routes/challenges_update"
 	"trxd/api/routes/configs_get"
 	"trxd/api/routes/configs_update"
@@ -40,6 +42,8 @@ import (
 	"trxd/api/routes/teams_update"
 	"trxd/api/routes/users_all_get"
 	"trxd/api/routes/users_get"
+	"trxd/api/routes/users_get_email"
+	"trxd/api/routes/users_get_name"
 	"trxd/api/routes/users_info"
 	"trxd/api/routes/users_login"
 	"trxd/api/routes/users_logout"
@@ -176,6 +180,8 @@ func SetupApi(ctx context.Context, app *fiber.App) {
 	api.Patch("/users/password", spectator, users_password.Route)
 	if mode != "true" {
 		api.Get("/users", noAuth, users_all_get.Route)
+		api.Get("/users/name", noAuth, users_get_name.Route)
+		api.Get("/users/email", admin, users_get_email.Route)
 		api.Get("/users/:id", noAuth, users_get.Route)
 	}
 
@@ -196,6 +202,7 @@ func SetupApi(ctx context.Context, app *fiber.App) {
 
 	api.Post("/challenges", author, challenges_create.Route)
 	api.Patch("/challenges", author, challenges_update.Route)
+	api.Patch("/challenges/hidden", author, challenges_hidden.Route)
 	api.Delete("/challenges", author, challenges_delete.Route)
 	api.Get("/challenges", spectator, team, start, challenges_all_get.Route)
 	api.Get("/challenges/:id", spectator, team, start, challenges_get.Route)
@@ -218,4 +225,6 @@ func SetupApi(ctx context.Context, app *fiber.App) {
 
 	api.Get("/configs", admin, configs_get.Route)
 	api.Patch("/configs", admin, configs_update.Route)
+
+	api.Get("/stats", admin, admin_stats.Route)
 }

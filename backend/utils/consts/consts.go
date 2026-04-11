@@ -86,6 +86,7 @@ const (
 	ErrorFetchingInstances        = "Error fetching instances"
 	ErrorFetchingScoreboardGraph  = "Error fetching scoreboard graph"
 	ErrorFetchingSession          = "Error fetching session"
+	ErrorFetchingStats            = "Error fetching stats"
 	ErrorFetchingSubmissions      = "Error fetching submissions"
 	ErrorFetchingTeam             = "Error fetching team"
 	ErrorFetchingUser             = "Error fetching user"
@@ -133,6 +134,7 @@ const (
 	InvalidTeamID           = "Invalid team ID, must be non negative"
 	InvalidToken            = "invalid token"
 	InvalidUserID           = "Invalid user ID, must be non negative"
+	InvalidUserName         = "Invalid user name"
 
 	MaxError   = "{0} must not exceed {1}"
 	MinError   = "{0} must be at least {1}"

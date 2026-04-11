@@ -246,6 +246,42 @@ func (q *Queries) DeleteSubmission(ctx context.Context, id int32) error {
 	return err
 }
 
+const getAdminStats = `-- name: GetAdminStats :one
+SELECT
+  (SELECT COUNT(*) FROM users) AS total_users,
+  (SELECT COUNT(*) FROM users WHERE role='Player') AS total_players,
+  (SELECT COUNT(*) FROM teams) AS total_teams,
+  (SELECT COUNT(*) FROM challenges) AS total_challenges,
+  (SELECT COUNT(*) FROM challenges WHERE hidden=FALSE) AS total_released_challenges,
+  (SELECT COUNT(*) FROM submissions) AS total_submissions,
+  (SELECT COUNT(*) FROM submissions WHERE status='Correct') AS total_correct_submissions
+`
+
+type GetAdminStatsRow struct {
+	TotalUsers              int64 `json:"total_users"`
+	TotalPlayers            int64 `json:"total_players"`
+	TotalTeams              int64 `json:"total_teams"`
+	TotalChallenges         int64 `json:"total_challenges"`
+	TotalReleasedChallenges int64 `json:"total_released_challenges"`
+	TotalSubmissions        int64 `json:"total_submissions"`
+	TotalCorrectSubmissions int64 `json:"total_correct_submissions"`
+}
+
+func (q *Queries) GetAdminStats(ctx context.Context) (GetAdminStatsRow, error) {
+	row := q.queryRow(ctx, q.getAdminStatsStmt, getAdminStats)
+	var i GetAdminStatsRow
+	err := row.Scan(
+		&i.TotalUsers,
+		&i.TotalPlayers,
+		&i.TotalTeams,
+		&i.TotalChallenges,
+		&i.TotalReleasedChallenges,
+		&i.TotalSubmissions,
+		&i.TotalCorrectSubmissions,
+	)
+	return i, err
+}
+
 const getAllChallengesInfo = `-- name: GetAllChallengesInfo :many
 WITH tid AS (SELECT team_id FROM users WHERE users.id = $1)
 SELECT
@@ -1152,6 +1188,28 @@ func (q *Queries) GetUserByTeamID(ctx context.Context, teamID sql.NullInt32) (Ge
 	return i, err
 }
 
+const getUserIDByEmail = `-- name: GetUserIDByEmail :one
+SELECT id FROM users WHERE email = $1
+`
+
+func (q *Queries) GetUserIDByEmail(ctx context.Context, email string) (int32, error) {
+	row := q.queryRow(ctx, q.getUserIDByEmailStmt, getUserIDByEmail, email)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
+}
+
+const getUserIDByName = `-- name: GetUserIDByName :one
+SELECT id FROM users WHERE name = $1
+`
+
+func (q *Queries) GetUserIDByName(ctx context.Context, name string) (int32, error) {
+	row := q.queryRow(ctx, q.getUserIDByNameStmt, getUserIDByName, name)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
+}
+
 const getUserSolves = `-- name: GetUserSolves :many
 SELECT c.id, c.name, c.category, c.points, s.first_blood, s.timestamp
   FROM submissions s
@@ -1392,6 +1450,17 @@ func (q *Queries) Submit(ctx context.Context, arg SubmitParams) (SubmitRow, erro
 	var i SubmitRow
 	err := row.Scan(&i.Status, &i.FirstBlood)
 	return i, err
+}
+
+const toggleChallengesHidden = `-- name: ToggleChallengesHidden :exec
+UPDATE challenges
+  SET hidden = NOT hidden
+  WHERE id = ANY($1::INTEGER[])
+`
+
+func (q *Queries) ToggleChallengesHidden(ctx context.Context, challIds []int32) error {
+	_, err := q.exec(ctx, q.toggleChallengesHiddenStmt, toggleChallengesHidden, pq.Array(challIds))
+	return err
 }
 
 const updateChallenge = `-- name: UpdateChallenge :exec
