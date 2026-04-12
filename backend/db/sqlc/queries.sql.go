@@ -799,6 +799,28 @@ func (q *Queries) GetSubmissions(ctx context.Context, arg GetSubmissionsParams) 
 	return items, nil
 }
 
+const getTeamIDByEmail = `-- name: GetTeamIDByEmail :one
+SELECT team_id FROM users WHERE email = $1
+`
+
+func (q *Queries) GetTeamIDByEmail(ctx context.Context, email string) (sql.NullInt32, error) {
+	row := q.queryRow(ctx, q.getTeamIDByEmailStmt, getTeamIDByEmail, email)
+	var team_id sql.NullInt32
+	err := row.Scan(&team_id)
+	return team_id, err
+}
+
+const getTeamIDByName = `-- name: GetTeamIDByName :one
+SELECT id FROM teams WHERE name = $1
+`
+
+func (q *Queries) GetTeamIDByName(ctx context.Context, name string) (int32, error) {
+	row := q.queryRow(ctx, q.getTeamIDByNameStmt, getTeamIDByName, name)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
+}
+
 const getTeamMembers = `-- name: GetTeamMembers :many
 SELECT id, name, role, score FROM users WHERE team_id = $1 ORDER BY id
 `

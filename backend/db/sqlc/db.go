@@ -132,6 +132,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getTeamFromUserStmt, err = db.PrepareContext(ctx, getTeamFromUser); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTeamFromUser: %w", err)
 	}
+	if q.getTeamIDByEmailStmt, err = db.PrepareContext(ctx, getTeamIDByEmail); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTeamIDByEmail: %w", err)
+	}
+	if q.getTeamIDByNameStmt, err = db.PrepareContext(ctx, getTeamIDByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTeamIDByName: %w", err)
+	}
 	if q.getTeamMembersStmt, err = db.PrepareContext(ctx, getTeamMembers); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTeamMembers: %w", err)
 	}
@@ -416,6 +422,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getTeamFromUserStmt: %w", cerr)
 		}
 	}
+	if q.getTeamIDByEmailStmt != nil {
+		if cerr := q.getTeamIDByEmailStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTeamIDByEmailStmt: %w", cerr)
+		}
+	}
+	if q.getTeamIDByNameStmt != nil {
+		if cerr := q.getTeamIDByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTeamIDByNameStmt: %w", cerr)
+		}
+	}
 	if q.getTeamMembersStmt != nil {
 		if cerr := q.getTeamMembersStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getTeamMembersStmt: %w", cerr)
@@ -656,6 +672,8 @@ type Queries struct {
 	getTeamByIDStmt                *sql.Stmt
 	getTeamByNameStmt              *sql.Stmt
 	getTeamFromUserStmt            *sql.Stmt
+	getTeamIDByEmailStmt           *sql.Stmt
+	getTeamIDByNameStmt            *sql.Stmt
 	getTeamMembersStmt             *sql.Stmt
 	getTeamSolvesStmt              *sql.Stmt
 	getTeamsPreviewStmt            *sql.Stmt
@@ -731,6 +749,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getTeamByIDStmt:                q.getTeamByIDStmt,
 		getTeamByNameStmt:              q.getTeamByNameStmt,
 		getTeamFromUserStmt:            q.getTeamFromUserStmt,
+		getTeamIDByEmailStmt:           q.getTeamIDByEmailStmt,
+		getTeamIDByNameStmt:            q.getTeamIDByNameStmt,
 		getTeamMembersStmt:             q.getTeamMembersStmt,
 		getTeamSolvesStmt:              q.getTeamSolvesStmt,
 		getTeamsPreviewStmt:            q.getTeamsPreviewStmt,

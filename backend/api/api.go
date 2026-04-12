@@ -39,6 +39,7 @@ import (
 	"trxd/api/routes/teams_register"
 	"trxd/api/routes/teams_scoreboard"
 	"trxd/api/routes/teams_scoreboard_graph"
+	"trxd/api/routes/teams_search"
 	"trxd/api/routes/teams_update"
 	"trxd/api/routes/users_all_get"
 	"trxd/api/routes/users_get"
@@ -191,6 +192,7 @@ func SetupApi(ctx context.Context, app *fiber.App) {
 		api.Patch("/teams/password", spectator, team, teams_password.Route)
 	}
 	api.Get("/teams", noAuth, teams_all_get.Route)
+	api.Get("/teams/search", noAuth, teams_search.Route)
 	api.Get("/teams/:id", noAuth, teams_get.Route)
 
 	api.Post("/categories", author, categories_create.Route)
