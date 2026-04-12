@@ -10,13 +10,17 @@ import (
 	"github.com/lib/pq"
 )
 
-func CreateConfig(ctx context.Context, key string, value any) (bool, error) {
-	val := fmt.Sprint(value)
+func CreateConfig(ctx context.Context, key string, conf consts.Config) (bool, error) {
+	val := fmt.Sprint(conf.Value)
 
 	err := Sql.CreateConfig(ctx, sqlc.CreateConfigParams{
-		Key:   key,
-		Type:  fmt.Sprintf("%T", value),
-		Value: val,
+		Key:         key,
+		Type:        conf.Type,
+		Value:       val,
+		Name:        conf.Name,
+		Category:    conf.Category,
+		Description: conf.Description,
+		Secret:      conf.Secret,
 	})
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {

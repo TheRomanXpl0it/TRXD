@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 	"trxd/api/middlewares"
@@ -158,7 +157,7 @@ func SetupApi(ctx context.Context, app *fiber.App) {
 	mode, err := db.GetConfig(ctx, "user-mode")
 	if err != nil {
 		log.Error("Failed to get user-mode config:", "err", err)
-		mode = fmt.Sprint(consts.DefaultConfigs["user-mode"])
+		mode = "false"
 	}
 
 	var api fiber.Router

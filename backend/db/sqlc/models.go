@@ -267,7 +267,10 @@ type Config struct {
 	Key         string `json:"key"`
 	Type        string `json:"type"`
 	Value       string `json:"value"`
+	Name        string `json:"name"`
+	Category    string `json:"category"`
 	Description string `json:"description"`
+	Secret      bool   `json:"secret"`
 }
 
 type DockerConfig struct {

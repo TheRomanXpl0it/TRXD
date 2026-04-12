@@ -34,7 +34,10 @@ CREATE TABLE IF NOT EXISTS configs (
   key TEXT NOT NULL,
   type TEXT NOT NULL DEFAULT 'string',
   value TEXT NOT NULL DEFAULT '',
+  name TEXT NOT NULL,
+  category TEXT NOT NULL DEFAULT 'general',
   description TEXT NOT NULL DEFAULT '',
+  secret BOOLEAN NOT NULL DEFAULT FALSE,
   PRIMARY KEY(key)
 );
 

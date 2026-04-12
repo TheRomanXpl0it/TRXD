@@ -122,22 +122,23 @@ func ExecSQLFile(path string) (bool, error) {
 }
 
 func InitConfigs() error {
-	if secret, ok := consts.DefaultConfigs["jwt-secret"]; ok && secret == "" {
-		randSecret, err := crypto_utils.GeneratePassword()
+	var err error
+
+	if secret, ok := consts.DefaultConfigs["jwt-secret"]; ok && secret.Value == "" {
+		secret.Value, err = crypto_utils.GeneratePassword()
 		if err != nil {
 			return fmt.Errorf("failed to generate random secret: %v", err)
 		}
-		consts.DefaultConfigs["jwt-secret"] = randSecret
+		consts.DefaultConfigs["jwt-secret"] = secret
 	}
 
-	for key, value := range consts.DefaultConfigs {
-		valid, err := CreateConfig(context.Background(), key, value)
+	for key, conf := range consts.DefaultConfigs {
+		valid, err := CreateConfig(context.Background(), key, conf)
 		if err != nil {
-			return fmt.Errorf("failed to create config for key %s=%v: %v", key, value, err)
+			return fmt.Errorf("failed to create config for key %s=%v: %v", key, conf.Value, err)
 		}
-
 		if !valid {
-			return fmt.Errorf("failed to create config for key %s=%v: config already exists", key, value)
+			return fmt.Errorf("failed to create config for key %s=%v: config already exists", key, conf.Value)
 		}
 	}
 

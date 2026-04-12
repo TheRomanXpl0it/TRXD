@@ -538,7 +538,7 @@ func (q *Queries) GetChallengeSolves(ctx context.Context, challID int32) ([]GetC
 }
 
 const getConfigs = `-- name: GetConfigs :many
-SELECT key, type, value, description FROM configs ORDER BY key
+SELECT key, type, value, name, category, description, secret FROM configs ORDER BY key
 `
 
 // Fetches all configuration settings
@@ -555,7 +555,10 @@ func (q *Queries) GetConfigs(ctx context.Context) ([]Config, error) {
 			&i.Key,
 			&i.Type,
 			&i.Value,
+			&i.Name,
+			&i.Category,
 			&i.Description,
+			&i.Secret,
 		); err != nil {
 			return nil, err
 		}

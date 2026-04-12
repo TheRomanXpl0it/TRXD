@@ -22,12 +22,15 @@ func TestRoute(t *testing.T) {
 	defer api.Shutdown(app)
 
 	expected := make([]JSON, 0, len(consts.DefaultConfigs))
-	for key, value := range consts.DefaultConfigs {
+	for key, conf := range consts.DefaultConfigs {
 		expected = append(expected, JSON{
-			"description": "",
+			"category":    conf.Category,
+			"description": conf.Description,
 			"key":         key,
-			"type":        fmt.Sprintf("%T", value),
-			"value":       fmt.Sprintf("%v", value),
+			"name":        conf.Name,
+			"secret":      conf.Secret,
+			"type":        conf.Type,
+			"value":       fmt.Sprintf("%v", conf.Value),
 		})
 	}
 

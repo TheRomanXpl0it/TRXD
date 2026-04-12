@@ -36,8 +36,11 @@ func GetInterval(ctx context.Context) (time.Duration, error) {
 		return 0, err
 	}
 	if conf == "" {
-		interval := consts.DefaultConfigs["reclaim-instance-interval"].(int)
-		return time.Duration(interval) * time.Second, nil
+		if intervalInterface, ok := consts.DefaultConfigs["reclaim-instance-interval"]; ok {
+			if interval, ok := intervalInterface.Value.(int); ok {
+				return time.Duration(interval) * time.Second, nil
+			}
+		}
 	}
 
 	value, err := strconv.Atoi(conf)

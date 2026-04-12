@@ -10,23 +10,35 @@ import (
 )
 
 const createConfig = `-- name: CreateConfig :exec
-INSERT INTO configs (key, type, value) VALUES ($1, $2, $3)
+INSERT INTO configs (key, type, value, name, category, description, secret) VALUES ($1, $2, $3, $4, $5, $6, $7)
 `
 
 type CreateConfigParams struct {
-	Key   string `json:"key"`
-	Type  string `json:"type"`
-	Value string `json:"value"`
+	Key         string `json:"key"`
+	Type        string `json:"type"`
+	Value       string `json:"value"`
+	Name        string `json:"name"`
+	Category    string `json:"category"`
+	Description string `json:"description"`
+	Secret      bool   `json:"secret"`
 }
 
 // Insert a new configuration setting
 func (q *Queries) CreateConfig(ctx context.Context, arg CreateConfigParams) error {
-	_, err := q.exec(ctx, q.createConfigStmt, createConfig, arg.Key, arg.Type, arg.Value)
+	_, err := q.exec(ctx, q.createConfigStmt, createConfig,
+		arg.Key,
+		arg.Type,
+		arg.Value,
+		arg.Name,
+		arg.Category,
+		arg.Description,
+		arg.Secret,
+	)
 	return err
 }
 
 const getConfig = `-- name: GetConfig :one
-SELECT key, type, value, description FROM configs WHERE key = $1
+SELECT key, type, value, name, category, description, secret FROM configs WHERE key = $1
 `
 
 // Retrieve a configuration setting by key
@@ -37,7 +49,10 @@ func (q *Queries) GetConfig(ctx context.Context, key string) (Config, error) {
 		&i.Key,
 		&i.Type,
 		&i.Value,
+		&i.Name,
+		&i.Category,
 		&i.Description,
+		&i.Secret,
 	)
 	return i, err
 }

@@ -32,8 +32,8 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION insert_mock_configs()
 RETURNS VOID AS $$
 BEGIN
-  INSERT INTO configs (key, type, value) VALUES ('chall-min-points', 'int', '100');
-  INSERT INTO configs (key, type, value) VALUES ('chall-points-decay', 'int', '5');
+  INSERT INTO configs (key, type, value, name) VALUES ('chall-min-points', 'int', '100', 'Minimum Points');
+  INSERT INTO configs (key, type, value, name) VALUES ('chall-points-decay', 'int', '5', 'Points Decay');
 END;
 $$ LANGUAGE plpgsql;
 

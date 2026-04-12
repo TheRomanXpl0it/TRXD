@@ -3,8 +3,6 @@ package containers
 import (
 	"context"
 	"fmt"
-	"trxd/db"
-	"trxd/utils/consts"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
@@ -24,42 +22,4 @@ func FetchContainerByName(ctx context.Context, name string) (string, error) {
 	}
 
 	return summary[0].ID, nil
-}
-
-func FetchProxyID(ctx context.Context) (string, error) {
-	id, err := db.StorageGet(ctx, "proxy-id")
-	if err != nil {
-		return "", err
-	}
-	if id != nil && *id != "" {
-		return *id, nil
-	}
-
-	name, err := db.GetConfig(ctx, "project-name")
-	if err != nil {
-		return "", err
-	}
-	if name == "" {
-		name = consts.DefaultConfigs["project-name"].(string)
-	}
-
-	proxy, err := db.GetConfig(ctx, "proxy")
-	if err != nil {
-		return "", err
-	}
-	if proxy == "" {
-		proxy = consts.DefaultConfigs["proxy"].(string)
-	}
-
-	containerID, err := FetchContainerByName(ctx, name+"-"+proxy+"-1")
-	if err != nil {
-		return "", err
-	}
-
-	err = db.StorageSet(ctx, "proxy-id", containerID)
-	if err != nil {
-		return "", err
-	}
-
-	return containerID, nil
 }
